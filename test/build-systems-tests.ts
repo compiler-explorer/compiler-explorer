@@ -1186,6 +1186,35 @@ describe('Make build system', () => {
         expect(fsSync.existsSync(dirPath)).toBe(false);
     });
 
+    it('lets the compiler prepare a successful build for running before it is packaged', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const prepare = vi.spyOn(compiler, 'prepareArtifactExecution');
+        const store = vi.spyOn(compiler as any, 'storePackageWithExecutable').mockResolvedValue(undefined);
+
+        class Builds extends MakeBuildSystem {
+            override async getBuildPlan(): Promise<BuildPlan> {
+                return {getCompilationOptions: () => [], steps: []};
+            }
+
+            override async finaliseArtifact(): Promise<string | undefined> {
+                return undefined;
+            }
+        }
+
+        await compiler.buildProject(
+            new Builds(),
+            [],
+            makeParsedRequest({skipAsm: true, customOutputFilename: 'demo'}),
+            BypassCache.Compilation,
+        );
+
+        expect(prepare).toHaveBeenCalledTimes(1);
+        expect(path.basename(prepare.mock.calls[0][0])).toEqual('demo');
+        expect(prepare.mock.invocationCallOrder[0]).toBeLessThan(store.mock.invocationCallOrder[0]);
+        vi.restoreAllMocks();
+    });
+
     it('reports a missing launcher, which is thrown while working out what to run', async () => {
         // maven defaults to empty and asserts, so this has to arrive as a compilation result rather than a bare 400.
         const env = makeMakeEnv();
