@@ -163,6 +163,27 @@ describe('msvc tests', () => {
             expect(args).toContain('-DCMAKE_EXE_LINKER_FLAGS_INIT=/MAP');
         });
 
+        it('should point CMake at clang-cl and the LLVM tools next to it', async () => {
+            const clangCl = new ClangCLCompiler(
+                {
+                    ...info,
+                    exe: 'Z:/compilers/clang-cl-22.1.6/bin/clang-cl.exe',
+                    options: '/winsdkdir Z:/compilers/windows-kits-10 /EHsc /vctoolsdir Z:/compilers/msvc/14.50',
+                } as any,
+                makeCompilationEnvironment({languages}),
+            );
+            const args = clangCl.getExtraCMakeArgs({} as any);
+            expect(args).toContain('-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded');
+            expect(args).toContain('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
+            expect(args).toContain('-DCMAKE_CXX_COMPILER=Z:/compilers/clang-cl-22.1.6/bin/clang-cl.exe');
+            expect(args).toContain('-DCMAKE_LINKER=Z:/compilers/clang-cl-22.1.6/bin/lld-link.exe');
+            expect(args).toContain('-DCMAKE_RC_COMPILER=Z:/compilers/clang-cl-22.1.6/bin/llvm-rc.exe');
+            expect(args).toContain('-DCMAKE_MT=Z:/compilers/clang-cl-22.1.6/bin/llvm-mt.exe');
+            expect(args).toContain(
+                '-DCMAKE_EXE_LINKER_FLAGS_INIT=/MAP /vctoolsdir:Z:/compilers/msvc/14.50 /winsdkdir:Z:/compilers/windows-kits-10',
+            );
+        });
+
         it('should not ask CMake builds for a map file from a compiler that does not support one', async () => {
             const compiler = new Win32VcCompiler(info as any, makeCompilationEnvironment({languages}));
             compiler.supportsMapFile = false;

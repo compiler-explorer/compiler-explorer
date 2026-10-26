@@ -134,6 +134,24 @@ export class Win32Compiler extends BaseCompiler {
         this.useMapFile(filters, mapFilename, programLibraries);
     }
 
+    /**
+     * What CMake needs to build like CE builds with a compiler that takes MSVC's options
+     */
+    protected getMsvcStyleCMakeArgs(linkerFlags: string[] = []): string[] {
+        // The map the disassembly is labelled and filtered with
+        if (this.supportsMapFile) linkerFlags = ['/MAP', ...linkerFlags];
+        return [
+            // Debug information in the object file, rather than in a pdb written through mspdbsrv
+            '-DCMAKE_POLICY_DEFAULT_CMP0141=NEW',
+            '-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded',
+            // CMake builds Debug by default, which needs the debug runtime (ucrtbased.dll), so use /MD like other compiles
+            '-DCMAKE_POLICY_DEFAULT_CMP0091=NEW',
+            '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL',
+            // _INIT so these add to the project's own linker flags
+            ...(linkerFlags.length > 0 ? [`-DCMAKE_EXE_LINKER_FLAGS_INIT=${linkerFlags.join(' ')}`] : []),
+        ];
+    }
+
     override getObjdumpInputFilename(baseFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         if (filters?.binary) {
             return baseFilename + '.exe';

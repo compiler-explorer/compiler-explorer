@@ -44,6 +44,8 @@ import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
+import {Win32MingWClang} from '../lib/compilers/win32-mingw-clang.js';
+import {Win32MingWGcc} from '../lib/compilers/win32-mingw-gcc.js';
 import {Win32VcCompiler} from '../lib/compilers/win32-vc.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
@@ -1318,5 +1320,27 @@ describe('Project build disassembly', () => {
                 await fs.rm(dirPath, {recursive: true, force: true});
             }
         });
+    }
+
+    // CMake names an executable on Windows <target>.exe, so that is what there is to disassemble and run
+    for (const Compiler of [Win32MingWGcc, Win32MingWClang]) {
+        for (const [customOutputFilename, artifact] of [
+            ['the_executable', 'the_executable.exe'],
+            ['tool.exe', 'tool.exe.exe'],
+        ]) {
+            it(`expects ${Compiler.key} to have built ${artifact}`, () => {
+                const env = makeEnv();
+                const compiler = new Compiler(
+                    makeFakeCompilerInfo({exe: 'g++.exe', lang: 'c++', ldPath: [], libPath: [], supportsBinary: true}),
+                    env,
+                );
+                const parsedRequest = makeParsedRequest({customOutputFilename});
+                const ctx = {
+                    ...makeContext(compiler, env, parsedRequest),
+                    buildPath: path.join('/tmp/project', 'build'),
+                };
+                expect(path.basename(cmakeBuildSystem.getArtifactFilename(ctx))).toEqual(artifact);
+            });
+        }
     }
 });
