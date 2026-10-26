@@ -29,6 +29,16 @@ import {asmMnemonic, getSimdrefDoc, SIMDREF_BASE_URL, simdrefArch} from '../stat
 // Fixtures trimmed from the live https://simdref.diamondinoia.com/detail-chunks/VAD.json and FAD.json
 // (2026-10-26), keeping only the fields the client reads.
 const vadChunk = {
+    'x86:vaddps (xmm, k, xmm, m128)': {
+        summary: 'Masked Add Packed Single Precision Floating-Point Values.',
+        display_mnemonic: 'VADDPS',
+        display_isa: 'AVX512F+VL',
+        description: {
+            Description: 'Adds packed single precision floating-point values under write mask k.',
+            Operation: 'IF k[0] THEN DEST[31:0] := SRC1[31:0] + SRC2[31:0]',
+        },
+        measurements: [],
+    },
     'x86:vaddps (xmm, xmm, m128)': {
         summary: 'Add Packed Single Precision Floating-Point Values.',
         display_mnemonic: 'VADDPS',
@@ -65,6 +75,16 @@ const vadChunk = {
 };
 
 const fadChunk = {
+    'arm:fadd (<za>.4s[<wv>], <zm1>.4s, <zm2>.4s)': {
+        summary: 'Fadd instruction.',
+        display_mnemonic: 'FADD',
+        display_isa: 'SME',
+        description: {
+            Description: 'Adds the ZA tile and source operands and stores the sum in the ZA tile.',
+            Operation: 'ZA := ZA + ZM;',
+        },
+        measurements: [],
+    },
     'arm:fadd (d0, d1, d2)': {
         summary: 'Fadd instruction.',
         display_mnemonic: 'FADD',
@@ -189,6 +209,15 @@ describe('getSimdrefDoc', () => {
         expect(arm?.key).toBe('arm:fadd (d0, d1, d2)');
         expect(x86?.key).toBe('x86:fadd (st, st(0))');
         expect(arm?.key).not.toBe(x86?.key);
+    });
+
+    it('skips a masked or placeholder form sorted first when plain forms share a summary', async () => {
+        stubFetch({'/detail-chunks/VAD.json': vadChunk, '/detail-chunks/FAD.json': fadChunk});
+        const vaddps = await getSimdrefDoc('x86', 'vaddps');
+        expect(vaddps?.key).toBe('x86:vaddps (xmm, xmm, m128)');
+        expect(vaddps?.summary).toBe('Add Packed Single Precision Floating-Point Values.');
+        const fadd = await getSimdrefDoc('arm', 'fadd');
+        expect(fadd?.key).toBe('arm:fadd (d0, d1, d2)');
     });
 
     it('strips the AT&T operand-size suffix once', async () => {

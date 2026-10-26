@@ -84,10 +84,28 @@ function findEntry(
     mnemonic: string,
 ): {key: string; entry: SimdrefEntry} | null {
     const base = `${arch}:${mnemonic}`;
-    const key = Object.keys(chunk)
+    const keys = Object.keys(chunk)
         .filter(k => k === base || k.startsWith(base + ' '))
-        .sort()[0];
-    return key === undefined ? null : {key, entry: chunk[key]};
+        .sort();
+    if (keys.length === 0) return null;
+    // Skip x86 masked forms and arm placeholder forms when the mnemonic also has plain forms.
+    const plain = keys.filter(k => !k.includes(' k') && !k.includes('{k') && !k.includes('<'));
+    const candidates = plain.length > 0 ? plain : keys;
+    const counts = new Map<string, number>();
+    for (const key of candidates) {
+        const summary = (chunk[key].summary ?? '').replace(/\s+/g, ' ').trim();
+        counts.set(summary, (counts.get(summary) ?? 0) + 1);
+    }
+    let bestCount = 0;
+    let bestKey = candidates[0];
+    for (const key of candidates) {
+        const count = counts.get((chunk[key].summary ?? '').replace(/\s+/g, ' ').trim()) ?? 0;
+        if (count > bestCount) {
+            bestCount = count;
+            bestKey = key;
+        }
+    }
+    return {key: bestKey, entry: chunk[bestKey]};
 }
 
 function lowestLatency(measurements: SimdrefMeasurement[] | undefined): {latency: string; uarch: string} | null {
