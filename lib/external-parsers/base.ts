@@ -126,12 +126,18 @@ export class ExternalParserBase implements IExternalParser {
         objdumpArgs = objdumpArgs.map(v => {
             return maskRootdir(v);
         });
-        await this.writeStarterScriptObjdump(buildfolder, filters);
         const execOptions = {
             env: this.envInfo.getEnv(this.compilerInfo.needsMulti),
             customCwd: buildfolder,
             maxOutput: 1024 * 1024 * 1024,
         };
+        if (process.platform === 'win32') {
+            // There is no bash to run the starter script's pipe, so asm-parser runs objdump itself
+            const parserArgs = this.getParserArguments(filters, false);
+            parserArgs.push('-objdump', this.objdumperPath, '--', ...objdumpArgs);
+            return this.parseAsmExecResult(await this.execFunc(this.parserPath, parserArgs, execOptions));
+        }
+        await this.writeStarterScriptObjdump(buildfolder, filters);
         const execResult = await this.execFunc(`./${starterScriptName}`, objdumpArgs, execOptions);
         return this.parseAsmExecResult(execResult);
     }

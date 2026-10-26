@@ -688,7 +688,7 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
+        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(objdumpInputFile))) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
@@ -3011,6 +3011,21 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    /**
+     * Called before a project build's artifact is disassembled, for a compiler to pick up what the build left next to
+     * it, as the single-file path does in optionsForFilter.
+     */
+    async prepareArtifactDisassembly(
+        _artifactFilename: string,
+        _filters: ParseFiltersAndOutputOptions,
+    ): Promise<void> {}
+
+    /**
+     * Called once a project build has succeeded, for a compiler to put next to the artifact what running it needs, as
+     * the single-file path does in buildExecutableInFolder.
+     */
+    async prepareArtifactExecution(_artifactFilename: string): Promise<void> {}
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
@@ -3286,6 +3301,8 @@ export class BaseCompiler {
             });
         }
 
+        // Ahead of packaging, so that what running it needs is in the package too
+        await this.prepareArtifactExecution(outputFilename);
         await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
 
         compilationTimeHistogram.observe((performance.now() - start) / 1000);

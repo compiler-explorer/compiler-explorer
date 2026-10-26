@@ -60,14 +60,8 @@ export class Win32VcCompiler extends Win32Compiler {
     }
 
     override getExtraCMakeArgs(key: any): string[] {
-        const args: string[] = [];
-
         // CMake uses /Zi /FS by default, see optionsForFilter for why that does not work
-        args.push('-DCMAKE_POLICY_DEFAULT_CMP0141=NEW');
-        args.push('-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded');
-        // CMake builds Debug by default, which needs the debug runtime (ucrtbased.dll), so use /MD like other compiles
-        args.push('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW');
-        args.push('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
+        const args = this.getMsvcStyleCMakeArgs();
 
         // Set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER explicitly to prevent CMake from detecting MinGW
         const compilerDir = path.dirname(this.compiler.exe);
