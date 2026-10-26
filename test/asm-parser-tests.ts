@@ -29,6 +29,7 @@ import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
 import {PolkaVMAsmParser} from '../lib/parsers/asm-parser-polkavm.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {ResolcRiscVAsmParser} from '../lib/parsers/asm-parser-resolc-riscv.js';
+import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import type {PropertyGetter} from '../lib/properties.interfaces.js';
 import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
@@ -1157,5 +1158,65 @@ describe('PolkaVMAsmParser tests', () => {
 
         const result = parser.process(pvm, filters);
         expectParsedAsmResult(result, expected);
+    });
+});
+
+describe('Text asm line limit', () => {
+    const truncatedLine = '[truncated; too many lines]';
+    const x86Asm = (lines: number) => 'square(int):\n' + '        imul    edi, edi\n'.repeat(lines - 1);
+    const ptxAsm = (lines: number) =>
+        '.visible .entry _Z6kernelPf(\n{\n' + '\tadd.f32 \t%f2, %f1, %f1;\n'.repeat(lines - 2);
+
+    function withLimit<T>(parserClass: new (props: PropertyGetter) => T, maxLinesOfTextAsm: number) {
+        const props = (property: string, defaultValue?: unknown) =>
+            property === 'maxLinesOfTextAsm' ? maxLinesOfTextAsm : defaultValue;
+        return new parserClass(props as PropertyGetter);
+    }
+
+    it('should truncate text asm over the limit', () => {
+        const parser = withLimit(AsmParser, 100);
+        const result = parser.process(x86Asm(1000), {});
+        expect(result.asm).toHaveLength(101);
+        expect(result.asm.slice(0, 100)).toEqual(parser.process(x86Asm(100), {}).asm);
+        expect(result.asm[100].text).toEqual(truncatedLine);
+    });
+
+    it('should leave text asm up to the limit unchanged', () => {
+        const parser = withLimit(AsmParser, 100);
+        for (const asm of [x86Asm(100), x86Asm(100).trimEnd(), x86Asm(99)]) {
+            expect(parser.process(asm, {})).toEqual({...parser.processAsm(asm, {}), parsingTime: expect.any(Number)});
+        }
+    });
+
+    it('should not apply the text limit to binary asm', () => {
+        const parser = withLimit(AsmParser, 10);
+        const asm = '0000000000000000 <main>:\n' + '   0:\t90                   \tnop\n'.repeat(49);
+        const lines = parser.process(asm, {binary: true}).asm.map(line => line.text);
+        expect(lines).toHaveLength(50);
+        expect(lines).not.toContain(truncatedLine);
+    });
+
+    it('should truncate PTX over the limit', () => {
+        const parser = withLimit(PTXAsmParser, 100);
+        const result = parser.process(ptxAsm(1000), {});
+        expect(result.asm).toHaveLength(101);
+        expect(result.asm.slice(0, 100)).toEqual(parser.process(ptxAsm(100), {}).asm);
+        expect(result.asm[100].text).toEqual(truncatedLine);
+    });
+
+    it('should truncate text SASS over the limit', () => {
+        const parser = withLimit(SassAsmParser, 100);
+        const sass = '\t/*0000*/ \tIMAD.MOV.U32 R1, RZ, RZ, c[0x0][0x28] ;\n'.repeat(1000);
+        const result = parser.process(sass, {});
+        expect(result.asm).toHaveLength(101);
+        expect(result.asm[100].text).toEqual(truncatedLine);
+    });
+
+    it('should limit text asm to 200000 lines by default', () => {
+        const parser = new PTXAsmParser();
+        expect(parser.process(ptxAsm(200000), {}).asm.at(-1)?.text).not.toEqual(truncatedLine);
+        const result = parser.process(ptxAsm(200001), {});
+        expect(result.asm).toHaveLength(200001);
+        expect(result.asm.at(-1)?.text).toEqual(truncatedLine);
     });
 });

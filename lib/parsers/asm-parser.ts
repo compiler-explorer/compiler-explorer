@@ -58,6 +58,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected parsingState: ParsingState;
 
     protected maxAsmLines: number;
+    // Text asm is cut to this many lines before it is parsed, as parsing it builds an object per line
+    protected maxTextAsmLines: number;
 
     protected labelFindNonMips: RegExp;
     protected labelFindMips: RegExp;
@@ -393,6 +395,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         this.binaryHideFuncRe = null;
         this.maxAsmLines = 5000;
+        this.maxTextAsmLines = 200000;
         if (compilerProps) {
             const binaryHideFuncReValue = compilerProps('binaryHideFuncRe');
             if (binaryHideFuncReValue) {
@@ -401,6 +404,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
 
             this.maxAsmLines = compilerProps('maxLinesOfAsm', this.maxAsmLines);
+            this.maxTextAsmLines = compilerProps('maxLinesOfTextAsm', this.maxTextAsmLines);
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
@@ -796,6 +800,23 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     process(asm: string, filters: ParseFiltersAndOutputOptions) {
-        return this.processAsm(asm, filters);
+        // The binary path already stops at maxAsmLines
+        if (filters.binary || filters.binaryObject) return this.processAsm(asm, filters);
+
+        const truncated = this.truncateTextAsm(asm);
+        const result = this.processAsm(truncated ?? asm, filters);
+        if (truncated !== undefined) result.asm.push({text: '[truncated; too many lines]', source: null, labels: []});
+        return result;
+    }
+
+    // Returns the first maxTextAsmLines lines of asm, or undefined if it has no more lines than that
+    private truncateTextAsm(asm: string): string | undefined {
+        if (!asm) return undefined;
+        let end = -1;
+        for (let line = 0; line < this.maxTextAsmLines; line++) {
+            end = asm.indexOf('\n', end + 1);
+            if (end === -1) return undefined;
+        }
+        return end + 1 < asm.length ? asm.substring(0, end + 1) : undefined;
     }
 }
