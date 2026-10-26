@@ -26,6 +26,10 @@
     cursor: pointer;
 }
 
+.monaco-editor .simdref-summary-inline {
+    opacity: 0.6;
+}
+
 // The :root and .monaco-editor .codelens-decoration are used to set the codelens font
 // Official support using the IEditorOptions.codeLensFontFamily property has landed in vscode
 // These blocks should be removed once a downstream release of monaco is cut
