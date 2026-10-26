@@ -243,6 +243,9 @@ Hopefully that's enough to get an idea. The ideal case should be a pull request 
 repository to install the library, and a pull request to add a few lines to the `LANG.amazon.properties` file in this
 repository.
 
+The Windows site has its own `LANG.amazonwin.properties` (e.g. `c++.amazonwin.properties`). To offer a library there
+too, add its `libs.<name>.*` lines to that file as well, using `packagedheaders=true` instead of a `path`.
+
 If you feel like we could improve this document in any way, please contact us. We'd love to hear from you!
 
 # Adding a library that needs to be compiled to .a or .so binaries
