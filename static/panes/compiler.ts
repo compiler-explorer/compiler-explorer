@@ -3464,9 +3464,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const summary = mnemonic ? docs.get(mnemonic)?.summary : undefined;
             const line = index + 1;
             if (!summary || !model || line > model.getLineCount()) return;
-            const column = model.getLineMaxColumn(line);
+            // Monaco ignores after content on zero-width ranges, so cover the last character
+            const endColumn = model.getLineMaxColumn(line);
+            const startColumn = Math.max(1, endColumn - 1);
+            if (startColumn >= endColumn) return;
             decorations.push({
-                range: new monaco.Range(line, column, line, column),
+                range: new monaco.Range(line, startColumn, line, endColumn),
                 options: {
                     after: {
                         content: '  ; ' + (summary.length > 60 ? summary.slice(0, 60) + '…' : summary),
