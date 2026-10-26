@@ -24,7 +24,13 @@
 
 import path from 'node:path';
 
-import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BuildResult,
+    BypassCache,
+    CacheKey,
+    CompilationCacheKey,
+    CompilationResult,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
@@ -39,6 +45,11 @@ export class Win32MingWGcc extends GCCCompiler {
         const paths: string[] = super.getExtraPaths();
 
         return [...paths, path.normalize(path.dirname(this.compiler.exe))];
+    }
+
+    // As CMake names an executable on Windows, whatever its target name already ends with
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
+        return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
     override optionsForFilter(
