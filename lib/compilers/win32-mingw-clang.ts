@@ -34,6 +34,7 @@ import {
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
+import * as utils from '../utils.js';
 import {ClangCompiler} from './clang.js';
 
 export class Win32MingWClang extends ClangCompiler {
@@ -92,17 +93,20 @@ export class Win32MingWClang extends ClangCompiler {
     override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const result = await super.buildExecutableInFolder(key, dirPath);
 
-        if (result.code === 0) {
-            await copyNeededDlls(
-                dirPath,
-                result.executableFilename,
-                this.exec,
-                this.compiler.objdumper,
-                this.getDefaultExecOptions(),
-            );
-        }
+        if (result.code === 0) await this.prepareArtifactExecution(result.executableFilename);
 
         return result;
+    }
+
+    override async prepareArtifactExecution(artifactFilename: string) {
+        if (!(await utils.fileExists(artifactFilename))) return;
+        await copyNeededDlls(
+            path.dirname(artifactFilename),
+            artifactFilename,
+            this.exec,
+            this.compiler.objdumper,
+            this.getDefaultExecOptions(),
+        );
     }
 
     override async handleExecution(
