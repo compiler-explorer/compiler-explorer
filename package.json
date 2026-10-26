@@ -114,7 +114,7 @@
     "css-minimizer-webpack-plugin": "^8.0.0",
     "cypress": "^15.18.0",
     "file-loader": "^6.2.0",
-    "happy-dom": "^20.10.6",
+    "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "mini-css-extract-plugin": "^2.10.2",
