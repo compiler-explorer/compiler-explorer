@@ -34,12 +34,14 @@ export class PELabelReconstructor {
     private readonly jumpRegex: RegExp;
     private readonly callRegex: RegExp;
     private readonly int3Regex: RegExp;
+    private readonly programLibraries: string[];
 
     constructor(
         asmLines: string[],
         dontLabelUnmappedAddresses: boolean,
         mapFileReader: MapFileReader,
         needsReconstruction = true,
+        programLibraries: string[] = [],
     ) {
         this.asmLines = asmLines;
         this.addressesToLabel = [];
@@ -52,6 +54,7 @@ export class PELabelReconstructor {
 
         this.mapFileReader = mapFileReader;
         this.needsReconstruction = needsReconstruction;
+        this.programLibraries = programLibraries;
     }
 
     /**
@@ -276,9 +279,12 @@ export class PELabelReconstructor {
 
                 // Tagged whenever the unit is known: a section that starts with int3 padding has no instruction left
                 // at its start address once shortenInt3s collapsed it, so its start can't be what turns tagging on
-                if (currentUnit && PELabelReconstructor.isProgramUnit(currentUnit)) {
+                if (currentUnit && PELabelReconstructor.isProgramUnit(currentUnit, this.programLibraries)) {
                     const lineNumber = this.mapFileReader.getLineInfoByAddress(undefined, address)?.lineNumber ?? 0;
-                    this.asmLines.splice(lineIdx, 0, '/app/' + currentUnit + ':' + lineNumber);
+                    // An object from one of the program's libraries goes by its own name, as `file:line` can't take
+                    // the `library:` before it
+                    const objectName = currentUnit.slice(currentUnit.indexOf(':') + 1);
+                    this.asmLines.splice(lineIdx, 0, '/app/' + objectName + ':' + lineNumber);
                     lineIdx++;
                 }
             }
@@ -289,10 +295,14 @@ export class PELabelReconstructor {
 
     /**
      * The linker names an object it took from a library archive `<library>:<object>`, and its own entries e.g.
-     * `<absolute>`. Only code from the program's own objects is given them as its source, so that the rest counts as
-     * library code.
+     * `<absolute>`. Only code from the program's own objects, and from the libraries it built itself, is given them
+     * as its source, so that the rest counts as library code.
      */
-    static isProgramUnit(unitName: string) {
-        return !unitName.includes(':') && !unitName.startsWith('<');
+    static isProgramUnit(unitName: string, programLibraries: string[] = []) {
+        if (unitName.startsWith('<')) return false;
+        const colon = unitName.indexOf(':');
+        if (colon === -1) return true;
+        const library = unitName.slice(0, colon).toLowerCase();
+        return programLibraries.some(programLibrary => programLibrary.toLowerCase() === library);
     }
 }

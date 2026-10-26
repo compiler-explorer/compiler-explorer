@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 
-import {Win32VcCompiler} from '../../lib/compilers/index.js';
+import {ClangCLCompiler, Win32VcCompiler} from '../../lib/compilers/index.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 describe('msvc tests', () => {
@@ -115,12 +117,56 @@ describe('msvc tests', () => {
             expect(options).not.toContain('/Zi');
         });
 
+        it('should have the linker write the map file', async () => {
+            const prepared = msvc.prepareArguments(['/O2'], {binary: true}, {}, 'example.cpp', 'output.s', [], []);
+            expect(prepared.slice(prepared.indexOf('example.cpp'))).toEqual([
+                'example.cpp',
+                '/link',
+                '/MAP:output.s.map',
+            ]);
+            expect(prepared.some(option => option.startsWith('/Fm'))).toBe(false);
+        });
+
+        it('should keep the map file when the user passes their own linker options', async () => {
+            const prepared = msvc.prepareArguments(
+                ['/O2', '/link', '/STACK:4096'],
+                {binary: true},
+                {},
+                'example.cpp',
+                'output.s',
+                [],
+                [],
+            );
+            expect(prepared.slice(prepared.indexOf('example.cpp'))).toEqual([
+                'example.cpp',
+                '/link',
+                '/MAP:output.s.map',
+                '/STACK:4096',
+            ]);
+        });
+
+        it('should not ask for a map file from a compiler that does not support one', async () => {
+            const compiler = new Win32VcCompiler(info as any, makeCompilationEnvironment({languages}));
+            compiler.supportsMapFile = false;
+            const filters: any = {binary: true};
+            const prepared = compiler.prepareArguments([], filters, {}, 'example.cpp', 'output.s', [], []);
+            expect(prepared.slice(prepared.indexOf('example.cpp'))).toEqual(['example.cpp', '/link']);
+            expect(filters.preProcessBinaryAsmLines).toBeUndefined();
+        });
+
         it('should embed debug information in CMake builds', async () => {
             const args = msvc.getExtraCMakeArgs({});
             expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0141=NEW');
             expect(args).toContain('-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded');
             expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW');
             expect(args).toContain('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
+            expect(args).toContain('-DCMAKE_EXE_LINKER_FLAGS_INIT=/MAP');
+        });
+
+        it('should not ask CMake builds for a map file from a compiler that does not support one', async () => {
+            const compiler = new Win32VcCompiler(info as any, makeCompilationEnvironment({languages}));
+            compiler.supportsMapFile = false;
+            expect(compiler.getExtraCMakeArgs({})).not.toContain('-DCMAKE_EXE_LINKER_FLAGS_INIT=/MAP');
         });
     });
 
@@ -132,9 +178,16 @@ describe('msvc tests', () => {
         };
         // An incrementally linked /Z7 build as CE makes them today: .text starts with int3 padding, then jump thunks
         const incrementalFixture = {name: 'test/maps/incremental-z7', encoding: 'utf8' as BufferEncoding};
+        // clang-cl 22 linked by lld-link, its map asked for with /MAP
+        const clangClFixture = {name: 'test/maps/clang-cl', encoding: 'utf8' as BufferEncoding};
 
-        async function disassemble(objdumperType: string, libraryCode: boolean, fixture = staticLibFixture) {
-            const msvc = new Win32VcCompiler(
+        async function disassemble(
+            objdumperType: string,
+            libraryCode: boolean,
+            fixture = staticLibFixture,
+            Compiler: typeof Win32VcCompiler | typeof ClangCLCompiler = Win32VcCompiler,
+        ) {
+            const msvc = new Compiler(
                 {...info, objdumperType} as any,
                 makeCompilationEnvironment({
                     languages,
@@ -165,6 +218,61 @@ describe('msvc tests', () => {
         it('filters an incrementally linked build whose .text starts with padding', async () => {
             const lines = await disassemble('', true, incrementalFixture);
             expect(functionLabels(lines)).toEqual(['?square@@YAHH@Z:', '_vfprintf_l:', 'main:', 'printf:']);
+        });
+
+        it('filters clang-cl output with the map lld-link writes', async () => {
+            const lines = await disassemble('', true, clangClFixture, ClangCLCompiler);
+            expect(functionLabels(lines)).toEqual(['?square@@YAHH@Z:', 'main:', 'printf:']);
+        });
+
+        describe('of a CMake build', () => {
+            // A CMake build whose executable links the static library target sq, and the map /MAP wrote next to it
+            const cmakeFixture = 'test/maps/cmake-msvc';
+            let buildPath: string;
+
+            beforeEach(async () => {
+                buildPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-msvc-cmake-'));
+                await fs.writeFile(path.join(buildPath, 'the_executable.exe'), 'MZ');
+            });
+
+            afterEach(async () => {
+                await fs.rm(buildPath, {recursive: true, force: true});
+            });
+
+            async function disassembleArtifact() {
+                const msvc = new Win32VcCompiler(
+                    info as any,
+                    makeCompilationEnvironment({languages, props: {binaryHideFuncRe: '^(__.*|_(init|start|fini))$'}}),
+                );
+                const filters: any = {binary: true, labels: true, libraryCode: true, directives: true};
+                await msvc.prepareArtifactDisassembly(path.join(buildPath, 'the_executable.exe'), filters);
+                const asm = await fs.readFile(`${cmakeFixture}.asm`, 'utf8');
+                const result = await msvc.processAsm({asm}, filters);
+                return {filters, labels: functionLabels(result.asm.map((line: {text: string}) => line.text))};
+            }
+
+            async function writeMap() {
+                await fs.copyFile(`${cmakeFixture}.map`, path.join(buildPath, 'the_executable.map'));
+            }
+
+            it("keeps the project's own code, from its library targets too", async () => {
+                await writeMap();
+                await fs.mkdir(path.join(buildPath, 'lib'));
+                await fs.writeFile(path.join(buildPath, 'lib', 'sq.lib'), '!<arch>');
+                const {labels} = await disassembleArtifact();
+                expect(labels).toEqual(['_vfprintf_l:', 'main:', 'printf:', '?square@@YAHH@Z:']);
+            });
+
+            it('counts a library it did not build as library code', async () => {
+                await writeMap();
+                const {labels} = await disassembleArtifact();
+                expect(labels).toEqual(['_vfprintf_l:', 'main:', 'printf:']);
+            });
+
+            it('leaves the disassembly alone without a map', async () => {
+                const {filters} = await disassembleArtifact();
+                expect(filters.preProcessBinaryAsmLines).toBeUndefined();
+            });
         });
 
         it('passes dumpbin output through as it is', async () => {

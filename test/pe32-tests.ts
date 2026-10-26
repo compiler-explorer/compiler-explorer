@@ -76,4 +76,11 @@ describe('Visual Studio reconstruction', () => {
         expect(PELabelReconstructor.isProgramUnit('* CIL library *:* CIL module *')).toBe(false);
         expect(PELabelReconstructor.isProgramUnit('<absolute>')).toBe(false);
     });
+
+    it('counts a library the project built itself as part of the program', () => {
+        expect(PELabelReconstructor.isProgramUnit('sq:sq.cpp.obj', ['sq'])).toBe(true);
+        expect(PELabelReconstructor.isProgramUnit('SQ:sq.cpp.obj', ['sq'])).toBe(true);
+        expect(PELabelReconstructor.isProgramUnit('fmt:format.cc.obj', ['sq'])).toBe(false);
+        expect(PELabelReconstructor.isProgramUnit('sq:sq.cpp.obj')).toBe(false);
+    });
 });

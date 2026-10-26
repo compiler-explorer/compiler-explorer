@@ -68,6 +68,8 @@ export class Win32VcCompiler extends Win32Compiler {
         // CMake builds Debug by default, which needs the debug runtime (ucrtbased.dll), so use /MD like other compiles
         args.push('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW');
         args.push('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
+        // The map the disassembly is labelled and filtered with; _INIT so it adds to the project's own linker flags
+        if (this.supportsMapFile) args.push('-DCMAKE_EXE_LINKER_FLAGS_INIT=/MAP');
 
         // Set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER explicitly to prevent CMake from detecting MinGW
         const compilerDir = path.dirname(this.compiler.exe);
