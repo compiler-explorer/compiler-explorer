@@ -3011,6 +3011,15 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    /**
+     * Called before a project build's artifact is disassembled, for a compiler to pick up what the build left next to
+     * it, as the single-file path does in optionsForFilter.
+     */
+    async prepareArtifactDisassembly(
+        _artifactFilename: string,
+        _filters: ParseFiltersAndOutputOptions,
+    ): Promise<void> {}
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];

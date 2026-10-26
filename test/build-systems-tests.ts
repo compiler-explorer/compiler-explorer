@@ -1303,12 +1303,14 @@ describe('Project build disassembly', () => {
                 await fs.mkdir(ctx.buildPath);
                 await fs.writeFile(artifactFilename, 'MZ');
 
+                const prepare = vi.spyOn(compiler, 'prepareArtifactDisassembly');
                 const result = await cmakeBuildSystem.postProcessArtifact(
                     ctx,
                     {code: 0, timedOut: false, stdout: [], stderr: []},
                     artifactFilename,
                 );
 
+                expect(prepare).toHaveBeenCalledWith(artifactFilename, parsedRequest.filters);
                 expect(result.asm).toEqual('<No objdumper configured>');
                 expect(result.objdumpInputFilename).toBeUndefined();
             } finally {

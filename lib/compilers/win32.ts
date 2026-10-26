@@ -43,6 +43,7 @@ import {VcObjdumper} from '../objdumper/vc.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
+import * as utils from '../utils.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -106,6 +107,31 @@ export class Win32Compiler extends BaseCompiler {
 
     getMapFilename(outputFilename: string) {
         return outputFilename + '.map';
+    }
+
+    private useMapFile(filters: ParseFiltersAndOutputOptions, mapFilename: string, programLibraries: string[] = []) {
+        const mapFileReader = new MapFileReaderVS(mapFilename);
+
+        filters.preProcessBinaryAsmLines = asmLines => {
+            const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader, true, programLibraries);
+            reconstructor.run('output.s.obj');
+
+            return reconstructor.asmLines;
+        };
+    }
+
+    override async prepareArtifactDisassembly(artifactFilename: string, filters: ParseFiltersAndOutputOptions) {
+        if (!this.supportsMapFile) return;
+        // Where `link /MAP` puts it without being given a name
+        const mapFilename = artifactFilename.replace(/\.exe$/i, '') + '.map';
+        if (!(await utils.fileExists(mapFilename))) return;
+
+        // The project's own library targets are its code as much as its executable's objects are
+        const buildFiles = await fs.promises.readdir(path.dirname(artifactFilename), {recursive: true});
+        const programLibraries = buildFiles
+            .filter(file => file.toLowerCase().endsWith('.lib'))
+            .map(file => path.basename(file).slice(0, -'.lib'.length));
+        this.useMapFile(filters, mapFilename, programLibraries);
     }
 
     override getObjdumpInputFilename(baseFilename: string, filters?: ParseFiltersAndOutputOptions): string {
@@ -268,16 +294,7 @@ export class Win32Compiler extends BaseCompiler {
                 '/Zi', // complete debugging information
             ];
 
-            if (this.supportsMapFile) {
-                const mapFileReader = new MapFileReaderVS(this.getMapFilename(outputFilename));
-
-                filters.preProcessBinaryAsmLines = asmLines => {
-                    const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
-                    reconstructor.run('output.s.obj');
-
-                    return reconstructor.asmLines;
-                };
-            }
+            if (this.supportsMapFile) this.useMapFile(filters, this.getMapFilename(outputFilename));
 
             return options;
         }
