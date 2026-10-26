@@ -34,14 +34,137 @@ export interface SimdrefDoc {
     url: string;
 }
 
-export function simdrefArch(_instructionSet: string | undefined | null): SimdrefArch | null {
-    return null;
+interface SimdrefMeasurement {
+    latency?: string;
+    uarch?: string;
 }
 
-export function asmMnemonic(_line: string): string | null {
-    return null;
+interface SimdrefEntry {
+    summary?: string;
+    mnemonic?: string;
+    display_mnemonic?: string;
+    isa?: string[];
+    display_isa?: string;
+    description?: Record<string, string>;
+    measurements?: SimdrefMeasurement[];
 }
 
-export async function getSimdrefDoc(_arch: SimdrefArch, _mnemonic: string): Promise<SimdrefDoc | null> {
-    return null;
+type SimdrefChunk = Record<string, SimdrefEntry>;
+
+const chunkCache = new Map<string, Promise<SimdrefChunk | null>>();
+
+const x86RepeatPrefixes = ['lock', 'rep', 'repe', 'repne', 'repz', 'repnz'];
+
+// The rule simdref-web's app.js uses to pick the detail chunk for a mnemonic.
+function chunkPrefix(mnemonic: string): string {
+    const c = mnemonic.trim().toUpperCase();
+    return c.length >= 3 ? c.slice(0, 3) : c;
+}
+
+function fetchChunk(url: string): Promise<SimdrefChunk | null> {
+    const cached = chunkCache.get(url);
+    if (cached) return cached;
+    const promise = fetch(url)
+        .then(response => {
+            if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+            return response.json() as Promise<SimdrefChunk>;
+        })
+        .catch(() => {
+            // Failed chunks are not cached, so a later call retries the fetch.
+            chunkCache.delete(url);
+            return null;
+        });
+    chunkCache.set(url, promise);
+    return promise;
+}
+
+function findEntry(
+    chunk: SimdrefChunk,
+    arch: SimdrefArch,
+    mnemonic: string,
+): {key: string; entry: SimdrefEntry} | null {
+    const base = `${arch}:${mnemonic}`;
+    const key = Object.keys(chunk)
+        .filter(k => k === base || k.startsWith(base + ' '))
+        .sort()[0];
+    return key === undefined ? null : {key, entry: chunk[key]};
+}
+
+function lowestLatency(measurements: SimdrefMeasurement[] | undefined): {latency: string; uarch: string} | null {
+    let best: {latency: string; uarch: string} | null = null;
+    let bestValue = Number.POSITIVE_INFINITY;
+    for (const measurement of measurements ?? []) {
+        if (measurement.latency === undefined) continue;
+        const value = parseFloat(measurement.latency);
+        if (!(value < bestValue)) continue;
+        bestValue = value;
+        best = {latency: measurement.latency, uarch: measurement.uarch ?? ''};
+    }
+    return best;
+}
+
+export function simdrefArch(instructionSet: string | undefined | null): SimdrefArch | null {
+    switch (instructionSet) {
+        case 'amd64':
+        case 'x86':
+            return 'x86';
+        case 'aarch64':
+        case 'arm32':
+            return 'arm';
+        case 'riscv32':
+        case 'riscv64':
+            return 'riscv';
+        default:
+            return null;
+    }
+}
+
+export function asmMnemonic(line: string): string | null {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.endsWith(':')) return null;
+    if (
+        trimmed.startsWith('.') ||
+        trimmed.startsWith('#') ||
+        trimmed.startsWith(';') ||
+        trimmed.startsWith('//') ||
+        trimmed.startsWith('@')
+    ) {
+        return null;
+    }
+    const tokens = trimmed.split(/\s+/);
+    const mnemonic = x86RepeatPrefixes.indexOf(tokens[0].toLowerCase()) === -1 ? tokens[0] : tokens[1];
+    return mnemonic === undefined ? null : mnemonic.toLowerCase();
+}
+
+export async function getSimdrefDoc(arch: SimdrefArch, mnemonic: string): Promise<SimdrefDoc | null> {
+    const prefix = chunkPrefix(mnemonic);
+    if (!prefix) return null;
+    const chunk = await fetchChunk(`${SIMDREF_BASE_URL}/detail-chunks/${prefix}.json`);
+    if (!chunk) return null;
+    let found = findEntry(chunk, arch, mnemonic);
+    if (!found && arch === 'x86' && /[bwlq]$/.test(mnemonic)) {
+        // AT&T mnemonics carry a one-letter operand-size suffix that simdref's matcher drops.
+        const stripped = mnemonic.slice(0, -1);
+        const strippedPrefix = chunkPrefix(stripped);
+        const strippedChunk =
+            strippedPrefix === prefix
+                ? chunk
+                : await fetchChunk(`${SIMDREF_BASE_URL}/detail-chunks/${strippedPrefix}.json`);
+        if (strippedChunk) found = findEntry(strippedChunk, arch, stripped);
+    }
+    if (!found) return null;
+    const {key, entry} = found;
+    const summary = (entry.summary ?? '').replace(/\s+/g, ' ').trim();
+    const name = entry.display_mnemonic ?? entry.mnemonic ?? mnemonic.toUpperCase();
+    const isa = entry.display_isa ?? (entry.isa ?? []).join(', ');
+    const url = `${SIMDREF_BASE_URL}/#${encodeURIComponent(key)}`;
+    const parts = [`**${name}** (${isa})`, '', summary];
+    const description = entry.description?.Description ?? '';
+    if (description) parts.push('', description.trim());
+    const operation = entry.description?.Operation ?? '';
+    if (operation) parts.push('', '```', operation.trim(), '```');
+    const lowest = lowestLatency(entry.measurements);
+    if (lowest) parts.push('', `Latency ${lowest.latency} cycles (${lowest.uarch})`);
+    parts.push('', `[Full docs on simdref](${url})`);
+    return {key, summary, markdown: parts.join('\n'), url};
 }
