@@ -100,12 +100,15 @@ export class Win32MingWClang extends ClangCompiler {
 
     override async prepareArtifactExecution(artifactFilename: string) {
         if (!(await utils.fileExists(artifactFilename))) return;
+        const execOptions = this.getDefaultExecOptions();
+        // Where the sandbox lets objdump read the executable
+        execOptions.customCwd = path.dirname(artifactFilename);
         await copyNeededDlls(
             path.dirname(artifactFilename),
             artifactFilename,
             this.exec,
             this.compiler.objdumper,
-            this.getDefaultExecOptions(),
+            execOptions,
         );
     }
 

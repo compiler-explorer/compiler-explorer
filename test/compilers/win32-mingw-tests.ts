@@ -69,7 +69,8 @@ describe.each([
             artifact,
             expect.anything(),
             'objdump.exe',
-            expect.anything(),
+            // On Windows the sandbox only lets objdump read what is under its home, which customCwd gives it
+            expect.objectContaining({customCwd: path.join(dirPath, 'build')}),
         );
     });
 
