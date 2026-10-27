@@ -55,7 +55,10 @@ function mockLanguages() {
 
 describe('Executor default options', () => {
     afterEach(() => {
+        vi.clearAllTimers();
+        vi.useRealTimers();
         vi.restoreAllMocks();
+        $(document).off('keyup.editable').off('click');
     });
 
     function executorWithOptions(initialOptions: string) {
@@ -69,7 +72,22 @@ describe('Executor default options', () => {
             optionsField,
             domRoot: $('<div>'),
             hub: {deferred: true},
-            eventHub: {emit: vi.fn()},
+            eventHub: {emit: vi.fn(), on: vi.fn()},
+            execArgsField: $('<input>'),
+            execStdinField: $('<textarea>'),
+            libsButton: $('<button>'),
+            toggleCompilation: $('<button>'),
+            panelCompilation: $('<div>'),
+            toggleArgs: $('<button>'),
+            panelArgs: $('<div>'),
+            toggleStdin: $('<button>'),
+            panelStdin: $('<div>'),
+            toggleCompilerOut: $('<button>'),
+            compilerOutputSection: $('<div>'),
+            rerunButton: $('<button>'),
+            compileClearCache: $('<button>'),
+            initListeners: vi.fn(),
+            resize: vi.fn(),
             sourceTreeId: null,
             initLangAndCompiler: vi.fn(async () => {
                 Reflect.set(executor, 'currentLangId', 'c++');
@@ -118,6 +136,41 @@ describe('Executor default options', () => {
         await initializing;
 
         expect(Reflect.get(fixture.executor, 'options')).toBe('-Og');
+    });
+
+    it.each([
+        [['-Og'], '-Og'],
+        [['-Og', ''], ''],
+    ])('preserves raw options input before the debounce runs: %s', async (edits, expectedOptions) => {
+        vi.useFakeTimers();
+        const fixture = executorWithOptions('');
+        fixture.executor.initCallbacks();
+        const optionsChanged = vi.spyOn(fixture.executor, 'onOptionsChange');
+        let finishInit = () => {};
+        Reflect.set(
+            fixture.executor,
+            'initLangAndCompiler',
+            () =>
+                new Promise<void>(resolve => {
+                    finishInit = () => {
+                        Reflect.set(fixture.executor, 'currentLangId', 'c++');
+                        resolve();
+                    };
+                }),
+        );
+        const initializing = Reflect.get(fixture.executor, 'postInit').call(fixture.executor, {compiler: 'gdefault'});
+
+        vi.advanceTimersByTime(100);
+        for (const edit of edits) {
+            Reflect.get(fixture.executor, 'optionsField').val(edit).trigger('input');
+        }
+        vi.advanceTimersByTime(100);
+        expect(optionsChanged).not.toHaveBeenCalled();
+        finishInit();
+        await initializing;
+
+        expect(fixture.displayedOptions()).toBe(expectedOptions);
+        expect(optionsChanged).not.toHaveBeenCalled();
     });
 });
 
