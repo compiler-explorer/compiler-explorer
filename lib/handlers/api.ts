@@ -210,7 +210,9 @@ export class ApiHandler {
 
     outputList(list: CompilerInfo[] | Language[], title: string, req: express.Request, res: express.Response) {
         res.vary('Accept');
-        if (req.accepts(['text', 'json']) === 'json') {
+        // The plain-text table can't honour `fields`, so a request that asks for specific fields is always a JSON client,
+        // even when the Accept header was lost or rewritten on the way here.
+        if (req.accepts(['text', 'json']) === 'json' || req.query.fields !== undefined) {
             if (req.query.fields === 'all') {
                 res.send(list);
             } else {
