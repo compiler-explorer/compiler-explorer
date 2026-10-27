@@ -1878,6 +1878,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         this.compileInfoLabel.text(infoLabelText);
+        // Resize in case the compile info wraps the bottom bar onto another line
+        this.resize();
 
         this.postCompilationResult(request, result.result ?? result);
 

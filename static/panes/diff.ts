@@ -508,6 +508,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             fontLigatures: this.settings.editorsFLigatures,
             scrollBeyondLastLine: true,
             readOnly: true,
+            fixedOverflowWidgets: true,
         });
     }
 
