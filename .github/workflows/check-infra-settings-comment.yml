@@ -7,6 +7,7 @@ on:
       - completed
 
 permissions:
+  actions: read
   pull-requests: write
 
 jobs:
@@ -36,8 +37,35 @@ jobs:
             }
 
             const body = fs.readFileSync('infra_settings_check.txt', 'utf8');
-            const prNumber = parseInt(fs.readFileSync('pr_number.txt', 'utf8').trim(), 10);
+            const artifactPrNumber = parseInt(fs.readFileSync('pr_number.txt', 'utf8').trim(), 10);
             const marker = '<!-- ce-infra-settings-check -->';
+
+            // The artifact comes from the PR's own run, so trust the PR number from the event instead.
+            // pull_requests is empty for fork PRs, so fall back to finding the open PR by head branch + SHA.
+            const run = context.payload.workflow_run;
+            let prNumber = run.pull_requests?.[0]?.number;
+            if (!prNumber && run.head_repository) {
+              const { data: prs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${run.head_repository.owner.login}:${run.head_branch}`,
+              });
+              prNumber = prs.find(pr => pr.head.sha === run.head_sha)?.number;
+            }
+
+            if (!prNumber) {
+              console.log(`No open PR found for ${run.head_repository?.full_name}@${run.head_sha}; not commenting`);
+              return;
+            }
+            if (artifactPrNumber !== prNumber) {
+              console.log(`Artifact PR number ${artifactPrNumber} does not match event PR #${prNumber}; not commenting`);
+              return;
+            }
+            if (!body.includes(marker)) {
+              console.log('Check results lack the expected marker; not commenting');
+              return;
+            }
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -46,7 +74,7 @@ jobs:
             });
 
             const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes(marker)
+              c.user.login === 'github-actions[bot]' && c.body.includes(marker)
             );
 
             if (existing) {
