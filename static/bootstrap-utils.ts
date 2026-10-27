@@ -293,6 +293,51 @@ export function initPopoverIfExists(
     return new Popover(element, options);
 }
 
+const HTML_POPOVER_TEMPLATE =
+    '<div class="popover" role="tooltip"><div class="arrow"></div>' +
+    '<h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+
+export type HtmlPopoverContent = {
+    title?: string | Element;
+    body: string | Element;
+    className?: string;
+};
+
+const htmlPopoverContents = new WeakMap<HTMLElement, HtmlPopoverContent>();
+
+/**
+ * Set the content of an HTML popover, creating it on first use and updating it in place afterwards.
+ *
+ * Replacing a popover with dispose() + new Popover() is unsafe: if it is still fading out, Bootstrap's queued
+ * transition callback runs against the disposed instance and throws (https://github.com/twbs/bootstrap/issues/37474).
+ *
+ * @param elementOrSelector Element or selector for the popover
+ * @param content Title, body and extra CSS class for the popover
+ * @returns Popover instance or null if the element cannot be found
+ */
+export function setHtmlPopoverContent(
+    elementOrSelector: string | HTMLElement | JQuery,
+    content: HtmlPopoverContent,
+): Popover | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
+
+    htmlPopoverContents.set(element, content);
+    const existing = Popover.getInstance(element);
+    if (existing) {
+        existing.setContent();
+        return existing;
+    }
+
+    return new Popover(element, {
+        html: true,
+        title: () => htmlPopoverContents.get(element)?.title ?? '',
+        content: () => htmlPopoverContents.get(element)?.body ?? '',
+        template: HTML_POPOVER_TEMPLATE,
+        customClass: () => htmlPopoverContents.get(element)?.className ?? '',
+    });
+}
+
 /**
  * Get an existing popover instance for an element
  * @param elementOrSelector Element or selector for the popover
