@@ -29,6 +29,7 @@ import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
 import {PolkaVMAsmParser} from '../lib/parsers/asm-parser-polkavm.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {ResolcRiscVAsmParser} from '../lib/parsers/asm-parser-resolc-riscv.js';
+import type {PropertyGetter} from '../lib/properties.interfaces.js';
 import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
@@ -219,6 +220,21 @@ describe('AsmParser binary source corner cases', () => {
         expect(kept[0].source).toBeNull();
     });
 
+    it('should map a ./-relative source record from a trimmed-path build', () => {
+        const kept = instructions(dump('./example.go:9'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(9), maskedExample(9)]);
+    });
+
+    it('should keep the path of a ./-relative library source record', () => {
+        const kept = instructions(dump('; ./runtime/proc.go:482'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([
+            {file: './runtime/proc.go', line: 482, mainsource: false},
+            {file: './runtime/proc.go', line: 482, mainsource: false},
+        ]);
+    });
+
     it('should ignore a relative source path', () => {
         const kept = instructions(dump('path/to/example.cpp:3'));
         expect(kept).toHaveLength(2);
@@ -376,6 +392,130 @@ describe('AsmParser library code filtering in binary asm', () => {
             'lib_c:',
             'main:',
         ]);
+    });
+});
+
+describe('AsmParser library code filtering of statically linked code in binary asm', () => {
+    // Trimmed from clang 23 `-fsanitize=address -g` output for an example.c compiled in /app. The asan runtime is linked
+    // statically and keeps the paths it was built from; asan.module_ctor is generated code with no line information.
+    const objdump = [
+        '000000000002d420 <__asan_report_load1_asm>:',
+        '__asan_report_load1_asm():',
+        '/root/llvm-project/compiler-rt/lib/asan/asan_rtl_static.cpp:25',
+        '   2d420:\te9 6b 6e 0b 00       \tjmp    e4290 <__asan_report_load1>',
+        '   2d425:\t0f 1f 00             \tnopl   (%rax)',
+        '',
+        '000000000002d428 <__asan_report_load2_asm>:',
+        '__asan_report_load2_asm():',
+        '/root/llvm-project/compiler-rt/lib/asan/asan_rtl_static.cpp:26',
+        '   2d428:\te9 23 6f 0b 00       \tjmp    e4350 <__asan_report_load2>',
+        '   2d42d:\t0f 1f 00             \tnopl   (%rax)',
+        '',
+        '000000000011d7c0 <main>:',
+        'main():',
+        '/app/example.c:3',
+        '  11d7c0:\t55                   \tpush   %rbp',
+        '/app/example.c:4',
+        '  11d7d4:\te8 9f dc fb ff       \tcall   db478 <__interceptor_trampoline_malloc>',
+        '/app/example.c:6',
+        '  11d7ed:\tc3                   \tret',
+        '',
+        '000000000011d7f0 <asan.module_ctor>:',
+        'asan.module_ctor():',
+        '  11d7f0:\t55                   \tpush   %rbp',
+        '  11d7f4:\te8 c7 85 fc ff       \tcall   e5dc0 <__asan_init>',
+    ].join('\n');
+    const main = ['main:', ' push   %rbp', ' call   db478 <__interceptor_trampoline_malloc>', ' ret'];
+
+    function parserWithLineLimit(maxLinesOfAsm: number) {
+        const props = (property: string, defaultValue?: unknown) =>
+            property === 'maxLinesOfAsm' ? maxLinesOfAsm : defaultValue;
+        return new AsmParser(props as PropertyGetter);
+    }
+
+    function texts(parser: AsmParser, asm: string, filters: Partial<ParseFiltersAndOutputOptions>) {
+        return parser.processBinaryAsm(asm, filters).asm.map(line => line.text);
+    }
+
+    it('should filter out a statically linked runtime that has line information', () => {
+        const result = new AsmParser().processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(main);
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 3, 4, 6]);
+        expect(Object.keys(result.labelDefinitions ?? {})).toEqual(['main']);
+    });
+
+    it('should keep the runtime when library code is shown', () => {
+        expect(texts(new AsmParser(), objdump, {}).filter(text => text.endsWith(':'))).toEqual([
+            '__asan_report_load1_asm:',
+            '__asan_report_load2_asm:',
+            'main:',
+            'asan.module_ctor:',
+        ]);
+    });
+
+    it('should not count library functions towards the line limit', () => {
+        expect(texts(parserWithLineLimit(5), objdump, {libraryCode: true})).toEqual(main);
+    });
+
+    it('should still truncate the user code at the line limit', () => {
+        expect(texts(parserWithLineLimit(2), objdump, {libraryCode: true})).toEqual([
+            'main:',
+            ' push   %rbp',
+            '[truncated; too many lines]',
+        ]);
+    });
+
+    it('should truncate the runtime at the line limit when library code is shown', () => {
+        expect(texts(parserWithLineLimit(4), objdump, {})).toEqual([
+            '__asan_report_load1_asm:',
+            ' jmp    e4290 <__asan_report_load1>',
+            ' nopl   (%rax)',
+            '__asan_report_load2_asm:',
+            '[truncated; too many lines]',
+        ]);
+    });
+
+    it('should truncate a function whose user code only shows up past the line limit', () => {
+        const header = '/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_vector.h:100';
+        const asm = [
+            '0000000000401000 <main>:',
+            'main():',
+            header,
+            '  401000:\t55                   \tpush   %rbp',
+            '  401001:\t53                   \tpush   %rbx',
+            '0000000000401002 <.Ltmp0>:',
+            '  401002:\t90                   \tnop',
+            '/app/example.cpp:4',
+            '  401003:\tc3                   \tret',
+        ].join('\n');
+        const result = parserWithLineLimit(3).processBinaryAsm(asm, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual([
+            'main:',
+            ' push   %rbp',
+            ' push   %rbx',
+            '[truncated; too many lines]',
+        ]);
+        expect(Object.keys(result.labelDefinitions ?? {})).toEqual(['main']);
+    });
+
+    function functionFrom(file: string) {
+        return ['0000000000401000 <helper()>:', 'helper()():', `${file}:3`, '  401000:\tc3                   \tret'];
+    }
+
+    it.each([
+        ['in /app', '/app/src/helper.cpp'],
+        ["in a local build's temporary directory", '/tmp/compiler-explorer-compiler2026ab/src/helper.cpp'],
+        ["in a Windows build's temporary directory", 'C:\\Temp\\compiler-explorer-compiler2026ab\\src\\helper.cpp'],
+    ])('should keep a function from another file of the program %s', (_, file) => {
+        expect(texts(new AsmParser(), functionFrom(file).join('\n'), {libraryCode: true})).toEqual([
+            'helper():',
+            ' ret',
+        ]);
+    });
+
+    it('should filter out a function whose code all comes from library headers', () => {
+        const asm = functionFrom('/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/vector.tcc').join('\n');
+        expect(texts(new AsmParser(), asm, {libraryCode: true})).toEqual([]);
     });
 });
 

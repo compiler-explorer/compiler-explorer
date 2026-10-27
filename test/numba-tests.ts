@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 import type {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -175,7 +177,7 @@ describe('Numba', () => {
         const parsed = await compiler.generateOptPipeline('/tmp/example.py', options, filters, {});
 
         const [, args, input, execOptions] = run.mock.calls[0];
-        expect(args[args.indexOf('--outputfile') + 1]).not.toBe('/tmp/asm.s');
+        expect(args[args.indexOf('--outputfile') + 1]).toBe(path.join('/tmp', 'pipeline.s'));
         expect(args[args.indexOf('--inputfile') + 1]).toBe('/tmp/example.py');
         expect(input).toBe('/tmp/example.py');
         expect(options[options.indexOf('--outputfile') + 1]).toBe('/tmp/asm.s');

@@ -489,6 +489,13 @@ export class ClangCParser extends ClangParser {
     }
 }
 
+export class ClangCLParser extends ClangCParser {
+    // clang-cl ignores --help with a warning, then fails for lack of input files
+    override getMainHelpOptions(): string[] {
+        return ['-help'];
+    }
+}
+
 export class CircleParser extends ClangParser {
     override async getOptions(helpArg: string) {
         const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*) {2,}- (.*)/i;
