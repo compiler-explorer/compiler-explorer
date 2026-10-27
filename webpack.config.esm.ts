@@ -123,6 +123,9 @@ export default {
     resolve: {
         alias: {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
+            // The package's "browser" export is a UMD bundle with its own copy of monaco-editor inlined, which
+            // is out of step with ours. The exports map blocks deep imports, hence the absolute path.
+            'monaco-vim$': path.resolve(__dirname, 'node_modules/monaco-vim/dist/index.mjs'),
         },
         fallback: {
             path: 'path-browserify',
@@ -205,6 +208,12 @@ export default {
             {
                 test: /\.js$/,
                 loader: 'source-map-loader',
+            },
+            {
+                // monaco-vim's ESM build imports monaco-editor internals without file extensions, which strict .mjs
+                // resolution rejects.
+                test: /monaco-vim[/\\]dist[/\\]index\.mjs$/,
+                resolve: {fullySpecified: false},
             },
         ],
     },
