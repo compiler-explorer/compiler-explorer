@@ -255,6 +255,12 @@ compilers=local1:local2:remote@hostname:port
 When a compiler ID contains the `@` symbol followed by a hostname and port, it is interpreted as a remote compiler. This
 allows running compilers on separate machines and accessing them through the main Compiler Explorer instance.
 
+### Branding
+
+A deployment can use its own logo and favicon by putting them under `public/` and setting `siteLogo` and `favicon` (paths
+relative to `public/`) in its `compiler-explorer.*.properties`. A custom logo is shown as an image, so themes don't
+recolour it. An environment's own `favicon-<extraBodyClass>.ico` still takes priority over `favicon`.
+
 ### Orphaned Property Detection
 
 The system has built-in detection for "orphaned" properties - configurations for compilers or groups that are not
