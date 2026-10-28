@@ -109,6 +109,7 @@ export type ClientOptionsType = {
     localStoragePrefix: PropertyValue;
     cvCompilerCountMax: number;
     defaultFontScale: number;
+    formatStyles: string[];
     doCache: boolean;
     thirdPartyIntegrationEnabled: boolean;
     statusTrackingEnabled: boolean;
@@ -213,6 +214,9 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),
+            formatStyles: _.compact(
+                ceProps('formatter.clangformat.styles', 'Google:LLVM:Mozilla:Chromium:WebKit:Microsoft:GNU').split(':'),
+            ),
             doCache: defArgs.doCache,
             thirdPartyIntegrationEnabled: ceProps('thirdPartyIntegrationEnabled', true),
             compilerVersionsUrl: ceProps<string | undefined>('compilerVersionsUrl', undefined),
