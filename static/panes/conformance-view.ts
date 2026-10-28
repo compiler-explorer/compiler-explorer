@@ -465,7 +465,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         // The pane becomes unusable long before this hides the icons
         // Added either way just in case we ever add more icons to this pane
         const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-        this.conformanceContentRoot.outerHeight(this.domRoot.height() ?? 0 - topBarHeight);
+        this.conformanceContentRoot.outerHeight((this.domRoot.height() ?? 0) - topBarHeight);
     }
 
     async getOverlappingLibraries(compilerIds: string[]): Promise<CompilerLibs> {
