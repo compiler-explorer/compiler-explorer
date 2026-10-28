@@ -41,8 +41,8 @@ export interface ServerOptions {
     sentrySlowRequestMs: number;
     manifestPath: string;
     extraBodyClass: string;
-    siteLogo?: string;
-    favicon?: string;
+    siteLogo: string;
+    favicon: string;
     maxUploadSize: string;
     trustProxy: TrustProxySetting;
 }

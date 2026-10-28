@@ -101,6 +101,8 @@ describe('Server Module', () => {
                 trustProxy: 2,
                 manifestPath: '/mocked/dist', // Use absolute path for testing
                 extraBodyClass: '',
+                siteLogo: '',
+                favicon: '',
                 maxUploadSize: '1mb',
             };
 
