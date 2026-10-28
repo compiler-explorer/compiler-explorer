@@ -33,8 +33,11 @@ export class ClangFormatFormatter extends BaseFormatter {
     }
 
     override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
+        const styleFiles = this.formatterInfo.styleFiles ?? {};
         const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
-        const arg = `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
+        const arg = Object.hasOwn(styleFiles, options.baseStyle)
+            ? `file:${styleFiles[options.baseStyle]}`
+            : `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
         const result = await exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source});
         if (result.code === 0) {
             // Repair http(s) includes, i.e., remove the spaces inserted before the hier-part of the URI

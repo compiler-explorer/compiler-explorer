@@ -79,6 +79,11 @@ export class FormattingService {
                 const formatterClass = getFormatterTypeByKey(type);
                 const styleList = ceProps<string>(`formatter.${formatter}.styles`, '');
                 const styles = styleList === '' ? [] : styleList.split(':');
+                const styleFiles: Record<string, string> = {};
+                for (const style of styles) {
+                    const styleFile = ceProps<string>(`formatter.${formatter}.styleFile.${style}`, '');
+                    if (styleFile) styleFiles[style] = styleFile;
+                }
                 // If there is an explicit version, grab it. Otherwise, try to filter the output
                 const version = hasExplicitVersion
                     ? ceProps<string>(`formatter.${formatter}.explicitVersion`)
@@ -90,6 +95,7 @@ export class FormattingService {
                     exe: executable,
                     version,
                     styles,
+                    styleFiles,
                     type,
                 });
                 this.registry.set(formatter, instance);
