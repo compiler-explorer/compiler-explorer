@@ -274,6 +274,7 @@ export class CompilerFinder {
             demanglerType: props('demanglerType', ''),
             demanglerArgs: splitArrayPropsOrEmpty('demanglerArgs', '|'),
             nvdisasm: props('nvdisasm', ''),
+            tileirdisasm: props('tileirdisasm', ''),
             ptxas: props('ptxas', ''),
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
