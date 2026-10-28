@@ -26,8 +26,7 @@ export interface FormatterInfo {
     name: string;
     exe: string;
     styles: string[];
-    /** Styles backed by a style file on the server, mapping style name to file path */
-    styleFiles?: Record<string, string>;
+    styleFiles: Record<string, string>;
     type: string;
     version: string;
     explicitVersion?: string;

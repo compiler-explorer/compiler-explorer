@@ -214,7 +214,6 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),
-            // The settings pane's style selector applies to the clangformat formatter; its first style is the default
             formatStyles: _.compact(
                 ceProps('formatter.clangformat.styles', 'Google:LLVM:Mozilla:Chromium:WebKit:Microsoft:GNU').split(':'),
             ),

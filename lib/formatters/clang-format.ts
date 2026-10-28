@@ -33,7 +33,7 @@ export class ClangFormatFormatter extends BaseFormatter {
     }
 
     override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
-        const styleFiles = this.formatterInfo.styleFiles ?? {};
+        const {styleFiles} = this.formatterInfo;
         const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
         const arg = Object.hasOwn(styleFiles, options.baseStyle)
             ? `file:${styleFiles[options.baseStyle]}`
