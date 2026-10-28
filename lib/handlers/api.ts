@@ -39,6 +39,7 @@ import {ClientOptionsHandler, VersionInfo} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
+import {ShortLinkNotFoundError} from '../storage/base.js';
 import {StorageBase} from '../storage/index.js';
 import {CompileHandler} from './compile.js';
 
@@ -166,7 +167,7 @@ export class ApiHandler {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                SentryCapture(err, 'shortlinkInfoHandler');
+                if (!(err instanceof ShortLinkNotFoundError)) SentryCapture(err, 'shortlinkInfoHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,
