@@ -131,7 +131,6 @@ export type ParsedRequest = {
 export class CompileHandler implements ICompileHandler {
     private compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
     private readonly compilerEnv: CompilationEnvironment;
-    // Stands in for the mtime of compilers whose exe we can't stat, so they're rediscovered once per process.
     private readonly unstattableExeMtime = new Date();
     private readonly textBanner: string;
     private readonly proxy: Server;
