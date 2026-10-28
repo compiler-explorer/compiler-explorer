@@ -22,10 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {PythonCompiler} from '../lib/compilers/python.js';
+import {resolvePathFromAppRoot} from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
@@ -56,5 +61,39 @@ describe('Python', () => {
         const options = compiler.optionsForFilter({}, 'output.txt');
         expect(options.slice(0, 2)).toEqual(['-E', '-s']);
         expect(options).not.toContain('-I');
+    });
+
+    describe('staging helper scripts', () => {
+        function makeStagingCompiler() {
+            const env = makeCompilationEnvironment({languages, props: {stageHelperScripts: true}});
+            return new PythonCompiler(
+                makeFakeCompilerInfo({exe: '/dev/null', lang: languages.python.id, version: 'Python 3.12.0'}),
+                env,
+            );
+        }
+
+        it('runs the helper scripts from where CE is installed by default', () => {
+            const options = makeCompiler('Python 3.12.0').optionsForFilter({}, '/tmp/build/output.txt');
+            expect(options[1]).toEqual(resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py'));
+        });
+
+        it('runs the helper scripts from the compilation directory when staging them', () => {
+            const options = makeStagingCompiler().optionsForFilter({}, '/tmp/build/output.txt');
+            expect(options[1]).toEqual(path.join('/tmp/build', '.ce-python-disasm.py'));
+        });
+
+        it('copies the helper scripts into the compilation directory when staging them', async () => {
+            const dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-python-stage-test-'));
+            try {
+                await (makeStagingCompiler() as any).writeAllFiles(dirPath, 'print(1)', []);
+
+                const staged = await fs.readFile(path.join(dirPath, '.ce-python-disasm.py'), 'utf8');
+                const original = await fs.readFile(path.resolve('etc/scripts/disasms/dis_all.py'), 'utf8');
+                expect(staged).toEqual(original);
+                await expect(fs.stat(path.join(dirPath, '.ce-python-ast.py'))).resolves.toBeTruthy();
+            } finally {
+                await fs.rm(dirPath, {recursive: true, force: true});
+            }
+        });
     });
 });
