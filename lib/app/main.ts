@@ -112,6 +112,8 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         sentrySlowRequestMs: ceProps('sentrySlowRequestMs', 0),
         manifestPath: distPath,
         extraBodyClass: config.extraBodyClass,
+        siteLogo: config.siteLogo,
+        favicon: config.favicon,
         maxUploadSize: config.maxUploadSize,
         trustProxy: config.trustProxy,
     };

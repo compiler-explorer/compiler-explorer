@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express, {type NextFunction, type Request, type Response} from 'express';
+import pug from 'pug';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {createRenderHandlers} from '../../lib/app/rendering.js';
 import {PugRequireHandler, ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
+import {resolvePathFromAppRoot} from '../../lib/utils.js';
 
 // Mock dependencies
 vi.mock('../../lib/app/url-handlers.js', () => ({
@@ -137,6 +139,27 @@ describe('Rendering Module', () => {
             expect(result).toHaveProperty('extraBodyClass', 'embedded');
         });
 
+        it('should use the extraBodyClass branding when no logo or favicon is configured', () => {
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+
+            const result = renderConfig({});
+
+            expect(result).toHaveProperty('faviconFilename', 'favicon-test-class.ico');
+            expect(result).toHaveProperty('logoOverlayFilename', 'site-logo-test-class.svg');
+            expect(result.siteLogo).toBeUndefined();
+        });
+
+        it('should pass a configured logo and favicon through to templates', () => {
+            mockOptions.siteLogo = 'site-logo-acme.svg';
+            mockOptions.favicon = 'favicon-acme.ico';
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+
+            const result = renderConfig({});
+
+            expect(result).toHaveProperty('siteLogo', 'site-logo-acme.svg');
+            expect(result).toHaveProperty('faviconFilename', 'favicon-acme.ico');
+        });
+
         it('should filter URL options to only allow whitelisted properties', () => {
             const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
@@ -240,6 +263,27 @@ describe('Rendering Module', () => {
             const renderCallArguments = (mockRes.render as any).mock.calls[0];
             const configObject = renderCallArguments[1];
             expect(configObject).toHaveProperty('embedded', true);
+        });
+    });
+
+    describe('logo template', () => {
+        const renderLogo = (locals: Record<string, unknown>) =>
+            pug.renderFile(resolvePathFromAppRoot('views', 'logo.pug'), {
+                httpRoot: '/',
+                staticRoot: '/static/',
+                ...locals,
+            });
+
+        it('inlines the themeable default logo', () => {
+            const html = renderLogo({});
+            expect(html).toContain('class="logo-pri"');
+            expect(html).not.toContain('<img');
+        });
+
+        it('links to a configured logo instead of inlining the default', () => {
+            const html = renderLogo({siteLogo: 'site-logo-acme.svg'});
+            expect(html).toContain('<img class="logo align-top" src="/static/site-logo-acme.svg"');
+            expect(html).not.toContain('logo-pri');
         });
     });
 });

@@ -41,6 +41,8 @@ export interface ServerOptions {
     sentrySlowRequestMs: number;
     manifestPath: string;
     extraBodyClass: string;
+    siteLogo?: string;
+    favicon?: string;
     maxUploadSize: string;
     trustProxy: TrustProxySetting;
 }
@@ -62,6 +64,7 @@ export interface RenderConfig extends PugOptions {
     metadata?: ShortLinkMetaData;
     faviconFilename: string;
     logoOverlayFilename?: string;
+    siteLogo?: string;
     storedStateId?: string | false;
     require?: PugRequireHandler;
     sponsors?: Sponsors;

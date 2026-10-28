@@ -116,7 +116,15 @@ export function setupStaticMiddleware(
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
 }
 
-export function getFaviconFilename(extraBodyClass: string): string {
+/** Deployment branding: `siteLogo` and `favicon` are paths relative to public/, overriding the defaults. */
+export interface BrandingConfig {
+    extraBodyClass: string;
+    siteLogo?: string;
+    favicon?: string;
+}
+
+export function getFaviconFilename(extraBodyClass: string, favicon?: string): string {
+    if (favicon) return favicon;
     return extraBodyClass ? `favicon-${extraBodyClass}.ico` : 'favicon.ico';
 }
 
@@ -132,24 +140,21 @@ export function getBrandingPublicDir(): string {
     return resolvePathFromAppRoot('public');
 }
 
-function requiredBrandingAssets(extraBodyClass: string): string[] {
-    return [getFaviconFilename(extraBodyClass), getLogoOverlayFilename(extraBodyClass)].filter(
-        (f): f is string => f !== undefined,
-    );
+// The plain favicon.ico always ships, so it is only checked when something else was asked for.
+function requiredBrandingAssets({extraBodyClass, siteLogo, favicon}: BrandingConfig): string[] {
+    const favicons = extraBodyClass || favicon ? [getFaviconFilename(extraBodyClass, favicon)] : [];
+    return [...favicons, getLogoOverlayFilename(extraBodyClass), siteLogo].filter((f): f is string => !!f);
 }
 
-function throwIfMissingBrandingAssets(extraBodyClass: string, where: string, missing: string[]): void {
+function throwIfMissingBrandingAssets(where: string, missing: string[]): void {
     if (missing.length > 0) {
-        throw new Error(
-            `Missing branding assets for extraBodyClass='${extraBodyClass}' in ${where}: ${missing.join(', ')}`,
-        );
+        throw new Error(`Missing branding assets in ${where}: ${missing.join(', ')}`);
     }
 }
 
-export async function validateBrandingAssetsOnDisk(assetDir: string, extraBodyClass: string): Promise<void> {
-    if (!extraBodyClass) return;
+export async function validateBrandingAssetsOnDisk(assetDir: string, branding: BrandingConfig): Promise<void> {
     const missing: string[] = [];
-    for (const filename of requiredBrandingAssets(extraBodyClass)) {
+    for (const filename of requiredBrandingAssets(branding)) {
         try {
             await fs.access(path.join(assetDir, filename));
         } catch (e: unknown) {
@@ -158,7 +163,7 @@ export async function validateBrandingAssetsOnDisk(assetDir: string, extraBodyCl
             else throw err;
         }
     }
-    throwIfMissingBrandingAssets(extraBodyClass, assetDir, missing);
+    throwIfMissingBrandingAssets(assetDir, missing);
 }
 
 /**
@@ -167,8 +172,7 @@ export async function validateBrandingAssetsOnDisk(assetDir: string, extraBodyCl
  * webpack manifest *does* ship with the node app and lists every asset in the static bundle
  * (public/ is copied in wholesale), so presence of a manifest key proves the asset shipped.
  */
-export function validateBrandingAssetsInManifest(manifest: Record<string, string>, extraBodyClass: string): void {
-    if (!extraBodyClass) return;
-    const missing = requiredBrandingAssets(extraBodyClass).filter(filename => !Object.hasOwn(manifest, filename));
-    throwIfMissingBrandingAssets(extraBodyClass, 'the static manifest', missing);
+export function validateBrandingAssetsInManifest(manifest: Record<string, string>, branding: BrandingConfig): void {
+    const missing = requiredBrandingAssets(branding).filter(filename => !Object.hasOwn(manifest, filename));
+    throwIfMissingBrandingAssets('the static manifest', missing);
 }

@@ -170,6 +170,8 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
     const maxUploadSize = ceProps('maxUploadSize', '1mb');
     const extraBodyClass = ceProps('extraBodyClass', appArgs.devMode ? 'dev' : '');
+    const siteLogo = ceProps<string | undefined>('siteLogo');
+    const favicon = ceProps<string | undefined>('favicon');
     const storageSolution = compilerProps.ceProps('storageSolution', 'local');
     const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
@@ -184,6 +186,8 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
         staticMaxAgeSecs,
         maxUploadSize,
         extraBodyClass,
+        siteLogo,
+        favicon,
         storageSolution,
         httpRoot,
         staticRoot,

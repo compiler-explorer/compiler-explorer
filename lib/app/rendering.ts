@@ -76,7 +76,7 @@ export function createRenderHandlers(
     embeddedHandler: express.Handler;
 } {
     const {clientOptionsHandler, storageSolution, sponsorConfig} = dependencies;
-    const {httpRoot, staticRoot, extraBodyClass} = options;
+    const {httpRoot, staticRoot, extraBodyClass, siteLogo, favicon} = options;
 
     /**
      * Renders configuration for templates
@@ -114,8 +114,9 @@ export function createRenderHandlers(
         options.storageSolution = options.storageSolution || storageSolution;
         options.require = pugRequireHandler;
         options.sponsors = sponsorConfig;
-        options.faviconFilename = getFaviconFilename(extraBodyClass);
+        options.faviconFilename = getFaviconFilename(extraBodyClass, favicon);
         options.logoOverlayFilename = getLogoOverlayFilename(extraBodyClass);
+        options.siteLogo = siteLogo;
         return options;
     };
 
