@@ -66,6 +66,7 @@ describe('Unknown short link IDs', () => {
     });
 
     const routes = [
+        ['/z/nosuchid/code/1', 'storedCodeHandler'],
         ['/resetlayout/nosuchid', 'storedStateHandlerResetLayout'],
         ['/api/shortlinkinfo/nosuchid', 'shortlinkInfoHandler'],
     ];

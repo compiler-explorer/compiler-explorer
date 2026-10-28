@@ -103,7 +103,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.debug(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                SentryCapture(err, 'storedCodeHandler');
+                if (!(err instanceof ShortLinkNotFoundError)) SentryCapture(err, 'storedCodeHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}/${sessionid}" could not be found`,
