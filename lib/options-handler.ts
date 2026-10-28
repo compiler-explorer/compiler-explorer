@@ -248,7 +248,8 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                     const Tool = getToolTypeByKey(className);
 
                     const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
-                    if (fs.existsSync(toolPath)) {
+                    const skipExeCheck = this.compilerProps<boolean>(lang, toolBaseName + '.skipExeCheck', false);
+                    if (skipExeCheck || fs.existsSync(toolPath)) {
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,

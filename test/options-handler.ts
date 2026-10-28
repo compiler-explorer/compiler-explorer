@@ -587,6 +587,27 @@ describe('Options handler', () => {
         });
     });
 
+    it('should only offer tools whose exe is missing locally if they skip the exe check', () => {
+        const toolProps = properties.fakeProps({
+            'tools.remotetool.name': 'Remote Tool',
+            'tools.remotetool.exe': '/nonexistent/remotetool',
+            'tools.remotetool.type': 'independent',
+            'tools.remotetool.class': 'testing-tool',
+            'tools.remotetool.skipExeCheck': true,
+            'tools.missingtool.name': 'Missing Tool',
+            'tools.missingtool.exe': '/nonexistent/missingtool',
+            'tools.missingtool.type': 'independent',
+            'tools.missingtool.class': 'testing-tool',
+        });
+        const handler = new ClientOptionsHandler([], new properties.CompilerProps(languages, toolProps), {
+            env: ['dev'],
+        } as unknown as AppArguments);
+
+        const tools = handler.parseTools({fake: 'remotetool:missingtool'});
+
+        expect(Object.keys(tools.fake)).toEqual(['remotetool']);
+    });
+
     it('should correctly resolve remote urls', () => {
         const compilerName = 'godbolt.org@443/gpu';
         const {host, port, uriBase} = CompilerFinder.getRemotePartsFromCompilerName(compilerName);
