@@ -1,5 +1,8 @@
 a.navbar-brand(href=httpRoot title="Compiler Explorer", style="position: relative")
-  svg.logo.align-top(height="50" width="165" role="img" aria-label="Compiler Explorer logo")
-    include resources/site-logo.svg
+  if siteLogo
+    img.logo.align-top(src=staticRoot + siteLogo height="50" width="165" alt="Compiler Explorer logo")
+  else
+    svg.logo.align-top(height="50" width="165" role="img" aria-label="Compiler Explorer logo")
+      include resources/site-logo.svg
   if logoOverlayFilename
     img(src=staticRoot + logoOverlayFilename alt="" aria-hidden="true" height="50" width="165" style="position: absolute; top: 0; right: 0;")
