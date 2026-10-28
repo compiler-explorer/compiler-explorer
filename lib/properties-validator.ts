@@ -75,6 +75,8 @@ export interface RawFileValidationResult {
 
 export interface RawValidatorOptions {
     checkSuspiciousPaths?: boolean;
+    // Overlays are loaded on top of a base file and may tweak compilers and groups that only the base defines.
+    isOverlay?: boolean;
 }
 
 // Regex patterns for property file validation
@@ -124,6 +126,20 @@ const ALLOWED_SYSTEM_PATHS = ['/usr/bin/ldd'];
 function isSuspiciousPath(path: string): boolean {
     if (ALLOWED_SYSTEM_PATHS.includes(path)) return false;
     return !VALID_PATH_PREFIXES.some(prefix => path.startsWith(prefix));
+}
+
+/**
+ * A file `LANG.ENV.properties` is an overlay if ENV is `BASE-something` and `LANG.BASE.properties` is among the
+ * sibling files, e.g. `c++.foo-bar.properties` alongside `c++.foo.properties`.
+ */
+export function isOverlayFile(filename: string, siblingFilenames: readonly string[]): boolean {
+    const match = filename.match(/^([^.]+)\.([^.]+)\.properties$/);
+    if (!match) return false;
+    const [, lang, env] = match;
+    for (let hyphen = env.lastIndexOf('-'); hyphen > 0; hyphen = env.lastIndexOf('-', hyphen - 1)) {
+        if (siblingFilenames.includes(`${lang}.${env.slice(0, hyphen)}.properties`)) return true;
+    }
+    return false;
 }
 
 /**
@@ -474,8 +490,10 @@ export function validateRawFile(
         creditGroupExe(groupName, listedGroups.get(groupName) ?? 0, new Set());
     }
 
+    const checkOrphans = !options.isOverlay;
+
     // Orphaned compilers (listed but no .exe, or .exe but not listed)
-    if (seenCompilersExe.size > 0) {
+    if (checkOrphans && seenCompilersExe.size > 0) {
         for (const [id, line] of listedCompilers) {
             if (!seenCompilersExe.has(id)) {
                 result.orphanedCompilerExe.push({line, text: id, id});
@@ -488,7 +506,7 @@ export function validateRawFile(
         }
     }
 
-    if (seenCompilersId.size > 0) {
+    if (checkOrphans && seenCompilersId.size > 0) {
         for (const [id, line] of listedCompilers) {
             if (!seenCompilersId.has(id)) {
                 result.orphanedCompilerId.push({line, text: id, id});
@@ -503,15 +521,17 @@ export function validateRawFile(
     }
 
     // Orphaned groups
-    for (const [groupName, line] of listedGroups) {
-        if (!seenGroups.has(groupName)) {
-            result.orphanedGroups.push({line, text: groupName, id: groupName});
+    if (checkOrphans) {
+        for (const [groupName, line] of listedGroups) {
+            if (!seenGroups.has(groupName)) {
+                result.orphanedGroups.push({line, text: groupName, id: groupName});
+            }
         }
-    }
-    for (const groupName of seenGroups) {
-        if (!listedGroups.has(groupName)) {
-            const line = parsed.properties.find(p => p.key.startsWith(`group.${groupName}.`))?.line ?? 0;
-            result.orphanedGroups.push({line, text: groupName, id: groupName});
+        for (const groupName of seenGroups) {
+            if (!listedGroups.has(groupName)) {
+                const line = parsed.properties.find(p => p.key.startsWith(`group.${groupName}.`))?.line ?? 0;
+                result.orphanedGroups.push({line, text: groupName, id: groupName});
+            }
         }
     }
 
@@ -608,7 +628,7 @@ export function validateRawFile(
     // Check for missing compilers= in language files
     // A language file (e.g., c++.amazon.properties) should have either compilers= or group definitions
     const isAllowedEmpty = ALLOWED_EMPTY_COMPILERS_PATTERNS.some(pattern => parsed.filename.includes(pattern));
-    const isLanguageFile = !isAllowedEmpty && parsed.filename.endsWith('.properties');
+    const isLanguageFile = !options.isOverlay && !isAllowedEmpty && parsed.filename.endsWith('.properties');
 
     if (isLanguageFile) {
         const hasCompilersList = parsed.properties.some(p => p.key === 'compilers');
