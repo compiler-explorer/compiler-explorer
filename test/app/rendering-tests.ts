@@ -150,6 +150,7 @@ describe('Rendering Module', () => {
         });
 
         it('should pass a configured logo and favicon through to templates', () => {
+            mockOptions.extraBodyClass = '';
             mockOptions.siteLogo = 'site-logo-acme.svg';
             mockOptions.favicon = 'favicon-acme.ico';
             const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);

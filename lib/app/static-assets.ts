@@ -116,7 +116,7 @@ export function setupStaticMiddleware(
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
 }
 
-/** Deployment branding: `siteLogo` and `favicon` are paths relative to public/, overriding the defaults. */
+// `siteLogo` and `favicon` are paths relative to public/.
 export interface BrandingConfig {
     extraBodyClass: string;
     siteLogo?: string;
@@ -124,8 +124,8 @@ export interface BrandingConfig {
 }
 
 export function getFaviconFilename(extraBodyClass: string, favicon?: string): string {
-    if (favicon) return favicon;
-    return extraBodyClass ? `favicon-${extraBodyClass}.ico` : 'favicon.ico';
+    if (extraBodyClass) return `favicon-${extraBodyClass}.ico`;
+    return favicon || 'favicon.ico';
 }
 
 export function getLogoOverlayFilename(extraBodyClass: string): string | undefined {

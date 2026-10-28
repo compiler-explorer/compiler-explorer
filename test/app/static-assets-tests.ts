@@ -134,9 +134,12 @@ describe('Static assets', () => {
             expect(getFaviconFilename('anything-else')).toBe('favicon-anything-else.ico');
         });
 
-        it('prefers a configured favicon over the body class', () => {
+        it('uses a configured favicon in place of the default', () => {
             expect(getFaviconFilename('', 'favicon-acme.ico')).toBe('favicon-acme.ico');
-            expect(getFaviconFilename('staging', 'favicon-acme.ico')).toBe('favicon-acme.ico');
+        });
+
+        it('prefers the body class favicon over a configured one', () => {
+            expect(getFaviconFilename('staging', 'favicon-acme.ico')).toBe('favicon-staging.ico');
         });
     });
 
@@ -245,7 +248,7 @@ describe('Static assets', () => {
         });
 
         it('checks the configured logo and favicon', () => {
-            const branding = {extraBodyClass: 'staging', siteLogo: 'logos/acme.svg', favicon: 'favicon-acme.ico'};
+            const branding = {extraBodyClass: '', siteLogo: 'logos/acme.svg', favicon: 'favicon-acme.ico'};
             expect(() => validateBrandingAssetsInManifest(manifest, branding)).toThrow(/logos\/acme\.svg/);
             expect(() => validateBrandingAssetsInManifest(manifest, branding)).toThrow(/favicon-acme\.ico/);
             const shipped = {...manifest, 'logos/acme.svg': 'logos/acme.svg', 'favicon-acme.ico': 'favicon-acme.ico'};
