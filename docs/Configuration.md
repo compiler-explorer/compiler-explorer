@@ -260,6 +260,11 @@ allows running compilers on separate machines and accessing them through the mai
 The system has built-in detection for "orphaned" properties - configurations for compilers or groups that are not
 referenced anywhere. This helps maintain configuration cleanliness by identifying unused configuration entries.
 
+A file that's layered on top of another and only tweaks compilers or groups the other defines (say
+`c++.foo-bar.properties` for an `--env foo --env foo-bar` deployment) can mark itself as an overlay by starting with a
+`# Overlay` comment, e.g. `# Overlay: tweaks c++.foo.properties`. Overlays skip the orphan checks, as their references
+are defined elsewhere, but everything else is still checked.
+
 ## Configuration System Implementation
 
 The configuration system is implemented primarily in the following files:

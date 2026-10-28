@@ -29,7 +29,6 @@ import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {
     filterDisabled,
-    isOverlayFile,
     parseCompilersList,
     parsePropertiesFileRaw,
     type RawFileValidationResult,
@@ -478,19 +477,7 @@ compilers=orphan
     });
 
     describe('overlay files', () => {
-        it.each([
-            ['c++.foo-bar.properties', ['c++.foo.properties'], true],
-            ['c++.foo-bar-baz.properties', ['c++.foo.properties'], true],
-            ['c++.foo-bar-baz.properties', ['c++.foo-bar.properties'], true],
-            ['c++.foo-bar.properties', [], false],
-            ['c++.foo-bar.properties', ['c.foo.properties'], false],
-            ['c++.foo.properties', ['c++.foo.properties'], false],
-            ['aws.no-s3.properties', ['aws.properties'], false],
-        ])('%s with siblings %j is an overlay: %s', (filename, siblings, expected) => {
-            expect(isOverlayFile(filename, [filename, ...siblings])).toBe(expected);
-        });
-
-        const overlay = `
+        const overlay = `# Overlay: tweaks c++.foo.properties
 compilers=extra
 group.mygroup.options=-O2
 compiler.basecompiler.name=Renamed
@@ -498,24 +485,30 @@ compiler.extra.exe=/opt/compiler-explorer/extra/bin/extra
 compiler.extra.name=Extra
 compiler.extra.name=Extra again
 `;
+        const notOverlay = overlay.replace('# Overlay: tweaks c++.foo.properties\n', '');
+
+        it('should recognise an overlay by its first line', () => {
+            expect(parsePropertiesFileRaw(overlay, 'c++.foo-bar.properties').isOverlay).toBe(true);
+            expect(parsePropertiesFileRaw('# overlay\ncompiler.a.name=A', 'x.properties').isOverlay).toBe(true);
+            expect(parsePropertiesFileRaw(notOverlay, 'c++.foo-bar.properties').isOverlay).toBe(false);
+            expect(parsePropertiesFileRaw(`# Base file\n${overlay}`, 'c++.foo-bar.properties').isOverlay).toBe(false);
+        });
 
         it('should skip orphan checks in overlays', () => {
-            const result = validate(overlay, 'c++.foo-bar.properties', {isOverlay: true});
+            const result = validate(overlay, 'c++.foo-bar.properties');
             expect(result.orphanedCompilerExe).toEqual([]);
             expect(result.orphanedCompilerId).toEqual([]);
             expect(result.orphanedGroups).toEqual([]);
-            expect(validate('compiler.gcc.name=GCC', 'c++.foo-bar.properties', {isOverlay: true}).noCompilersList).toBe(
-                false,
-            );
+            expect(validate('# Overlay\ncompiler.gcc.name=GCC', 'c++.foo-bar.properties').noCompilersList).toBe(false);
         });
 
         it('should still run other checks in overlays', () => {
-            const result = validate(overlay, 'c++.foo-bar.properties', {isOverlay: true});
+            const result = validate(overlay, 'c++.foo-bar.properties');
             expect(result.duplicateKeys.map(i => i.id)).toEqual(['compiler.extra.name']);
         });
 
-        it('should run orphan checks on the same file when it is not an overlay', () => {
-            const result = validate(overlay, 'c++.foo-bar.properties');
+        it('should run orphan checks on the same content without the marker', () => {
+            const result = validate(notOverlay, 'c++.foo-bar.properties');
             expect(result.orphanedCompilerId.map(i => i.id)).toEqual(['basecompiler']);
             expect(result.orphanedGroups.map(i => i.id)).toEqual(['mygroup']);
         });
@@ -576,11 +569,7 @@ compiler.gcc.semver=12.0
 describe('Real config validation', () => {
     const configDir = 'etc/config';
     const checkLocal = process.env.CHECK_LOCAL_PROPS === 'true';
-    let propertyFiles: Array<{
-        filename: string;
-        parsed: ReturnType<typeof parsePropertiesFileRaw>;
-        isOverlay: boolean;
-    }> = [];
+    let propertyFiles: Array<{filename: string; parsed: ReturnType<typeof parsePropertiesFileRaw>}> = [];
 
     type ArrayFields = {
         [K in keyof RawFileValidationResult]: RawFileValidationResult[K] extends Array<unknown> ? K : never;
@@ -592,8 +581,8 @@ describe('Real config validation', () => {
         useFiltered = false,
         options?: RawValidatorOptions,
     ) {
-        return files.flatMap(({filename, parsed, isOverlay}) => {
-            const result = validateRawFile(parsed, {...options, isOverlay});
+        return files.flatMap(({filename, parsed}) => {
+            const result = validateRawFile(parsed, options);
             const source = useFiltered ? filterDisabled(result, parsed.disabledIds) : result;
             const issues = source[field];
             if (issues.length > 0) {
@@ -613,11 +602,7 @@ describe('Real config validation', () => {
             })
             .map(filename => {
                 const content = fs.readFileSync(path.join(configDir, filename), 'utf8');
-                return {
-                    filename,
-                    parsed: parsePropertiesFileRaw(content, filename),
-                    isOverlay: isOverlayFile(filename, files),
-                };
+                return {filename, parsed: parsePropertiesFileRaw(content, filename)};
             });
     });
 
@@ -664,7 +649,7 @@ describe('Real config validation', () => {
 
     it('should have no language files missing compilers list', () => {
         const filesWithMissingList = propertyFiles
-            .filter(({parsed, isOverlay}) => validateRawFile(parsed, {isOverlay}).noCompilersList)
+            .filter(({parsed}) => validateRawFile(parsed).noCompilersList)
             .map(({filename}) => filename);
         expect(filesWithMissingList, `Files missing compilers list`).toEqual([]);
     });

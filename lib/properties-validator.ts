@@ -50,6 +50,8 @@ export interface ParsedPropertiesFile {
     properties: ParsedProperty[];
     disabledIds: Set<string>;
     parseErrors: ValidationIssue[];
+    // Overlays are loaded on top of a base file and may tweak compilers and groups that only the base defines.
+    isOverlay: boolean;
 }
 
 export interface RawFileValidationResult {
@@ -75,8 +77,6 @@ export interface RawFileValidationResult {
 
 export interface RawValidatorOptions {
     checkSuspiciousPaths?: boolean;
-    // Overlays are loaded on top of a base file and may tweak compilers and groups that only the base defines.
-    isOverlay?: boolean;
 }
 
 // Regex patterns for property file validation
@@ -102,6 +102,8 @@ const PATTERNS = {
     toolId: /^tools\.([^.]+)\./,
     emptyList: /^.*(compilers|formatters|versions|tools|alias|exclude|libPath)=(.*::.*|:.*|.*:)$/,
     disabled: /^#\s*Disabled?:?\s*(.*)$/i,
+    // Must be the file's first line, e.g. "# Overlay: tweaks c++.foo.properties for the foo-bar environment"
+    overlay: /^#\s*Overlay\b/i,
 };
 
 // File patterns that are allowed to have no compilers list.
@@ -129,20 +131,6 @@ function isSuspiciousPath(path: string): boolean {
 }
 
 /**
- * A file `LANG.ENV.properties` is an overlay if ENV is `BASE-something` and `LANG.BASE.properties` is among the
- * sibling files, e.g. `c++.foo-bar.properties` alongside `c++.foo.properties`.
- */
-export function isOverlayFile(filename: string, siblingFilenames: readonly string[]): boolean {
-    const match = filename.match(/^([^.]+)\.([^.]+)\.properties$/);
-    if (!match) return false;
-    const [, lang, env] = match;
-    for (let hyphen = env.lastIndexOf('-'); hyphen > 0; hyphen = env.lastIndexOf('-', hyphen - 1)) {
-        if (siblingFilenames.includes(`${lang}.${env.slice(0, hyphen)}.properties`)) return true;
-    }
-    return false;
-}
-
-/**
  * Parse a colon-separated list of compiler/group references.
  * Handles group references (&groupname), remote references (id@host), and regular IDs.
  */
@@ -167,6 +155,7 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
 
     // Also collect our own structured properties with line numbers
     const lines = content.split('\n');
+    const isOverlay = PATTERNS.overlay.test(lines[0]?.trim() ?? '');
     for (let i = 0; i < lines.length; i++) {
         const lineNumber = i + 1;
         const text = lines[i].trim();
@@ -197,7 +186,7 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
         }
     }
 
-    return {filename, properties, disabledIds, parseErrors};
+    return {filename, properties, disabledIds, parseErrors, isOverlay};
 }
 
 /**
@@ -490,7 +479,7 @@ export function validateRawFile(
         creditGroupExe(groupName, listedGroups.get(groupName) ?? 0, new Set());
     }
 
-    const checkOrphans = !options.isOverlay;
+    const checkOrphans = !parsed.isOverlay;
 
     // Orphaned compilers (listed but no .exe, or .exe but not listed)
     if (checkOrphans && seenCompilersExe.size > 0) {
@@ -628,7 +617,7 @@ export function validateRawFile(
     // Check for missing compilers= in language files
     // A language file (e.g., c++.amazon.properties) should have either compilers= or group definitions
     const isAllowedEmpty = ALLOWED_EMPTY_COMPILERS_PATTERNS.some(pattern => parsed.filename.includes(pattern));
-    const isLanguageFile = !options.isOverlay && !isAllowedEmpty && parsed.filename.endsWith('.properties');
+    const isLanguageFile = !parsed.isOverlay && !isAllowedEmpty && parsed.filename.endsWith('.properties');
 
     if (isLanguageFile) {
         const hasCompilersList = parsed.properties.some(p => p.key === 'compilers');
