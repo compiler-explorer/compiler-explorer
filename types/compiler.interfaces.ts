@@ -144,6 +144,8 @@ export type CompilerInfo = {
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
+    // The exe lives wherever the execution backend runs it, not on this host, so don't look for it here.
+    skipExeCheck?: boolean;
     buildenvsetup?: {
         id: string;
         props: (name: string, def?: any) => any;
