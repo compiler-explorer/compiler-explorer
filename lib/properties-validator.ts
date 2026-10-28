@@ -85,6 +85,7 @@ const PATTERNS = {
     groupCompilers: /^group\.([^.]+)\.compilers=(.*)$/,
     groupName: /^group\.([^.]+)\./,
     compilerExe: /^compiler\.([^.]+)\.exe=(.*)$/,
+    groupExe: /^group\.([^.]+)\.exe=/,
     compilerId: /^compiler\.([^.]+)\./,
     typoCompilers: /^compilers\./,
     defaultCompiler: /^defaultCompiler=(.*)$/,
@@ -218,6 +219,8 @@ export function validateRawFile(
     const seenCompilersExe = new Map<string, number>();
     const seenCompilersId = new Set<string>();
     const seenGroups = new Set<string>();
+    const groupMembers = new Map<string, string[]>();
+    const groupsWithExe = new Set<string>();
 
     const listedFormatters = new Map<string, number>();
     const seenFormattersExe = new Map<string, number>();
@@ -296,6 +299,7 @@ export function validateRawFile(
             const groupName = groupCompilersMatch[1];
             const ids = parseCompilersList(groupCompilersMatch[2]);
             seenGroups.add(groupName);
+            groupMembers.set(groupName, ids);
             const seenInThisList = new Set<string>();
             for (const id of ids) {
                 if (id.startsWith('&')) {
@@ -323,6 +327,12 @@ export function validateRawFile(
         const groupMatch = key.match(PATTERNS.groupName);
         if (groupMatch) {
             seenGroups.add(groupMatch[1]);
+        }
+
+        // Parse group.X.exe=
+        const groupExeMatch = fullLine.match(PATTERNS.groupExe);
+        if (groupExeMatch) {
+            groupsWithExe.add(groupExeMatch[1]);
         }
 
         // Parse compiler.X.exe=
@@ -446,6 +456,23 @@ export function validateRawFile(
     }
 
     // Second pass: compute symmetric differences (orphans)
+
+    // Compilers inherit properties from their group and its parents, so a group.X.exe= counts as the exe of every
+    // compiler in that group, including those in nested groups.
+    const creditGroupExe = (groupName: string, line: number, visited: Set<string>) => {
+        if (visited.has(groupName)) return;
+        visited.add(groupName);
+        for (const id of groupMembers.get(groupName) ?? []) {
+            if (id.startsWith('&')) {
+                creditGroupExe(id.slice(1), line, visited);
+            } else if (!id.includes('@') && !seenCompilersExe.has(id)) {
+                seenCompilersExe.set(id, line);
+            }
+        }
+    };
+    for (const groupName of groupsWithExe) {
+        creditGroupExe(groupName, listedGroups.get(groupName) ?? 0, new Set());
+    }
 
     // Orphaned compilers (listed but no .exe, or .exe but not listed)
     if (seenCompilersExe.size > 0) {

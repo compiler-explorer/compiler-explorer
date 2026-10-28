@@ -77,7 +77,7 @@ type DiffOption = {
     name: string;
 };
 
-class DiffStateObject {
+export class DiffStateObject {
     // can be undefined if there are no compilers / executors
     id?: number | string;
     model: monaco.editor.ITextModel;
@@ -156,10 +156,14 @@ class DiffStateObject {
                     }
                     break;
                 case DiffType.GNAT_ExpandedCode:
-                    output = this.result.gnatDebugOutput || [];
+                    output = this.result.gnatDebugOutput || [
+                        {text: "<select 'Add new...' → 'GNAT Debug Expanded Code' in this compiler's pane>"},
+                    ];
                     break;
                 case DiffType.GNAT_Tree:
-                    output = this.result.gnatDebugTreeOutput || [];
+                    output = this.result.gnatDebugTreeOutput || [
+                        {text: "<select 'Add new...' → 'GNAT Debug Tree' in this compiler's pane>"},
+                    ];
                     break;
                 case DiffType.DeviceView:
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
@@ -280,14 +284,14 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 throw new Error('.difftype-picker is not an HTMLSelectElement');
             }
 
-            const diffableOptions = this.getDiffableOptions(picker);
+            const side = picker.classList.contains('lhsdifftype') ? this.lhs : this.rhs;
 
             const instance = new TomSelect(picker, {
                 sortField: 'name',
                 valueField: 'id',
                 labelField: 'name',
                 searchField: ['name'],
-                options: diffableOptions,
+                options: this.getDiffTypeOptions(side),
                 items: [],
                 render: <any>{
                     option: (item, escapeHtml) => {
@@ -395,48 +399,68 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    getDiffableOptions(picker?: HTMLSelectElement | TomSelect, extraoptions?: DiffOption[]): any[] {
+    getDiffTypeOptions(side: DiffStateObject): DiffOption[] {
+        if (side.source || side.difftype === DiffType.Source) {
+            return [{id: DiffType.Source.toString(), name: 'Source'}];
+        }
+
         const options: DiffOption[] = [
             {id: DiffType.ASM.toString(), name: 'Assembly'},
             {id: DiffType.CompilerStdOut.toString(), name: 'Compiler stdout'},
             {id: DiffType.CompilerStdErr.toString(), name: 'Compiler stderr'},
             {id: DiffType.ExecStdOut.toString(), name: 'Execution stdout'},
             {id: DiffType.ExecStdErr.toString(), name: 'Execution stderr'},
-            {id: DiffType.GNAT_ExpandedCode.toString(), name: 'GNAT Expanded Code'},
-            {id: DiffType.GNAT_Tree.toString(), name: 'GNAT Tree Code'},
         ];
 
-        if (picker?.classList) {
-            if (picker.classList.contains('lhsdifftype')) {
-                if (this.lhs.difftype === DiffType.DeviceView && this.lhs.extraoption) {
-                    options.push({
-                        id: encodeSelectizeValue({
-                            difftype: DiffType.DeviceView,
-                            extraoption: this.lhs.extraoption,
-                        }),
-                        name: this.lhs.extraoption,
-                    });
-                }
-            } else {
-                if (this.rhs.difftype === DiffType.DeviceView && this.rhs.extraoption) {
-                    options.push({
-                        id: encodeSelectizeValue({
-                            difftype: DiffType.DeviceView,
-                            extraoption: this.rhs.extraoption,
-                        }),
-                        name: this.rhs.extraoption,
-                    });
-                }
-            }
+        const compiler = side.compiler?.compiler;
+        if (compiler?.supportsGnatDebugViews) {
+            options.push({id: DiffType.GNAT_ExpandedCode.toString(), name: 'GNAT Expanded Code'});
+            options.push({id: DiffType.GNAT_Tree.toString(), name: 'GNAT Tree Code'});
+        }
+        if (compiler?.supportsAstView) {
+            options.push({id: DiffType.AstOutput.toString(), name: 'AST'});
+        }
+        if (compiler?.supportsIrView) {
+            options.push({id: DiffType.IrOutput.toString(), name: 'LLVM IR'});
+        }
+        if (compiler?.supportsRustMirView) {
+            options.push({id: DiffType.RustMirOutput.toString(), name: 'Rust MIR'});
+        }
+        if (compiler?.supportsRustMacroExpView) {
+            options.push({id: DiffType.RustMacroExpOutput.toString(), name: 'Rust Macro Expansion'});
+        }
+        if (compiler?.supportsRustHirView) {
+            options.push({id: DiffType.RustHirOutput.toString(), name: 'Rust HIR'});
+        }
+        if (compiler?.supportsClojureMacroExpView) {
+            options.push({id: DiffType.ClojureMacroExpOutput.toString(), name: 'Clojure Macro Expansion'});
+        }
+        if (compiler?.supportsYulView) {
+            options.push({id: DiffType.YulOutput.toString(), name: 'Yul (Solidity IR)'});
+        }
+        if (compiler?.supportsLeanCView) {
+            options.push({id: DiffType.LeanCOutput.toString(), name: 'Lean C Output'});
         }
 
-        if (extraoptions) {
-            for (const option of extraoptions) {
-                if (!options.find(existing => existing.id === option.id)) options.push(option);
-            }
+        // Devices are only known once a result arrives, so keep the selected one on offer until then
+        // (e.g. when restoring a layout).
+        const devices = Object.keys(side.result?.devices ?? {});
+        if (side.difftype === DiffType.DeviceView && side.extraoption && !devices.includes(side.extraoption)) {
+            devices.push(side.extraoption);
+        }
+        for (const device of devices) {
+            options.push({
+                id: encodeSelectizeValue({difftype: DiffType.DeviceView, extraoption: device}),
+                name: device,
+            });
         }
 
         return options;
+    }
+
+    isDiffTypeOffered(side: DiffStateObject): boolean {
+        const selected = encodeSelectizeValue({difftype: side.difftype, extraoption: side.extraoption});
+        return this.getDiffTypeOptions(side).some(option => option.id === selected);
     }
 
     getDiffEntry(id: string): DiffEntry | undefined {
@@ -452,6 +476,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             side.result = undefined;
         }
 
+        let difftypeChanged = false;
         if (entry.kind === 'source') {
             side.compiler = null;
             side.source = entry;
@@ -463,20 +488,23 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             if (side.difftype === DiffType.Source) {
                 side.difftype = DiffType.ASM;
             }
+            if (!this.isDiffTypeOffered(side)) {
+                side.difftype = DiffType.ASM;
+                side.extraoption = '';
+                difftypeChanged = true;
+            }
         }
 
-        if (idChanged || kindChanged) {
+        if (idChanged || kindChanged || difftypeChanged) {
             this.updateDiffTypeOptionsFor(side, difftypePicker);
         }
         side.refresh();
     }
 
     updateDiffTypeOptionsFor(side: DiffStateObject, difftypePicker: TomSelect) {
-        const options =
-            side.source || side.difftype === DiffType.Source
-                ? [{id: DiffType.Source.toString(), name: 'Source'}]
-                : this.getDiffableOptions();
-        replaceOptions(difftypePicker, options);
+        // Drop every option, including the selected one the default filter would keep, so a type the
+        // new compiler can't produce doesn't linger in the list.
+        replaceOptions(difftypePicker, this.getDiffTypeOptions(side), () => false);
         difftypePicker.setValue(
             encodeSelectizeValue({
                 difftype: side.difftype || DiffType.ASM,
@@ -529,8 +557,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);
         const rhsChanged = this.rhs.update(id, compiler, result);
+        if (lhsChanged) this.updateDiffTypeOptionsFor(this.lhs, this.selectize.lhsdifftype);
+        if (rhsChanged) this.updateDiffTypeOptionsFor(this.rhs, this.selectize.rhsdifftype);
         if (lhsChanged || rhsChanged) {
-            this.refreshDiffOptions(id, compiler, result);
             this.updateTitle();
         }
     }
@@ -565,61 +594,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             }
         } else {
             this.eventHub.emit('resendCompilation', id);
-        }
-    }
-
-    refreshDiffOptions(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
-        const lhsextraoptions: DiffOption[] = [];
-        const rhsextraoptions: DiffOption[] = [];
-
-        if (result.devices) {
-            for (const devicename in result.devices) {
-                lhsextraoptions.push({
-                    id: encodeSelectizeValue({difftype: DiffType.DeviceView, extraoption: devicename}),
-                    name: devicename,
-                });
-                rhsextraoptions.push({
-                    id: encodeSelectizeValue({difftype: DiffType.DeviceView, extraoption: devicename}),
-                    name: devicename,
-                });
-            }
-        }
-
-        for (const options of [lhsextraoptions, rhsextraoptions]) {
-            if (compiler.supportsAstView) {
-                options.push({id: DiffType.AstOutput.toString(), name: 'AST'});
-            }
-            if (compiler.supportsIrView) {
-                options.push({id: DiffType.IrOutput.toString(), name: 'LLVM IR'});
-            }
-            if (compiler.supportsRustMirView) {
-                options.push({id: DiffType.RustMirOutput.toString(), name: 'Rust MIR'});
-            }
-            if (compiler.supportsRustMacroExpView) {
-                options.push({id: DiffType.RustMacroExpOutput.toString(), name: 'Rust Macro Expansion'});
-            }
-            if (compiler.supportsRustHirView) {
-                options.push({id: DiffType.RustHirOutput.toString(), name: 'Rust HIR'});
-            }
-            if (compiler.supportsClojureMacroExpView) {
-                options.push({id: DiffType.ClojureMacroExpOutput.toString(), name: 'Clojure Macro Expansion'});
-            }
-            if (compiler.supportsYulView) {
-                options.push({id: DiffType.YulOutput.toString(), name: 'Yul (Solidity IR)'});
-            }
-            if (compiler.supportsLeanCView) {
-                options.push({id: DiffType.LeanCOutput.toString(), name: 'Lean C Output'});
-            }
-        }
-
-        if (!this.lhs.source) {
-            const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
-            replaceOptions(this.selectize.lhsdifftype, lhsoptions);
-        }
-
-        if (!this.rhs.source) {
-            const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
-            replaceOptions(this.selectize.rhsdifftype, rhsoptions);
         }
     }
 

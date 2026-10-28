@@ -31,6 +31,7 @@ import {mockClient} from 'aws-sdk-client-mock';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 import * as properties from '../../lib/properties.js';
+import {ShortLinkNotFoundError} from '../../lib/storage/base.js';
 import {StorageS3} from '../../lib/storage/index.js';
 
 describe('Find unique subhash tests', () => {
@@ -210,6 +211,7 @@ describe('Retrieves from s3', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         mockDynamoDb.on(GetItemCommand).resolves({});
         await expect(storage.expandId('ABCDEF')).rejects.toThrow('ID ABCDEF not present in links table');
+        await expect(storage.expandId('ABCDEF')).rejects.toBeInstanceOf(ShortLinkNotFoundError);
     });
 });
 

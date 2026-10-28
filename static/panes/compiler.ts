@@ -177,7 +177,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
-    private compilerPicker: CompilerPicker;
+    private compilerPicker: CompilerPicker | undefined;
     private compiler: CompilerInfo | null;
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
@@ -468,7 +468,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.unsubscribe();
         this.eventHub.emit('compilerClose', this.id, this.sourceTreeId ?? 0);
         this.editor.dispose();
-        this.compilerPicker.destroy();
+        this.compilerPicker?.destroy();
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
@@ -3796,9 +3796,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.updateState();
                 this.updateCompilerUI();
                 this.setAssembly({asm: this.fakeAsm('')});
-                // this is a workaround to delay compilation further until the Editor sends a compile request
-                this.needsCompile = false;
-
+                // The libraries widget asks for a compile whenever its language changes, whatever compileOnChange says
+                if (!this.settings.compileOnChange) this.needsCompile = false;
                 this.undefer();
                 this.sendCompiler();
             });

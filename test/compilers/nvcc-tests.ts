@@ -22,6 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as fs from 'node:fs/promises';
+import os from 'node:os';
+import Path from 'node:path';
+
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {NvccCompiler, NvccWin32Compiler} from '../../lib/compilers/index.js';
@@ -127,6 +131,43 @@ main:
         const result = removeBlob(asm);
         expect(result).toContain('#APP');
         expect(result).toContain('nop');
+    });
+
+    it('disassembles CUDA Tile bytecode into a Tile IR device output', async () => {
+        const dirPath = await fs.mkdtemp(Path.join(os.tmpdir(), 'ce-nvcc-tileir-'));
+        const tileBytecode = Path.join(dirPath, 'example.tilebc');
+        await fs.writeFile(tileBytecode, 'tile bytecode');
+
+        try {
+            const tileNvcc = new NvccCompiler(
+                {...info, tileirdisasm: '/opt/cuda/bin/tileirdisasm'} as any,
+                makeCompilationEnvironment({languages}),
+            );
+            const exec = vi.spyOn(tileNvcc as any, 'exec').mockResolvedValue({
+                code: 0,
+                execTime: 1,
+                stdout: 'entry @tile_kernel(%arg0: tile<ptr<f32>>) {\n  return\n}\n',
+            });
+
+            const result = await tileNvcc.extractDeviceCode(
+                {dirPath, devices: {}} as any,
+                {...tileNvcc.getDefaultFilters(), commentOnly: false, demangle: false},
+                {} as any,
+            );
+
+            expect(exec).toHaveBeenCalledWith(
+                '/opt/cuda/bin/tileirdisasm',
+                [tileBytecode],
+                expect.objectContaining({customCwd: dirPath}),
+            );
+            expect(result.devices?.['Tile IR'].asm).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({text: expect.stringContaining('entry @tile_kernel')}),
+                ]),
+            );
+        } finally {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        }
     });
 });
 

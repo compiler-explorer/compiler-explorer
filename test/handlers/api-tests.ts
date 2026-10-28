@@ -183,6 +183,13 @@ describe('API handling', () => {
                 {id: 'pascal', defaultOptions: '-O3'},
             ]);
     });
+    it('should respond with JSON when fields are requested even if Accept does not ask for it', async () => {
+        await request(app)
+            .get('/api/languages?fields=id')
+            .set('Accept', '*/*')
+            .expect('Content-Type', /json/)
+            .expect(200, [{id: 'c++'}, {id: 'pascal'}]);
+    });
     it('should mark list responses as varying on Accept', async () => {
         const res = await request(app).get('/api/languages').set('Accept', 'application/json').expect(200);
         expect(res.headers.vary).toMatch(/\bAccept\b/);

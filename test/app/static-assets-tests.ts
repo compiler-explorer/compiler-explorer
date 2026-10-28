@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 
 import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
@@ -219,17 +220,23 @@ describe('Static assets', () => {
 
     describe('branding assets ship for every deployed environment', () => {
         // Guards the dev path end-to-end: the real files must exist in public/, so a missing
-        // asset fails the build, not just a deploy. Adding an environment? Add its class here.
+        // asset fails the build, not just a deploy. Covers dev mode plus every extraBodyClass in etc/config.
         const publicDir = getBrandingPublicDir();
+        const configDir = resolvePathFromAppRoot('etc', 'config');
+        const configuredClasses = fs
+            .readdirSync(configDir)
+            .filter(file => file.endsWith('.properties') && !file.includes('.local.'))
+            .flatMap(file => [
+                ...fs.readFileSync(path.join(configDir, file), 'utf8').matchAll(/^extraBodyClass=(\S+)/gm),
+            ])
+            .map(match => match[1]);
+        const extraBodyClasses = [...new Set(['dev', ...configuredClasses])];
 
-        it.each([
-            'dev',
-            'beta',
-            'staging',
-            'winprod',
-            'winstaging',
-            'wintest',
-        ])('has favicon + logo overlay for %s', async extraBodyClass => {
+        it('finds the environments in etc/config', () => {
+            expect(extraBodyClasses).toEqual(expect.arrayContaining(['dev', 'staging']));
+        });
+
+        it.each(extraBodyClasses)('has favicon + logo overlay for %s', async extraBodyClass => {
             await expect(validateBrandingAssetsOnDisk(publicDir, extraBodyClass)).resolves.toBeUndefined();
         });
     });
