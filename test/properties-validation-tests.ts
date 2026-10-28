@@ -244,6 +244,27 @@ baz=qux
             expect(result.orphanedCompilerExe).toHaveLength(0);
         });
 
+        it('should treat a group exe as the exe of each compiler in the group', () => {
+            const result = validate(
+                `compilers=&grp:c\ngroup.grp.compilers=a:b\ngroup.grp.exe=/opt/compiler-explorer/tool\ncompiler.a.name=A\ncompiler.b.name=B\ncompiler.c.exe=/opt/compiler-explorer/c`,
+            );
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+
+        it('should treat a group exe as the exe of compilers in nested groups', () => {
+            const result = validate(
+                `compilers=&outer:c\ngroup.outer.compilers=&inner\ngroup.outer.exe=/opt/compiler-explorer/tool\ngroup.inner.compilers=a\ncompiler.a.name=A\ncompiler.c.exe=/opt/compiler-explorer/c`,
+            );
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+
+        it('should still report a compiler outside the group with no exe', () => {
+            const result = validate(
+                `compilers=&grp:c\ngroup.grp.compilers=a\ngroup.grp.exe=/opt/compiler-explorer/tool\ncompiler.a.exe=/opt/compiler-explorer/a\ncompiler.c.name=C`,
+            );
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'c'}));
+        });
+
         it('should ignore remote compiler references (with @)', () => {
             const result = validate(`compilers=gcc:remote@host\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`);
             expect(result.orphanedCompilerExe).toHaveLength(0);
