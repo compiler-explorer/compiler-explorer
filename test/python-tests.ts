@@ -30,6 +30,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {PythonCompiler} from '../lib/compilers/python.js';
+import {resolvePathFromAppRoot} from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
@@ -73,7 +74,7 @@ describe('Python', () => {
 
         it('runs the helper scripts from where CE is installed by default', () => {
             const options = makeCompiler('Python 3.12.0').optionsForFilter({}, '/tmp/build/output.txt');
-            expect(options[1]).toMatch(/etc\/scripts\/disasms\/dis_all\.py$/);
+            expect(options[1]).toEqual(resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py'));
         });
 
         it('runs the helper scripts from the compilation directory when staging them', () => {
