@@ -44,6 +44,8 @@ mixin monacopane(id)
 
   include panes/yul
 
+  include panes/duckling-output
+
   include widgets/compiler-selector
 
   include widgets/libs-dropdown
@@ -93,3 +95,5 @@ mixin monacopane(id)
   +monacopane("clojuremacroexp")
 
   +monacopane("yul")
+
+  +ducklingOutputPane("ducklingOutput")

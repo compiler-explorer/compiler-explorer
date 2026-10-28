@@ -56,6 +56,8 @@ export type LanguageKey =
     | 'cutedsl'
     | 'd'
     | 'dart'
+    | 'duckling'
+    | 'duckling-script'
     | 'elixir'
     | 'erlang'
     | 'fortran'

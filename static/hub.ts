@@ -36,6 +36,7 @@ import {
     CONFORMANCE_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
+    DUCKLING_OUTPUT_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
     EXPLAIN_VIEW_COMPONENT_NAME,
@@ -74,6 +75,7 @@ import {Compiler} from './panes/compiler.js';
 import {Conformance as ConformanceView} from './panes/conformance-view.js';
 import {DeviceAsm as DeviceView} from './panes/device-view.js';
 import {Diff} from './panes/diff.js';
+import {DucklingOutputView} from './panes/duckling-output-view.js';
 import {Editor} from './panes/editor.js';
 import {Executor} from './panes/executor.js';
 import {ExplainView} from './panes/explain-view.js';
@@ -155,6 +157,9 @@ export class Hub {
             this.optPipelineFactory(c, s),
         );
         layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.deviceViewFactory(c, s));
+        layout.registerComponent(DUCKLING_OUTPUT_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.ducklingOutputViewFactory(c, s),
+        );
         layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustMirViewFactory(c, s));
         layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.haskellCoreViewFactory(c, s),
@@ -535,6 +540,13 @@ export class Hub {
 
     public deviceViewFactory(container: GoldenLayout.Container, state: InferComponentState<DeviceView>): DeviceView {
         return new DeviceView(this, container, state);
+    }
+
+    public ducklingOutputViewFactory(
+        container: GoldenLayout.Container,
+        state: InferComponentState<DucklingOutputView>,
+    ): DucklingOutputView {
+        return new DucklingOutputView(this, container, state);
     }
 
     public gnatDebugTreeViewFactory(

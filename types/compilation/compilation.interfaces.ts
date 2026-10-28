@@ -29,7 +29,7 @@ import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
 import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilerInfo, type DucklingOutputKind} from '../compiler.interfaces.js';
 import {PossibleArguments} from '../compiler-arguments.interfaces.js';
 import {BasicExecutionResult, ConfiguredRuntimeTools} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
@@ -133,6 +133,8 @@ export type CompilationRequestOptions = {
         produceLeanC?: LeanCOptions | null;
         produceClojureMacroExp?: boolean;
         produceYul?: YulBackendOptions | null;
+        produceDucklingOutput?: DucklingOutputKind;
+        produceDucklingOutputs?: DucklingOutputKind[];
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
@@ -172,6 +174,12 @@ export type CompilationRequest = {
 export type PPOutput = {
     numberOfLinesFiltered: number;
     output: string;
+};
+
+export type DucklingOutput = {
+    kind: DucklingOutputKind;
+    output: ResultLine[];
+    languageId: string;
 };
 
 export type CompilationResult = {
@@ -237,6 +245,10 @@ export type CompilationResult = {
     clojureMacroExpOutput?: ResultLine[];
 
     yulOutput?: ResultLine[];
+
+    /** Legacy alias for the first requested Duckling output; use ducklingOutputs for independent panes. */
+    ducklingOutput?: DucklingOutput;
+    ducklingOutputs?: Partial<Record<DucklingOutputKind, DucklingOutput>>;
 
     forceBinaryView?: boolean;
 

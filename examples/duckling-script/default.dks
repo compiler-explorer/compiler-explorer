@@ -1,0 +1,2 @@
+# Duckling Script runs top-level statements without a module main function.
+builtin_output_i64(40 + 2);
