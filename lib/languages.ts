@@ -458,6 +458,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    duckling: {
+        name: 'Duckling',
+        monaco: 'duckling',
+        extensions: ['.dk'],
+        alias: [],
+        logoFilename: 'duckling.svg',
+        logoFilenameDark: 'duckling-dark.svg',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     elixir: {
         name: 'Elixir',
         monaco: 'elixir',
