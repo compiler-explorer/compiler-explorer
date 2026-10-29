@@ -48,7 +48,7 @@ the final report.
 **Separate agents** (Agent tool, one per unit, run in the background):
 - Before spawning, fetch every chosen PR head once yourself (step 3's `fetch` line), so agents don't all fetch in
   my checkouts at the same moment. If an agent's later fetch fails with `cannot lock ref`, it retries.
-- Brief each agent with this skill's path, its unit's PR numbers, a unit name (e.g. `mattsblack-zap`), and these
+- Brief each agent with this skill's path, its unit's PR numbers, a unit name (e.g. `jdoe-zap`), and these
   rules. It runs steps 2–3 and returns the step 4 report **instead of asking**: subagents can't ask me. You ask me
   per unit, as step 4 describes, and send the answer back to that agent (SendMessage) so it carries on with step 5.
 - The agent stops after its merges and returns what it changed. You run steps 6–8 for that unit yourself, one unit
@@ -170,10 +170,10 @@ Check every `-` line in the main diff:
   `git ls-remote --tags --heads <url> | grep -E "refs/(tags|heads)/<target_prefix><target>(\^\{\})?$"`.
   A `v` prefix in yaml must match the upstream tag naming.
 - `check_file` (if set) exists in the upstream tree at that tag.
-- If yaml `repo:` and properties `url=` point at different repos (e.g. `foo/cppp-release` vs `foo/cppp`), find
+- If yaml `repo:` and properties `url=` point at different repos (e.g. `foo/bar-release` vs `foo/bar`), find
   out why. A separate release repo can be legitimate, but confirm it.
 - Plausibility: it's a real library with real content, not an empty, homework or placeholder repo, and the name
-  isn't so generic that it will confuse users (`help_library`). If in doubt, flag it to me as blocking. Don't
+  isn't so generic that it will confuse users (`utils`, `my_library`). If in doubt, flag it to me as blocking. Don't
   reject it yourself.
 - A missing LICENSE is not a finding: the author opening the PR is their consent to CE hosting it.
 
@@ -216,15 +216,15 @@ Check every `-` line in the main diff:
 ### yaml and properties agree with each other and with conventions
 
 - The library id is the same on both sides, and is only `[a-z0-9_]`. A `.` breaks it: CE splits property keys on
-  dots, so `libs.help_library.git.*` is read as library `help_library` with a stray `git` key. The usual cause is a
+  dots, so `libs.mylib.git.*` is read as library `mylib` with a stray `git` key. The usual cause is a
   `.git` URL passed to the wizard, which also leaves `.git` in yaml `repo:` and properties `url=` (fixed in infra#2500
   and ce-library-wizard#35; older checkouts still do it).
 - Version ids follow the file's convention: usually the version with the dots removed (C++ `0.27.1` → `0271`), but
   Go keeps the `v` (`v0.46.0` → `v0460`). Copy the existing ids of that language's file. Also check that
   every id in `versions=` has its `.version=` (and `.path=` where that type needs one).
 - **Install path**: the properties `.path=` must match where ce_install installs. You check this in step 3 (it needs
-  the PR's yaml). Look at the include subdir too (`help_library` uses `.../v1.0.0/include` while its target is
-  `1.0.0`: that mismatch must be checked).
+  the PR's yaml). Look at the include subdir too: a `.path=` ending in `/include` only works if the repo has an
+  `include/` directory, and a `v` in the path must match the yaml `target_prefix`.
 - **Existing library**: if the library already exists (on main, or after an earlier merge in the same unit), the
   new version must be **added to the existing block**: append to the yaml `targets:` and to
   `libs.<id>.versions=` with its own `versions.<vid>.*` keys. Never add a second `libs.<id>.name=` block.
@@ -409,7 +409,7 @@ spot) or would add duplicate blocks. For each next version, in order, in both re
 combined PR per repo replaces them. This doesn't need maintainer edits and never pushes to the contributor's fork.
 Do it in each repo:
 1. `git -C /opt/compiler-explorer/<repo> worktree add -b lib-wizard/<author>-<lang>-<libs>
-   $SCRATCH/<repo>-combined origin/main`, e.g. `lib-wizard/mattsblack-go-zap`.
+   $SCRATCH/<repo>-combined origin/main`, e.g. `lib-wizard/jdoe-go-zap`.
 2. For each original PR in ascending version order (dependencies first): `git merge --no-ff lib-wizard-<N>` (the
    ref fetched in step 3). Resolve each conflict into a single block per library with the versions appended
    (step 2, "Existing library").
