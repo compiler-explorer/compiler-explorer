@@ -319,6 +319,18 @@ describe('AsmParser indented labels', () => {
         const result = parser.processAsm(xtensaLoop.replace('loop\ta9, .L2_LEND', 'nop'), {labels: true});
         expect(result.asm.map(line => line.text.trim())).not.toContain('.L2_LEND:');
     });
+
+    it('should leave indented lines that are not local labels alone outside #APP', () => {
+        // Some output still carries source text, e.g. V8 echoing the JS source.
+        const source = `foo:
+  key: 1,
+  default:
+	ret`;
+        const result = parser.processAsm(source, {labels: true});
+        expect(result.asm.map(line => line.text).slice(0, 3)).toEqual(['foo:', '  key: 1,', '  default:']);
+        expect(result.labelDefinitions).not.toHaveProperty('key');
+        expect(result.labelDefinitions).not.toHaveProperty('default');
+    });
 });
 
 describe('PTXAsmParser tests', () => {

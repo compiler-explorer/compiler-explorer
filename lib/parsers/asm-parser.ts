@@ -74,6 +74,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected definesWeak: RegExp;
     protected definesAlias: RegExp;
     protected indentedLabelDef: RegExp;
+    protected indentedLocalLabelDef: RegExp;
     protected assignmentDef: RegExp;
     protected setDef: RegExp;
     protected directive: RegExp;
@@ -251,7 +252,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 continue;
             }
 
-            line = this.fixLabelIndentation(line);
+            if (this.parsingState.isInCustomAssembly()) line = this.fixLabelIndentation(line);
+            else line = this.fixLocalLabelIndentation(line);
 
             const labelResult = this.processLabelDefinition(
                 line,
@@ -373,6 +375,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.definesWeak = /^\s*\.(?:weakext|weak)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;
         this.definesAlias = /^\s*\.set\s*((?:[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")\s*),\s*\.\s*(\+\s*0)?$/;
         this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"):/;
+        // Outside #APP only `.`-prefixed local labels are de-indented: some output still carries source text
+        // (V8 echoes the JS source, for example) where an indented `key: value` is not a label definition.
+        this.indentedLocalLabelDef = /^\s+\.[\w$.]+:/;
         this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=\s*(.*)/;
         // ".set label, label" where "label" is `this.labelFindNonMips`
         this.setDef =
@@ -472,6 +477,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             definesAlias: this.definesAlias,
             definesFunction: this.definesFunction,
             cudaBeginDef: this.cudaBeginDef,
+            startAppBlock: this.startAppBlock,
+            endAppBlock: this.endAppBlock,
+            startAsmNesting: this.startAsmNesting,
+            endAsmNesting: this.endAsmNesting,
             mipsLabelDefinition: this.mipsLabelDefinition,
             labelFindNonMips: this.labelFindNonMips,
             labelFindMips: this.labelFindMips,
@@ -479,6 +488,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             startBlock: this.startBlock,
             endBlock: this.endBlock,
             fixLabelIndentation: this.fixLabelIndentation.bind(this),
+            fixLocalLabelIndentation: this.fixLocalLabelIndentation.bind(this),
         };
     }
 
@@ -616,6 +626,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     fixLabelIndentation(line: string) {
         const match = line.match(this.indentedLabelDef);
         return match ? line.replace(/^\s+/, '') : line;
+    }
+
+    fixLocalLabelIndentation(line: string) {
+        return this.indentedLocalLabelDef.test(line) ? line.replace(/^\s+/, '') : line;
     }
 
     isUserFunction(func: string) {

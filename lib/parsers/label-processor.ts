@@ -29,6 +29,7 @@ class FindLabelsState {
     public weakUsages = new Map<string, Set<string>>();
     public currentLabelSet: string[] = [];
     public inLabelGroup = false;
+    public inCustomAssembly = 0;
     public inFunction = false;
     public inNvccCode = false;
     public inVLIWpacket = false;
@@ -72,6 +73,10 @@ export type LabelContext = {
     definesAlias: RegExp;
     definesFunction: RegExp;
     cudaBeginDef: RegExp;
+    startAppBlock: RegExp;
+    endAppBlock: RegExp;
+    startAsmNesting: RegExp;
+    endAsmNesting: RegExp;
     mipsLabelDefinition: RegExp;
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
@@ -79,6 +84,7 @@ export type LabelContext = {
     startBlock: RegExp;
     endBlock: RegExp;
     fixLabelIndentation: (line: string) => string;
+    fixLocalLabelIndentation: (line: string) => string;
 };
 
 export class LabelProcessor {
@@ -123,7 +129,12 @@ export class LabelProcessor {
     }
 
     private updateAssemblyContext(line: string, context: LabelContext, state: FindLabelsState): void {
-        if (context.startBlock.test(line)) {
+        const trimmedLine = line.trim();
+        if (context.startAppBlock.test(trimmedLine) || context.startAsmNesting.test(trimmedLine)) {
+            state.inCustomAssembly++;
+        } else if (context.endAppBlock.test(trimmedLine) || context.endAsmNesting.test(trimmedLine)) {
+            state.inCustomAssembly--;
+        } else if (context.startBlock.test(line)) {
             state.inFunction = true;
         } else if (context.endBlock.test(line)) {
             state.inFunction = false;
@@ -133,6 +144,12 @@ export class LabelProcessor {
         } else {
             state.inVLIWpacket = context.checkVLIWpacket(line, state.inVLIWpacket);
         }
+    }
+
+    private preprocessLine(originalLine: string, context: LabelContext, state: FindLabelsState): string {
+        return state.inCustomAssembly > 0
+            ? context.fixLabelIndentation(originalLine)
+            : context.fixLocalLabelIndentation(originalLine);
     }
 
     private processLabelDefinition(line: string, context: LabelContext, state: FindLabelsState): void {
@@ -213,7 +230,7 @@ export class LabelProcessor {
 
         for (const originalLine of asmLines) {
             this.updateAssemblyContext(originalLine, context, state);
-            const line = context.fixLabelIndentation(originalLine);
+            const line = this.preprocessLine(originalLine, context, state);
 
             this.processLabelDefinition(line, context, state);
             this.processGlobalWeakDefinitions(line, context, state);

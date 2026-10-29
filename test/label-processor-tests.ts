@@ -42,6 +42,10 @@ describe('LabelProcessor tests', () => {
         definesAlias: /^\s*\.set\s*([.A-Z_a-z][\w$.]*\s*),\s*\.\s*(\+\s*0)?$/,
         definesFunction: /^\s*\.type.*,\s*[#%@]function$/,
         cudaBeginDef: /\.(entry|func)\s+(?:\([^)]*\)\s*)?([$.A-Z_a-z][\w$.]*)$/,
+        startAppBlock: /^#APP.*$/,
+        endAppBlock: /^#NO_APP.*$/,
+        startAsmNesting: /^# Begin ASM.*$/,
+        endAsmNesting: /^# End ASM.*$/,
         mipsLabelDefinition: /^\$[\w$.]+:/,
         labelFindNonMips: /[.A-Z_a-z][\w$.]*/g,
         labelFindMips: /[$.A-Z_a-z][\w$.]*/g,
@@ -49,6 +53,7 @@ describe('LabelProcessor tests', () => {
         startBlock: /\.cfi_startproc\b/,
         endBlock: /\.(cfi_endproc|data|text|section)\b/,
         fixLabelIndentation: (line: string) => line.replace(/^\s+/, ''),
+        fixLocalLabelIndentation: (line: string) => (/^\s+\.[\w$.]+:/.test(line) ? line.replace(/^\s+/, '') : line),
     };
 
     describe('getLabelFind', () => {
