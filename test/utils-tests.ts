@@ -658,6 +658,10 @@ describe('Anonymizes all kind of IPs', () => {
         expect(utils.anonymizeIp('bad:c0de::')).toEqual('bad:0:0:0');
         expect(utils.anonymizeIp(':1d7e::c0fe')).toEqual(':0:0:0');
     });
+    it('Removes last octet from IPv4-mapped IPv6 addresses', () => {
+        expect(utils.anonymizeIp('::ffff:203.0.113.42')).toEqual('::ffff:203.0.113.0');
+        expect(utils.anonymizeIp('::FFFF:10.1.2.3')).toEqual('::FFFF:10.1.2.0');
+    });
 });
 
 describe('Logger functionality', () => {

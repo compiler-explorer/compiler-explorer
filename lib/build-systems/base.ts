@@ -106,11 +106,17 @@ export abstract class BaseBuildSystem implements BuildSystemDriver {
         result: CompilationResult,
         artifactFilename: string,
     ): Promise<CompilationResult> {
+        // The artifact already is the binary, so objdump must not derive one from it via getObjdumpInputFilename,
+        // which maps a single-file compile's default output to the binary that compile produced.
+        result.objdumpInputFilename = artifactFilename;
+        await ctx.compiler.prepareArtifactDisassembly(artifactFilename, ctx.key.filters);
         const [asmResult] = await ctx.compiler.checkOutputFileAndDoPostProcess(
             result,
             artifactFilename,
             ctx.key.filters,
         );
+        delete result.objdumpInputFilename;
+        delete asmResult.objdumpInputFilename;
         return asmResult;
     }
 }

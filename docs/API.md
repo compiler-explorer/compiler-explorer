@@ -277,6 +277,9 @@ structure:
 }
 ```
 
+Formatters with styles backed by a style file on the server also have a `styleFiles` object, mapping each such style
+name to its file path.
+
 The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`. The `type` key in the
 JSON request corresponds to one of the `formatters.<key>.type` found in the compiler-explorer configuration properties
 (see [Configuration.md](Configuration.md) for more details)

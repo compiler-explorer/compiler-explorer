@@ -35,7 +35,7 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
-import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
+import {ExpandedShortLink, ShortLinkNotFoundError, StorageBase, StoredObject} from './base.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -167,7 +167,7 @@ export class StorageS3 extends StorageBase {
             Key: this.getKeyStruct(id),
         });
         const attributes = item.Item;
-        if (!attributes) throw new Error(`ID ${id} not present in links table`);
+        if (!attributes) throw new ShortLinkNotFoundError(id);
         const result = await this.s3.get(unwrap(attributes.full_hash.S), this.prefix);
         // If we're here, we are pretty confident there is a match. But never hurts to double check
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);

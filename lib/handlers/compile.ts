@@ -131,6 +131,7 @@ export type ParsedRequest = {
 export class CompileHandler implements ICompileHandler {
     private compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
     private readonly compilerEnv: CompilationEnvironment;
+    private readonly unstattableExeMtime = new Date();
     private readonly textBanner: string;
     private readonly proxy: Server;
     private readonly awsProps: PropertyGetter;
@@ -273,6 +274,12 @@ export class CompileHandler implements ICompileHandler {
                 logger.error(e.stack);
                 process.exit(1);
             }
+        }
+
+        if (compiler.skipExeCheck) {
+            const modificationTime = isPrediscovered ? compiler.mtime : this.unstattableExeMtime;
+            const compilerObj = new compilerClass(compiler, this.compilerEnv);
+            return compilerObj.initialise(modificationTime, this.clientOptions, isPrediscovered);
         }
 
         // attempt to resolve non absolute exe paths

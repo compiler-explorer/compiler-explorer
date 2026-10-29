@@ -439,7 +439,13 @@ function sandboxFirejail(command: string, args: string[], options: ExecutionOpti
     return executeDirect(execProps<string>('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
 }
 
-const sandboxDispatchTable = {
+export type DispatchFunction = (
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+) => Promise<UnprocessedExecResult>;
+
+const sandboxDispatchTable: Record<string, DispatchFunction> = {
     none: (command: string, args: string[], options: ExecutionOptions) => {
         logger.info('Sandbox execution (sandbox disabled)', {command, args});
         if (needsWine(command)) {
@@ -459,7 +465,7 @@ export async function sandbox(
 ): Promise<UnprocessedExecResult> {
     checkExecOptions(options);
     const type = execProps('sandboxType', 'firejail');
-    const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
+    const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
@@ -658,8 +664,6 @@ async function executeNone(command: string, args: string[], options: ExecutionOp
     return await executeDirect(command, args, options);
 }
 
-type DispatchFunction = (command: string, args: string[], options: ExecutionOptions) => Promise<UnprocessedExecResult>;
-
 const executeDispatchTable: Record<string, DispatchFunction> = {
     none: executeNone,
     firejail: executeFirejail,
@@ -667,6 +671,23 @@ const executeDispatchTable: Record<string, DispatchFunction> = {
         needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
     cewrapper: executeCEWrapper,
 };
+
+export type ExecutionBackend = {
+    execute: DispatchFunction;
+    sandbox: DispatchFunction;
+};
+
+/**
+ * Make `name` usable as both an `executionType` and a `sandboxType`, for deployments that run things somewhere CE's
+ * built-in backends can't reach (a cluster scheduler, say).
+ */
+export function registerExecutionBackend(name: string, backend: ExecutionBackend) {
+    if (Object.hasOwn(executeDispatchTable, name) || Object.hasOwn(sandboxDispatchTable, name)) {
+        throw new Error(`Execution backend ${name} is already registered`);
+    }
+    executeDispatchTable[name] = backend.execute;
+    sandboxDispatchTable[name] = backend.sandbox;
+}
 
 export async function execute(
     command: string,

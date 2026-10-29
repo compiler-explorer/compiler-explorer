@@ -22,13 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
 import express, {Express} from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
+import type {BaseCompiler} from '../../lib/base-compiler.js';
+import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
 import {ActiveTool, BypassCache, LegacyCompatibleActiveTool} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
@@ -558,6 +563,42 @@ describe('Compiler tests', () => {
             await setFakeCompilers();
             const res = await makeFakeJson('a', 'b');
             expect(res.body.asm).toEqual([{text: 'LANG B but A'}]);
+        });
+    });
+
+    describe('Compiler executable discovery', () => {
+        afterEach(() => vi.restoreAllMocks());
+
+        function makeCompiler(skipExeCheck: boolean): PreliminaryCompilerInfo {
+            return {
+                id: 'remote-only',
+                lang: 'a',
+                exe: '/remote-only/compiler',
+                compilerType: 'fake-for-test',
+                skipExeCheck,
+            } as unknown as PreliminaryCompilerInfo;
+        }
+
+        it('initialises a compiler that skips the exe check without statting it', async () => {
+            const stat = vi.spyOn(fs, 'stat');
+            const initialise = vi.spyOn(FakeCompiler.prototype, 'initialise').mockResolvedValue({} as BaseCompiler);
+
+            const compiler = await compileHandler.create(makeCompiler(true));
+
+            expect(compiler).not.toBeNull();
+            expect(stat).not.toHaveBeenCalled();
+            expect(initialise).toHaveBeenCalledWith(expect.any(Date), null, false);
+        });
+
+        it('still rejects a missing local compiler exe', async () => {
+            const stat = vi.spyOn(fs, 'stat').mockRejectedValue(new Error('ENOENT'));
+            const initialise = vi.spyOn(FakeCompiler.prototype, 'initialise');
+
+            const compiler = await compileHandler.create(makeCompiler(false));
+
+            expect(compiler).toBeNull();
+            expect(stat).toHaveBeenCalledWith('/remote-only/compiler');
+            expect(initialise).not.toHaveBeenCalled();
         });
     });
 });

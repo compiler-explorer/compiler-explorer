@@ -109,6 +109,7 @@ export type ClientOptionsType = {
     localStoragePrefix: PropertyValue;
     cvCompilerCountMax: number;
     defaultFontScale: number;
+    formatStyles: string[];
     doCache: boolean;
     thirdPartyIntegrationEnabled: boolean;
     statusTrackingEnabled: boolean;
@@ -213,6 +214,9 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),
+            formatStyles: _.compact(
+                ceProps('formatter.clangformat.styles', 'Google:LLVM:Mozilla:Chromium:WebKit:Microsoft:GNU').split(':'),
+            ),
             doCache: defArgs.doCache,
             thirdPartyIntegrationEnabled: ceProps('thirdPartyIntegrationEnabled', true),
             compilerVersionsUrl: ceProps<string | undefined>('compilerVersionsUrl', undefined),
@@ -248,7 +252,8 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                     const Tool = getToolTypeByKey(className);
 
                     const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
-                    if (fs.existsSync(toolPath)) {
+                    const skipExeCheck = this.compilerProps<boolean>(lang, toolBaseName + '.skipExeCheck', false);
+                    if (skipExeCheck || fs.existsSync(toolPath)) {
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,

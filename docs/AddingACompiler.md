@@ -136,6 +136,7 @@ You can also use the `+=` operator to append to existing string properties. See 
 | -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | name                 | String     | Human readable name of the compiler                                                                                                                                |
 | exe                  | Path       | Path to the executable                                                                                                                                             |
+| skipExeCheck         | Boolean    | Don't look for `exe` on this host (it exists only where the execution backend runs it, e.g. a remote sandbox)                                                      |
 | alias                | Identifier | Another identifier for this compiler (mostly deprecated, used for backwards compatibility with very old CE URLs)                                                   |
 | options              | String     | Additional compiler options passed to the compiler when running it                                                                                                 |
 | intelAsm             | String     | Flags used to select intel assembly format (if not detected automatically)                                                                                         |

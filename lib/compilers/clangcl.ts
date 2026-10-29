@@ -24,12 +24,15 @@
 
 import path from 'node:path';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import type {ParsedRequest} from '../handlers/compile.js';
+import {ClangCLParser} from './argument-parsers.js';
 import {Win32Compiler} from './win32.js';
 
 export class ClangCLCompiler extends Win32Compiler {
@@ -40,12 +43,15 @@ export class ClangCLCompiler extends Win32Compiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        this.supportsMapFile = false;
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['-Xclang', '-emit-llvm', '-c'];
         this.compiler.minIrArgs = ['-emit-llvm'];
         this.compiler.supportsIntel = false;
         this.compiler.includeFlag = '/clang:-isystem';
+    }
+
+    protected override getArgumentParserClass() {
+        return ClangCLParser;
     }
 
     override async generateIR(
@@ -83,6 +89,26 @@ export class ClangCLCompiler extends Win32Compiler {
 
     override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/output.s.obj');
+    }
+
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
+        const toolsDir = path.dirname(this.compiler.exe).replace(/\\/g, '/');
+        const options = splitArguments(this.compiler.options);
+        // CMake links with lld-link itself, which needs to be told where the libraries are just as clang-cl was
+        const linkerFlags = ['/vctoolsdir', '/winsdkdir']
+            .map(flag => [flag, options[options.indexOf(flag) + 1]])
+            .filter(([flag]) => options.includes(flag))
+            .map(([flag, dir]) => `${flag}:${dir}`);
+
+        return [
+            ...this.getMsvcStyleCMakeArgs(linkerFlags),
+            // Without these CMake would look for MSVC's tools, or MinGW's
+            `-DCMAKE_C_COMPILER=${this.compiler.exe.replace(/\\/g, '/')}`,
+            `-DCMAKE_CXX_COMPILER=${this.compiler.exe.replace(/\\/g, '/')}`,
+            `-DCMAKE_LINKER=${toolsDir}/lld-link.exe`,
+            `-DCMAKE_RC_COMPILER=${toolsDir}/llvm-rc.exe`,
+            `-DCMAKE_MT=${toolsDir}/llvm-mt.exe`,
+        ];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
