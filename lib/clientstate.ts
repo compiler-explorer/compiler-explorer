@@ -163,6 +163,12 @@ export class ClientStateExecutor {
             this.runtimeTools = jsondata.runtimeTools;
         }
 
+        if (jsondata.overrides === undefined) {
+            this.overrides = [];
+        } else {
+            this.overrides = jsondata.overrides;
+        }
+
         this.compiler = new ClientStateCompiler(jsondata.compiler);
     }
 }

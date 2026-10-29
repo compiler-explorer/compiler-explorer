@@ -199,3 +199,54 @@ describe('Compiler default options', () => {
         expect(fixture.sentOptions).toEqual([expectedOptions, expectedOptions]);
     });
 });
+
+describe('Compiler language change', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function compilerForEditor(compileOnChange: boolean) {
+        vi.spyOn(languagesService, 'getLanguagesOrFail').mockReturnValue({
+            'c++': {id: 'c++'},
+            c: {id: 'c'},
+        } as LanguageMap);
+        const compiler = Object.create(Compiler.prototype) as Compiler;
+        Object.assign(compiler, {
+            initialStateLoaded: true,
+            deferCompiles: false,
+            needsCompile: false,
+            sourceEditorId: 1,
+            sourceTreeId: null,
+            currentLangId: 'c++',
+            infoByLang: {},
+            settings: {compileOnChange},
+            // Like updateLibraries(), whose libraries widget reports a change once it has the new language
+            initLangAndCompiler: vi.fn(async () => compiler.onLibsChanged()),
+            updateCompilersSelector: vi.fn(),
+            updateState: vi.fn(),
+            updateCompilerUI: vi.fn(),
+            setAssembly: vi.fn(),
+            sendCompiler: vi.fn(),
+            compileInfoLabel: $('<span>'),
+            getCurrentState: vi.fn(() => ({})),
+            getEffectiveFilters: vi.fn(() => ({})),
+            getActiveTools: vi.fn(() => []),
+            compileFromEditorSource: vi.fn(),
+        });
+        return compiler;
+    }
+
+    it.each([
+        [true, 1],
+        [false, 0],
+    ])('with compileOnChange %s compiles the new source %i times', async (compileOnChange, compilations) => {
+        const compiler = compilerForEditor(compileOnChange);
+
+        // The editor broadcasts the new language, then its new source, before the compiler for that language loads
+        compiler.onLanguageChange(1, 'c');
+        compiler.onEditorChange(1, 'int main() {}', 'c');
+        await vi.waitFor(() => expect(compiler.sendCompiler).toHaveBeenCalled());
+
+        expect(compiler.compileFromEditorSource).toHaveBeenCalledTimes(compilations);
+    });
+});

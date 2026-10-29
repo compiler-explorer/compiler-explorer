@@ -144,6 +144,7 @@ export type CompilerInfo = {
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
+    skipExeCheck: boolean;
     buildenvsetup?: {
         id: string;
         props: (name: string, def?: any) => any;
@@ -182,6 +183,7 @@ export type CompilerInfo = {
     cachedPossibleArguments?: any;
     cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
+    tileirdisasm?: string;
     ptxas?: string;
     mtime?: any;
     $order: number;

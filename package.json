@@ -27,7 +27,7 @@
     "@aws-sdk/credential-providers": "^3.1079.0",
     "@flatten-js/interval-tree": "^2.0.3",
     "@fortawesome/fontawesome-free": "^7.3.0",
-    "@modelcontextprotocol/sdk": "^1.31.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "@orchidjs/sifter": "^1.1.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/browser": "^10.63.0",
@@ -84,7 +84,7 @@
     "winston-transport": "^4.9.0",
     "ws": "^8.21.0",
     "yaml": "^2.9.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.2",
@@ -114,7 +114,7 @@
     "css-minimizer-webpack-plugin": "^8.0.0",
     "cypress": "^15.18.0",
     "file-loader": "^6.2.0",
-    "happy-dom": "^20.10.6",
+    "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "mini-css-extract-plugin": "^2.10.2",

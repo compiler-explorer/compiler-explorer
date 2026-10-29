@@ -50,6 +50,8 @@ export interface ParsedPropertiesFile {
     properties: ParsedProperty[];
     disabledIds: Set<string>;
     parseErrors: ValidationIssue[];
+    // Overlays are loaded on top of a base file and may tweak compilers and groups that only the base defines.
+    isOverlay: boolean;
 }
 
 export interface RawFileValidationResult {
@@ -85,6 +87,7 @@ const PATTERNS = {
     groupCompilers: /^group\.([^.]+)\.compilers=(.*)$/,
     groupName: /^group\.([^.]+)\./,
     compilerExe: /^compiler\.([^.]+)\.exe=(.*)$/,
+    groupExe: /^group\.([^.]+)\.exe=/,
     compilerId: /^compiler\.([^.]+)\./,
     typoCompilers: /^compilers\./,
     defaultCompiler: /^defaultCompiler=(.*)$/,
@@ -99,6 +102,8 @@ const PATTERNS = {
     toolId: /^tools\.([^.]+)\./,
     emptyList: /^.*(compilers|formatters|versions|tools|alias|exclude|libPath)=(.*::.*|:.*|.*:)$/,
     disabled: /^#\s*Disabled?:?\s*(.*)$/i,
+    // Must be the file's first line, e.g. "# Overlay: tweaks c++.foo.properties for the foo-bar environment"
+    overlay: /^#\s*Overlay\b/i,
 };
 
 // File patterns that are allowed to have no compilers list.
@@ -150,6 +155,7 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
 
     // Also collect our own structured properties with line numbers
     const lines = content.split('\n');
+    const isOverlay = PATTERNS.overlay.test(lines[0]?.trim() ?? '');
     for (let i = 0; i < lines.length; i++) {
         const lineNumber = i + 1;
         const text = lines[i].trim();
@@ -180,7 +186,7 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
         }
     }
 
-    return {filename, properties, disabledIds, parseErrors};
+    return {filename, properties, disabledIds, parseErrors, isOverlay};
 }
 
 /**
@@ -218,6 +224,8 @@ export function validateRawFile(
     const seenCompilersExe = new Map<string, number>();
     const seenCompilersId = new Set<string>();
     const seenGroups = new Set<string>();
+    const groupMembers = new Map<string, string[]>();
+    const groupsWithExe = new Set<string>();
 
     const listedFormatters = new Map<string, number>();
     const seenFormattersExe = new Map<string, number>();
@@ -296,6 +304,7 @@ export function validateRawFile(
             const groupName = groupCompilersMatch[1];
             const ids = parseCompilersList(groupCompilersMatch[2]);
             seenGroups.add(groupName);
+            groupMembers.set(groupName, ids);
             const seenInThisList = new Set<string>();
             for (const id of ids) {
                 if (id.startsWith('&')) {
@@ -323,6 +332,12 @@ export function validateRawFile(
         const groupMatch = key.match(PATTERNS.groupName);
         if (groupMatch) {
             seenGroups.add(groupMatch[1]);
+        }
+
+        // Parse group.X.exe=
+        const groupExeMatch = fullLine.match(PATTERNS.groupExe);
+        if (groupExeMatch) {
+            groupsWithExe.add(groupExeMatch[1]);
         }
 
         // Parse compiler.X.exe=
@@ -447,8 +462,27 @@ export function validateRawFile(
 
     // Second pass: compute symmetric differences (orphans)
 
+    // Compilers inherit properties from their group and its parents, so a group.X.exe= counts as the exe of every
+    // compiler in that group, including those in nested groups.
+    const creditGroupExe = (groupName: string, line: number, visited: Set<string>) => {
+        if (visited.has(groupName)) return;
+        visited.add(groupName);
+        for (const id of groupMembers.get(groupName) ?? []) {
+            if (id.startsWith('&')) {
+                creditGroupExe(id.slice(1), line, visited);
+            } else if (!id.includes('@') && !seenCompilersExe.has(id)) {
+                seenCompilersExe.set(id, line);
+            }
+        }
+    };
+    for (const groupName of groupsWithExe) {
+        creditGroupExe(groupName, listedGroups.get(groupName) ?? 0, new Set());
+    }
+
+    const checkOrphans = !parsed.isOverlay;
+
     // Orphaned compilers (listed but no .exe, or .exe but not listed)
-    if (seenCompilersExe.size > 0) {
+    if (checkOrphans && seenCompilersExe.size > 0) {
         for (const [id, line] of listedCompilers) {
             if (!seenCompilersExe.has(id)) {
                 result.orphanedCompilerExe.push({line, text: id, id});
@@ -461,7 +495,7 @@ export function validateRawFile(
         }
     }
 
-    if (seenCompilersId.size > 0) {
+    if (checkOrphans && seenCompilersId.size > 0) {
         for (const [id, line] of listedCompilers) {
             if (!seenCompilersId.has(id)) {
                 result.orphanedCompilerId.push({line, text: id, id});
@@ -476,15 +510,17 @@ export function validateRawFile(
     }
 
     // Orphaned groups
-    for (const [groupName, line] of listedGroups) {
-        if (!seenGroups.has(groupName)) {
-            result.orphanedGroups.push({line, text: groupName, id: groupName});
+    if (checkOrphans) {
+        for (const [groupName, line] of listedGroups) {
+            if (!seenGroups.has(groupName)) {
+                result.orphanedGroups.push({line, text: groupName, id: groupName});
+            }
         }
-    }
-    for (const groupName of seenGroups) {
-        if (!listedGroups.has(groupName)) {
-            const line = parsed.properties.find(p => p.key.startsWith(`group.${groupName}.`))?.line ?? 0;
-            result.orphanedGroups.push({line, text: groupName, id: groupName});
+        for (const groupName of seenGroups) {
+            if (!listedGroups.has(groupName)) {
+                const line = parsed.properties.find(p => p.key.startsWith(`group.${groupName}.`))?.line ?? 0;
+                result.orphanedGroups.push({line, text: groupName, id: groupName});
+            }
         }
     }
 
@@ -581,7 +617,7 @@ export function validateRawFile(
     // Check for missing compilers= in language files
     // A language file (e.g., c++.amazon.properties) should have either compilers= or group definitions
     const isAllowedEmpty = ALLOWED_EMPTY_COMPILERS_PATTERNS.some(pattern => parsed.filename.includes(pattern));
-    const isLanguageFile = !isAllowedEmpty && parsed.filename.endsWith('.properties');
+    const isLanguageFile = !parsed.isOverlay && !isAllowedEmpty && parsed.filename.endsWith('.properties');
 
     if (isLanguageFile) {
         const hasCompilersList = parsed.properties.some(p => p.key === 'compilers');
