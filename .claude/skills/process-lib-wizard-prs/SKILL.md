@@ -86,12 +86,8 @@ wizard bugs goes in the final report for me to decide.
 
 ## 1. Find the pairs
 
-```bash
-gh pr list -R compiler-explorer/compiler-explorer --search 'ce-lib-wizard in:body is:open' --limit 200 \
-    --json number,title,author,body,headRefName,headRepository,headRepositoryOwner,maintainerCanModify,mergeStateStatus
-gh pr list -R compiler-explorer/infra --search 'ce-lib-wizard in:body is:open' --limit 200 \
-    --json number,title,author,body,headRefName,headRepository,headRepositoryOwner,maintainerCanModify,mergeStateStatus
-```
+Run `scripts/list-wizard-prs.sh` (paths in this skill are relative to its directory). It lists the open wizard PRs
+in both repos, one line each, with the fields the later steps need and the main PR's `Related PR:` link.
 
 GitHub search indexing lags by a minute or so: a PR opened just now may be missing. If I name a PR or expect more
 than you see, also list by author (`--author <login> --search '"Add" in:title'`).
@@ -138,24 +134,10 @@ including the link names of built libraries (targets can change between versions
 
 The wizard round-trips the whole YAML file. **Key re-ordering, quote/style changes and dropped comments are
 fine**, so don't flag or restore them. What matters is anything that changes meaning outside the new entry.
-Compare the head semantically against the PR's merge base (not `base.sha`: if main moved on since the wizard ran,
-main's newer changes would show up as damage), with the new library or version removed from the head:
-
-```bash
-head=$(gh api repos/compiler-explorer/infra/pulls/<N> --jq .head.sha)
-git -C /opt/compiler-explorer/infra fetch origin main "+pull/<N>/head:lib-wizard-<N>"
-base=$(git -C /opt/compiler-explorer/infra merge-base origin/main $head)
-python3 - "$base" "$head" <<'EOF'
-import subprocess, sys, yaml
-show = lambda ref: yaml.safe_load(subprocess.check_output(
-    ['git', '-C', '/opt/compiler-explorer/infra', 'show', f'{ref}:bin/yaml/libraries.yaml']))
-base, head = show(sys.argv[1]), show(sys.argv[2])
-# delete the new library/version from `head` (adjust the path to where it was added), then:
-print('identical' if base == head else 'SEMANTIC DIFFERENCE')
-EOF
-```
-
-If they differ, find out where and treat it as fixable damage.
+Compare the head semantically against the PR's merge base, with the new library or version removed from the head:
+`scripts/yaml-semantic-diff.py <N> libraries/<lang>/<name>` for a new library, or
+`libraries/<lang>/<name>=<target>` for a new version of an existing one. It prints `identical`, or the key paths
+that differ: treat those as fixable damage.
 
 The properties file is not round-tripped, and the wizard edits existing lines (`versions=` of an existing library).
 Check every `-` line in the main diff:
@@ -251,13 +233,8 @@ This is the pre-merge gate. It is only needed while the wizard's output is in do
 
 All local work happens under one scratch directory, which nothing else uses: `$SCRATCH` =
 `<session scratchpad>/lib-wizard`, or `lib-wizard-<unit>` for a unit agent. Test the infra PR's yaml in a worktree
-there, so my checkout is not touched:
-
-```bash
-git -C /opt/compiler-explorer/infra fetch origin "+pull/<N>/head:lib-wizard-<N>"   # + : re-runs after a fixup
-git -C /opt/compiler-explorer/infra worktree add $SCRATCH/infra-<N> lib-wizard-<N>
-cd $SCRATCH/infra-<N> && make ce        # a fresh worktree has no python env; ce_install refuses to run without it
-```
+there, so my checkout is not touched: `scripts/pr-worktree.sh infra <N> $SCRATCH` creates `$SCRATCH/infra-<N>`
+with the python env ce_install needs.
 
 Test what will actually merge: apply your step 5 yaml fixes in this worktree first, if there are any (for wizard
 bugs, the fix agent's derived output). Never build the unfixed yaml when a known defect makes it certain to fail:
@@ -269,34 +246,25 @@ need its own test.
 when `--temp-install` is used: it switches dry-run off for the install and would write to `/opt/compiler-explorer`.
 
 - **Install path** (every type that has `.path=`; Go and Rust entries don't, skip this for them): `.path=` values
-  are absolute under `/opt/compiler-explorer`, which maps to `$SCRATCH/opt`:
-  ```bash
-  bin/ce_install --dest $SCRATCH/opt --staging-dir $SCRATCH/staging install 'libraries/<lang>/<name> <target>'
-  ls <.path with /opt/compiler-explorer replaced by $SCRATCH/opt>
-  ```
-  The directory must exist and hold the expected headers/sources. This is a real install, but only into scratch.
+  are absolute under `/opt/compiler-explorer`, which maps to `$SCRATCH/opt`. Install with
+  `bin/ce_install --dest $SCRATCH/opt --staging-dir $SCRATCH/staging install 'libraries/<lang>/<name> <target>'`,
+  then `ls` the `.path` with `/opt/compiler-explorer` replaced by `$SCRATCH/opt`. The directory must exist and hold
+  the expected headers/sources. This is a real install, but only into scratch.
 - **Built libraries** (static/shared/cshared, go, rust, fortran…): a build that compiles for real but uploads
-  nothing:
-  ```bash
-  bin/ce_install --dry-run --dest $SCRATCH/opt --staging-dir $SCRATCH/staging \
-      build --temp-install --buildfor <compiler-id> 'libraries/<lang>/<name> <target>'
-  ```
+  nothing: `bin/ce_install --dry-run --dest $SCRATCH/opt --staging-dir $SCRATCH/staging build --temp-install
+  --buildfor <compiler-id> 'libraries/<lang>/<name> <target>'`.
   **Exit code 0 is not success.** The last line must report at least `1 packages built OK`. `0 packages built OK,
   1 skipped` means nothing was tested (e.g. `is not installed, unable to build`). Treat that as a failed check and
   fix the command, don't report it as a pass. Header-only libraries log `does not have to build, skipping`, which
   is expected.
 
-  Pick the newest release compiler that is installed locally. List the language's compilers whose executable
-  exists, filtered to the main x86-64 toolchain by its install path, sorted by that path:
-  ```bash
-  grep -E '^compiler\.[^.]+\.exe=' /opt/compiler-explorer/cemain/etc/config/<lang>.amazon.properties \
-      | sed -E 's/^compiler\.([^.]+)\.exe=/\1 /' | while read -r id exe; do [ -x "$exe" ] && echo "$id $exe"; done \
-      | grep -E '<path-regex>' | sort -V -k2 | tail -1
-  ```
-  The regex matches the whole `<id> <exe>` line. C++ `^g[0-9]+ .*/gcc-[0-9.]+/bin/g\+\+$`, C
-  `^cg[0-9]+ .*/gcc-[0-9.]+/bin/gcc$`, Go `^gl[0-9]+ ` (cross-arch Go ids like `wasm_gl126` share the same binary),
-  Rust `^r[0-9]+ `, Fortran `^gfortran[0-9]+ .*/gcc-[0-9.]+/`. Other languages: look at the output and pick
-  similarly. Don't sort by id: ids don't sort by version (`gl12413` sorts after `gl1260`).
+  Pick the newest release compiler that is installed locally: `scripts/newest-local-compiler.sh <lang>
+  '<path-regex>'` lists the language's compilers whose executable exists, filtered to the main x86-64 toolchain by
+  its install path, and prints the newest by that path. The regex matches the whole `<id> <exe>` line. C++
+  `^g[0-9]+ .*/gcc-[0-9.]+/bin/g\+\+$`, C `^cg[0-9]+ .*/gcc-[0-9.]+/bin/gcc$`, Go `^gl[0-9]+ ` (cross-arch Go ids
+  like `wasm_gl126` share the same binary), Rust `^r[0-9]+ `, Fortran `^gfortran[0-9]+ .*/gcc-[0-9.]+/`. Other
+  languages: drop the filter (`.`), look at the output and pick similarly. Don't sort by id: ids don't sort by
+  version (`gl12413` sorts after `gl1260`).
 
   **Go dry runs talk to the conan proxy on failure.** `go_library_builder.py` posts to `/buildfailed` without
   checking `--dry-run`. A dry run never logs in, so the post fails with `PostFailure: … buildfailed:
@@ -376,9 +344,9 @@ never rewrite the contributor's history.
 
 **Fixups**: if `maintainerCanModify` is true, push a normal commit on top of the contributor's branch, from the
 PR's worktree: `git push https://github.com/<owner>/<repo>.git HEAD:<headRefName>`, with `<owner>` and `<repo>`
-from step 1's `headRepositoryOwner.login` and `headRepository.name`. If maintainer edits are disabled, use the combined-branch strategy (even for a single pair), or offer to ask the
-contributor for the fix. Fixes for a wizard bug use the fix agent's derived output ("Rule for wizard bugs"), so
-wait for it before pushing them.
+from step 1's `headRepositoryOwner.login` and `headRepository.name`. If maintainer edits are disabled, use the
+combined-branch strategy (even for a single pair), or offer to ask the contributor for the fix. Fixes for a wizard
+bug use the fix agent's derived output ("Rule for wizard bugs"), so wait for it before pushing them.
 
 **Merge**: once CI is green on the fixed head, merge infra, then main. Right before each merge, check
 `gh pr view <N> -R <repo> --json mergeStateStatus`:
@@ -390,13 +358,9 @@ wait for it before pushing them.
   again.
 - `UNSTABLE` means a check is pending or failing: wait for CI.
 
-```bash
-gh pr merge <N> -R compiler-explorer/infra --squash
-gh pr merge <M> -R compiler-explorer/compiler-explorer --squash
-```
-
-Never use `--admin` and never bypass branch protection. Both sides merge before the real build because that build
-reads the library's properties from compiler-explorer `main`.
+Merge with `gh pr merge <N> -R compiler-explorer/infra --squash`, then the same for the main PR in
+`compiler-explorer/compiler-explorer`. Never use `--admin` and never bypass branch protection. Both sides merge
+before the real build because that build reads the library's properties from compiler-explorer `main`.
 
 **Unit, sequential**: after merging one version, the remaining PRs of the unit conflict (both sides edited the same
 spot) or would add duplicate blocks. For each next version, in order, in both repos:
@@ -426,27 +390,16 @@ Do it in each repo:
 ## 6. Real library build
 
 Skip the Linux build for anything that doesn't need building (header-only, or libraries whose yaml says
-`build_type: none` or `never`); the Windows build at the end of this step still applies. C libraries can't be built this way: `lin-lib-build.yaml` has no C branch and would treat
-`libraries/c/<name>` as a C++ library name. Skip them and say so in the final report.
+`build_type: none` or `never`); the Windows build at the end of this step still applies. C libraries can't be
+built this way: `lin-lib-build.yaml` has no C branch and would treat `libraries/c/<name>` as a C++ library name.
+Skip them and say so in the final report.
 
 Otherwise, after both merges (for a unit, after the last or combined ones), run the Linux library build once per
 library, and for **one** compiler only. This is a smoke test of the production build, not a full rollout:
-
-```bash
-runs() { gh run list -R compiler-explorer/infra --workflow lin-lib-build.yaml --event workflow_dispatch \
-    --user "$(gh api user --jq .login)" --limit 20 --json databaseId --jq '.[].databaseId' | sort; }
-before=$(runs)
-gh workflow run lin-lib-build.yaml -R compiler-explorer/infra \
-    -f library=libraries/<lang>/<name> -f compiler=<compiler-id> -f branch=main
-# the run takes a few seconds to appear; repeat until exactly one new id shows up
-comm -13 <(echo "$before") <(runs)
-gh run watch -R compiler-explorer/infra <run-id>
-gh run view <run-id> -R compiler-explorer/infra --log | grep -m1 'Detected language'   # once it has finished
-```
-
-Every run has the same title and its inputs aren't shown, so the new id among your own dispatches is how you find
-it. Dispatch one build at a time and wait for its id before the next. The `Detected language: …, library: …` log
-line confirms it was yours.
+`scripts/dispatch-lib-build.sh lin libraries/<lang>/<name> <compiler-id>`. It dispatches the build, finds the new
+run among your own dispatches (every run has the same title and its inputs aren't shown), waits for it, and prints
+the `Detected language: …, library: …` line that confirms it was yours plus the build summary. It exits non-zero
+unless at least one package built OK. Run one build at a time.
 
 Pick a current GCC or Clang release id (C++), or the latest release of the language's own compiler (e.g. a
 `gl…` id for Go). Look the id up in `etc/config/<lang>.amazon.properties`, not from memory. It doesn't have to be
@@ -457,14 +410,13 @@ compiler-explorer/infra`), diagnose, and report it. Both sides are already merge
 or revert would look like. Don't open one without asking.
 
 **Windows** (only if the library was added to `c++.amazonwin.properties`, step 2): this is needed even for
-header-only libraries, because Windows serves them as conan packages. Run `win-lib-build.yaml` the same way as above,
-with `-f library=<name>` (bare name, no `libraries/c++/` prefix, no `branch` input). For header-only libraries the
-builder always uses `mingw64_ucrt_gcc_1220`, whatever compiler you pass. **The run's status means nothing**: it
-reports success when the build failed, because the script drops ce_install's exit status. Read the log for
-`N packages built OK` (`gh run view <run-id> -R compiler-explorer/infra --log | grep -E 'packages built|failed to
-build'`). Header-only packaging runs the library's own CMake install. A library without a `CMakeLists.txt`, or
-without install rules, gets no package unless infra has the fallback from infra#2501. Check that issue before
-promising Windows support in the comment.
+header-only libraries, because Windows serves them as conan packages. Run `scripts/dispatch-lib-build.sh win <name>
+<compiler-id>`, with the bare library name (no `libraries/c++/` prefix). For header-only libraries the builder always
+uses `mingw64_ucrt_gcc_1220`, whatever compiler you pass. **The run's status means nothing**: it reports success
+when the build failed, because the script drops ce_install's exit status. Go by the script's exit code, which
+checks the log for `N packages built OK`. Header-only packaging runs the library's own CMake install; when that
+installs no headers (no `CMakeLists.txt`, or no install rules), the builder copies the repo's `include/`, or else
+its root, into the package instead.
 
 ## 7. Comment
 
