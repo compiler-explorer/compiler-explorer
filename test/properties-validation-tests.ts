@@ -476,6 +476,44 @@ compilers=orphan
         });
     });
 
+    describe('overlay files', () => {
+        const overlay = `# Overlay: tweaks c++.foo.properties
+compilers=extra
+group.mygroup.options=-O2
+compiler.basecompiler.name=Renamed
+compiler.extra.exe=/opt/compiler-explorer/extra/bin/extra
+compiler.extra.name=Extra
+compiler.extra.name=Extra again
+`;
+        const notOverlay = overlay.replace('# Overlay: tweaks c++.foo.properties\n', '');
+
+        it('should recognise an overlay by its first line', () => {
+            expect(parsePropertiesFileRaw(overlay, 'c++.foo-bar.properties').isOverlay).toBe(true);
+            expect(parsePropertiesFileRaw('# overlay\ncompiler.a.name=A', 'x.properties').isOverlay).toBe(true);
+            expect(parsePropertiesFileRaw(notOverlay, 'c++.foo-bar.properties').isOverlay).toBe(false);
+            expect(parsePropertiesFileRaw(`# Base file\n${overlay}`, 'c++.foo-bar.properties').isOverlay).toBe(false);
+        });
+
+        it('should skip orphan checks in overlays', () => {
+            const result = validate(overlay, 'c++.foo-bar.properties');
+            expect(result.orphanedCompilerExe).toEqual([]);
+            expect(result.orphanedCompilerId).toEqual([]);
+            expect(result.orphanedGroups).toEqual([]);
+            expect(validate('# Overlay\ncompiler.gcc.name=GCC', 'c++.foo-bar.properties').noCompilersList).toBe(false);
+        });
+
+        it('should still run other checks in overlays', () => {
+            const result = validate(overlay, 'c++.foo-bar.properties');
+            expect(result.duplicateKeys.map(i => i.id)).toEqual(['compiler.extra.name']);
+        });
+
+        it('should run orphan checks on the same content without the marker', () => {
+            const result = validate(notOverlay, 'c++.foo-bar.properties');
+            expect(result.orphanedCompilerId.map(i => i.id)).toEqual(['basecompiler']);
+            expect(result.orphanedGroups.map(i => i.id)).toEqual(['mygroup']);
+        });
+    });
+
     describe('cross-file compiler ID validation', () => {
         it('should detect compiler IDs defined in multiple files', () => {
             const file1Content = `

@@ -34,6 +34,7 @@ describe('Basic formatter functionality', () => {
             name: 'foo-format',
             exe: '/dev/null',
             styles: [],
+            styleFiles: {},
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
         });
@@ -46,6 +47,7 @@ describe('Basic formatter functionality', () => {
             name: 'foo-format',
             exe: '/dev/null',
             styles: ['foostyle'],
+            styleFiles: {},
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
         });

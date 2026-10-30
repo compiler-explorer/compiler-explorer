@@ -5,6 +5,11 @@
   - Add a new formatter under the `formatters` key
   - The new formatter can have the following keys: name, exe, styles, type, explicitVersion (to override version
     parsing), version (argument to get version info), versionRe (regex to filter out the right version info)
+  - A style listed in `styles` can be backed by a style file on the server with `styleFile.<style>`. For example,
+    `formatter.clangformat.styles=MyCorp:Google:LLVM` and
+    `formatter.clangformat.styleFile.MyCorp=/path/to/.clang-format` runs clang-format with
+    `--style=file:/path/to/.clang-format` when `MyCorp` is selected. The site's style settings take the clangformat
+    formatter's `styles` list, and its first style is the default for new users.
   - Add a `lib/formatters/<formatter>.ts` file using the template below, replacing `Type` and `type` as appropriate
 
     ```js

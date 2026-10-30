@@ -39,6 +39,8 @@ export interface AppConfiguration {
     staticMaxAgeSecs: number;
     maxUploadSize: string;
     extraBodyClass: string;
+    siteLogo: string;
+    favicon: string;
     storageSolution: string;
     httpRoot: string;
     staticRoot: string;
