@@ -102,6 +102,7 @@ editor.defineTheme('ce', {
             fontStyle: 'bold',
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
+        {token: 'entity.name.function.duckling', foreground: '795e26'},
     ],
     colors: {
         // There seems to be a monaco bug when switching between themes with the minimap's background not updating
@@ -120,6 +121,7 @@ editor.defineTheme('ce-dark', {
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
         {token: 'variable.predefined', foreground: '949eb0'},
+        {token: 'entity.name.function.duckling', foreground: 'dcdcaa'},
     ],
     colors: {},
 });
@@ -135,6 +137,7 @@ editor.defineTheme('ce-dark-plus', {
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
         {token: 'variable.predefined', foreground: '949eb0'},
+        {token: 'entity.name.function.duckling', foreground: 'dcdcaa'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -389,6 +392,7 @@ editor.defineTheme('ce-pink', {
             }
             return monacoRules;
         })(),
+        {token: 'entity.name.function.duckling', foreground: 'a770db'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -429,6 +433,7 @@ editor.defineTheme('ce-one-dark', {
             fontStyle: 'bold',
         },
         {token: 'variable.predefined', foreground: '949eb0'},
+        {token: 'entity.name.function.duckling', foreground: '61afef'},
         // General Identifiers
         {token: 'identifier.cpp', foreground: 'abb2bf'},
         // Annotations (includes items in attribute list)
