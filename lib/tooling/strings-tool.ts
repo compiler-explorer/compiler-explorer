@@ -32,8 +32,8 @@ export class StringsTool extends BaseTool {
     }
 
     override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
-        if (!compilationInfo.filters.binary) {
-            return this.createErrorResponse(`${this.tool.name ?? 'Strings'} requires an executable`);
+        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
+            return this.createErrorResponse(`${this.tool.name ?? 'Strings'} requires an executable or binary object`);
         }
         if (await fileExists(compilationInfo.executableFilename)) {
             return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
