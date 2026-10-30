@@ -56,19 +56,19 @@ export class LLVMMcaTool extends BaseTool {
         // Check if compiler target is overridden with --target=<foo> or -target <foo>.
         let argIsTarget = false;
         for (const arg of compilationInfo.options) {
-            if (arg.startsWith('--target=')) target = arg.replace(/^--target=/, '');
+            if (/^--target(?:-triple)?=/.test(arg)) target = arg.replace(/^--target(?:-triple)?=/, '');
             if (argIsTarget) {
                 target = arg;
                 argIsTarget = false;
             }
-            if (arg === '-target') argIsTarget = true;
+            if (arg === '-target' || arg === '--target-triple') argIsTarget = true;
         }
 
         if (target) prependArgs.push('-mtriple=' + target);
 
         let haveCPU = false;
         let haveM32 = false;
-        for (const arg of compilationInfo.options) {
+        for (const [index, arg] of compilationInfo.options.entries()) {
             if (arg.startsWith('-march') && (target?.startsWith('x86_64') || target?.startsWith('i386'))) {
                 prependArgs.push(arg.replace(/^-march=/, '-mcpu='));
                 haveCPU = true;
@@ -77,6 +77,14 @@ export class LLVMMcaTool extends BaseTool {
             if (arg.startsWith('-mcpu')) {
                 prependArgs.push(arg);
                 haveCPU = true;
+            }
+            const targetOption = arg.match(/^--target-(cpu|features)(?:=(.*))?$/);
+            if (targetOption) {
+                const value = targetOption[2] ?? compilationInfo.options[index + 1];
+                if (value !== undefined) {
+                    if (targetOption[1] === 'cpu') haveCPU = true;
+                    prependArgs.push((targetOption[1] === 'cpu' ? '-mcpu=' : '-mattr=') + value);
+                }
             }
         }
 
