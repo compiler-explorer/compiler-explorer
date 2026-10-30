@@ -1,0 +1,124 @@
+{
+  "module.function": [
+    {
+      "after": [
+        {
+          "text": "// MIR for `module::function` after First",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "MIR",
+        },
+        {
+          "text": "dump",
+        },
+        {
+          "text": "with changes",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `module::function` before First",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "initial",
+        },
+        {
+          "text": "MIR",
+        },
+        {
+          "text": "dump",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "First (1-1-001)",
+      "passId": "1-1-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `module::function` after Second",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "MIR",
+        },
+        {
+          "text": "dump",
+        },
+        {
+          "text": "with changes",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `module::function` before Second",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "MIR",
+        },
+        {
+          "text": "dump",
+        },
+        {
+          "text": "with changes",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "Second (1-1-002)",
+      "passId": "1-1-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `module::function` after Third",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "MIR",
+        },
+        {
+          "text": "dump",
+        },
+        {
+          "text": "with more changes",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `module::function` before Third",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "MIR",
+        },
+        {
+          "text": "dump",
+        },
+        {
+          "text": "with changes",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "Third (1-1-003)",
+      "passId": "1-1-003",
+    },
+  ],
+}
