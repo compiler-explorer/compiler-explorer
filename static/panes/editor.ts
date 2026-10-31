@@ -120,6 +120,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private cppInsightsButton: JQuery<HTMLElement>;
     private quickBenchButton: JQuery<HTMLElement>;
     private abiExplorerButton: JQuery<HTMLElement>;
+    private externalSitesGroup: JQuery<HTMLElement>;
     private abiExplorerCompilers = new Map<string, CompilerInfo>();
     private abiExplorerUpdate = 0;
     private languageInfoButton: JQuery;
@@ -647,22 +648,18 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         if (options.thirdPartyIntegrationEnabled) {
+            this.externalSitesGroup = this.domRoot.find('.external-sites');
             this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
-            this.cppInsightsButton.on('mousedown', () => {
-                this.updateOpenInCppInsights();
-            });
-
             this.quickBenchButton = this.domRoot.find('.open-in-quickbench');
-            this.quickBenchButton.on('mousedown', () => {
-                this.updateOpenInQuickBench();
-            });
-
             this.abiExplorerButton = this.domRoot.find('.open-in-abiexplorer');
-            // Hover and focus come before the click with time to spare, so the compiler lookups behind the
-            // link are done by the time mousedown, the last event before it is followed, needs them.
-            this.abiExplorerButton.on('mouseenter focus mousedown', () => {
-                this.updateOpenInAbiExplorer();
-            });
+            // Opening the menu comes well before a link in it is followed, so the ABI Explorer link's compiler
+            // lookups are done by then; mousedown on each link covers the code changing while the menu is open.
+            BootstrapUtils.setElementEventHandler(this.externalSitesGroup, 'show.bs.dropdown', () =>
+                this.updateExternalSiteLinks(),
+            );
+            this.cppInsightsButton.on('mousedown', () => this.updateOpenInCppInsights());
+            this.quickBenchButton.on('mousedown', () => this.updateOpenInQuickBench());
+            this.abiExplorerButton.on('mousedown', () => this.updateOpenInAbiExplorer());
         }
 
         this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
@@ -717,18 +714,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     updateButtons(): void {
         if (options.thirdPartyIntegrationEnabled) {
-            if (this.currentLanguage?.id === 'c++') {
-                this.cppInsightsButton.show();
-                this.quickBenchButton.show();
-            } else {
-                this.cppInsightsButton.hide();
-                this.quickBenchButton.hide();
-            }
-            if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
-                this.abiExplorerButton.show();
-            } else {
-                this.abiExplorerButton.hide();
-            }
+            const isCpp = this.currentLanguage?.id === 'c++';
+            const hasAbiExplorer = !!abiExplorerLanguageFor(this.currentLanguage?.id);
+            this.cppInsightsButton.toggle(isCpp);
+            this.quickBenchButton.toggle(isCpp);
+            this.abiExplorerButton.toggle(hasAbiExplorer);
+            this.externalSitesGroup.toggle(isCpp || hasAbiExplorer);
         }
 
         this.addExecutorButton.prop('disabled', !this.currentLanguage?.supportsExecute);
@@ -914,6 +905,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
             this.quickBenchButton.attr('href', link);
         }
+    }
+
+    private updateExternalSiteLinks(): void {
+        if (this.currentLanguage?.id === 'c++') {
+            this.updateOpenInCppInsights();
+            this.updateOpenInQuickBench();
+        }
+        this.updateOpenInAbiExplorer();
     }
 
     updateOpenInAbiExplorer(): void {
