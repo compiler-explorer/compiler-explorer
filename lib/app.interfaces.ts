@@ -26,6 +26,7 @@ import type {LoggingOptions} from './logger.js';
 
 export type AppArguments = {
     rootDir: string;
+    propertiesDirs?: string[];
     env: string[];
     hostname?: string;
     port: number;
