@@ -926,7 +926,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'razorforge',
         extensions: ['.rf'],
         alias: [],
-        logoFilename: null,
+        logoFilename: 'razorforge.svg',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
