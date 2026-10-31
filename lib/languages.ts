@@ -518,7 +518,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'gleam',
         extensions: ['.gleam'],
         alias: [],
-        logoFilename: null,
+        logoFilename: 'gleam.svg',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
