@@ -65,6 +65,7 @@ export type LanguageKey =
     | 'gleam'
     | 'glsl'
     | 'go'
+    | 'gooo'
     | 'haskell'
     | 'hlsl'
     | 'helion'

@@ -550,3 +550,14 @@
       - any-glob-to-any-file:
           - 'lib/compilers/perl.ts'
           - 'etc/config/perl.*.properties'
+
+'lang-gooo':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/gooo.ts'
+          - 'etc/config/gooo.*.properties'
+          - 'static/modes/gooo-mode.ts'
+          - 'examples/gooo/**'
+          - 'test/gooo-tests.ts'
+          - 'test/fixtures/gooo/**'
+          - 'docs/Gooo.md'
