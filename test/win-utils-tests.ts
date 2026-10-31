@@ -60,4 +60,39 @@ describe('WinUtils.get_dlls_used', () => {
 
         expect(await winUtils.get_dlls_used(exe)).toEqual([path.join(x86Dir, 'ucrtbased.dll')]);
     });
+
+    it('does not look up imports with a path in their name', async () => {
+        const root = newTempDir();
+        const pathDir = path.join(root, 'bin');
+        const exe = path.join(root, 'output.exe');
+        await writeFakePe(exe, IMAGE_FILE_MACHINE_I386);
+        await writeFakePe(path.join(root, 'outside.dll'), IMAGE_FILE_MACHINE_I386);
+        await fs.mkdir(pathDir, {recursive: true});
+
+        const exec = async (_cmd: string, args: string[]) => ({
+            stdout: args[1] === exe ? '    DLL Name: ../outside.dll\n' : '',
+        });
+        const winUtils = new WinUtils(exec as any, 'objdump', {env: {PATH: pathDir}});
+
+        expect(await winUtils.get_dlls_used(exe)).toEqual([]);
+    });
+});
+
+describe('WinUtils.get_dll_names', () => {
+    it('only returns plain file names', () => {
+        const objdump_output = [
+            '\tDLL Name: KERNEL32.dll',
+            '\tDLL Name: ucrtbased.dll',
+            '\tDLL Name: ..\\..\\outside.dll',
+            '\tDLL Name: ../outside.dll',
+            '\tDLL Name: sub/outside.dll',
+            '\tDLL Name: C:\\Windows\\outside.dll',
+            '\tDLL Name: C:outside.dll',
+            '\tDLL Name: \\\\host\\share\\outside.dll',
+            '\tvma:  Hint/Ord Member-Name Bound-To',
+        ].join('\n');
+        const winUtils = new WinUtils((async () => ({stdout: ''})) as any, 'objdump', {env: {PATH: ''}} as any);
+
+        expect(winUtils.get_dll_names(objdump_output)).toEqual(['KERNEL32.dll', 'ucrtbased.dll']);
+    });
 });

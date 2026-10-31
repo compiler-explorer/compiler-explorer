@@ -88,32 +88,44 @@ export class WinUtils {
         const paths = this.execOptions.env.PATH.split(path.delimiter);
         const machine = await this.get_pe_machine(executable);
 
-        const lines = utils.splitLines(dump_dlls_used.stdout);
-        for (const line of lines) {
-            const match = line.match(this.re_dll_name);
-            if (match) {
-                const dll_name = match[1];
+        for (const dll_name of this.get_dll_names(dump_dlls_used.stdout)) {
+            if (this.skippable.includes(dll_name.toLowerCase())) continue;
+            if (this.alreadyDone.includes(dll_name)) continue;
 
-                if (this.skippable.includes(dll_name.toLowerCase())) continue;
-                if (this.alreadyDone.includes(dll_name)) continue;
+            logger.debug('looking for ' + dll_name);
 
-                logger.debug('looking for ' + dll_name);
+            const dll_path = await this.find_first_file_in_dirs(paths, dll_name, machine);
+            if (dll_path) {
+                logger.debug('found at ' + dll_path);
+                dlls_used.push(dll_path);
+                this.alreadyDone.push(dll_name);
 
-                const dll_path = await this.find_first_file_in_dirs(paths, dll_name, machine);
-                if (dll_path) {
-                    logger.debug('found at ' + dll_path);
-                    dlls_used.push(dll_path);
-                    this.alreadyDone.push(dll_name);
-
-                    const recursed = await this.get_dlls_used(dll_path);
-                    if (recursed.length > 0) {
-                        dlls_used.push(...recursed);
-                    }
+                const recursed = await this.get_dlls_used(dll_path);
+                if (recursed.length > 0) {
+                    dlls_used.push(...recursed);
                 }
             }
         }
 
         return dlls_used;
+    }
+
+    // Import names come from the compiled executable, so they are user controlled. Only plain file names are
+    // returned: a name with a directory or drive in it would make the PATH lookup resolve outside PATH.
+    public get_dll_names(objdump_output: string): string[] {
+        const dll_names: string[] = [];
+        for (const line of utils.splitLines(objdump_output)) {
+            const match = line.match(this.re_dll_name);
+            if (!match) continue;
+
+            const dll_name = match[1];
+            if (path.win32.basename(dll_name) !== dll_name || dll_name.includes(':')) {
+                logger.debug('ignoring import with a path in its name: ' + dll_name);
+                continue;
+            }
+            dll_names.push(dll_name);
+        }
+        return dll_names;
     }
 }
 
