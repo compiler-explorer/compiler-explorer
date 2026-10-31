@@ -177,6 +177,19 @@ def _is_true(elem, child_name: str) -> bool:
     return _text(elem, child_name).upper() == 'TRUE'
 
 
+def bit_ranges(fld) -> list:
+    """<BitLayout>/<Range>* sorted by Order (ascending = least-significant chunk first).
+
+    Usually one range; some fields are split across non-contiguous bits (e.g. ENC_VOP3P's
+    OPSEL_HI) and every range is needed to reconstruct the full field.
+    """
+    layout = fld.find('BitLayout')
+    if layout is None:
+        return []
+    ranges = sorted(layout.findall('Range'), key=lambda r: int(r.get('Order') or 0))
+    return [[_int(r, 'BitOffset'), _int(r, 'BitCount')] for r in ranges]
+
+
 def parse_encodings(root) -> dict:
     """<Encodings>: description, width and bitfield layout, keyed by encoding name."""
     encodings = {}
@@ -186,15 +199,10 @@ def parse_encodings(root) -> dict:
     for enc in section.findall('Encoding'):
         fields = []
         for fld in enc.findall('./MicrocodeFormat/BitMap/Field'):
-            bit_range = fld.find('./BitLayout/Range')
-            if bit_range is None:
+            ranges = bit_ranges(fld)
+            if not ranges:
                 continue
-            fields.append([
-                _text(fld, 'FieldName'),
-                _text(fld, 'Description'),
-                _int(bit_range, 'BitOffset'),
-                _int(bit_range, 'BitCount'),
-            ])
+            fields.append([_text(fld, 'FieldName'), _text(fld, 'Description'), ranges])
         encodings[_text(enc, 'EncodingName')] = [_text(enc, 'Description'), _int(enc, 'BitCount'), fields]
     return encodings
 
