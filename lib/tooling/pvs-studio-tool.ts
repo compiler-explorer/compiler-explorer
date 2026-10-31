@@ -72,11 +72,12 @@ export class PvsStudioTool extends BaseTool {
 
         compileFlags = compileFlags.filter(flag => flag !== '');
 
-        // Deal with args
-        args = [];
+        // Arguments typed into the tool's "Arguments" box go first, so the options below that this tool
+        // controls follow them and a dangling user option can't swallow '--cl-params'.
+        const userArgs = (args ?? []).filter(arg => arg !== '');
 
         // Necessary arguments
-        args.push('analyze', '--source-file', inputFilepath);
+        args = ['analyze', ...userArgs, '--source-file', inputFilepath];
         const outputFilePath = path.join(sourceDir, 'pvs-studio-log.log');
         args.push(
             '--output-file',
@@ -86,6 +87,8 @@ export class PvsStudioTool extends BaseTool {
             '/opt',
             '-e',
             '/usr',
+            '-e',
+            '/cefs',
             '--pvs-studio-path',
             path.dirname(this.tool.exe) + '/pvs-studio',
             // TODO: expand this to switch() for all supported compilers:

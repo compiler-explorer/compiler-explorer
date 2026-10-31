@@ -41,6 +41,7 @@ import {BrontoRefactorTool} from '../lib/tooling/bronto-refactor-tool.js';
 import {ClangQueryTool} from '../lib/tooling/clang-query-tool.js';
 import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
+import {PvsStudioTool} from '../lib/tooling/pvs-studio-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
 
@@ -371,5 +372,48 @@ describe('ClangQueryTool', () => {
         } finally {
             await fs.rm(dir, {recursive: true, force: true});
         }
+    });
+});
+
+describe('PvsStudioTool', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    async function analyzeArgs(userArgs: string[]): Promise<string[]> {
+        const tool = new PvsStudioTool(
+            {exe: '/opt/pvs/bin/pvs-studio-analyzer', compilerLanguage: 'c++'} as ToolInfo,
+            {
+                compilerProps: (_key: string, defaultValue: string) => defaultValue,
+            } as unknown as ToolEnv,
+        );
+        const runTool = vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({code: 1} as never);
+        const compilationInfo = {
+            code: 0,
+            compiler: {exe: '/opt/compiler-explorer/gcc-14/bin/g++', options: '', group: 'gcc', lang: 'c++'},
+            libraries: [],
+            options: [],
+        } as unknown as CompilationInfo;
+        await tool.runTool(compilationInfo, '/tmp/ce/example.cpp', userArgs);
+        return runTool.mock.calls[0][2] as string[];
+    }
+
+    it('should pass the user supplied arguments to the analyzer', async () => {
+        const args = await analyzeArgs(['--exclude-path', '/some/dir', '']);
+        expect(args.slice(0, 4)).toEqual(['analyze', '--exclude-path', '/some/dir', '--source-file']);
+        expect(args).not.toContain('');
+    });
+
+    it('should keep the options it controls after the user arguments', async () => {
+        const args = await analyzeArgs(['--dangling-option']);
+        expect(args).toContain('--dangling-option');
+        expect(args.indexOf('--dangling-option')).toBeLessThan(args.indexOf('--cl-params'));
+        expect(args.indexOf('--source-file')).toBeGreaterThan(args.indexOf('--dangling-option'));
+    });
+
+    it('should exclude the library directories from the analysis', async () => {
+        const args = await analyzeArgs([]);
+        const excluded = args.flatMap((arg, i) => (args[i - 1] === '-e' ? [arg] : []));
+        expect(excluded).toEqual(['/opt', '/usr', '/cefs']);
     });
 });
