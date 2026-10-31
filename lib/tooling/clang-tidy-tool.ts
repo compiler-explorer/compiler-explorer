@@ -37,6 +37,16 @@ export class ClangTidyTool extends BaseTool {
         return 'clang-tidy-tool';
     }
 
+    override async getToolExe(compilationInfo: CompilationInfo): Promise<string> {
+        const exe = path.format({dir: path.dirname(compilationInfo.compiler.exe), base: 'clang-tidy'});
+        try {
+            await fs.access(exe);
+            return exe;
+        } catch {
+            return this.tool.exe;
+        }
+    }
+
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
