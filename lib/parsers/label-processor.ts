@@ -84,6 +84,7 @@ export type LabelContext = {
     startBlock: RegExp;
     endBlock: RegExp;
     fixLabelIndentation: (line: string) => string;
+    fixLocalLabelIndentation: (line: string) => string;
 };
 
 export class LabelProcessor {
@@ -146,7 +147,9 @@ export class LabelProcessor {
     }
 
     private preprocessLine(originalLine: string, context: LabelContext, state: FindLabelsState): string {
-        return state.inCustomAssembly > 0 ? context.fixLabelIndentation(originalLine) : originalLine;
+        return state.inCustomAssembly > 0
+            ? context.fixLabelIndentation(originalLine)
+            : context.fixLocalLabelIndentation(originalLine);
     }
 
     private processLabelDefinition(line: string, context: LabelContext, state: FindLabelsState): void {
