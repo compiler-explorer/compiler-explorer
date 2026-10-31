@@ -96,6 +96,13 @@ export class WinUtils {
             if (match) {
                 const dll_name = match[1];
 
+                // Import names come from the user's executable: only look up plain file names, a directory or
+                // drive in the name would resolve outside the PATH directories
+                if (path.win32.basename(dll_name) !== dll_name || dll_name.includes(':')) {
+                    logger.debug('ignoring import with a path in its name: ' + dll_name);
+                    continue;
+                }
+
                 if (this.skippable.includes(dll_name.toLowerCase())) continue;
                 if (this.alreadyDone.includes(dll_name)) continue;
 
