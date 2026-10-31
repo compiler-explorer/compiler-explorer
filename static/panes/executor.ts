@@ -35,6 +35,7 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {ArtifactHandler} from '../artifact-handler.js';
@@ -94,6 +95,8 @@ export class Executor extends Pane<ExecutorState> {
     private fontScale: FontScale;
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
+    private initialStateLoaded = false;
+    private optionsChangedBeforeInitialStateLoad = false;
     private toggleWrapButton: Toggles;
     private outputContentRoot: JQuery<HTMLElement>;
     private executionStatusSection: JQuery<HTMLElement>;
@@ -169,6 +172,12 @@ export class Executor extends Pane<ExecutorState> {
 
     private async postInit(state: PaneState & ExecutorState) {
         await this.initLangAndCompiler(state);
+        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
+            this.options =
+                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
+            this.optionsField.val(this.options);
+        }
+        this.initialStateLoaded = true;
 
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
@@ -954,7 +963,12 @@ export class Executor extends Pane<ExecutorState> {
             this.onExecStdinChange($(e.target).val() as string);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('input', optionsChange);
+        this.optionsField.on('change input', e => {
+            if (!this.initialStateLoaded) {
+                this.optionsChangedBeforeInitialStateLoad = true;
+            }
+            optionsChange(e);
+        });
 
         this.execArgsField.on('change', execArgsChange).on('input', execArgsChange);
 
@@ -1025,6 +1039,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onOptionsChange(options: string): void {
+        if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
         this.options = options;
         this.doTypicalOnChange();
     }
