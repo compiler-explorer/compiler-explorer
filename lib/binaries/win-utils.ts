@@ -46,11 +46,37 @@ export class WinUtils {
         this.skippable = ['kernel32.dll', 'ucrtbase.dll'];
     }
 
-    private async find_first_file_in_dirs(paths: string[], filename: string): Promise<string | false> {
+    private async get_pe_machine(filename: string): Promise<number | undefined> {
+        try {
+            const file = await fs.open(filename, 'r');
+            try {
+                const header = Buffer.alloc(4);
+                await file.read(header, 0, 4, 0x3c);
+                const peHeader = Buffer.alloc(6);
+                await file.read(peHeader, 0, 6, header.readUInt32LE(0));
+                if (peHeader.toString('latin1', 0, 4) !== 'PE\0\0') return undefined;
+                return peHeader.readUInt16LE(4);
+            } finally {
+                await file.close();
+            }
+        } catch {
+            return undefined;
+        }
+    }
+
+    private async find_first_file_in_dirs(
+        paths: string[],
+        filename: string,
+        machine: number | undefined,
+    ): Promise<string | false> {
         for (const p of paths) {
             const fullpath = path.join(p, filename);
-            const found = await utils.fileExists(fullpath);
-            if (found) return fullpath;
+            if (machine === undefined) {
+                if (await utils.fileExists(fullpath)) return fullpath;
+            } else if ((await this.get_pe_machine(fullpath)) === machine) {
+                // A 64-bit process sees the 64-bit System32 on PATH, so 32-bit executables need their DLLs found elsewhere
+                return fullpath;
+            }
         }
 
         return false;
@@ -62,6 +88,7 @@ export class WinUtils {
         const dump_dlls_used = await this.exec(this.objdumper, ['--private-headers', executable], this.execOptions);
 
         const paths = this.execOptions.env.PATH.split(path.delimiter);
+        const machine = await this.get_pe_machine(executable);
 
         const lines = utils.splitLines(dump_dlls_used.stdout);
         for (const line of lines) {
@@ -74,7 +101,7 @@ export class WinUtils {
 
                 logger.debug('looking for ' + dll_name);
 
-                const dll_path = await this.find_first_file_in_dirs(paths, dll_name);
+                const dll_path = await this.find_first_file_in_dirs(paths, dll_name, machine);
                 if (dll_path) {
                     logger.debug('found at ' + dll_path);
                     dlls_used.push(dll_path);
