@@ -102,6 +102,7 @@ export class CompilersService {
         'supportsDemangle',
         'supportsVerboseDemangling',
         'supportsFiltersInBinary',
+        'supportsDarkBackgroundColours',
     ];
 
     private async fetchCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {

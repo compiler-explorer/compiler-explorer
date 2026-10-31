@@ -24,10 +24,11 @@
 
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
+import {BaseCache} from '../lib/cache/base.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
@@ -952,5 +953,44 @@ describe('An executor request whose result is too large to send', () => {
         expect(result).toBe(execResult);
         expect(stored).toHaveBeenCalledOnce();
         expect(stored.mock.calls[0][0]).toBe(execResult);
+    });
+});
+
+describe('Dark background colours in the compilation cache key', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    async function cacheKeyHash(supportsDarkBackgroundColours: boolean, backendOptions: Record<string, any>) {
+        const env = makeCompilationEnvironment({languages});
+        const compiler = new BaseCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: 'c++', options: '', supportsDarkBackgroundColours}),
+            env,
+        );
+        const cacheGet = vi.spyOn(env, 'cacheGet').mockResolvedValue({code: 0, stdout: [], stderr: []});
+        vi.spyOn(compiler as any, 'storeOversizedResult').mockResolvedValue(undefined);
+
+        await compiler.compile(
+            'int main() {}',
+            [],
+            backendOptions,
+            makeFakeParseFiltersAndOutputOptions({}),
+            BypassCache.None,
+            [],
+            {args: [], stdin: ''} as any,
+            [],
+            [],
+        );
+        return BaseCache.hash(cacheGet.mock.calls[0][0] as any);
+    }
+
+    it('shares one entry between light and dark themes for a compiler that ignores the background', async () => {
+        const unspecified = await cacheKeyHash(false, {});
+        expect(await cacheKeyHash(false, {darkBackgroundColours: false})).toEqual(unspecified);
+        expect(await cacheKeyHash(false, {darkBackgroundColours: true})).toEqual(unspecified);
+    });
+
+    it('keeps an entry per background for a compiler that colours for it, defaulting to light', async () => {
+        const unspecified = await cacheKeyHash(true, {});
+        expect(await cacheKeyHash(true, {darkBackgroundColours: false})).toEqual(unspecified);
+        expect(await cacheKeyHash(true, {darkBackgroundColours: true})).not.toEqual(unspecified);
     });
 });
