@@ -13,22 +13,11 @@ type InstructionInfo = {
 
 /** Retrieves the list of all LLVM instruction names */
 const getInstructionList = (root: Cheerio<Document>, $: CheerioAPI) => {
-    const anchor$ = root.find('[href="\\#instruction-reference"]').first();
-    const instructions$ = anchor$.parent().find('+ ul > li > ul > li > p > a > code');
-    const instructions = instructions$.map((_, el) => {
-        const span$ = $(el).find('span');
-        return span$.map((_, el) => $(el).text())
-            .get()
-            .filter((s) => s !== '..')
-            .map((x) => {
-                // Do any name-to-anchor rewrites here
-                if (x == "va_arg") return "va-arg";
-                return x;
-            })
-            .join('-');
-    }).get();
-    return [...new Set(instructions)].filter(x => x !== '..' && x !== 'to');
-}
+    const ids = root.find('section[id$="-instruction"]')
+        .map((_, el) => $(el).attr('id')!.replace(/-instruction$/, ''))
+        .get();
+    return [...new Set(ids)];
+};
 
 /** Crawls information about one LLVM instruction */
 const getInstructionInfo = (instruction: string, root: Cheerio<Document>, $: CheerioAPI): InstructionInfo => {
@@ -44,6 +33,24 @@ const getInstructionInfo = (instruction: string, root: Cheerio<Document>, $: Che
 
     // Find and remove all <a> elements with text equal to '¶'
     myhtml$('a').filter((_, el) => myhtml$(el).text().trim() === '¶').remove();
+
+    // Remove all <a class="headerlink"> elements
+    myhtml$('a.headerlink').remove();
+
+    // Make relative links absolute so they point at llvm.org rather than the host page
+    myhtml$('a[href]').each((_, el) => {
+        const a$ = myhtml$(el);
+        const href = a$.attr('href')!;
+        if (/^(https?:|mailto:)/.test(href)) return;
+        a$.attr(
+            'href',
+            href.startsWith('#')
+                ? `https://llvm.org/docs/LangRef.html${href}`
+                : new URL(href, 'https://llvm.org/docs/').toString(),
+        );
+        a$.attr('target', '_blank');
+        a$.attr('rel', 'noopener noreferrer');
+    });
 
     // Extract the modified HTML content
     const modifiedHtml = myhtml$.html();
