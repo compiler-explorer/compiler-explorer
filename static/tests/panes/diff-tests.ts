@@ -145,4 +145,100 @@ describe('Diff type picker', () => {
 
         expect(diff.lhs.model.getValue()).toBe("<select 'Add new...' → 'GNAT Debug Tree' in this compiler's pane>");
     });
+
+    describe('tool output', () => {
+        const MCA = {id: 'llvm-mcatrunk', name: 'llvm-mca', code: 0, stdout: [{text: 'Iterations: 100'}], stderr: []};
+        const TIDY = {id: 'clangtidytrunk', name: 'clang-tidy', code: 1, stdout: [], stderr: [{text: 'warning: x'}]};
+        const mcaOption = encodeToolValue(MCA.id);
+
+        function encodeToolValue(id: string): string {
+            return `${DiffType.ToolOutput}:${id}`;
+        }
+
+        function selectTool(diff: Diff, id: string) {
+            diff.lhs.difftype = DiffType.ToolOutput;
+            diff.lhs.extraoption = id;
+        }
+
+        it('offers each tool that has a result, by name', () => {
+            const diff = makeDiff();
+            openCompilers(diff, GCC);
+
+            diff.onCompileResult(1, GCC, {tools: [MCA, TIDY]} as unknown as CompilationResult);
+
+            const options = diff.selectize.lhsdifftype.options;
+            expect(options[mcaOption].name).toBe('llvm-mca');
+            expect(options[encodeToolValue(TIDY.id)].name).toBe('clang-tidy');
+        });
+
+        it('offers no tools when the result has none', () => {
+            const diff = makeDiff();
+            openCompilers(diff, GCC);
+
+            diff.onCompileResult(1, GCC, {} as CompilationResult);
+
+            expect(
+                offeredTypes(diff.selectize.lhsdifftype).filter(id => id.startsWith(`${DiffType.ToolOutput}:`)),
+            ).toEqual([]);
+        });
+
+        it('reads tools from a nested result as well', () => {
+            const diff = makeDiff();
+            openCompilers(diff, GCC);
+
+            diff.onCompileResult(1, GCC, {result: {tools: [MCA]}} as unknown as CompilationResult);
+
+            expect(offeredTypes(diff.selectize.lhsdifftype)).toContain(mcaOption);
+        });
+
+        it("shows the selected tool's stdout followed by its stderr", () => {
+            const diff = makeDiff(makeSide(1));
+            openCompilers(diff, GCC);
+            selectTool(diff, TIDY.id);
+
+            diff.onCompileResult(1, GCC, {
+                tools: [MCA, {...TIDY, stdout: [{text: 'out'}]}],
+            } as unknown as CompilationResult);
+
+            expect(diff.lhs.model.getValue()).toBe('out\nwarning: x');
+        });
+
+        it('tells the user how to get the output while the tool has no result', () => {
+            const diff = makeDiff(makeSide(1));
+            openCompilers(diff, GCC);
+            selectTool(diff, MCA.id);
+
+            diff.onCompileResult(1, GCC, {} as CompilationResult);
+
+            expect(diff.lhs.model.getValue()).toBe("<select 'Add tool...' → this tool in this compiler's pane>");
+        });
+
+        it('restores a saved tool selection once its compiler announces itself', () => {
+            const lhs = makeSide(1, DiffType.ToolOutput);
+            lhs.extraoption = MCA.id;
+            const diff = makeDiff(lhs);
+
+            openCompilers(diff, GCC);
+
+            expect(diff.lhs.difftype).toBe(DiffType.ToolOutput);
+            expect(diff.selectize.lhsdifftype.getValue()).toBe(mcaOption);
+        });
+
+        it('keeps the selected tool when switching compiler, so the same tool can be compared across panes', () => {
+            const diff = makeDiff(makeSide(1), makeSide(1));
+            openCompilers(diff, GCC, CLANG);
+            diff.onCompileResult(1, GCC, {tools: [MCA]} as unknown as CompilationResult);
+            diff.rhs.difftype = DiffType.ToolOutput;
+            diff.rhs.extraoption = MCA.id;
+
+            selectRhs(diff, 2);
+            expect(diff.rhs.difftype).toBe(DiffType.ToolOutput);
+            expect(diff.selectize.rhsdifftype.getValue()).toBe(mcaOption);
+
+            diff.onCompileResult(2, CLANG, {
+                tools: [{...MCA, stdout: [{text: 'Iterations: 200'}]}],
+            } as unknown as CompilationResult);
+            expect(diff.rhs.model.getValue()).toBe('Iterations: 200');
+        });
+    });
 });
