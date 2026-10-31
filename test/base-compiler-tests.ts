@@ -304,6 +304,21 @@ describe('Compiler execution', () => {
         ]);
     });
 
+    it('should not execute on compilers with execution turned off', () => {
+        const noExecCompiler = new BaseCompiler(
+            makeFakeCompilerInfo({...noExecuteSupportCompilerInfo, supportsBinary: true, supportsExecute: false}),
+            ce,
+        );
+        const filters = makeFakeParseFiltersAndOutputOptions({binary: true, execute: true});
+        noExecCompiler.fixFiltersBeforeCacheKey(filters, [], []);
+        expect(filters.binary).toBe(true);
+        expect(filters.execute).toBeUndefined();
+
+        const execFilters = makeFakeParseFiltersAndOutputOptions({binary: true, execute: true});
+        compiler.fixFiltersBeforeCacheKey(execFilters, [], []);
+        expect(execFilters.execute).toBe(true);
+    });
+
     it('buildenv should handle spaces correctly', () => {
         const buildenv = new BuildEnvSetupBase(executingCompilerInfo, ce);
         expect(buildenv.getCompilerArch()).toEqual('magic 8bit');

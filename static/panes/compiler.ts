@@ -1300,7 +1300,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
-        if (filters.execute && !this.compiler.supportsExecute && !this.compiler.supportsBinary) {
+        if (filters.execute && !this.compiler.supportsExecute) {
             delete filters.execute;
         }
         if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
@@ -2830,7 +2830,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryObject);
         formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
 
-        this.filterExecuteButton.prop('disabled', !this.compiler.supportsBinary && !this.compiler.supportsExecute);
+        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
         formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
         // Disable demangle for compilers where we can't access it
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
@@ -2910,7 +2910,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
         this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
         this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
-        this.executorButton.toggle(this.compiler.supportsBinary || this.compiler.supportsExecute);
+        this.executorButton.toggle(!!this.compiler.supportsExecute);
         this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
         this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
         this.filterVerboseDemanglingButton.toggle(!!this.compiler.supportsVerboseDemangling);
