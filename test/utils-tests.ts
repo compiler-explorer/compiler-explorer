@@ -456,6 +456,26 @@ describe('Rust compiler output', () => {
             {text: '12 | }'},
             {
                 text: '   |  ^ consider adding a `main` function to `<source>`',
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add a `main` function',
+                            edits: [
+                                {
+                                    line: 12,
+                                    column: 2,
+                                    endline: 12,
+                                    endcolumn: 2,
+                                    text: '\n\npub fn main() {}',
+                                },
+                            ],
+                        },
+                    ],
+                },
             },
         ]);
     });
