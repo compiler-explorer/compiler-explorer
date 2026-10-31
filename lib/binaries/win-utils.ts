@@ -71,10 +71,12 @@ export class WinUtils {
     ): Promise<string | false> {
         for (const p of paths) {
             const fullpath = path.join(p, filename);
-            if (!(await utils.fileExists(fullpath))) continue;
-            // A 64-bit process sees the 64-bit System32 on PATH, so 32-bit executables need their DLLs found elsewhere
-            if (machine !== undefined && (await this.get_pe_machine(fullpath)) !== machine) continue;
-            return fullpath;
+            if (machine === undefined) {
+                if (await utils.fileExists(fullpath)) return fullpath;
+            } else if ((await this.get_pe_machine(fullpath)) === machine) {
+                // A 64-bit process sees the 64-bit System32 on PATH, so 32-bit executables need their DLLs found elsewhere
+                return fullpath;
+            }
         }
 
         return false;
