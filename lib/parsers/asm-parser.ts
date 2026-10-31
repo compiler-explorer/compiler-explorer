@@ -44,6 +44,10 @@ function maybeAddBlank(asm: ParsedAsmResultLine[]) {
     if (!lastBlank) asm.push({text: '', source: null, labels: []});
 }
 
+export function truncatedLine(): ParsedAsmResultLine {
+    return {text: '[truncated; too many lines]', source: null, labels: []};
+}
+
 export type ParsingContext = {
     files: Record<number, string>;
     source: AsmResultSource | undefined | null;
@@ -58,6 +62,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected parsingState: ParsingState;
 
     protected maxAsmLines: number;
+    // Filtered text asm output stops at this many lines; the whole input is still read, so label usage and the file
+    // table are unaffected
+    protected maxTextAsmLines: number;
 
     protected labelFindNonMips: RegExp;
     protected labelFindMips: RegExp;
@@ -276,6 +283,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             const labelsInLine = match ? [] : this.getUsedLabelsInLine(text);
 
+            if (asm.length >= this.maxTextAsmLines) {
+                asm.push(truncatedLine());
+                break;
+            }
             asm.push({
                 text: text,
                 source: this.hasOpcode(line, this.parsingState.inNvccCode, this.parsingState.inVLIWpacket)
@@ -393,6 +404,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         this.binaryHideFuncRe = null;
         this.maxAsmLines = 5000;
+        this.maxTextAsmLines = 200000;
         if (compilerProps) {
             const binaryHideFuncReValue = compilerProps('binaryHideFuncRe');
             if (binaryHideFuncReValue) {
@@ -401,6 +413,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
 
             this.maxAsmLines = compilerProps('maxLinesOfAsm', this.maxAsmLines);
+            this.maxTextAsmLines = compilerProps('maxLinesOfTextAsm', this.maxTextAsmLines);
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
@@ -658,7 +671,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
         const markTruncated = () => {
             if (truncated) return;
-            asm.push({text: '[truncated; too many lines]', source: null, labels: []});
+            asm.push(truncatedLine());
             truncated = true;
         };
         // A function kept for its user code may have run past the limit while it could still be removed
@@ -796,6 +809,17 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     process(asm: string, filters: ParseFiltersAndOutputOptions) {
-        return this.processAsm(asm, filters);
+        const result = this.processAsm(asm, filters);
+        // The binary path has its own limit. This catches parsers whose own processAsm doesn't stop at maxTextAsmLines.
+        if (!filters.binary && !filters.binaryObject && result.asm.length > this.maxTextAsmLines + 1) {
+            result.asm.splice(this.maxTextAsmLines);
+            result.asm.push(truncatedLine());
+            if (result.labelDefinitions) {
+                for (const [label, line] of Object.entries(result.labelDefinitions)) {
+                    if (line > this.maxTextAsmLines) delete result.labelDefinitions[label];
+                }
+            }
+        }
+        return result;
     }
 }
