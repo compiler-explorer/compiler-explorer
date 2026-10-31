@@ -471,7 +471,8 @@ describe('Compiler tests', () => {
 
         it('error on empty request body', async () => {
             await setFakeResult();
-            await request(app).post('/fake-for-test/compile').set('Accept', 'application/json').expect(500);
+            const res = await request(app).post('/fake-for-test/compile').set('Accept', 'application/json').expect(400);
+            expect(res.body).toEqual({error: true, message: 'No source found in request'});
         });
 
         it('handles filters set directly', async () => {
