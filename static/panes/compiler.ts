@@ -58,6 +58,7 @@ import {options} from '../options.js';
 import {languagesService} from '../services/languages.service.js';
 import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
+import {asmMnemonic, getSimdrefDoc, simdrefArch} from '../simdref-docs.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
 import {CompilationOptions} from '../widgets/compilation-options.js';
@@ -206,6 +207,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private gccDumpButton: JQuery<HTMLButtonElement>;
     private cfgButton: JQuery<HTMLButtonElement>;
     private explainButton: JQuery<HTMLButtonElement>;
+    private simdrefExplainButton: JQuery<HTMLButtonElement>;
+    private simdrefDecorations: monaco.editor.IEditorDecorationsCollection;
+    private simdrefEpoch = 0;
+    // shortcut: toggle state is not saved in the pane state, persist it if the feature ships
+    private simdrefExplain = false;
     private executorButton: JQuery<HTMLButtonElement>;
     private libsButton: JQuery<HTMLButtonElement>;
     private compileInfoLabel: JQuery<HTMLElement>;
@@ -1740,6 +1746,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             });
         });
         this.updateDecorations();
+        this.updateSimdrefDecorations();
 
         const codeLenses: monaco.languages.CodeLens[] = [];
         const effectiveFilters = this.getEffectiveFilters();
@@ -2578,6 +2585,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.explainButton = this.domRoot.find('.btn.view-explain');
+        this.simdrefExplainButton = this.domRoot.find('.simdref-explain');
+        this.simdrefExplainButton.on('click', () => this.onSimdrefExplainToggle());
+        this.simdrefDecorations = this.editor.createDecorationsCollection();
         this.executorButton = this.domRoot.find('.create-executor');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 
@@ -2791,6 +2801,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     updateButtons(): void {
+        const canExplain = simdrefArch(this.compiler?.instructionSet) !== null;
+        this.simdrefExplainButton.toggle(canExplain);
+        if (!canExplain && this.simdrefExplain) {
+            this.onSimdrefExplainToggle();
+        }
         if (!this.compiler) return;
         const filters = this.getEffectiveFilters();
         // We can support intel output if the compiler supports it, or if we're compiling
@@ -3421,6 +3436,53 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
+    onSimdrefExplainToggle(): void {
+        this.simdrefExplain = !this.simdrefExplain;
+        this.simdrefExplainButton.attr('aria-pressed', this.simdrefExplain ? 'true' : 'false');
+        this.simdrefExplainButton.toggleClass('active', this.simdrefExplain);
+        if (this.simdrefExplain) {
+            this.updateSimdrefDecorations();
+        } else {
+            this.simdrefEpoch++;
+            this.simdrefDecorations.clear();
+        }
+    }
+
+    async updateSimdrefDecorations(): Promise<void> {
+        const arch = simdrefArch(this.compiler?.instructionSet);
+        if (!this.simdrefExplain || !arch) return;
+        const epoch = ++this.simdrefEpoch;
+        const lineMnemonics = this.assembly.map(line => asmMnemonic(line.text ?? ''));
+        const mnemonics = [...new Set(lineMnemonics.filter((mnemonic): mnemonic is string => mnemonic !== null))];
+        const docs = new Map(
+            await Promise.all(
+                mnemonics.map(async mnemonic => [mnemonic, await getSimdrefDoc(arch, mnemonic)] as const),
+            ),
+        );
+        if (epoch !== this.simdrefEpoch || !this.simdrefExplain) return;
+        const model = this.editor.getModel();
+        const decorations: monaco.editor.IModelDeltaDecoration[] = [];
+        lineMnemonics.forEach((mnemonic, index) => {
+            const summary = mnemonic ? docs.get(mnemonic)?.summary : undefined;
+            const line = index + 1;
+            if (!summary || !model || line > model.getLineCount()) return;
+            // Monaco ignores after content on zero-width ranges, so cover the last character
+            const endColumn = model.getLineMaxColumn(line);
+            const startColumn = Math.max(1, endColumn - 1);
+            if (startColumn >= endColumn) return;
+            decorations.push({
+                range: new monaco.Range(line, startColumn, line, endColumn),
+                options: {
+                    after: {
+                        content: '  ; ' + (summary.length > 60 ? summary.slice(0, 60) + '…' : summary),
+                        inlineClassName: 'simdref-summary-inline',
+                    },
+                },
+            });
+        });
+        this.simdrefDecorations.set(decorations);
+    }
+
     clearLinkedLines(): void {
         this.decorations.linkedCode = [];
         this.updateDecorations();
@@ -3658,36 +3720,46 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 ];
                 this.updateDecorations();
             }
-            const hoverShowAsmDoc = this.settings.hoverShowAsmDoc;
-            if (
-                hoverShowAsmDoc &&
-                this.compiler?.supportsAsmDocs &&
-                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
-            ) {
-                try {
-                    const response = await Compiler.getAsmInfo(
-                        currentWord.word,
-                        unwrap(this.recentInstructionSet || this.compiler.instructionSet),
-                        this.asmSyntax(),
-                    );
-                    if (!response) return;
+            const isAsmKeyword = this.isWordAsmKeyword(e.target.position.lineNumber, currentWord);
+            const wantAsmDoc = this.settings.hoverShowAsmDoc && this.compiler?.supportsAsmDocs && isAsmKeyword;
+            const arch = simdrefArch(this.compiler?.instructionSet);
+            const wantSimdrefDoc = this.simdrefExplain && arch !== null && isAsmKeyword;
+            if (wantAsmDoc || wantSimdrefDoc) {
+                const hoverMessages: monaco.IMarkdownString[] = [];
+                if (wantAsmDoc) {
+                    try {
+                        const response = await Compiler.getAsmInfo(
+                            currentWord.word,
+                            unwrap(this.recentInstructionSet || this.compiler?.instructionSet),
+                            this.asmSyntax(),
+                        );
+                        if (response) {
+                            hoverMessages.push({
+                                value: response.tooltip + '\n\nMore information available in the context menu.',
+                                isTrusted: true,
+                            });
+                        }
+                    } catch {
+                        // ignore errors fetching tooltips
+                    }
+                }
+                if (wantSimdrefDoc && arch) {
+                    const doc = await getSimdrefDoc(arch, currentWord.word);
+                    if (doc) {
+                        hoverMessages.push({value: doc.markdown, isTrusted: true});
+                    }
+                }
+                if (hoverMessages.length > 0) {
                     this.decorations.asmToolTip = [
                         {
                             range: range,
                             options: {
                                 isWholeLine: false,
-                                hoverMessage: [
-                                    {
-                                        value: response.tooltip + '\n\nMore information available in the context menu.',
-                                        isTrusted: true,
-                                    },
-                                ],
+                                hoverMessage: hoverMessages,
                             },
                         },
                     ];
                     this.updateDecorations();
-                } catch {
-                    // ignore errors fetching tooltips
                 }
             }
         }
