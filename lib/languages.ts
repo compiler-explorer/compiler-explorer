@@ -1092,7 +1092,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'python',
         extensions: ['.py'],
         alias: ['tile-lang'],
-        logoFilename: null,
+        logoFilename: 'tile-lang.svg',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
