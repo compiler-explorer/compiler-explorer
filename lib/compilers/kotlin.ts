@@ -22,8 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import Semver from 'semver';
 import _ from 'underscore';
 
 import {
@@ -35,9 +37,11 @@ import {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
 import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import * as utils from '../utils.js';
 import {KotlinParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
 
@@ -51,6 +55,82 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
+    }
+
+    override couldSupportASTDump() {
+        return true;
+    }
+
+    // kotlinc rejects unknown phase names, and which phase the JVM backend starts with has changed over time
+    getFirstBackendPhase(): string {
+        const version = utils.asSafeVer(this.compiler.semver);
+        if (Semver.gte(version, '2.4.0', true)) return 'JvmUpgradeCallableReferences';
+        if (Semver.gte(version, '1.9.20', true)) return 'ExternalPackageParentPatcherLowering';
+        if (Semver.gte(version, '1.8.0', true)) return 'FragmentSharedVariablesLowering';
+        return 'ValidateIrBeforeLowering';
+    }
+
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        const dirPath = await this.newTempDir();
+        const dumpDirectory = path.join(dirPath, 'kotlin-ir');
+        // Where this compile writes is ours to decide: a user's own -d or -Xdump-directory would send its output
+        // somewhere it isn't read, or into the main compile's directory
+        const compileOptions = this.filterUserOptionsWithArg(options, new Set(['-d'])).filter(
+            option => !option.startsWith('-Xdump-directory'),
+        );
+        // Users can pick which phases to dump themselves, otherwise default to dumping before the first backend phase.
+        const phaseOptions = compileOptions.some(option => option.startsWith('-Xphases-to-dump'))
+            ? []
+            : [`-Xphases-to-dump-before=${this.getFirstBackendPhase()}`];
+        const result = await this.runCompiler(
+            this.compiler.exe,
+            [
+                ...phaseOptions,
+                `-Xdump-directory=${dumpDirectory}`,
+                '-d',
+                path.join(dirPath, 'classes'),
+                ...compileOptions,
+            ],
+            inputFilename,
+            this.getDefaultExecOptions(),
+        );
+        if (result.code !== 0) {
+            return [{text: 'Failed to run compiler to get Kotlin IR'}];
+        }
+        return this.readIrDumps(dumpDirectory, path.dirname(inputFilename));
+    }
+
+    async readIrDumps(dumpDirectory: string, sourceDirectory: string): Promise<ResultLine[]> {
+        if (!(await utils.dirExists(dumpDirectory))) {
+            return [{text: '<No Kotlin IR generated>'}];
+        }
+
+        // kotlinc names each dump <phase index>_<BEFORE|AFTER>.<phase>, putting module-level phases in a per-module
+        // subdirectory and per-file phases at the top level, so pipeline order comes from the name alone
+        const entries = await fs.readdir(dumpDirectory, {recursive: true, withFileTypes: true});
+        const dumpFiles = entries
+            .filter(entry => entry.isFile())
+            .map(entry => ({
+                file: path.join(entry.parentPath, entry.name),
+                order: KotlinCompiler.irDumpFileOrder(entry.name),
+            }))
+            .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file))
+            .map(({file}) => file);
+        const contents = await Promise.all(dumpFiles.map(file => fs.readFile(file, 'utf8')));
+        // The dumps name the source by its absolute path, which would otherwise expose the temporary directory
+        const directoryPrefix = sourceDirectory + path.sep;
+        return contents
+            .map(content => content.split(directoryPrefix).join('').trimEnd())
+            .join('\n\n')
+            .split('\n')
+            .map(line => ({text: line}));
+    }
+
+    static irDumpFileOrder(filename: string): number {
+        const match = /^(\d+)_(BEFORE|AFTER)\./.exec(filename);
+        if (!match) return Number.MAX_SAFE_INTEGER;
+        // Before phases will always been even, after phases will always be odd.
+        return Number.parseInt(match[1], 10) * 2 + (match[2] === 'AFTER' ? 1 : 0);
     }
 
     override async runCompiler(
