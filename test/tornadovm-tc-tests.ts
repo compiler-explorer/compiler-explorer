@@ -81,6 +81,19 @@ describe('TornadoVM TC', () => {
         });
     });
 
+    it('reports success when any kernel compiled, so one refusal does not hide the others', () => {
+        const compiler = new TornadoVmTcCompiler(info, env);
+        const refused = '// ===== K.a =====\n// K.java:3: error: TC-E4010 TileContext kernels ...\n\n';
+        const compiled = '// ===== K.b =====\nextern "C" __global__ void K_b() {\n}\n';
+        expect(compiler.compiledAnyKernel(refused)).toBe(false);
+        expect(compiler.compiledAnyKernel(refused + compiled)).toBe(true);
+    });
+
+    it('passes --arg to TC', () => {
+        const compiler = new TornadoVmTcCompiler(info, env);
+        expect(compiler.splitOptions(['--arg', 'n=1024', '-Xlint:all']).tc).toEqual(['--arg', 'n=1024']);
+    });
+
     it('never asks for javap', () => {
         const compiler = new TornadoVmTcCompiler(info, env);
         const filters = {binary: true} as any;

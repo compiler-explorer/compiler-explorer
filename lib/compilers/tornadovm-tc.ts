@@ -33,7 +33,8 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 import {JavaCompiler} from './java.js';
 
-const TC_OPTIONS_WITH_VALUE = new Set(['--cc', '--fp16', '--fp64']);
+const TC_OPTIONS_WITH_VALUE = new Set(['--cc', '--fp16', '--fp64', '--arg']);
+const KERNEL_HEADER = /^\/\/ ===== .* =====$/;
 // TC ends each statement it can attribute with the Java line it came from: `x = y;  // Saxpy.java:9`.
 const SOURCE_COMMENT = /\s*\/\/ [\w$]+\.java:(\d+)$/;
 // TC reports refusals as a compiler does, naming the class's source file rather than CE's input file.
@@ -63,7 +64,8 @@ export class TornadoVmTcCompiler extends JavaCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         filters.binary = false;
-        return ['-g', '-encoding', 'utf8'];
+        // -parameters: `--arg n=1024` and TC's notes name parameters as written.
+        return ['-g', '-parameters', '-encoding', 'utf8'];
     }
 
     override getOutputFilename(dirPath: string) {
@@ -141,17 +143,32 @@ export class TornadoVmTcCompiler extends JavaCompiler {
         const tcArgs = ['emit', '--target', this.target, ...tcOptions, '--cp', dirPath, '--all'];
         const tc = await this.exec(tcExe, tcArgs, execOptions);
         await fs.writeFile(this.getOutputFilename(dirPath), tc.stdout);
+        // One refused kernel must not hide the others: their refusals stay in stderr, marking the editor.
+        const code = this.compiledAnyKernel(tc.stdout) ? 0 : tc.code;
         const stderr = utils
             .splitLines(tc.stderr)
             .map(line => line.replace(DIAGNOSTIC, `${inputFilename}:$1: `))
             .join('\n');
         return {
             ...this.transformToCompilationResult(
-                {...tc, stdout: javac.stdout, stderr: `${javac.stderr}${stderr}`},
+                {...tc, code, stdout: javac.stdout, stderr: `${javac.stderr}${stderr}`},
                 inputFilename,
             ),
             languageId: this.getCompilerResultLanguageId(filters),
         };
+    }
+
+    /** Whether `tc emit --all` printed code for a kernel, not only the comments of a refusal. */
+    compiledAnyKernel(output: string): boolean {
+        let inKernel = false;
+        for (const line of utils.splitLines(output)) {
+            if (KERNEL_HEADER.test(line)) {
+                inKernel = true;
+            } else if (inKernel && line.trim() !== '' && !line.startsWith('//')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     override async processAsm(result: {asm: string}): Promise<ParsedAsmResult> {
