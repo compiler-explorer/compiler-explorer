@@ -60,6 +60,37 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser Windows symbol declarations', () => {
+    it.each([
+        '_line',
+        '_square@4',
+        '@cube@4',
+        'tesseract@@4',
+    ])('should keep the global symbol %s when filtering unused labels', symbol => {
+        const parser = new AsmParser();
+        const result = parser.processAsm(`.globl ${symbol}\n${symbol}:\n    ret`, {
+            labels: true,
+            directives: true,
+            commentOnly: true,
+        });
+        expect(result.asm.map(line => line.text)).toEqual([`${symbol}:`, '    ret']);
+    });
+
+    it.each([
+        '_square@4',
+        '@cube@4',
+        'tesseract@@4',
+    ])('should keep the weak symbol %s when filtering unused labels', symbol => {
+        const parser = new AsmParser();
+        const result = parser.processAsm(`.weak ${symbol}\n${symbol}:\n    ret`, {
+            labels: true,
+            directives: true,
+            commentOnly: true,
+        });
+        expect(result.asm.map(line => line.text)).toEqual([`${symbol}:`, '    ret']);
+    });
+});
+
 describe('AsmParser binary line records', () => {
     const parser = new AsmParser();
     const gnuObjdump = `0000000000000000 <main>:
