@@ -73,10 +73,10 @@ describe('Duckling compiler', () => {
         const inputFilename = '/tmp/example.dk';
         const options = (compiler as any).optionsForFilter({}, '/tmp/example.s');
 
-        expect(options).toEqual(['compile_module', '--dump-ir', 'asm']);
+        expect(options).toEqual(['compile_module', '--no-incremental', '--dump-ir', 'asm']);
         expect(
             (compiler as any).orderArguments(options, inputFilename, [], [], [], [], ['--llvm-opt', '2'], []),
-        ).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm', '--llvm-opt', '2']);
+        ).toEqual(['compile_module', inputFilename, '--no-incremental', '--dump-ir', 'asm', '--llvm-opt', '2']);
     });
 
     it('prepares Duckling artifacts and copies this module assembly to the CE output path', async () => {
@@ -95,7 +95,7 @@ describe('Duckling compiler', () => {
 
         const result = await compiler.runCompiler(
             '/duckling/bin/duckc',
-            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            ['compile_module', inputFilename, '--no-incremental', '--dump-ir', 'asm'],
             inputFilename,
             makeExecOptions(),
         );
@@ -118,7 +118,7 @@ describe('Duckling compiler', () => {
 
         const result = await compiler.runCompiler(
             '/duckling/bin/duckc',
-            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            ['compile_module', inputFilename, '--no-incremental', '--dump-ir', 'asm'],
             inputFilename,
             makeExecOptions(),
         );
@@ -139,7 +139,7 @@ describe('Duckling compiler', () => {
 
         const result = await compiler.runCompiler(
             '/duckling/bin/duckc',
-            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            ['compile_module', inputFilename, '--no-incremental', '--dump-ir', 'asm'],
             inputFilename,
             makeExecOptions(),
         );
