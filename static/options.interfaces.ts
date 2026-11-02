@@ -49,6 +49,7 @@ export type LibsPerRemote = Record<string, LanguageLibs>;
 
 export type Options = {
     defaultFontScale: number;
+    formatStyles: string[];
     sentryDsn?: string;
     release?: string;
     sentryEnvironment?: string;

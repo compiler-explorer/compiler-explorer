@@ -191,6 +191,8 @@ export type CompilationResult = {
     didExecute?: boolean;
     validatorTool?: boolean;
     executableFilename?: string;
+    // Set while post-processing a project build, whose artifact is already the binary to disassemble.
+    objdumpInputFilename?: string;
     execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];
     gnatDebugTreeOutput?: ResultLine[];

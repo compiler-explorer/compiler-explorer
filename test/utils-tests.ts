@@ -429,6 +429,55 @@ describe('Rust compiler output', () => {
                 },
             },
         ]);
+
+        expect(
+            utils.parseRustOutput(
+                'error\n --> <source>:12:2\n12 | }\n   |  ^ consider adding a `main` function to `<source>`',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: 'error',
+                    severity: 3,
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:12:2',
+            },
+            {text: '12 | }'},
+            {
+                text: '   |  ^ consider adding a `main` function to `<source>`',
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add a `main` function',
+                            edits: [
+                                {
+                                    line: 12,
+                                    column: 2,
+                                    endline: 12,
+                                    endcolumn: 2,
+                                    text: '\n\npub fn main() {}',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        ]);
     });
 
     it('attaches filenames to errors from multiple files', () => {
@@ -657,6 +706,10 @@ describe('Anonymizes all kind of IPs', () => {
         expect(utils.anonymizeIp('ffff:aaaa:dead:beef')).toEqual('ffff:0:0:0');
         expect(utils.anonymizeIp('bad:c0de::')).toEqual('bad:0:0:0');
         expect(utils.anonymizeIp(':1d7e::c0fe')).toEqual(':0:0:0');
+    });
+    it('Removes last octet from IPv4-mapped IPv6 addresses', () => {
+        expect(utils.anonymizeIp('::ffff:203.0.113.42')).toEqual('::ffff:203.0.113.0');
+        expect(utils.anonymizeIp('::FFFF:10.1.2.3')).toEqual('::FFFF:10.1.2.0');
     });
 });
 

@@ -25,6 +25,7 @@
 import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
@@ -45,8 +46,22 @@ export class Win32VcCompiler extends Win32Compiler {
         return VCParser;
     }
 
+    // With /FS (which CMake adds to /Zi) cl writes the pdb through mspdbsrv, and inside the AppContainer sandbox cl
+    // is refused when connecting to it, so the compile hangs. /Z7 puts the debug info in the object file instead.
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+        return super
+            .optionsForFilter(filters, outputFilename, userOptions)
+            .filter(option => !option.startsWith('/Fd'))
+            .map(option => (option === '/Zi' ? '/Z7' : option));
+    }
+
+    override filterUserOptions(userOptions: string[]): string[] {
+        return userOptions.filter(option => !/^[/-](Zi|ZI|FS)$/.test(option));
+    }
+
     override getExtraCMakeArgs(key: any): string[] {
-        const args: string[] = [];
+        // CMake uses /Zi /FS by default, see optionsForFilter for why that does not work
+        const args = this.getMsvcStyleCMakeArgs();
 
         // Set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER explicitly to prevent CMake from detecting MinGW
         const compilerDir = path.dirname(this.compiler.exe);

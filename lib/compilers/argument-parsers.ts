@@ -489,6 +489,13 @@ export class ClangCParser extends ClangParser {
     }
 }
 
+export class ClangCLParser extends ClangCParser {
+    // clang-cl ignores --help with a warning, then fails for lack of input files
+    override getMainHelpOptions(): string[] {
+        return ['-help'];
+    }
+}
+
 export class CircleParser extends ClangParser {
     override async getOptions(helpArg: string) {
         const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*) {2,}- (.*)/i;
@@ -599,7 +606,16 @@ export class PascalParser extends BaseParser {
 
 export class MojoParser extends BaseParser {
     override async parse() {
-        await this.getOptions('-help');
+        const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, ['build', '--help']);
+        const options =
+            result.code === 0
+                ? this.parseLines(
+                      result.stdout + result.stderr,
+                      /^ {8}(--?[\w-]+(?:[ =]<[^>]+>)?) {2,}(.*)$/,
+                      /^ {8}(--?[\w-]+(?:[ =]<[^>]+>)?)(?:,.*)?$/,
+                  )
+                : {};
+        this.compiler.possibleArguments.populateOptions(options);
         return this.compiler;
     }
 }
@@ -1279,9 +1295,30 @@ export class GnuCobolParser extends GCCParser {
 
     override async getPossibleStdvers(): Promise<CompilerOverrideOptions> {
         const possible: CompilerOverrideOptions = [];
-        const options = await this.getOptionsStrict(this.getLanguageSpecificHelpFlags());
+        const helpFlags = this.getLanguageSpecificHelpFlags();
+        const options = await this.getOptionsStrict(helpFlags);
         for (const opt in options) {
             if (opt.startsWith('-std=')) {
+                const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, helpFlags);
+                const perLineDialects: CompilerOverrideOptions = [];
+                let inStdOption = false;
+                for (const line of utils.splitLines(result.stdout + result.stderr)) {
+                    if (/^ {2}-/.test(line)) {
+                        if (inStdOption) break;
+                        inStdOption = /^ {2}-std=/.test(line);
+                        continue;
+                    }
+                    if (!inStdOption) continue;
+                    const match = line.match(/^ {3,}([A-Za-z][A-Za-z0-9-]*) {2,}\S/);
+                    if (match?.[1]) {
+                        perLineDialects.push({
+                            name: match[1],
+                            value: match[1],
+                        });
+                    }
+                }
+                if (perLineDialects.length > 0) return perLineDialects;
+
                 const vers = options[opt].description
                     .split(':')[1]
                     .split(',')

@@ -76,6 +76,7 @@ export {
     DotNetMonoCompiler,
     DotNetNativeAotCompiler,
 } from './dotnet.js';
+export {DucklingCompiler} from './duckling.js';
 export {EDGCompiler} from './edg.js';
 export {ElixirCompiler} from './elixir.js';
 export {ElixirAsmCompiler} from './elixirasm.js';
@@ -94,6 +95,7 @@ export {GCCCompiler} from './gcc.js';
 export {GCCCobolCompiler} from './gcccobol.js';
 export {GCCRSCompiler} from './gccrs.js';
 export {GCCGimpleCompiler} from './gimple.js';
+export {GleamCompiler} from './gleam.js';
 export {GLSLCompiler} from './glsl.js';
 export {GM2Compiler} from './gm2.js';
 export {GnuCobolCompiler} from './gnucobol.js';
@@ -125,11 +127,12 @@ export {MovfuscatorCompiler} from './movfuscator.js';
 export {MrustcCompiler} from './mrustc.js';
 export {Msp430Compiler} from './msp430.js';
 export {NasmCompiler} from './nasm.js';
+export {NexiumCompiler} from './nexium.js';
 export {NimCompiler} from './nim.js';
 export {NixCompiler} from './nix.js';
 export {NorcroftCompiler} from './norcroft.js';
 export {NumbaCompiler} from './numba.js';
-export {NvccCompiler} from './nvcc.js';
+export {NvccCompiler, NvccWin32Compiler} from './nvcc.js';
 export {NvcppCompiler} from './nvcpp.js';
 export {NvrtcCompiler} from './nvrtc.js';
 export {OCamlCompiler} from './ocaml.js';
@@ -157,6 +160,7 @@ export {RustCompiler} from './rust.js';
 export {RustcCgCraneliftCompiler} from './rustc-cg-cranelift.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SailCompiler} from './sail.js';
+export {SalamCompiler} from './salam.js';
 export {ScalaCompiler} from './scala.js';
 export {ScaleNvccAMDCompiler} from './scale-nvcc-amd.js';
 export {ScaleNvccNvidiaCompiler} from './scale-nvcc-nvidia.js';

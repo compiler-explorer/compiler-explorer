@@ -74,6 +74,7 @@ export class LanguagesService {
         'digitSeparator',
         'defaultCompiler',
         'defaultLibs',
+        'defaultOptions',
     ];
 
     private async fetchLanguages(): Promise<LanguageMap> {

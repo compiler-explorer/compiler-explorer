@@ -101,6 +101,8 @@ describe('Server Module', () => {
                 trustProxy: 2,
                 manifestPath: '/mocked/dist', // Use absolute path for testing
                 extraBodyClass: '',
+                siteLogo: '',
+                favicon: '',
                 maxUploadSize: '1mb',
             };
 
@@ -224,7 +226,7 @@ describe('Server Module', () => {
             it('fails startup when the manifest is missing the branding assets', async () => {
                 await writeManifest({'main.js': 'main.abc123.js'});
                 await expect(setupWebServer(mockAppArgs, mockOptions, mockDependencies)).rejects.toThrow(
-                    /Missing branding assets for extraBodyClass='staging' in the static manifest/,
+                    /Missing branding assets in the static manifest: favicon-staging.ico, site-logo-staging.svg/,
                 );
             });
         });

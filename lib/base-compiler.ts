@@ -688,7 +688,7 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
+        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(objdumpInputFile))) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
@@ -1030,6 +1030,24 @@ export class BaseCompiler {
         });
     }
 
+    getSharedLibraryDynamicLinker(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || foundVersion.dynamicLinker === undefined) return [];
+            return [foundVersion.dynamicLinker];
+        });
+    }
+
+    // A library that brings its own dynamic linker (e.g. glibc) finds its libraries through that loader. Putting them
+    // on LD_LIBRARY_PATH would make the host-built compiler and tools load a foreign libc.
+    private withoutOwnDynamicLinker(libraries: SelectedLibraryVersion[]): SelectedLibraryVersion[] {
+        return libraries.filter(selectedLib => this.findLibVersion(selectedLib)?.dynamicLinker === undefined);
+    }
+
+    private usesLibrarySysroot(libraries: SelectedLibraryVersion[]): boolean {
+        return libraries.some(selectedLib => !!this.findLibVersion(selectedLib)?.sysroot);
+    }
+
     getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -1051,6 +1069,8 @@ export class BaseCompiler {
     ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
+        // TODO: make configurable
+        const dynamicLinkerFlag = '-Wl,--dynamic-linker=';
 
         let toolchainLibraryPaths: string[] = [];
         if (toolchainPath) {
@@ -1066,8 +1086,11 @@ export class BaseCompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
+            // --sysroot stops clang looking outside the sysroot for the GCC runtime (libgcc_s, libstdc++)
+            this.usesLibrarySysroot(libraries) ? toolchainLibraryPaths.map(path => libPathFlag + path) : [],
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
+            this.getSharedLibraryDynamicLinker(libraries, dirPath).map(path => dynamicLinkerFlag + path),
         );
     }
 
@@ -1079,7 +1102,7 @@ export class BaseCompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(libraries), dirPath),
         );
     }
 
@@ -1093,7 +1116,7 @@ export class BaseCompiler {
             this.compiler.ldPath,
             this.getExtraLdPaths(key),
             this.compiler.libPath,
-            this.getSharedLibraryPaths(key.libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(key.libraries), dirPath),
         );
     }
 
@@ -1115,6 +1138,9 @@ export class BaseCompiler {
 
     getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        // TODO: make configurable
+        const sysrootFlag = '--sysroot=';
+
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
@@ -1123,6 +1149,9 @@ export class BaseCompiler {
             if (foundVersion.packagedheaders) {
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
                 paths.push(includeFlag + includePath);
+            }
+            if (foundVersion.sysroot) {
+                paths.push(sysrootFlag + foundVersion.sysroot);
             }
             return paths;
         });
@@ -2982,6 +3011,21 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    /**
+     * Called before a project build's artifact is disassembled, for a compiler to pick up what the build left next to
+     * it, as the single-file path does in optionsForFilter.
+     */
+    async prepareArtifactDisassembly(
+        _artifactFilename: string,
+        _filters: ParseFiltersAndOutputOptions,
+    ): Promise<void> {}
+
+    /**
+     * Called once a project build has succeeded, for a compiler to put next to the artifact what running it needs, as
+     * the single-file path does in buildExecutableInFolder.
+     */
+    async prepareArtifactExecution(_artifactFilename: string): Promise<void> {}
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
@@ -3257,6 +3301,8 @@ export class BaseCompiler {
             });
         }
 
+        // Ahead of packaging, so that what running it needs is in the package too
+        await this.prepareArtifactExecution(outputFilename);
         await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
 
         compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -4179,7 +4225,9 @@ but nothing was dumped. Possible causes are:
         if (exeFilename.includes('icc')) {
             return ICCParser;
         }
-        if (exe.includes('clangir')) {
+        // ClangIR compilers share the trunk clang binary, so identify them by name (as
+        // ClangParser does for supportsClangirView), not by exe path.
+        if (this.compiler.name?.includes('clangir')) {
             return ClangirParser;
         }
         if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {

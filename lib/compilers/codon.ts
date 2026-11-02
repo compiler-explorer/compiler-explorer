@@ -37,7 +37,10 @@ export class CodonCompiler extends BaseCompiler {
         userOptions?: string[],
     ): string[] {
         filters.binary = !(userOptions?.includes('-llvm') || userOptions?.includes('--llvm'));
-        return ['build', '-o', this.filename(outputFilename)];
+        // Codon 0.19+ picks the output kind from the extension when none is given, and would write assembly
+        // text to our `.s` output name.
+        const kind = filters.binary ? ['-exe'] : [];
+        return ['build', ...kind, '-o', this.filename(outputFilename)];
     }
 
     override getSharedLibraryPathsAsArguments(

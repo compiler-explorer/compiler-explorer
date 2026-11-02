@@ -181,6 +181,19 @@ describe('Diff view', () => {
         openDiffView();
     });
 
+    it('should only offer diff types the selected compiler can produce', () => {
+        waitForEditors();
+        openDiffView();
+
+        findPane('Diff').find('select.difftype-picker.lhsdifftype + .ts-wrapper .ts-control').click();
+        cy.get('.ts-dropdown .option:visible').should($options => {
+            const optionTexts = $options.toArray().map(option => option.textContent?.trim());
+            expect(optionTexts).to.include('Assembly');
+            expect(optionTexts).not.to.include('GNAT Expanded Code');
+            expect(optionTexts).not.to.include('GNAT Tree Code');
+        });
+    });
+
     it('should update selected compiler labels when compiler options change', () => {
         waitForEditors();
 

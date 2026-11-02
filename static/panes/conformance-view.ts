@@ -27,9 +27,10 @@ import $ from 'jquery';
 import _ from 'underscore';
 
 import {unwrapString} from '../../shared/assert.js';
-import {escapeHTML, unique} from '../../shared/common-utils.js';
+import {unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
@@ -214,7 +215,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     addCompilerPicker(config?: AddCompilerPickerConfig): void {
@@ -222,8 +223,8 @@ export class Conformance extends Pane<ConformanceViewState> {
             config = {
                 // Compiler id which is being used
                 compilerId: '',
-                // Options which are in use
-                options: '',
+                // Options which are in use: a new entry starts with the language's defaults
+                options: languagesService.getLanguagesOrFail()[this.langId as LanguageKey]?.defaultOptions ?? '',
             };
         }
         const newSelector = this.selectorTemplate.clone();
@@ -465,7 +466,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         // The pane becomes unusable long before this hides the icons
         // Added either way just in case we ever add more icons to this pane
         const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-        this.conformanceContentRoot.outerHeight(this.domRoot.height() ?? 0 - topBarHeight);
+        this.conformanceContentRoot.outerHeight((this.domRoot.height() ?? 0) - topBarHeight);
     }
 
     async getOverlappingLibraries(compilerIds: string[]): Promise<CompilerLibs> {
