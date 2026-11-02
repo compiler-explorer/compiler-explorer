@@ -60,6 +60,7 @@ import './lean-mode';
 import './llvm-ir-mode';
 import './mach-mode';
 import './makefile-mode';
+import './metal-mode';
 import './mlir-mode';
 import './modula2-mode';
 import './mojo-mode';

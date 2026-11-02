@@ -74,7 +74,7 @@ export class TornadoVmTcCompiler extends JavaCompiler {
     }
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
-        return this.target === 'opencl' ? 'openclc' : 'cuda';
+        return {cuda: 'cuda', opencl: 'openclc', metal: 'metal'}[this.target];
     }
 
     async tornadoApiJars(): Promise<string[]> {
