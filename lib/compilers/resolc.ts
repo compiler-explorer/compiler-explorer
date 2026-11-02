@@ -66,20 +66,17 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     private readonly pvmAsmParser: PolkaVMAsmParser;
-
-    /**
-     * @note
-     * Needs to coincide with the [infrastructure configs](https://github.com/compiler-explorer/infra/blob/main/bin/yaml/solidity.yaml).
-     */
-    static get solcExe() {
-        return '/opt/compiler-explorer/solc-0.8.30/solc';
-    }
+    private readonly solcExe: string;
 
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
 
         this.asm = new ResolcRiscVAsmParser(this.compilerProps);
         this.pvmAsmParser = new PolkaVMAsmParser();
+        this.solcExe =
+            this.compilerProps<string>(`compiler.${this.compiler.id}.solcExe`) ||
+            this.compilerProps<string>(`group.${this.compiler.group}.solcExe`);
+        assert(this.solcExe, `Expected a 'solcExe' property for compiler '${this.compiler.id}'.`);
 
         // The arg producing LLVM IR (among other output) is already
         // included in optionsForFilter(), but irArg needs to be set.
@@ -108,7 +105,7 @@ export class ResolcCompiler extends BaseCompiler {
         filters.binaryObject = this.reinterpretBinaryObjectFilter(filters.binaryObject);
         filters.intel = false;
 
-        const options = ['-g', '--solc', ResolcCompiler.solcExe, '--overwrite', '--debug-output-dir', 'artifacts'];
+        const options = ['-g', '--solc', this.solcExe, '--overwrite', '--debug-output-dir', 'artifacts'];
         if (this.inputIs(InputKind.Yul)) {
             options.push('--yul');
         }
