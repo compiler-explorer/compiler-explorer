@@ -34,6 +34,10 @@ mixin newPaneButton(classId, text, title, icon)
         span.hideable Filter...
       .dropdown-menu
         include ../../options-filters
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.simdref-explain(title="Show simdref instruction summaries" aria-label="Show simdref instruction summaries" aria-pressed="false")
+        span.fas.fa-lightbulb
+        span.hideable Explain
     .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
       button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
         span.fas.fa-book
