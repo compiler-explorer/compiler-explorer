@@ -28,7 +28,7 @@ import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.j
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
 import {MojoParser} from './argument-parsers.js';
 
@@ -92,6 +92,10 @@ export class MojoCompiler extends BaseCompiler {
 
     override getArgumentParserClass() {
         return MojoParser;
+    }
+
+    override getAllPossibleTargetFlags(): string[][] {
+        return [[`--target-triple=${c_value_placeholder}`], ['--target-triple', c_value_placeholder]];
     }
 
     override getDefaultExecOptions() {
