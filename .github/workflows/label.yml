@@ -1,16 +1,35 @@
 # This workflow will triage pull requests and apply a label based on the
-# paths that are modified in the pull request.
+# paths that are modified in the pull request, plus a few keywords in the title.
 #
 # For more information, see: https://github.com/actions/labeler/blob/master/README.md
 
 name: Labeler
 on:
-  - pull_request_target
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
   label:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/labeler@v7
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
+      - name: Label by title
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const labels = [];
+            if (/\b(win(dows|32|64)?|msvc|mingw)\b/i.test(title)) labels.push('MS/Windows');
+            if (/\b(msvc|clang-cl)\b/i.test(title)) labels.push('msvc');
+            if (labels.length === 0) return;
+            await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels,
+            });

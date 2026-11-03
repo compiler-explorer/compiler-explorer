@@ -550,3 +550,27 @@
       - any-glob-to-any-file:
           - 'lib/compilers/perl.ts'
           - 'etc/config/perl.*.properties'
+
+'MS/Windows':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'etc/config/*.amazonwin.properties'
+          - 'etc/config/*.win*.properties'
+          - 'lib/compilers/win32*.ts'
+          - 'lib/compilers/wine-vc.ts'
+          - 'lib/compilers/wsl-vc.ts'
+          - 'lib/compilers/clangcl.ts'
+          - 'lib/compilers/pascal-win.ts'
+          - 'lib/demangler/win32*.ts'
+
+'msvc':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/win32-vc*.ts'
+          - 'lib/compilers/wine-vc.ts'
+          - 'lib/compilers/wsl-vc.ts'
+          - 'lib/compilers/clangcl.ts'
+          - 'lib/demangler/win32*.ts'
+          - 'lib/objdumper/vc.ts'
+          - 'lib/cfg/cfg-parsers/vc.ts'
+          - 'lib/parsers/asm-parser-vc*.ts'
