@@ -524,6 +524,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: 'erlang',
     },
+    gooo: {
+        name: 'Gooo',
+        monaco: 'gooo',
+        extensions: ['.gooo'],
+        alias: [],
+        logoFilename: 'gooo.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'go',
+        tooltip: 'Selected activity body to Go function source; no execution or machine assembly',
+    },
     glsl: {
         name: 'GLSL',
         monaco: 'glsl',
