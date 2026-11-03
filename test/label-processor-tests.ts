@@ -53,6 +53,7 @@ describe('LabelProcessor tests', () => {
         startBlock: /\.cfi_startproc\b/,
         endBlock: /\.(cfi_endproc|data|text|section)\b/,
         fixLabelIndentation: (line: string) => line.replace(/^\s+/, ''),
+        fixLocalLabelIndentation: (line: string) => (/^\s+\.[\w$.]+:/.test(line) ? line.replace(/^\s+/, '') : line),
     };
 
     describe('getLabelFind', () => {

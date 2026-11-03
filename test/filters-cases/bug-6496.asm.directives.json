@@ -1,0 +1,278 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "# GNU C++17 (crosstool-NG esp-14.2.0_20241119) version 14.2.0 (xtensa-esp-elf)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       compiled by GNU C version 4.9.2, GMP version 6.2.1, MPFR version 4.2.1, MPC version 1.2.1, isl version isl-0.26-GMP"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# options passed: -mdynconfig=xtensa_esp32.so -g -O2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z1fm:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 23,
+        "file": null,
+        "line": 3
+      },
+      "text": "        entry   sp, 32        #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LCFI0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:4:     uint32_t ret = 0;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 4
+      },
+      "text": "        movi.n  a10, 0      # <retval>,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:5:     for(uint32_t b = 1; b; b<<=1){"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 18,
+        "file": null,
+        "line": 5
+      },
+      "text": "        movi.n  a8, 1       # b,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:7:             ret++;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 16,
+        "file": null,
+        "line": 7
+      },
+      "text": "        mov.n   a13, a10      # tmp52, <retval>"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 16,
+        "file": null,
+        "line": 7
+      },
+      "text": "        movi.n  a9, 0x20    # tmp53,"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L3_LEND",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": {
+        "column": 16,
+        "file": null,
+        "line": 7
+      },
+      "text": "        loop    a9, .L3_LEND    # tmp53,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:6:         if(b & x){"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 6
+      },
+      "text": "        and     a12, a2, a8       # _18, x, b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:7:             ret++;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 16,
+        "file": null,
+        "line": 7
+      },
+      "text": "        movi.n  a11, 1      # tmp50,"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 16,
+        "file": null,
+        "line": 7
+      },
+      "text": "        moveqz  a11, a13, a12       # tmp50, tmp52, _18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 16,
+        "file": null,
+        "line": 7
+      },
+      "text": "        add.n   a10, a10, a11 # <retval>, <retval>, tmp50"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:5:     for(uint32_t b = 1; b; b<<=1){"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 29,
+        "file": null,
+        "line": 5
+      },
+      "text": "        add.n   a8, a8, a8    # b, b, b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3_LEND:             #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# /app/example.cpp:11: }"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov.n   a2, a10       #, <retval>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 11
+      },
+      "text": "        retw.n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE3:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L3_LEND": 36,
+    "_Z1fm": 7
+  }
+}
