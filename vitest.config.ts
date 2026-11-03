@@ -21,7 +21,7 @@ export default defineConfig({
                 resolve: {
                     // Monaco's package "exports" map no longer allows deep esm/ paths; see webpack.config.esm.ts.
                     alias: {
-                        'monaco-editor/esm': path.resolve(__dirname, 'node_modules/monaco-editor/esm'),
+                        'monaco-editor/esm': path.resolve('node_modules/monaco-editor/esm'),
                     },
                 },
                 test: {
