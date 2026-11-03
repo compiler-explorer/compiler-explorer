@@ -58,6 +58,7 @@ import {options} from '../options.js';
 import {languagesService} from '../services/languages.service.js';
 import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
+import type {Theme} from '../themes.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
 import {CompilationOptions} from '../widgets/compilation-options.js';
@@ -260,6 +261,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private cfgViewOpenCount: number;
     private irCfgViewOpenCount: number;
     private wantOptInfo?: boolean;
+    private darkBackgroundColours = false;
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
     private irViewOpen: boolean;
@@ -348,6 +350,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
+        this.eventHub.emit('requestTheme');
         new CompilationOptions(this, this.id, result => result.result ?? result, this.filters);
 
         this.postInit(state);
@@ -1430,6 +1433,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceClojureMacroExp: this.clojureMacroExpViewOpen,
                 produceYul: this.yulViewOpen ? this.yulOptions : null,
                 overrides: this.getCurrentState().overrides,
+                darkBackgroundColours: this.darkBackgroundColours,
             },
             filters: this.getEffectiveFilters(),
             tools: this.getActiveTools(newTools),
@@ -3157,6 +3161,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         });
         this.eventHub.on('languageChange', this.onLanguageChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
 
         this.eventHub.on('initialised', this.undefer, this);
 
@@ -3561,6 +3566,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (editorId === this.sourceEditorId || (treeId && treeId === this.sourceTreeId)) {
             this.compile();
         }
+    }
+
+    onThemeChange(newTheme: Theme | null): void {
+        const darkBackgroundColours = newTheme?.darkBackgroundColours ?? false;
+        if (darkBackgroundColours === this.darkBackgroundColours) return;
+        this.darkBackgroundColours = darkBackgroundColours;
+        if (this.compiler?.supportsDarkBackgroundColours) this.compile();
     }
 
     override onSettingsChange(newSettings: SiteSettings): void {
