@@ -254,6 +254,9 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                     const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
                     const skipExeCheck = this.compilerProps<boolean>(lang, toolBaseName + '.skipExeCheck', false);
                     if (skipExeCheck || fs.existsSync(toolPath)) {
+                        const argChoices = splitIntoArray(
+                            this.compilerProps<string>(lang, toolBaseName + '.argChoices'),
+                        ).filter(Boolean);
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,
@@ -264,6 +267,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 includeKey: this.compilerProps<string>(lang, toolBaseName + '.includeKey'),
                                 options: splitArguments(this.compilerProps<string>(lang, toolBaseName + '.options')),
                                 args: this.compilerProps<string>(lang, toolBaseName + '.args'),
+                                argChoices: argChoices.length > 0 ? argChoices : undefined,
                                 languageId: this.compilerProps<string>(
                                     lang,
                                     toolBaseName + '.languageId',

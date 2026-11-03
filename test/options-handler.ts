@@ -38,6 +38,7 @@ import {getRemoteId} from '../shared/remote-utils.js';
 import {UrlTestCases} from '../shared/url-testcases.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {ToolInfo} from '../types/tool.interfaces.js';
 import {makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -628,6 +629,37 @@ describe('Options handler', () => {
         const tools = handler.parseTools({fake: 'remotetool:missingtool'});
 
         expect(Object.keys(tools.fake)).toEqual(['remotetool']);
+    });
+
+    it('should only give tools argChoices when they define some', () => {
+        const toolProps = properties.fakeProps({
+            'tools.choosytool.name': 'Choosy Tool',
+            'tools.choosytool.exe': CURRENT_FILE_PATH,
+            'tools.choosytool.type': 'independent',
+            'tools.choosytool.class': 'testing-tool',
+            'tools.choosytool.argChoices': 'IR:Virtual Instructions:AST',
+            'tools.emptytool.name': 'Empty Tool',
+            'tools.emptytool.exe': CURRENT_FILE_PATH,
+            'tools.emptytool.type': 'independent',
+            'tools.emptytool.class': 'testing-tool',
+            'tools.emptytool.argChoices': '',
+            'tools.plaintool.name': 'Plain Tool',
+            'tools.plaintool.exe': CURRENT_FILE_PATH,
+            'tools.plaintool.type': 'independent',
+            'tools.plaintool.class': 'testing-tool',
+        });
+        const handler = new ClientOptionsHandler([], new properties.CompilerProps(languages, toolProps), {
+            env: ['dev'],
+        } as unknown as AppArguments);
+
+        const tools = handler.parseTools({fake: 'choosytool:emptytool:plaintool'}) as unknown as Record<
+            string,
+            Record<string, {tool: ToolInfo}>
+        >;
+
+        expect(tools.fake.choosytool.tool.argChoices).toEqual(['IR', 'Virtual Instructions', 'AST']);
+        expect(tools.fake.emptytool.tool.argChoices).toBeUndefined();
+        expect(tools.fake.plaintool.tool.argChoices).toBeUndefined();
     });
 
     it('should correctly resolve remote urls', () => {
