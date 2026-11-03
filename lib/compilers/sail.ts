@@ -25,7 +25,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import {
+    CompilationResult,
+    ExecutionOptions,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -47,6 +53,18 @@ export class SailCompiler extends BaseCompiler {
         this.outputFilebase = 'model';
         this.cCompiler = this.compilerProps<string>('cCompiler');
         console.assert(this.cCompiler !== undefined, 'cCompiler not set for Sail compiler');
+    }
+
+    override async populatePossibleOverrides() {
+        // the binary links the host's zlib and gmp
+        this.addCCompilerOverride(false);
+        await super.populatePossibleOverrides();
+    }
+
+    override applyOverridesToExecOptions(execOptions: ExecutionOptions, overrides: ConfiguredOverrides): void {
+        super.applyOverridesToExecOptions(execOptions, overrides);
+        const cc = this.getOverriddenCCompiler(overrides);
+        if (cc && execOptions.env) execOptions.env.CC = cc;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
@@ -119,11 +137,13 @@ export class SailCompiler extends BaseCompiler {
             .trim();
 
         // Now compile the C file to an executable.
+        const [cCompiler, ...cCompilerOptions] = splitArguments(execOptions.env.CC ?? this.cCompiler);
         const compileResult = await this.doBuildstepAndAddToResult(
             fullResult,
             'C to binary',
-            this.cCompiler,
+            cCompiler,
             [
+                ...cCompilerOptions,
                 outputFilenameC,
                 // Sail C support files.
                 '-I',
