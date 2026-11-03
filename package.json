@@ -75,7 +75,7 @@
     "triple-beam": "^1.4.1",
     "tsx": "^4.23.15",
     "underscore": "^1.13.8",
-    "url-join": "^5.2.0",
+    "url-join": "^6.0.0",
     "whatwg-fetch": "^3.6.20",
     "which": "^7.0.0",
     "winston": "^3.19.0",
