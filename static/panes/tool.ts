@@ -38,7 +38,7 @@ import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolSt
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
-import {toolsService, type ToolEntry} from '../services/tools.service.js';
+import {type ToolEntry, toolsService} from '../services/tools.service.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -68,9 +68,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     monacoStdinField = '';
     normalAnsiToHtml: AnsiToHtml.Filter;
     optionsField: JQuery;
-    private argChoicesApplied = false;
     localStdinField: JQuery;
     createToolInputView: () => ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME>;
+    private argChoicesApplied = false;
 
     wrapButton: JQuery;
     wrapTitle: JQuery;
@@ -249,7 +249,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.showPanel(this.toggleArgs, this.panelArgs);
         if (initial !== current) this.optionsField.trigger('change');
     }
-
 
     getInputArgs() {
         return unwrapString(this.optionsField.val());

@@ -22,33 +22,49 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type { ParseFiltersAndOutputOptions } from "../../types/features/filters.interfaces.js";
-import { SelectedLibraryVersion } from "../../types/libraries/libraries.interfaces.js";
-import { BaseCompiler } from "../base-compiler.js";
+import path from 'node:path';
+
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+
+// ECPPS options start with '/', so it reads an absolute path as an unknown option. Compiles run with the
+// source's directory as the working directory, so a relative path names the same file.
+export function ecppsInputArgument(inputFilename: string): string {
+    return './' + path.basename(inputFilename);
+}
 
 export class EcppsCompiler extends BaseCompiler {
     static get key() {
-        return "ecpps";
+        return 'ecpps';
     }
 
-    override getSharedLibraryPathsAsArguments(
-        libraries: SelectedLibraryVersion[],
-        libDownloadPath?: string,
-        toolchainPath?: string,
-    ) {
+    override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ): string[] {
-        const stage = this.compilerProps<string>("asmStage", "pinst");
-        return [
-            `/verbose:${stage}`,
-            "/asm",
-            `/out:${this.filename(outputFilename)}`,
-        ];
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        return ['/verbose:pinst', '/asm', `/out:${this.filename(outputFilename)}`];
+    }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        return super.orderArguments(
+            options,
+            ecppsInputArgument(inputFilename),
+            libIncludes,
+            libOptions,
+            libPaths,
+            libLinks,
+            userOptions,
+            staticLibLinks,
+        );
     }
 }

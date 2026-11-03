@@ -22,104 +22,104 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from "node:fs/promises";
-import path from "node:path";
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-import { splitArguments } from "../../shared/common-utils.js";
-import { CompilationInfo } from "../../types/compilation/compilation.interfaces.js";
-import { ToolResult } from "../../types/tool.interfaces.js";
-import { logger } from "../logger.js";
-import { OptionsHandlerLibrary } from "../options-handler.js";
-import { BaseTool } from "./base-tool.js";
+import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {ToolResult} from '../../types/tool.interfaces.js';
+import {logger} from '../logger.js';
+import {BaseTool} from './base-tool.js';
 
 const STAGES: Record<string, string> = {
-    ir: "ir",
-    "virtual instructions": "vinst",
-    ast: "ast",
+    ir: 'ir',
+    'virtual instructions': 'vinst',
+    ast: 'ast',
 };
-const DEFAULT_STAGE = "ir";
+const DEFAULT_STAGE = 'ir';
 
+// ECPPS options start with '/', so it reads an absolute path as an unknown option; the tool runs in the source's
+// directory, so pass the file relative to it. (Same as `ecppsInputArgument` in lib/compilers/ecpps.ts; importing
+// that from here would create an import cycle through base-compiler and the options handler.)
+function ecppsInputArgument(inputFilepath: string): string {
+    return './' + path.basename(inputFilepath);
+}
+
+// Options the tool sets itself, so copies from the compiler or user options are dropped.
 const OWN_OPTION = /^\/(verbose(:.*)?|asm|out:.*|output:.*)$/i;
 
 export class EcppsIrTool extends BaseTool {
     static get key() {
-        return "ecpps-ir-tool";
+        return 'ecpps-ir-tool';
     }
 
     static stageFor(args?: string[]): string {
-        const wanted = (args ?? []).join(" ").trim().toLowerCase();
+        const wanted = (args ?? []).join(' ').trim().toLowerCase();
         return STAGES[wanted] ?? DEFAULT_STAGE;
     }
 
-    override async runTool(
-        compilationInfo: CompilationInfo,
-        inputFilepath?: string,
-        args?: string[],
-        stdin?: string,
-        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
-    ): Promise<ToolResult> {
-        if (!inputFilepath) return this.createErrorResponse("No input file");
+    static buildArguments(
+        stage: string,
+        outputFilepath: string,
+        inputFilepath: string,
+        compilerOptions: string[],
+        userOptions: string[],
+    ): string[] {
+        const inputs = new Set([inputFilepath, ecppsInputArgument(inputFilepath)]);
+        const keep = (option: string) => !OWN_OPTION.test(option) && !inputs.has(option);
+        return [
+            `/verbose:${stage}`,
+            '/asm',
+            `/out:${outputFilepath}`,
+            ...compilerOptions.filter(keep),
+            ...userOptions.filter(keep),
+            ecppsInputArgument(inputFilepath),
+        ];
+    }
+
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
+        if (!inputFilepath) return this.createErrorResponse('No input file');
 
         const stage = EcppsIrTool.stageFor(args);
-        const dirPath = compilationInfo.dirPath ?? path.dirname(inputFilepath);
+        const dirPath = path.dirname(inputFilepath);
         const outputFilepath = path.join(dirPath, `ecpps-${stage}.txt`);
-
         const compilerOptions = compilationInfo.compiler.options
             ? splitArguments(compilationInfo.compiler.options)
             : [];
-        const userOptions = (compilationInfo.options ?? []).filter(
-            (option) => option !== inputFilepath && !OWN_OPTION.test(option),
-        );
-
-        const toolArgs = [
-            `/verbose:${stage}`,
-            "/asm",
-            `/out:${outputFilepath}`,
-            ...compilerOptions.filter((option) => !OWN_OPTION.test(option)),
-            ...userOptions,
+        const toolArgs = EcppsIrTool.buildArguments(
+            stage,
+            outputFilepath,
             inputFilepath,
-        ];
+            compilerOptions,
+            compilationInfo.options ?? [],
+        );
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = dirPath;
 
         try {
-            const result = await this.exec(
-                compilationInfo.compiler.exe,
-                toolArgs,
-                execOptions,
-            );
-
-            let dump = "";
-            try {
-                dump = await fs.readFile(outputFilepath, "utf8");
-            } catch {}
-
+            const result = await this.exec(compilationInfo.compiler.exe, toolArgs, execOptions);
+            // When compilation fails the dump is empty or missing, and the diagnostics are in the tool's output.
+            const dump = await fs.readFile(outputFilepath, 'utf8').catch(() => '');
             const transformedInput = result.filenameTransform(inputFilepath);
             const stdout = dump
                 ? dump
-                      .replace(/\r?\n$/, "")
+                      .replace(/\r?\n$/, '')
                       .split(/\r?\n/)
-                      .map((text) => ({ text }))
-                : [];
-            return {
+                      .map(text => ({text}))
+                : this.parseOutput(result.stdout, transformedInput);
+            const toolResult: ToolResult = {
                 id: this.tool.id,
                 name: this.tool.name,
                 code: result.code,
                 languageId: this.tool.languageId,
-                stdout:
-                    stdout.length > 0
-                        ? stdout
-                        : this.parseOutput(result.stdout, transformedInput),
-                stderr: this.parseOutput(
-                    result.stderr,
-                    transformedInput,
-                    path.dirname(compilationInfo.compiler.exe),
-                ),
+                stdout,
+                stderr: this.parseOutput(result.stderr, transformedInput, path.dirname(compilationInfo.compiler.exe)),
             };
+            return toolResult;
         } catch (e) {
-            logger.error("Error while running ECPPS IR tool: ", e);
-            return this.createErrorResponse("Error while running tool");
+            logger.error('Error while running ECPPS IR tool: ', e);
+            return this.createErrorResponse('Error while running tool');
         }
     }
 }
