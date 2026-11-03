@@ -291,19 +291,18 @@ describe('Native Image compiler pipeline', () => {
         expect(result.code).toBe(-1);
     });
 
-    it.each([
-        '--features=Untrusted',
-        '-H:LayerUse=/tmp/user.nil',
-        '-H:LayerCreate=user.nil',
-    ])('rejects user builder option %s', async option => {
-        const exec = vi.spyOn(compiler, 'exec');
-        const result = await compiler.runCompiler(
-            compiler.compiler.exe,
-            [option],
-            input,
-            compiler.getDefaultExecOptions(),
-        );
-        expect(result.code).toBe(-1);
-        expect(exec).not.toHaveBeenCalled();
-    });
+    it.each(['--features=Untrusted', '-H:LayerUse=/tmp/user.nil', '-H:LayerCreate=user.nil'])(
+        'rejects user builder option %s',
+        async option => {
+            const exec = vi.spyOn(compiler, 'exec');
+            const result = await compiler.runCompiler(
+                compiler.compiler.exe,
+                [option],
+                input,
+                compiler.getDefaultExecOptions(),
+            );
+            expect(result.code).toBe(-1);
+            expect(exec).not.toHaveBeenCalled();
+        },
+    );
 });

@@ -129,16 +129,16 @@ describe('Resolc', () => {
             expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
         });
 
-        it.each([
-            'interface I {}\ncontract Impl is I {}',
-            'interface A {}\ninterface B {}\ncontract Impl is A, B {}',
-        ])('should find an inherited contract after interfaces', source => {
-            const compiler = makeCompiler(compilerInfo);
-            const dirPath = newTempDir();
-            fs.writeFileSync(path.join(dirPath, 'example.sol'), source);
+        it.each(['interface I {}\ncontract Impl is I {}', 'interface A {}\ninterface B {}\ncontract Impl is A, B {}'])(
+            'should find an inherited contract after interfaces',
+            source => {
+                const compiler = makeCompiler(compilerInfo);
+                const dirPath = newTempDir();
+                fs.writeFileSync(path.join(dirPath, 'example.sol'), source);
 
-            expect(compiler.getOutputFilename(dirPath)).toMatch(/\.Impl\.pvmasm$/);
-        });
+                expect(compiler.getOutputFilename(dirPath)).toMatch(/\.Impl\.pvmasm$/);
+            },
+        );
 
         describe('To RISC-V', () => {
             const filters: Partial<ParseFiltersAndOutputOptions> = {
