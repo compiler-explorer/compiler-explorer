@@ -331,6 +331,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
+    getDuplicateEditorConfig() {
+        const config = Components.getEditor(this.currentLanguage?.id ?? unwrap(this.settings.defaultLanguage));
+        return {...config, componentState: {...config.componentState, source: this.getSource() ?? ''}};
+    }
+
     getSource(): string | undefined {
         return this.editor.getModel()?.getValue();
     }
@@ -551,6 +556,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.addExecutorButton = this.domRoot.find('.btn.add-executor');
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
         const addEditorButton = this.domRoot.find('.btn.add-editor');
+        const duplicateEditorButton = this.domRoot.find('.btn.duplicate-editor');
         const toggleVimButton = this.domRoot.find('.vim-flag');
         this.vimFlag = this.domRoot.find('.vim-flag');
         toggleVimButton.on('click', () => {
@@ -638,6 +644,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         addPaneOpener(this.addExecutorButton, getExecutorConfig);
         addPaneOpener(this.conformanceViewerButton, getConformanceConfig);
         addPaneOpener(addEditorButton, getEditorConfig);
+        addPaneOpener(duplicateEditorButton, () => this.getDuplicateEditorConfig());
 
         this.initLoadSaver();
         $(this.domRoot).on('keydown', event => {

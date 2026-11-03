@@ -114,3 +114,18 @@ describe('Editor diagnostics', () => {
         expect(marked(pane(1), co2)).toEqual([[3, 'error: expected `;`']]);
     });
 });
+
+describe('Editor duplication', () => {
+    it('opens a new editor holding the same source and language', () => {
+        const view = Object.create(Editor.prototype) as Editor;
+        Object.assign(view, {
+            currentLanguage: {id: 'rust'},
+            getSource: () => 'fn main() {}',
+        });
+        expect(view.getDuplicateEditorConfig()).toEqual({
+            type: 'component',
+            componentName: 'codeEditor',
+            componentState: {id: undefined, lang: 'rust', source: 'fn main() {}'},
+        });
+    });
+});
