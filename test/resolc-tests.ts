@@ -43,10 +43,16 @@ const languages = {
 
 describe('Resolc', () => {
     let env: CompilationEnvironment;
-    const expectedSolcExe = '/opt/compiler-explorer/solc-0.8.30/solc';
+    const compilerId = 'resolc';
+    const solcExe = '/opt/compiler-explorer/solc-x.y.z/solc';
 
     beforeAll(() => {
-        env = makeCompilationEnvironment({languages});
+        env = makeCompilationEnvironment({
+            languages,
+            props: {
+                [`compiler.${compilerId}.solcExe`]: solcExe,
+            },
+        });
     });
 
     function makeCompiler(compilerInfo: Partial<CompilerInfo>): ResolcCompiler {
@@ -81,13 +87,15 @@ describe('Resolc', () => {
             expect(ResolcCompiler.key).toEqual('resolc');
         });
 
-        it('should return Solc executable dependency path', () => {
-            expect(ResolcCompiler.solcExe).toEqual(expectedSolcExe);
+        it('should throw with no solc executable configured', () => {
+            const compilerInfoWithoutSolc = {id: 'resolc_without_solc', exe: 'resolc', lang: languages.solidity.id};
+            expect(() => makeCompiler(compilerInfoWithoutSolc)).toThrow();
         });
     });
 
     describe('From Solidity', () => {
         const compilerInfo = {
+            id: compilerId,
             exe: 'resolc',
             lang: languages.solidity.id,
         };
@@ -107,7 +115,7 @@ describe('Resolc', () => {
             expect(compiler.optionsForFilter({})).toEqual([
                 '-g',
                 '--solc',
-                expectedSolcExe,
+                solcExe,
                 '--overwrite',
                 '--debug-output-dir',
                 'artifacts',
@@ -287,6 +295,7 @@ describe('Resolc', () => {
 
     describe('From Yul', () => {
         const compilerInfo = {
+            id: compilerId,
             exe: 'resolc',
             lang: languages.yul.id,
         };
@@ -301,7 +310,7 @@ describe('Resolc', () => {
             expect(compiler.optionsForFilter({})).toEqual([
                 '-g',
                 '--solc',
-                expectedSolcExe,
+                solcExe,
                 '--overwrite',
                 '--debug-output-dir',
                 'artifacts',

@@ -260,7 +260,7 @@ function diagnosticFile(filename: string, inputFilename?: string): string | unde
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
-    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix}[] = [
+    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix | undefined}[] = [
         {
             re: / *help: add `#!\[feature\((.*?)\)]`/,
             makeFix: ([_, featureName]) => ({
@@ -290,6 +290,24 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     },
                 ],
             }),
+        },
+        {
+            re: /consider adding a `main` function to `[^`]+`/,
+            makeFix: ([_]) =>
+                currentDiagnostic?.tag
+                    ? {
+                          title: 'Add a `main` function',
+                          edits: [
+                              {
+                                  line: currentDiagnostic.tag.line,
+                                  column: currentDiagnostic.tag.column,
+                                  endline: currentDiagnostic.tag.line,
+                                  endcolumn: currentDiagnostic.tag.column,
+                                  text: '\n\npub fn main() {}',
+                              },
+                          ],
+                      }
+                    : undefined,
         },
     ];
 
@@ -350,7 +368,8 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
             const fixes = quickfixes.flatMap(({re, makeFix}) => {
                 const match = filteredLine.match(re);
                 if (match) {
-                    return [makeFix(match)];
+                    const fix = makeFix(match);
+                    return fix ? [fix] : [];
                 } else {
                     return [];
                 }
