@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as rust from 'monaco-editor/esm/vs/basic-languages/rust/rust';
+import * as rust from 'monaco-editor/esm/vs/languages/definitions/rust/rust';
 
 // We need to patch the existing rust definition to fix hexadecimal literal highlighting
 // This fixes a bug where hex literals with underscores after hex letters (like 0x01_02_0a_0b)
@@ -36,7 +36,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     // Fix the hexadecimal pattern in the numbers tokenizer
     // Find and replace the specific problematic pattern to make this robust against Monaco updates
     const expectedPattern = /(0x[\da-fA-F]+)_?(@intSuffixes)?/;
-    const fixedPattern = [/(0x[0-9a-fA-F_]+)(@intSuffixes)?/, {token: 'number'}];
+    const fixedPattern: monaco.languages.IMonarchLanguageRule = [/(0x[0-9a-fA-F_]+)(@intSuffixes)?/, {token: 'number'}];
 
     let patternFound = false;
     for (let i = 0; i < rustPatched.tokenizer.numbers.length; i++) {

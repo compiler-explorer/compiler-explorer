@@ -25,7 +25,7 @@
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+import * as cpp from 'monaco-editor/esm/vs/languages/definitions/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const slang = $.extend(true, {}, cpp.language);

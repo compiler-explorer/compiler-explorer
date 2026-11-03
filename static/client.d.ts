@@ -51,6 +51,12 @@ declare module '*.png' {
     export default src;
 }
 
+// Monaco ships its Monarch grammars without type declarations.
+declare module 'monaco-editor/esm/vs/languages/definitions/*' {
+    export const conf: import('monaco-editor').languages.LanguageConfiguration;
+    export const language: import('monaco-editor').languages.IMonarchLanguage;
+}
+
 declare module 'lodash.clonedeep' {
     const cloneDeep: <T>(value: T) => T;
     export = cloneDeep;

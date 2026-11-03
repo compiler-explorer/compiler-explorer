@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import {defineConfig} from 'vitest/config';
 
 export default defineConfig({
@@ -16,6 +18,12 @@ export default defineConfig({
                 },
             },
             {
+                resolve: {
+                    // Monaco's package "exports" map no longer allows deep esm/ paths; see webpack.config.esm.ts.
+                    alias: {
+                        'monaco-editor/esm': path.resolve(__dirname, 'node_modules/monaco-editor/esm'),
+                    },
+                },
                 test: {
                     name: 'frontend unit',
                     include: ['static/tests/**/*.ts'],

@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+import * as cpp from 'monaco-editor/esm/vs/languages/definitions/cpp/cpp';
 
 import cppp from './cppp-mode.js';
 

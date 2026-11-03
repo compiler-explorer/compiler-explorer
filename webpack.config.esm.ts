@@ -143,7 +143,10 @@ export default {
     },
     resolve: {
         alias: {
-            'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
+            // Monaco's package "exports" map no longer allows deep esm/ paths, but monaco-vim and our Monarch
+            // grammar imports still use them, so map them straight to the files.
+            'monaco-editor$': path.resolve(__dirname, 'node_modules/monaco-editor/esm/vs/editor/editor.api.js'),
+            'monaco-editor/esm': path.resolve(__dirname, 'node_modules/monaco-editor/esm'),
         },
         fallback: {
             path: 'path-browserify',

@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+import * as cpp from 'monaco-editor/esm/vs/languages/definitions/cpp/cpp';
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
 // https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++
