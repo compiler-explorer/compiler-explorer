@@ -505,13 +505,17 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         // Drop every option, including the selected one the default filter would keep, so a type the
         // new compiler can't produce doesn't linger in the list.
         replaceOptions(difftypePicker, this.getDiffTypeOptions(side), () => false);
-        difftypePicker.setValue(
-            encodeSelectizeValue({
-                difftype: side.difftype || DiffType.ASM,
-                extraoption: side.extraoption || '',
-            }),
-            true,
-        );
+        this.selectDiffType(side, difftypePicker);
+    }
+
+    selectDiffType(side: DiffStateObject, difftypePicker: TomSelect) {
+        const value = encodeSelectizeValue({
+            difftype: side.difftype || DiffType.ASM,
+            extraoption: side.extraoption || '',
+        });
+        // setValue() closes an open single-select drop-down, even when re-selecting the same value. This
+        // runs on every compile result, so only touch the selection when it actually changes.
+        if (difftypePicker.getValue() !== value) difftypePicker.setValue(value, true);
     }
 
     clearSelectedEntry(side: DiffStateObject, difftypePicker: TomSelect, picker: TomSelect) {
@@ -776,13 +780,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             return;
         }
 
-        difftypePicker.setValue(
-            encodeSelectizeValue({
-                difftype: side.difftype || DiffType.ASM,
-                extraoption: side.extraoption || '',
-            }),
-            true,
-        );
+        this.selectDiffType(side, difftypePicker);
     }
 
     override getCurrentState() {
