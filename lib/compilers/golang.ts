@@ -188,7 +188,10 @@ export class GolangCompiler extends BaseCompiler {
         if (existingGoMod) {
             goModContent = await fs.readFile(goModPath, 'utf-8');
         } else {
-            goModContent = 'module example\n\ngo 1.21\n';
+            // Libraries may require a newer go directive than 1.21; Go only accepts patch versions from 1.21 on
+            const version = Semver.coerce(this.compiler.semver);
+            const goVersion = version && Semver.gte(version, '1.21.0') ? version.version : '1.21';
+            goModContent = `module example\n\ngo ${goVersion}\n`;
         }
 
         // Collect require statements and sum entries from all libraries
