@@ -22,13 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {EcppsCompiler} from '../lib/compilers/ecpps.js';
 import {getCompilerTypeByKey} from '../lib/compilers/index.js';
+import type {ToolEnv} from '../lib/tooling/base-tool.interface.js';
 import {EcppsIrTool} from '../lib/tooling/ecpps-ir.js';
+import type {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
+import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
+import type {ToolInfo} from '../types/tool.interfaces.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, newTempDir} from './utils.js';
 
 const languages = {'c++': {id: 'c++' as LanguageKey}};
 const environment = makeCompilationEnvironment({languages});
@@ -98,5 +105,65 @@ describe('ECPPS IR tool', () => {
             '/WX',
             './example.cpp',
         ]);
+    });
+
+    describe('running', () => {
+        afterEach(() => vi.restoreAllMocks());
+
+        function makeTool() {
+            return new EcppsIrTool(
+                {id: 'ecppsir', name: 'ECPPS IR', exclude: [], options: []} as unknown as ToolInfo,
+                {ceProps: (_key: string, def: any) => def, compilerProps: () => undefined} as unknown as ToolEnv,
+            );
+        }
+
+        function execResult(stdout: string): UnprocessedExecResult {
+            return {
+                code: 0,
+                okToCache: true,
+                filenameTransform: (f: string) => f,
+                stdout,
+                stderr: '',
+                execTime: 0,
+                timedOut: false,
+                truncated: false,
+            };
+        }
+
+        const compilationInfo = {
+            compiler: {exe: '/opt/compiler-explorer/ecpps-trunk/bin/ecpps', options: ''},
+            options: [],
+        } as unknown as CompilationInfo;
+
+        it("runs in the source's directory and shows the stage dump", async () => {
+            const dir = await newTempDir();
+            const input = path.join(dir, 'example.cpp');
+            const tool = makeTool();
+            const exec = vi.spyOn(tool, 'exec').mockImplementation(async () => {
+                await fs.writeFile(path.join(dir, 'ecpps-ast.txt'), 'line one\nline two\n');
+                return execResult('ignored');
+            });
+
+            const result = await tool.runTool(compilationInfo, input, ['AST']);
+
+            expect(exec.mock.calls[0][1]).toEqual([
+                '/verbose:ast',
+                '/asm',
+                `/out:${path.join(dir, 'ecpps-ast.txt')}`,
+                './example.cpp',
+            ]);
+            expect(exec.mock.calls[0][2].customCwd).toEqual(dir);
+            expect(result.stdout.map(line => line.text)).toEqual(['line one', 'line two']);
+        });
+
+        it('shows the compiler output when there is no dump', async () => {
+            const dir = await newTempDir();
+            const tool = makeTool();
+            vi.spyOn(tool, 'exec').mockResolvedValue(execResult('example.cpp:1:8 [Error] syntax-error'));
+
+            const result = await tool.runTool(compilationInfo, path.join(dir, 'example.cpp'), ['IR']);
+
+            expect(result.stdout.map(line => line.text).join('\n')).toContain('syntax-error');
+        });
     });
 });

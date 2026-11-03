@@ -232,7 +232,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
 
         const current = unwrapString(this.optionsField.val());
         const defaultArg = toolInfo.args ?? '';
-        const initial = choices.includes(current) ? current : choices.includes(defaultArg) ? defaultArg : choices[0];
+        // The backend matches stages case-insensitively, so a saved or hand-typed value in any case is kept.
+        const matching = (arg: string) => choices.find(choice => choice.toLowerCase() === arg.trim().toLowerCase());
+        const initial = matching(current) ?? matching(defaultArg) ?? choices[0];
 
         const select = $(
             '<select class="tool-arg-choices form-select form-select-sm" aria-label="Tool mode"></select>',
