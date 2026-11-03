@@ -298,6 +298,21 @@ describe('GO library support', () => {
         expect(goSumContent).toContain('github.com/google/uuid v1.6.0 h1:abc123=');
     });
 
+    it.each([
+        ['1.26.0', '1.26.0'],
+        ['1.25.7', '1.25.7'],
+        ['1.12.0', '1.21.0'],
+        ['', '1.21.0'],
+    ])('Writes go directive for compiler semver %j as %s', async (semver, expected) => {
+        const versioned = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver}),
+            ce,
+        );
+        await (versioned as any).generateGoMod(tempDir, [], tempDir);
+        const goModContent = await fsp.readFile(path.join(tempDir, 'go.mod'), 'utf-8');
+        expect(goModContent).toContain(`\ngo ${expected}\n`);
+    });
+
     it('Appends to existing go.mod with require block', async () => {
         const existingGoMod = `module mymodule
 
