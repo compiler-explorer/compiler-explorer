@@ -40,7 +40,7 @@ export class DucklingCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
-        return ['compile_module', '--dump-ir', 'asm'];
+        return ['compile_module', '--no-incremental', '--dump-ir', 'asm'];
     }
 
     override orderArguments(
