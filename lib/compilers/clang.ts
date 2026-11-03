@@ -29,6 +29,7 @@ import _ from 'underscore';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {
     ActiveTool,
     BuildResult,
@@ -47,6 +48,7 @@ import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {LLVMWin32Demangler} from '../demangler/index.js';
 import type {ParsedRequest} from '../handlers/compile.js';
 import {getAmdGpuInstructionSet, getAmdGpuInstructionSetFromLabel} from '../instructionsets.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
@@ -61,6 +63,7 @@ export class ClangCompiler extends BaseCompiler {
     protected asanSymbolizerPath?: string;
     protected offloadBundlerPath?: string;
     protected llvmDisassemblerPath?: string;
+    protected msvcDemanglerPath?: string;
 
     static get key() {
         return 'clang';
@@ -96,6 +99,42 @@ export class ClangCompiler extends BaseCompiler {
         } else {
             this.llvmDisassemblerPath = this.compilerProps<string | undefined>('llvmDisassembler');
         }
+
+        if (this.compiler.demangler) {
+            const msvcDemanglerPath = path.join(path.dirname(this.compiler.demangler), 'llvm-undname');
+            if (fs.existsSync(msvcDemanglerPath)) {
+                this.msvcDemanglerPath = msvcDemanglerPath;
+            }
+        }
+    }
+
+    // Unlike getTargetHintFromCompilerArgs, accepts every spelling the driver does and lets the last one win
+    protected getEffectiveTarget(options: string[]): string | undefined {
+        let target: string | undefined;
+        for (const [i, arg] of options.entries()) {
+            if (arg.startsWith('--target=')) target = arg.substring('--target='.length);
+            else if ((arg === '--target' || arg === '-target') && i + 1 < options.length) target = options[i + 1];
+        }
+        return target;
+    }
+
+    protected targetsMsvc(options: string[]): boolean {
+        const target = this.getEffectiveTarget(options);
+        return !!target && /-(windows|win32)(-msvc|$)/.test(target);
+    }
+
+    override async postProcessAsm(
+        result,
+        filters?: ParseFiltersAndOutputOptions,
+        options?: string[],
+    ): Promise<ParsedAsmResult> {
+        // Windows MSVC targets use Microsoft name mangling, which llvm-cxxfilt doesn't understand
+        if (this.msvcDemanglerPath && options && this.targetsMsvc(options)) {
+            if (!result.okToCache || !result.asm) return result;
+            const demangler = new LLVMWin32Demangler(this.msvcDemanglerPath, this, this.optionsForDemangler(filters));
+            return await demangler.process(result);
+        }
+        return await super.postProcessAsm(result, filters, options);
     }
 
     override isCfgCompiler() {
