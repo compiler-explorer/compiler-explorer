@@ -30,6 +30,7 @@ import TomSelect from 'tom-select';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {ToolResult} from '../../types/tool.interfaces.js';
 import {Hub} from '../hub.js';
 import {replaceOptions} from '../tom-select-utils.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
@@ -60,6 +61,10 @@ function decodeSelectizeValue(value: string): DiffTypeAndExtra {
         difftype: Number.parseInt(value, 10),
         extraoption: '',
     };
+}
+
+function getToolResults(result: CompilationResult | undefined): ToolResult[] {
+    return result?.tools ?? result?.result?.tools ?? [];
 }
 
 function isSourceEntryId(id: number | string | undefined): boolean {
@@ -208,6 +213,13 @@ export class DiffStateObject {
                         {text: "<select 'Add new...' → 'Lean C Output' in this compiler's pane>"},
                     ];
                     break;
+                case DiffType.ToolOutput: {
+                    const tool = getToolResults(this.result).find(result => result.id === this.extraoption);
+                    output = tool
+                        ? [...(tool.stdout ?? []), ...(tool.stderr ?? [])]
+                        : [{text: "<select 'Add tool...' → this tool in this compiler's pane>"}];
+                    break;
+                }
             }
         }
         this.model.setValue(output.map(x => x.text).join('\n'));
@@ -452,6 +464,22 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             options.push({
                 id: encodeSelectizeValue({difftype: DiffType.DeviceView, extraoption: device}),
                 name: device,
+            });
+        }
+
+        // Like devices, tools are only known once a result arrives.
+        const tools = getToolResults(side.result).map(tool => ({id: tool.id, name: tool.name ?? tool.id}));
+        if (
+            side.difftype === DiffType.ToolOutput &&
+            side.extraoption &&
+            !tools.some(tool => tool.id === side.extraoption)
+        ) {
+            tools.push({id: side.extraoption, name: side.extraoption});
+        }
+        for (const tool of tools) {
+            options.push({
+                id: encodeSelectizeValue({difftype: DiffType.ToolOutput, extraoption: tool.id}),
+                name: tool.name,
             });
         }
 
