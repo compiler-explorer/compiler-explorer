@@ -27,9 +27,10 @@ import {BaseAssemblyDocumentationProvider} from './base.js';
 import {getAsmOpcode} from './generated/asm-docs-amd64.js';
 
 export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    // abs is included as a suffix here for its use in movabs
+    // abs is included as a suffix here for its use in movabs and movabsq
     // https://github.com/compiler-explorer/compiler-explorer/issues/4481
-    private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)(?:[blqw]|abs)$/i;
+    // Mnemonics can contain digits before the suffix, e.g. cvtsi2sdl
+    private static readonly ATT_SUFFIX_REMOVER = /^([a-z][a-z0-9]*?)(?:abs[blqw]?|[blqw])$/i;
     public static get key() {
         return 'amd64';
     }

@@ -1,0 +1,2 @@
+{"schema":1,"record":"failure","severity":"error","code":"selection.unknown","message":"mach.toml: no target named 'nope'","origin":"build","primary":null,"related":[],"notes":[],"help":[],"fixes":[]}
+{"schema":1,"record":"summary","errors":1,"warnings":0,"notes":0,"outcome":"failure","exit_code":1}

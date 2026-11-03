@@ -45,6 +45,7 @@ export class LlvmIrParser {
     private maxIrLines: number;
     private debugReference: RegExp;
     private metaNodeRe: RegExp;
+    private debugMetaNodeLine: RegExp;
     private otherMetaDirective: RegExp;
     private namedMetaDirective: RegExp;
     private metaNodeOptionsRe: RegExp;
@@ -72,6 +73,9 @@ export class LlvmIrParser {
 
         this.debugReference = /!dbg (!\d+)/;
         this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]*?)\)/;
+        // Anchored to a line start so IR embedded as a string in assembly (e.g. clang's
+        // -fsycl/-foffload `.llvm.offloading` section) isn't mistaken for IR output.
+        this.debugMetaNodeLine = /^!\d+ = (?:distinct )?!DI/m;
         this.otherMetaDirective = /^(!\d+) = (?:distinct )?!{.*}/;
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
@@ -312,6 +316,6 @@ export class LlvmIrParser {
     }
 
     isLlvmIr(code: string) {
-        return code.includes('@llvm') && code.includes('!DI') && code.includes('!dbg');
+        return code.includes('@llvm') && code.includes('!dbg') && this.debugMetaNodeLine.test(code);
     }
 }

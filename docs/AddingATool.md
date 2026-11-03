@@ -22,6 +22,9 @@ tools.rewritecpp.args=--b
 The `name` and `exe` are what they say they are, this is the display name for within CE and the tool executable that
 will be used.
 
+A tool is only offered if its `exe` exists on this host. If the tool only exists where your execution backend runs it
+(say, a remote sandbox), set `skipExeCheck=true` to offer it anyway.
+
 The `type` of the tool represents the stage in which the tool will run:
 
 - independent - when running a tool on sourcecode

@@ -30,6 +30,7 @@ import type {CompilationResult} from '../../types/compilation/compilation.interf
 import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {assert} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {maybeRemapJailedDir} from '../exec.js';
@@ -65,20 +66,17 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     private readonly pvmAsmParser: PolkaVMAsmParser;
-
-    /**
-     * @note
-     * Needs to coincide with the [infrastructure configs](https://github.com/compiler-explorer/infra/blob/main/bin/yaml/solidity.yaml).
-     */
-    static get solcExe() {
-        return '/opt/compiler-explorer/solc-0.8.30/solc';
-    }
+    private readonly solcExe: string;
 
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
 
         this.asm = new ResolcRiscVAsmParser(this.compilerProps);
         this.pvmAsmParser = new PolkaVMAsmParser();
+        this.solcExe =
+            this.compilerProps<string>(`compiler.${this.compiler.id}.solcExe`) ||
+            this.compilerProps<string>(`group.${this.compiler.group}.solcExe`);
+        assert(this.solcExe, `Expected a 'solcExe' property for compiler '${this.compiler.id}'.`);
 
         // The arg producing LLVM IR (among other output) is already
         // included in optionsForFilter(), but irArg needs to be set.
@@ -92,6 +90,13 @@ export class ResolcCompiler extends BaseCompiler {
         return [];
     }
 
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
+        const libraryPaths = libraries.flatMap(selectedLib => this.findLibVersion(selectedLib)?.path ?? []);
+        if (libraryPaths.length === 0) return [];
+
+        return ['--allow-paths', [...new Set(libraryPaths)].join(',')];
+    }
+
     override getArgumentParserClass(): typeof BaseParser {
         return ResolcParser;
     }
@@ -100,7 +105,7 @@ export class ResolcCompiler extends BaseCompiler {
         filters.binaryObject = this.reinterpretBinaryObjectFilter(filters.binaryObject);
         filters.intel = false;
 
-        const options = ['-g', '--solc', ResolcCompiler.solcExe, '--overwrite', '--debug-output-dir', 'artifacts'];
+        const options = ['-g', '--solc', this.solcExe, '--overwrite', '--debug-output-dir', 'artifacts'];
         if (this.inputIs(InputKind.Yul)) {
             options.push('--yul');
         }
@@ -272,7 +277,7 @@ export class ResolcCompiler extends BaseCompiler {
      * ```
      */
     private getSolidityContractName(dirPath: string): string {
-        const nameRe = /contract[\s\n]+(?<name>[\w$]+)[\s\n]*{/;
+        const nameRe = /contract[\s\n]+(?<name>[\w$]+)(?:[\s\n]+is[^{}]+)?[\s\n]*{/;
 
         return this.getContractName(dirPath, nameRe);
     }

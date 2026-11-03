@@ -36,7 +36,7 @@ import {languages as allLanguages} from '../languages.js';
 import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
-import type {AppConfiguration} from './config.interfaces.js';
+import type {AppConfiguration, TrustProxySetting} from './config.interfaces.js';
 
 /**
  * Measures event loop lag to monitor server performance.
@@ -170,11 +170,14 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
     const maxUploadSize = ceProps('maxUploadSize', '1mb');
     const extraBodyClass = ceProps('extraBodyClass', appArgs.devMode ? 'dev' : '');
+    const siteLogo = ceProps('siteLogo', '');
+    const favicon = ceProps('favicon', '');
     const storageSolution = compilerProps.ceProps('storageSolution', 'local');
     const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
     const staticUrl = ceProps<string | undefined>('staticUrl');
     const staticRoot = urljoin(staticUrl || httpRoot, '/');
+    const trustProxy = ceProps<TrustProxySetting>('trustProxy', 'loopback');
 
     return {
         ceProps,
@@ -183,9 +186,12 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
         staticMaxAgeSecs,
         maxUploadSize,
         extraBodyClass,
+        siteLogo,
+        favicon,
         storageSolution,
         httpRoot,
         staticRoot,
         staticUrl,
+        trustProxy,
     };
 }

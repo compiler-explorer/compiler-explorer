@@ -15,6 +15,11 @@ the main **Compiler Explorer** site anyway).
 
 Returns a list of the currently supported languages, as pairs of languages IDs and their names.
 
+In JSON, request `?fields=id,defaultOptions` to include the configured default compiler options for each language.
+The optional `defaultOptions` field comes from the language's `defaultOptions` configuration property and is used when
+initializing a compiler pane without saved options. Requests without a `fields` parameter retain the existing default
+response fields.
+
 ### `GET /api/compilers` - return a list of compilers
 
 Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler, its description and
@@ -271,6 +276,9 @@ structure:
     "type": "rustfmt"
 }
 ```
+
+Formatters with styles backed by a style file on the server also have a `styleFiles` object, mapping each such style
+name to its file path.
 
 The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`. The `type` key in the
 JSON request corresponds to one of the `formatters.<key>.type` found in the compiler-explorer configuration properties

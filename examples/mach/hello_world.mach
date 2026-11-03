@@ -1,0 +1,9 @@
+use std.runtime;
+use std.types.size.usize;
+use print: std.print;
+
+#[symbol("main")]
+fun main(argc: usize, argv: **u8) i64 {
+    print.println("Hello, world!");
+    ret 0;
+}

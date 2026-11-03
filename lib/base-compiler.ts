@@ -34,6 +34,7 @@ import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {CacheableValue} from '../types/cache.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     ActiveTool,
@@ -316,16 +317,10 @@ export class BaseCompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    this.buildenvsetup.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(this.buildenvsetup.compilerArch);
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    temp.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(temp.compilerArch);
             }
         }
 
@@ -602,7 +597,7 @@ export class BaseCompiler {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
                 const isets = new InstructionSets();
-                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                return isets.getCompilerInstructionSetHint(archHint);
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
@@ -693,7 +688,7 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
+        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(objdumpInputFile))) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
@@ -773,42 +768,44 @@ export class BaseCompiler {
 
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
-        // appear in any order.
+        // appear in any order. A flag is only added when explicitly enabled: API callers can
+        // omit dumpFlags, or any of its members.
+        const dumpFlags = gccDumpOptions.dumpFlags ?? {};
         let flags = '';
-        if (gccDumpOptions.dumpFlags.gimpleFe !== false) {
+        if (dumpFlags.gimpleFe === true) {
             flags += '-gimple';
         }
-        if (gccDumpOptions.dumpFlags.address !== false) {
+        if (dumpFlags.address === true) {
             flags += '-address';
         }
-        if (gccDumpOptions.dumpFlags.alias !== false) {
+        if (dumpFlags.alias === true) {
             flags += '-alias';
         }
-        if (gccDumpOptions.dumpFlags.slim !== false) {
+        if (dumpFlags.slim === true) {
             flags += '-slim';
         }
-        if (gccDumpOptions.dumpFlags.raw !== false) {
+        if (dumpFlags.raw === true) {
             flags += '-raw';
         }
-        if (gccDumpOptions.dumpFlags.details !== false) {
+        if (dumpFlags.details === true) {
             flags += '-details';
         }
-        if (gccDumpOptions.dumpFlags.stats !== false) {
+        if (dumpFlags.stats === true) {
             flags += '-stats';
         }
-        if (gccDumpOptions.dumpFlags.blocks !== false) {
+        if (dumpFlags.blocks === true) {
             flags += '-blocks';
         }
-        if (gccDumpOptions.dumpFlags.vops !== false) {
+        if (dumpFlags.vops === true) {
             flags += '-vops';
         }
-        if (gccDumpOptions.dumpFlags.lineno !== false) {
+        if (dumpFlags.lineno === true) {
             flags += '-lineno';
         }
-        if (gccDumpOptions.dumpFlags.uid !== false) {
+        if (dumpFlags.uid === true) {
             flags += '-uid';
         }
-        if (gccDumpOptions.dumpFlags.all !== false) {
+        if (dumpFlags.all === true) {
             flags += '-all';
         }
 
@@ -1033,6 +1030,24 @@ export class BaseCompiler {
         });
     }
 
+    getSharedLibraryDynamicLinker(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || foundVersion.dynamicLinker === undefined) return [];
+            return [foundVersion.dynamicLinker];
+        });
+    }
+
+    // A library that brings its own dynamic linker (e.g. glibc) finds its libraries through that loader. Putting them
+    // on LD_LIBRARY_PATH would make the host-built compiler and tools load a foreign libc.
+    private withoutOwnDynamicLinker(libraries: SelectedLibraryVersion[]): SelectedLibraryVersion[] {
+        return libraries.filter(selectedLib => this.findLibVersion(selectedLib)?.dynamicLinker === undefined);
+    }
+
+    private usesLibrarySysroot(libraries: SelectedLibraryVersion[]): boolean {
+        return libraries.some(selectedLib => !!this.findLibVersion(selectedLib)?.sysroot);
+    }
+
     getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -1054,6 +1069,8 @@ export class BaseCompiler {
     ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
+        // TODO: make configurable
+        const dynamicLinkerFlag = '-Wl,--dynamic-linker=';
 
         let toolchainLibraryPaths: string[] = [];
         if (toolchainPath) {
@@ -1069,8 +1086,11 @@ export class BaseCompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
+            // --sysroot stops clang looking outside the sysroot for the GCC runtime (libgcc_s, libstdc++)
+            this.usesLibrarySysroot(libraries) ? toolchainLibraryPaths.map(path => libPathFlag + path) : [],
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
+            this.getSharedLibraryDynamicLinker(libraries, dirPath).map(path => dynamicLinkerFlag + path),
         );
     }
 
@@ -1082,7 +1102,7 @@ export class BaseCompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(libraries), dirPath),
         );
     }
 
@@ -1096,7 +1116,7 @@ export class BaseCompiler {
             this.compiler.ldPath,
             this.getExtraLdPaths(key),
             this.compiler.libPath,
-            this.getSharedLibraryPaths(key.libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(key.libraries), dirPath),
         );
     }
 
@@ -1118,6 +1138,9 @@ export class BaseCompiler {
 
     getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        // TODO: make configurable
+        const sysrootFlag = '--sysroot=';
+
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
@@ -1126,6 +1149,9 @@ export class BaseCompiler {
             if (foundVersion.packagedheaders) {
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
                 paths.push(includeFlag + includePath);
+            }
+            if (foundVersion.sysroot) {
+                paths.push(sysrootFlag + foundVersion.sysroot);
             }
             return paths;
         });
@@ -2021,14 +2047,15 @@ export class BaseCompiler {
      * for origin detection, those prefixes are stripped so the dump reads as it would without
      * -lineno. RTL dumps carry extra brackets that are NOT lineno noise -- `[orig:N]`, hex operands
      * like `[0x..]`, branch probabilities like `[5.50%]` -- so the RTL strip only removes brackets
-     * that contain a path ('/'), leaving those intact. The `"file":line:col` location each insn
-     * prints keeps its `:line:col` but loses the repeated (temp-dir) filename, which is noise.
+     * that contain a path ('/'), leaving those intact. The `"file":line:col` that each insn prints
+     * is NOT a -lineno annotation (GCC emits it either way), so it is left alone.
      */
     trimGccDumpHeaderFunctions(
         content: string,
         sourceBasename: string,
         keepLineno: boolean,
         isRtlDump: boolean,
+        keepLibraryFunctions = false,
     ): string {
         // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
         // preamble (text before the first function) as the first piece, so join('') is lossless.
@@ -2038,8 +2065,8 @@ export class BaseCompiler {
             !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
 
         const kept =
-            pieces.length <= 1
-                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+            pieces.length <= 1 || keepLibraryFunctions
+                ? pieces // no function markers (e.g. IPA summary dump), or library functions wanted: keep whole
                 : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
@@ -2054,10 +2081,6 @@ export class BaseCompiler {
                 // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
                 // reproducing the readable no-lineno RTL dump.
                 trimmed = trimmed.replace(/\[[^[\]\n]*[/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
-                // Each insn also prints its own location as "file":line:col; the filename is the
-                // (long, temp-dir) source path repeated on every line and adds no information, so
-                // drop just the quoted path and keep the :line:col that pinskia asked to retain.
-                trimmed = trimmed.replace(/"[^"\n]*"(?=:\d)/g, '');
             } else {
                 trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
             }
@@ -2189,6 +2212,7 @@ export class BaseCompiler {
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binaryObject = false;
@@ -2310,11 +2334,13 @@ export class BaseCompiler {
                     inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
                 }
 
+                const executableFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+                this.assertInsideDir(dirPath, executableFilename);
                 return Object.assign({}, buildResults, {
                     code: 0,
                     inputFilename: inputFilename,
                     dirPath: dirPath,
-                    executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
+                    executableFilename,
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
@@ -2667,6 +2693,7 @@ export class BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
@@ -2984,6 +3011,21 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    /**
+     * Called before a project build's artifact is disassembled, for a compiler to pick up what the build left next to
+     * it, as the single-file path does in optionsForFilter.
+     */
+    async prepareArtifactDisassembly(
+        _artifactFilename: string,
+        _filters: ParseFiltersAndOutputOptions,
+    ): Promise<void> {}
+
+    /**
+     * Called once a project build has succeeded, for a compiler to put next to the artifact what running it needs, as
+     * the single-file path does in buildExecutableInFolder.
+     */
+    async prepareArtifactExecution(_artifactFilename: string): Promise<void> {}
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
@@ -3106,7 +3148,6 @@ export class BaseCompiler {
                         );
                         if (cached) {
                             cached.retreivedFromCache = true;
-                            cached.s3Key = BaseCache.hash(cacheKey);
 
                             delete cached.inputFilename;
                             delete cached.dirPath;
@@ -3260,6 +3301,8 @@ export class BaseCompiler {
             });
         }
 
+        // Ahead of packaging, so that what running it needs is in the package too
+        await this.prepareArtifactExecution(outputFilename);
         await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
 
         compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -3397,21 +3440,9 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(fullResult);
-        fullResult.s3Key = BaseCache.hash(cacheKey);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(fullResult);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
-            }
-        }
+        // Never the cached copy: afterCmakeCompilation cached it before the cleanup just above, so
+        // it still names the temporary directories we mask here.
+        await this.storeOversizedResult(fullResult, cacheKey, false);
 
         return fullResult;
     }
@@ -3454,6 +3485,9 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
+        // Request parsing has already rejected a bad filename; reaching here with one is a bug.
+        assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
@@ -3486,7 +3520,6 @@ export class BaseCompiler {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
-                result.s3Key = BaseCache.hash(key);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
@@ -3504,6 +3537,7 @@ export class BaseCompiler {
                         await this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
+                await this.storeOversizedResult(result, key as any, !result.execResult);
                 return result;
             }
         }
@@ -3520,6 +3554,11 @@ export class BaseCompiler {
                         if (execResult?.buildResult) {
                             await this.doTempfolderCleanup(execResult.buildResult);
                         }
+                        // Returning from here skips afterCompilation, so this is the only chance to
+                        // put an oversized one where a reader can fetch it. The compilation cache
+                        // holds the build under this key, not what running it printed, so the
+                        // result needs a copy of its own.
+                        await this.storeOversizedResult(execResult, key as any, false);
                         return execResult;
                     }
 
@@ -3670,23 +3709,32 @@ export class BaseCompiler {
             }
         }
 
-        result.s3Key = BaseCache.hash(key);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(result);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                result.s3Key = `temp/${BaseCache.hash(key)}`;
-            }
-        }
+        // The cmake flow finishes the result off itself, so it stores it there rather than here.
+        // What was cached above is this result without the execResult attached since.
+        if (!delayCaching) await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult);
 
         return result;
+    }
+
+    // A result too big for the websocket is fetched from storage instead, so the worker reports
+    // where to find it. When the cache already holds this exact payload the reader is pointed at
+    // that; otherwise a copy goes under temp/, which is not a key cacheGet reads, so a result we
+    // were told not to cache can never come back as a cache hit. Callers say which case they are
+    // in, because the two flows cache at different points: see the call sites.
+    protected async storeOversizedResult(
+        result: CompilationResult,
+        key: CacheableValue,
+        cacheHoldsThisPayload: boolean,
+    ): Promise<void> {
+        if (!this.isCompilationWorker) return;
+        const resultString = JSON.stringify(result);
+        if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
+        if (cacheHoldsThisPayload) {
+            if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
+            return;
+        }
+        const s3Key = await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
+        if (s3Key) result.s3Key = s3Key;
     }
 
     async afterCmakeCompilation(
@@ -3957,9 +4005,23 @@ but nothing was dumped. Possible causes are:
 
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
-                const content = raw
-                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                const trimmed = raw
+                    ? this.trimGccDumpHeaderFunctions(
+                          raw,
+                          sourceBasename,
+                          keepLineno,
+                          pass.filename_suffix[0] === 'r',
+                          opts.libraryFunctions ?? false,
+                      )
                     : '';
+                // RTL dumps repeat the absolute path of the source, and of any other user file
+                // (multi-file compiles), on every insn location. Mask the temp dir as we do for
+                // other compiler output, so they read as /app/example.cpp rather than the scratch
+                // directory. Literal split/join, because this runs over the whole dump and
+                // TEMPDIR_RE backtracks on long input. On Windows the dir has backslashes but GCC
+                // may print either separator, so mask both spellings.
+                let content = trimmed.split(rootDir + path.sep).join('/app/');
+                if (path.sep !== '/') content = content.split(rootDir.replaceAll(path.sep, '/') + '/').join('/app/');
                 // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
                 // file, or a pass whose only output was header functions we trimmed away). This
                 // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
@@ -4146,6 +4208,11 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
+    /** Throws if `filename` is not inside `dirPath`. */
+    assertInsideDir(dirPath: string, filename: string) {
+        if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
+    }
+
     checkOptions(options: string[]) {
         const error = this.env.findBadOptions(options);
         if (error.length > 0) return `Bad options: ${error.join(', ')}`;
@@ -4158,7 +4225,9 @@ but nothing was dumped. Possible causes are:
         if (exeFilename.includes('icc')) {
             return ICCParser;
         }
-        if (exe.includes('clangir')) {
+        // ClangIR compilers share the trunk clang binary, so identify them by name (as
+        // ClangParser does for supportsClangirView), not by exe path.
+        if (this.compiler.name?.includes('clangir')) {
             return ClangirParser;
         }
         if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {

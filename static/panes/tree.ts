@@ -806,7 +806,7 @@ export class Tree {
 
     updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     private close() {

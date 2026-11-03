@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import html
 import json
 from urllib import request
 from urllib import parse
@@ -12,10 +13,20 @@ import re
 #opcodes_yaml = "https://five-embeddev.github.io/riscv-docs-html/opcodes.yaml"
 opcodes_yaml = "https://five-embeddev.github.io/riscv-docs-html/opcodes.yaml"
 htmlhost = "https://five-embeddev.github.io/riscv-docs-html/"
+instructionsets_data = "https://instructionsets.com/data/riscv.json"
+instructionsets_host = "https://instructionsets.com/risc-v/"
+
+# Records in the InstructionSets data that describe instructions which are not part of the ratified ISA
+SUPPLEMENT_SKIPPED_OPCODES = {"URET"}
+SUPPLEMENT_SKIPPED_EXTENSION_MARKERS = ("draft",)
 
 parser = argparse.ArgumentParser(description='Scrape the five-embeddev quick reference page and generate the riscv documentation')
 parser.add_argument('-i', '--opcode-data', type=str, help='Input opcode data in YAML format.',
                     default=opcodes_yaml)
+parser.add_argument('-s', '--supplement-data', type=str,
+                    help='InstructionSets.com RISC-V data (CC0) in JSON format, used only for opcodes missing from the '
+                         'opcode data. Pass "none" to disable.',
+                    default=instructionsets_data)
 parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .ts file. Default is ./asm-docs-riscv64.ts',
                     default='./asm-docs-riscv64.ts')
 
@@ -91,6 +102,40 @@ class operation:
         }
         return json.dumps(dic, indent=16, separators=(',', ': '), sort_keys=True)
 
+def load_text(location):
+    if location[:4] == "http":
+        r = requests.get(location)
+        r.raise_for_status()
+        r.encoding = 'utf-8'
+        return r.text
+    with open(location, 'r') as fin:
+        return fin.read()
+
+def supplement_record(instruction):
+    opcode = instruction['mnemonic'].upper()
+    syntax = instruction['syntax'].strip()
+    operands = syntax[len(opcode):].strip() if syntax.upper().startswith(opcode) else ""
+    group = "pseudo" if instruction['extension'] == 'Pseudo' else instruction['extension']
+    description = instruction['description'].strip()
+    html_code = f'<span class="opcode"><b>{opcode}</b> {html.escape(operands)}</span>'
+    html_desc = f"<br><div>{html.escape(description)}</div>"
+    html_group = f"<br><div><b>ISA</b>: {html.escape(group)}</div>"
+    return {
+        "html": f"<div>{html_code}{html_desc}{html_group}</div>",
+        "tooltip": f"{description}\n\n(ISA: {group})",
+        "url": instructionsets_host + instruction['mnemonic'].lower().replace('.', '_') + "/",
+    }
+
+def supplement_opcodes(supplement_data, known_opcodes):
+    for instruction in supplement_data['instructions']:
+        opcode = instruction['mnemonic'].upper()
+        extension = instruction['extension'].lower()
+        if opcode in known_opcodes or opcode in SUPPLEMENT_SKIPPED_OPCODES:
+            continue
+        if any(marker in extension for marker in SUPPLEMENT_SKIPPED_EXTENSION_MARKERS):
+            continue
+        yield opcode, supplement_record(instruction)
+
 if __name__ == '__main__':
     args = parser.parse_args()
     yaml_text=None
@@ -124,13 +169,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
     switch (opcode.toUpperCase()) {
 """.lstrip())
 
-        for record in [operation(o, yaml_data) for o in yaml_data['opcodes'].values()]:
-            # for each opcode
-            output.write(f'        case "{record.opcode}":\n')
-            if record.opcode_alias:
-                output.write(f'        case "{record.opcode_alias}":\n')
-            output.write(f'            return {str(record)[:-1]}            }};\n\n')
-
         # Pseudoinstructions missing from the upstream YAML data
         extra_pseudos = [
             {
@@ -144,6 +182,25 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "equivalent": "sltu rd, rt, rs",
             },
         ]
+
+        known_opcodes = {pseudo["opcode"] for pseudo in extra_pseudos}
+        for record in [operation(o, yaml_data) for o in yaml_data['opcodes'].values()]:
+            # for each opcode
+            known_opcodes.add(record.opcode)
+            output.write(f'        case "{record.opcode}":\n')
+            if record.opcode_alias:
+                known_opcodes.add(record.opcode_alias)
+                output.write(f'        case "{record.opcode_alias}":\n')
+            output.write(f'            return {str(record)[:-1]}            }};\n\n')
+
+        # Opcodes missing from the upstream YAML data (newer extensions), from the InstructionSets.com data
+        if args.supplement_data != "none":
+            supplement_data = json.loads(load_text(args.supplement_data))
+            for opcode, info in supplement_opcodes(supplement_data, known_opcodes):
+                info_json = json.dumps(info, indent=16, separators=(',', ': '), sort_keys=True)
+                output.write(f'        case "{opcode}":\n')
+                output.write(f'            return {info_json[:-1]}            }};\n\n')
+
         for pseudo in extra_pseudos:
             op = pseudo["opcode"]
             args = pseudo["args"]

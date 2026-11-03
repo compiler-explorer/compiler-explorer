@@ -145,6 +145,7 @@ export type CompilerInfo = {
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
+    skipExeCheck: boolean;
     buildenvsetup?: {
         id: string;
         props: (name: string, def?: any) => any;
@@ -181,10 +182,21 @@ export type CompilerInfo = {
         initialFiltersState?: Record<string, boolean>;
     };
     cachedPossibleArguments?: any;
+    cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
+    tileirdisasm?: string;
     ptxas?: string;
     mtime?: any;
     $order: number;
+};
+
+/** One platform tuple a Mach compiler supports, keyed by the name a user passes to `--target`. */
+export type MachTarget = {
+    name: string;
+    isa: string;
+    os: string;
+    abi: string;
+    object: string;
 };
 
 // Compiler information collected by the compiler-finder

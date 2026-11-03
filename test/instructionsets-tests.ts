@@ -22,34 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'node:os';
+
 import {describe, expect, it} from 'vitest';
 
+import {CurrentHostExecHelper} from '../lib/execution/execution-triple.js';
 import {InstructionSets} from '../lib/instructionsets.js';
 
 describe('InstructionSets', () => {
     it('should recognize aarch64 for clang target', () => {
         const isets = new InstructionSets();
 
-        expect(
-            isets.getCompilerInstructionSetHint('aarch64-linux-gnu', '/opt/compiler-explorer/clang-11.0.1/bin/clang++'),
-        ).toBe('aarch64');
+        expect(isets.getCompilerInstructionSetHint('aarch64-linux-gnu')).toBe('aarch64');
     });
 
-    it('should recognize gcc aarch64 from filepath', () => {
+    it('should default to the host instruction set when not apparent', () => {
         const isets = new InstructionSets();
 
-        expect(
-            isets.getCompilerInstructionSetHint(
-                false,
-                '/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-g++',
-            ),
-        ).toBe('aarch64');
-    });
-
-    it('should default to amd64 when not apparent', () => {
-        const isets = new InstructionSets();
-
-        expect(isets.getCompilerInstructionSetHint(false, '/opt/compiler-explorer/gcc-12.2.0/bin/g++')).toBe('amd64');
+        expect(isets.getCompilerInstructionSetHint(false)).toBe(
+            CurrentHostExecHelper.getInstructionSetByNodeJSArch(os.arch()),
+        );
     });
 
     it('should recognize hppa from compiler target string', () => {

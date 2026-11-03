@@ -44,9 +44,11 @@ export class RazorForgeCompiler extends BaseCompiler {
     }
 
     // RazorForge's CLI takes verbs and positional arguments only — all build
-    // configuration lives in razorforge.toml, not flags. The `build` verb runs
-    // semantic analysis and code generation, writing LLVM IR next to the source
-    // file (example.rf -> example.ll) without invoking opt/clang.
+    // configuration lives in razorforge.toml, not flags. The `codegen` verb runs
+    // semantic analysis and code generation ONLY, writing LLVM IR next to the
+    // source file (example.rf -> example.ll) without invoking opt/clang/lld or
+    // linking a native executable. (`build` would run the full opt->clang->link
+    // pipeline — heavier and unnecessary for the IR view.)
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [];
     }
@@ -61,7 +63,11 @@ export class RazorForgeCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        return ['build', this.filename(inputFilename)].concat(options, userOptions);
+        // `codegen <file>` defaults its output to <file>.ll (example.rf -> example.ll),
+        // which is exactly what getOutputFilename() below points CE at. RazorForge takes
+        // no build flags, and codegen's optional 2nd positional is the output path — so a
+        // stray user option would be misread as an output filename. Pass only the verb + file.
+        return ['codegen', this.filename(inputFilename)];
     }
 
     // The primary output is the emitted LLVM IR itself.

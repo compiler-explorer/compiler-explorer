@@ -44,6 +44,9 @@ import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
+import {Win32MingWClang} from '../lib/compilers/win32-mingw-clang.js';
+import {Win32MingWGcc} from '../lib/compilers/win32-mingw-gcc.js';
+import {Win32VcCompiler} from '../lib/compilers/win32-vc.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
     BuildSystems,
@@ -587,6 +590,40 @@ describe('Cargo build system', () => {
 
         // finaliseArtifact copies to whatever this returns, so the name has to be refused before it gets there.
         expect(() => cargoBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
+    });
+
+    it('ignores an artifact record pointing at a file outside the project', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        const artifact = cargoBuildSystem.getArtifactFilename(ctx);
+
+        const copied: [string, string][] = [];
+        const result = {
+            buildsteps: [
+                {
+                    step: 'cargo',
+                    // The executable path is only cargo's stdout: a record naming a host file, absolute or by way of
+                    // an /app/ that climbs out, must not become a copy from the host.
+                    stdout: [
+                        {text: '{"reason":"compiler-artifact","executable":"/etc/passwd"}'},
+                        {text: '{"reason":"compiler-artifact","executable":"/app/../../../../etc/passwd"}'},
+                    ],
+                },
+            ],
+        } as any;
+
+        const nothingToInspect = await cargoBuildSystem.finaliseArtifact(
+            ctx,
+            result,
+            artifact,
+            async (from: string, to: string) => {
+                copied.push([from, to]);
+            },
+        );
+
+        expect(copied).toEqual([]);
+        expect(nothingToInspect).toMatch(/did not build an executable/);
     });
 
     it('takes a bin named for the artifact without its extension, which is how cargo would spell it', async () => {
@@ -1149,6 +1186,35 @@ describe('Make build system', () => {
         expect(fsSync.existsSync(dirPath)).toBe(false);
     });
 
+    it('lets the compiler prepare a successful build for running before it is packaged', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const prepare = vi.spyOn(compiler, 'prepareArtifactExecution');
+        const store = vi.spyOn(compiler as any, 'storePackageWithExecutable').mockResolvedValue(undefined);
+
+        class Builds extends MakeBuildSystem {
+            override async getBuildPlan(): Promise<BuildPlan> {
+                return {getCompilationOptions: () => [], steps: []};
+            }
+
+            override async finaliseArtifact(): Promise<string | undefined> {
+                return undefined;
+            }
+        }
+
+        await compiler.buildProject(
+            new Builds(),
+            [],
+            makeParsedRequest({skipAsm: true, customOutputFilename: 'demo'}),
+            BypassCache.Compilation,
+        );
+
+        expect(prepare).toHaveBeenCalledTimes(1);
+        expect(path.basename(prepare.mock.calls[0][0])).toEqual('demo');
+        expect(prepare.mock.invocationCallOrder[0]).toBeLessThan(store.mock.invocationCallOrder[0]);
+        vi.restoreAllMocks();
+    });
+
     it('reports a missing launcher, which is thrown while working out what to run', async () => {
         // maven defaults to empty and asserts, so this has to arrive as a compilation result rather than a bare 400.
         const env = makeMakeEnv();
@@ -1188,4 +1254,122 @@ describe('Make build system', () => {
             expect(() => makeBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
         }
     });
+});
+
+describe('Project build output path', () => {
+    // Called directly, so request parsing never sees these names. CMake's artifact sits a level deeper, in build/.
+    const cases = [
+        ['cmake', cmakeBuildSystem, '../../ce-compilation-dir/secret'],
+        ['make', makeBuildSystem, '../ce-compilation-dir/secret'],
+    ] as const;
+
+    for (const [name, buildSystem, customOutputFilename] of cases) {
+        it(`refuses a ${name} artifact outside the compilation directory before building anything`, async () => {
+            const env = makeCompilationEnvironment({
+                languages: {'c++': {id: 'c++'}},
+                props: {make: '/usr/bin/make', cmake: '/usr/bin/cmake'},
+            });
+            const compiler = new BaseCompiler(
+                makeFakeCompilerInfo({exe: '/usr/bin/g++', lang: 'c++', ldPath: [], libPath: []}),
+                env,
+            );
+            vi.spyOn(buildSystem, 'getUnsupportedReason').mockResolvedValue(undefined);
+            const runProjectBuild = vi.spyOn(compiler as any, 'runProjectBuild');
+            const exec = vi.spyOn(compiler, 'exec');
+            const dirs: string[] = [];
+            const newTempDir = compiler.newTempDir.bind(compiler);
+            vi.spyOn(compiler, 'newTempDir').mockImplementation(async () => {
+                dirs.push(await newTempDir());
+                return dirs.at(-1)!;
+            });
+
+            try {
+                await expect(
+                    compiler.buildProject(
+                        buildSystem,
+                        [],
+                        makeParsedRequest({customOutputFilename}),
+                        BypassCache.Compilation,
+                    ),
+                ).rejects.toThrow('Invalid filename');
+                expect(runProjectBuild).not.toHaveBeenCalled();
+                expect(exec).not.toHaveBeenCalled();
+            } finally {
+                vi.restoreAllMocks();
+                for (const dir of dirs) await fs.rm(dir, {recursive: true, force: true});
+            }
+        });
+    }
+});
+
+describe('Project build disassembly', () => {
+    function makeMsvc(env: CompilationEnvironment) {
+        return new Win32VcCompiler(
+            makeFakeCompilerInfo({exe: 'cl.exe', lang: 'c++', ldPath: [], libPath: [], supportsBinary: true}),
+            env,
+        );
+    }
+
+    // With no objdumper to run, reaching that message means the artifact was found where it was looked for.
+    for (const [customOutputFilename, artifact] of [
+        ['the_executable', 'the_executable.exe'],
+        ['tool.exe', 'tool.exe.exe'],
+    ]) {
+        it(`disassembles the ${artifact} the build produced, not a name derived from it`, async () => {
+            const env = makeEnv();
+            const compiler = makeMsvc(env);
+            vi.spyOn(compiler, 'supportsObjdump').mockReturnValue(true);
+            vi.spyOn(compiler as any, 'getObjdumperForResult').mockReturnValue(null);
+            const dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-project-objdump-'));
+            try {
+                const parsedRequest = makeParsedRequest({customOutputFilename});
+                cmakeBuildSystem.applyRequestDefaults(compiler, parsedRequest);
+                const ctx = {
+                    ...makeContext(compiler, env, parsedRequest),
+                    dirPath,
+                    buildPath: path.join(dirPath, 'build'),
+                };
+                const artifactFilename = cmakeBuildSystem.getArtifactFilename(ctx);
+                expect(path.basename(artifactFilename)).toEqual(artifact);
+                await fs.mkdir(ctx.buildPath);
+                await fs.writeFile(artifactFilename, 'MZ');
+
+                const prepare = vi.spyOn(compiler, 'prepareArtifactDisassembly');
+                const result = await cmakeBuildSystem.postProcessArtifact(
+                    ctx,
+                    {code: 0, timedOut: false, stdout: [], stderr: []},
+                    artifactFilename,
+                );
+
+                expect(prepare).toHaveBeenCalledWith(artifactFilename, parsedRequest.filters);
+                expect(result.asm).toEqual('<No objdumper configured>');
+                expect(result.objdumpInputFilename).toBeUndefined();
+            } finally {
+                vi.restoreAllMocks();
+                await fs.rm(dirPath, {recursive: true, force: true});
+            }
+        });
+    }
+
+    // CMake names an executable on Windows <target>.exe, so that is what there is to disassemble and run
+    for (const Compiler of [Win32MingWGcc, Win32MingWClang]) {
+        for (const [customOutputFilename, artifact] of [
+            ['the_executable', 'the_executable.exe'],
+            ['tool.exe', 'tool.exe.exe'],
+        ]) {
+            it(`expects ${Compiler.key} to have built ${artifact}`, () => {
+                const env = makeEnv();
+                const compiler = new Compiler(
+                    makeFakeCompilerInfo({exe: 'g++.exe', lang: 'c++', ldPath: [], libPath: [], supportsBinary: true}),
+                    env,
+                );
+                const parsedRequest = makeParsedRequest({customOutputFilename});
+                const ctx = {
+                    ...makeContext(compiler, env, parsedRequest),
+                    buildPath: path.join('/tmp/project', 'build'),
+                };
+                expect(path.basename(cmakeBuildSystem.getArtifactFilename(ctx))).toEqual(artifact);
+            });
+        }
+    }
 });

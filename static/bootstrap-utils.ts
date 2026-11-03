@@ -42,6 +42,10 @@ import 'bootstrap';
 
 import {Dropdown, Modal, Popover, Toast} from 'bootstrap';
 
+// Golden Layout clips each pane's content to the pane, so dropdown menus inside a pane are positioned
+// with `position: fixed` to let them extend past the pane's edges.
+Dropdown.Default.popperConfig = {strategy: 'fixed'};
+
 // Private event listener tracking map
 const eventListenerMap = new WeakMap<HTMLElement, Map<string, EventListener>>();
 

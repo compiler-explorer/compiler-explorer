@@ -159,6 +159,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private needsCompile: boolean;
     private deviceViewOpen: boolean;
     private options: string;
+    private optionsChangedBeforeInitialStateLoad = false;
     private source: string;
     private assembly: Assembly[];
     private lastResult: CompilationResult | null;
@@ -176,7 +177,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
-    private compilerPicker: CompilerPicker;
+    private compilerPicker: CompilerPicker | undefined;
     private compiler: CompilerInfo | null;
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
@@ -294,6 +295,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compilerShared: ICompilerShared;
     private artifactHandler: ArtifactHandler;
 
+    gccDumpLibraryFunctions: boolean = false;
+
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         state.id = state.id || hub.nextCompilerId();
         super(hub, container, state);
@@ -352,6 +355,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     private async postInit(state: MonacoPaneState & CompilerState) {
         await this.initLangAndCompiler(state);
+        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
+            this.options =
+                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
+            this.optionsField.val(this.options);
+        }
         // The lang/compiler are now resolved from our own state. Only after this point may we
         // react to languageChange broadcasts; an earlier one (e.g. the editor's initial firstTime
         // broadcast, which can arrive while the await above is still pending) would otherwise reset
@@ -413,6 +421,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 {
                     readOnly: true,
                     language: 'asm',
+                    colorDecorators: false,
                     glyphMargin: !options.embedded,
                     guides: {
                         bracketPairs: false,
@@ -453,7 +462,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const result = await this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
-        this.updateLibraries();
+        await this.updateLibraries();
     }
 
     override close(): void {
@@ -461,7 +470,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.unsubscribe();
         this.eventHub.emit('compilerClose', this.id, this.sourceTreeId ?? 0);
         this.editor.dispose();
-        this.compilerPicker.destroy();
+        this.compilerPicker?.destroy();
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
@@ -1394,6 +1403,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     rtlDump: this.rtlDumpEnabled,
                     ipaDump: this.ipaDumpEnabled,
                     dumpFlags: this.dumpFlags,
+                    libraryFunctions: this.gccDumpLibraryFunctions,
                 },
                 produceOptInfo: this.wantOptInfo ?? false,
                 produceStackUsageInfo: this.stackUsageViewOpen,
@@ -1893,6 +1903,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         this.compileInfoLabel.text(infoLabelText);
+        // Resize in case the compile info wraps the bottom bar onto another line
+        this.resize();
 
         this.postCompilationResult(request, result.result ?? result);
 
@@ -2421,6 +2433,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 uid: dumpOpts.uidOption,
                 all: dumpOpts.allOption,
             };
+            this.gccDumpLibraryFunctions = dumpOpts.libraryFunctionsOption;
 
             if (reqCompile) {
                 this.compile();
@@ -2657,8 +2670,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         await this.libsWidget.stateLoaded;
     }
 
+    // Never rejects: callers await this while compiles are deferred, and a failed library fetch must not leave
+    // the pane unable to compile. On failure the libs widget just keeps its previous state.
     async updateLibraries(): Promise<void> {
-        if (this.libsWidget) {
+        if (!this.libsWidget) return;
+        try {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
                 filteredLibraries = await LibUtils.getSupportedLibraries(
@@ -2668,7 +2684,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 );
             }
 
-            this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+            await this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+        } catch (e) {
+            SentryCapture(e, 'Compiler.updateLibraries');
         }
     }
 
@@ -3168,7 +3186,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // "input" rather than "keyup": it covers every edit, including the ones that
         // involve no keystroke at all (middle-click paste, drag and drop, autofill).
-        this.optionsField.on('change', optionsChange).on('input', optionsChange);
+        this.optionsField.on('change input', e => {
+            if (!this.initialStateLoaded) {
+                this.optionsChangedBeforeInitialStateLoad = true;
+            }
+            optionsChange(e);
+        });
 
         this.mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
         this.editor.onMouseMove(e => {
@@ -3218,6 +3241,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onOptionsChange(options: string): void {
         if (this.options !== options) {
+            if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
             this.options = options;
             this.updateState();
             this.compile();
@@ -3268,7 +3292,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.deferCompiles = true;
         this.needsCompile = true;
 
-        this.updateLibraries();
+        await this.updateLibraries();
         this.updateState();
         this.updateCompilerUI();
 
@@ -3812,9 +3836,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.updateState();
                 this.updateCompilerUI();
                 this.setAssembly({asm: this.fakeAsm('')});
-                // this is a workaround to delay compilation further until the Editor sends a compile request
-                this.needsCompile = false;
-
+                // The libraries widget asks for a compile whenever its language changes, whatever compileOnChange says
+                if (!this.settings.compileOnChange) this.needsCompile = false;
                 this.undefer();
                 this.sendCompiler();
             });
