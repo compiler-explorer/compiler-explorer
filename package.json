@@ -120,7 +120,6 @@
     "mini-css-extract-plugin": "^2.10.2",
     "mock-fs": "^5.5.0",
     "monaco-editor-webpack-plugin": "^7.1.1",
-    "nock": "^14.0.17",
     "npm-run-all": "^4.1.5",
     "sass": "^1.107.1",
     "sass-loader": "^17.1.0",
