@@ -24,8 +24,10 @@ jobs:
           script: |
             const title = context.payload.pull_request.title;
             const labels = [];
-            if (/\b(win(dows|32|64)?|msvc|mingw)\b/i.test(title)) labels.push('MS/Windows');
+            const amdRga = /\bamd rga\b/i.test(title);
+            if (amdRga || /\b(win(dows|32|64)?|msvc|mingw)\b/i.test(title)) labels.push('MS/Windows');
             if (/\b(msvc|clang-cl)\b/i.test(title)) labels.push('msvc');
+            if (!amdRga && /\b(gpus?|cuda|nvcc|ptx|amdgpu|rocm|hip|rga|opencl|spir-?v|vulkan|glsl|hlsl|slang|triton|tilelang|cute ?dsl|shaders?|device view(er)?)\b/i.test(title)) labels.push('gpu');
             if (labels.length === 0) return;
             await github.rest.issues.addLabels({
                 owner: context.repo.owner,
