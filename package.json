@@ -59,7 +59,7 @@
     "monaco-vim": "^0.4.4",
     "morgan": "^1.12.1",
     "node-targz": "^0.2.0",
-    "p-queue": "^9.3.5",
+    "p-queue": "^10.0.0",
     "path-browserify": "^1.0.1",
     "profanities": "^3.0.1",
     "prom-client": "^15.1.3",
