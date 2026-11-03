@@ -83,6 +83,7 @@ export function SetupSentry() {
             release: options.release,
             environment: options.sentryEnvironment,
             dataCollection: {userInfo: false, httpBodies: []},
+            attachStacktrace: false,
             ignoreErrors: [
                 // NOTE: Monaco Editor patterns may not work reliably due to code minification
                 // Source mapping happens AFTER beforeSend/ignoreErrors processing

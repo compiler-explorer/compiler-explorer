@@ -30,8 +30,8 @@
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@orchidjs/sifter": "^1.1.0",
     "@popperjs/core": "^2.11.8",
-    "@sentry/browser": "^10.78.0",
-    "@sentry/node": "^10.78.0",
+    "@sentry/browser": "^11.10.0",
+    "@sentry/node": "^11.10.0",
     "@types/semver": "^7.8.0",
     "big-integer": "^1.6.52",
     "bootstrap": "^5.3.8",
@@ -88,7 +88,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",
-    "@sentry/types": "^10.75.2",
     "@smithy/util-stream": "^4.8.2",
     "@types/bootstrap": "^5.2.11",
     "@types/chai": "^5.2.3",
