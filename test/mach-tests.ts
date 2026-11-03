@@ -134,12 +134,14 @@ function makeMach(stdPath: string) {
 describe('Mach project layout', () => {
     let compiler: MachCompiler;
     let stdPath: string;
+    let startupExecArgs: string[][];
 
     beforeAll(async () => {
         stdPath = await makeStd();
         compiler = makeMach(stdPath);
         fakeMach(compiler);
         expect(await start(compiler)).toBe(compiler);
+        startupExecArgs = (compiler.exec as any).mock.calls.map((call: any[]) => call[1]);
     });
 
     afterAll(async () => {
@@ -161,9 +163,8 @@ describe('Mach project layout', () => {
 
     it('probes every tuple `mach info targets` reports at startup, against one project with std realized once', async () => {
         expect((await compiler.supportedTuples()).length).toEqual(23);
-        const calls = (compiler.exec as any).mock.calls.map((call: any[]) => call[1]);
-        expect(calls.filter((args: string[]) => args[0] === 'dep')).toHaveLength(1);
-        expect(calls.filter((args: string[]) => args[0] === 'build')).toHaveLength(23);
+        expect(startupExecArgs.filter(args => args[0] === 'dep')).toHaveLength(1);
+        expect(startupExecArgs.filter(args => args[0] === 'build')).toHaveLength(23);
     });
 
     it('keeps the probed targets for discovery to write out, and reuses them on a prediscovered start', async () => {

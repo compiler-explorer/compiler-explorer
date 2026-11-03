@@ -22,10 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-////
-// see https://docs.sentry.io/platforms/javascript/guides/node/install/late-initialization/
-import '@sentry/node/preload'; // preload Sentry's "preload" support before any other imports
-////
 import process from 'node:process';
 
 import {parseArgsToAppArguments} from './lib/app/cli.js';
