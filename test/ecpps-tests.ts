@@ -110,9 +110,9 @@ describe('ECPPS IR tool', () => {
     describe('running', () => {
         afterEach(() => vi.restoreAllMocks());
 
-        function makeTool() {
+        function makeTool(options: string[] = []) {
             return new EcppsIrTool(
-                {id: 'ecppsir', name: 'ECPPS IR', exclude: [], options: []} as unknown as ToolInfo,
+                {id: 'ecppsir', name: 'ECPPS IR', exclude: [], options} as unknown as ToolInfo,
                 {ceProps: (_key: string, def: any) => def, compilerProps: () => undefined} as unknown as ToolEnv,
             );
         }
@@ -154,6 +154,16 @@ describe('ECPPS IR tool', () => {
             ]);
             expect(exec.mock.calls[0][2].customCwd).toEqual(dir);
             expect(result.stdout.map(line => line.text)).toEqual(['line one', 'line two']);
+        });
+
+        it("passes the tool's configured options", async () => {
+            const dir = await newTempDir();
+            const tool = makeTool(['/warnings:all']);
+            const exec = vi.spyOn(tool, 'exec').mockResolvedValue(execResult(''));
+
+            await tool.runTool(compilationInfo, path.join(dir, 'example.cpp'), ['IR']);
+
+            expect(exec.mock.calls[0][1]).toContain('/warnings:all');
         });
 
         it('shows the compiler output when there is no dump', async () => {

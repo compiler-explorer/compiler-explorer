@@ -83,9 +83,11 @@ export class EcppsIrTool extends BaseTool {
         const stage = EcppsIrTool.stageFor(args);
         const dirPath = path.dirname(inputFilepath);
         const outputFilepath = path.join(dirPath, `ecpps-${stage}.txt`);
-        const compilerOptions = compilationInfo.compiler.options
-            ? splitArguments(compilationInfo.compiler.options)
-            : [];
+        // Like BaseTool.runTool: the tool's own configured options come first.
+        const compilerOptions = [
+            ...this.tool.options,
+            ...(compilationInfo.compiler.options ? splitArguments(compilationInfo.compiler.options) : []),
+        ];
         const toolArgs = EcppsIrTool.buildArguments(
             stage,
             outputFilepath,
