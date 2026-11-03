@@ -1,0 +1,121 @@
+// Copyright (c) 2026, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+// These tests cover the places where Compiler Explorer reaches into Monaco (or monaco-vim) internals that are not part
+// of Monaco's documented API. A Monaco upgrade that moves or renames any of them should fail here, not in production.
+
+import {
+    compilerOutput,
+    setMonacoEditorContent,
+    setupAndWaitForCompilation,
+    sourceEditor,
+    stubConsoleOutput,
+    visitPage,
+    waitForEditors,
+} from '../support/utils';
+
+function sourceModelValue(): Cypress.Chainable<string> {
+    return cy.window().then((win: Cypress.AUTWindow) => win.monaco.editor.getEditors()[0].getModel()!.getValue());
+}
+
+describe('Monaco language workers', () => {
+    beforeEach(visitPage);
+
+    it('runs the TypeScript worker and reports diagnostics', () => {
+        waitForEditors();
+        let resource: ReturnType<Cypress.AUTWindow['monaco']['Uri']['parse']>;
+        cy.window().then((win: Cypress.AUTWindow) => {
+            resource = win.monaco.Uri.parse('inmemory://worker-test.ts');
+            win.monaco.editor.createModel('const x: number = "not a number";', 'typescript', resource);
+        });
+        cy.window({timeout: 30_000}).should((win: Cypress.AUTWindow) => {
+            const markers = win.monaco.editor.getModelMarkers({resource});
+            expect(markers.map(marker => marker.message).join('\n')).to.contain('not assignable');
+        });
+    });
+});
+
+describe('Vim mode', () => {
+    beforeEach(() => {
+        cy.visit('/', {
+            onBeforeLoad: win => {
+                win.localStorage.setItem('settings', JSON.stringify({useVim: true}));
+                stubConsoleOutput(win);
+            },
+        });
+        waitForEditors();
+        setMonacoEditorContent('first\nsecond\nthird');
+        sourceEditor().click();
+        // Type into the focused input: typing into the editor element would click it again and move the cursor
+        cy.focused().type('gg');
+    });
+
+    it('shows the vim status bar and enters insert mode on "i"', () => {
+        cy.get('.v-status').should('be.visible');
+        cy.focused().type('i');
+        cy.get('.v-status').should('contain.text', 'INSERT');
+    });
+
+    it('leaves insert mode on Escape', () => {
+        cy.focused().type('i');
+        cy.get('.v-status').should('contain.text', 'INSERT');
+        cy.focused().type('{esc}');
+        cy.get('.v-status').should('not.contain.text', 'INSERT');
+    });
+
+    it('runs normal mode commands against the model', () => {
+        cy.focused().type('dd');
+        sourceModelValue().should('equal', 'second\nthird');
+    });
+
+    it("indents with >> (monaco-vim drives Monaco's internal ShiftCommand)", () => {
+        cy.focused().type('>>');
+        sourceModelValue().should('match', /^\s+first\n/);
+    });
+});
+
+describe('Print view', () => {
+    beforeEach(visitPage);
+
+    it('extracts the Monaco theme CSS when printing', () => {
+        setupAndWaitForCompilation();
+        cy.window().then((win: Cypress.AUTWindow) => {
+            win.dispatchEvent(new win.Event('beforeprint'));
+        });
+        cy.get('#printview style').invoke('text').should('contain', '#printview .mtk1');
+    });
+});
+
+describe('Compiler pane context menu', () => {
+    beforeEach(visitPage);
+
+    it('opens through the patched context menu handler and offers the asm documentation action', () => {
+        setupAndWaitForCompilation();
+        compilerOutput().find('.view-line span').contains(/^ret$/).first().rightclick();
+        // Monaco renders its context menu inside a shadow root
+        cy.contains('.monaco-menu .action-label', 'View assembly documentation', {includeShadowDom: true})
+            .closest('.action-item')
+            .should('not.have.class', 'disabled');
+    });
+});
