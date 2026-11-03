@@ -92,6 +92,7 @@ export class CompilersService {
         'supportsHaskellStgView',
         'supportsHaskellCmmView',
         'supportsLeanCView',
+        'supportsJvmBytecodeView',
         'supportsClojureMacroExpView',
         'supportsYulView',
         'supportsCfg',
@@ -102,6 +103,7 @@ export class CompilersService {
         'supportsDemangle',
         'supportsVerboseDemangling',
         'supportsFiltersInBinary',
+        'supportsDarkBackgroundColours',
     ];
 
     private async fetchCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {

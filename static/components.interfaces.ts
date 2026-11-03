@@ -24,6 +24,7 @@
 
 import GoldenLayout from 'golden-layout';
 
+import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
@@ -72,6 +73,7 @@ export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir' as const;
 export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore' as const;
 export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg' as const;
 export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm' as const;
+export const JVM_BYTECODE_VIEW_COMPONENT_NAME = 'jvmBytecode' as const;
 export const LEAN_C_VIEW_COMPONENT_NAME = 'leanC' as const;
 export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree' as const;
 export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug' as const;
@@ -407,6 +409,15 @@ export interface ComponentStateMap {
     [HASKELL_CORE_VIEW_COMPONENT_NAME]: EmptyHaskellCoreViewState | PopulatedHaskellCoreViewState;
     [HASKELL_STG_VIEW_COMPONENT_NAME]: EmptyHaskellStgViewState | PopulatedHaskellStgViewState;
     [HASKELL_CMM_VIEW_COMPONENT_NAME]: EmptyHaskellCmmViewState | PopulatedHaskellCmmViewState;
+    [JVM_BYTECODE_VIEW_COMPONENT_NAME]:
+        | EmptyState
+        | (StateWithId & {
+              source: string;
+              jvmBytecodeOutput?: ParsedAsmResultLine[];
+              compilerName: string;
+              editorid: number;
+              treeid: number;
+          });
     [LEAN_C_VIEW_COMPONENT_NAME]: EmptyLeanCViewState | PopulatedLeanCViewState;
     [GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME]: EmptyGnatDebugTreeViewState | PopulatedGnatDebugTreeViewState;
     [GNAT_DEBUG_VIEW_COMPONENT_NAME]: EmptyGnatDebugViewState | PopulatedGnatDebugViewState;

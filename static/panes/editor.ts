@@ -1841,7 +1841,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.hub.activateTabForContainer(this.container);
                 this.editor.revealLineInCenter(lineNum);
                 this.editor.focus();
-                this.editor.setPosition({column: columnBegin >= 0 ? columnBegin : 0, lineNumber: lineNum});
+                this.editor.setPosition({column: Math.max(columnBegin, 0), lineNumber: lineNum});
             }
             this.decorations.linkedCode = [];
             if (lineNum && lineNum !== -1) {

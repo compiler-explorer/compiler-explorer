@@ -41,57 +41,102 @@ function tokens(source: string): [string, string][][] {
         );
 }
 
-describe('Duckling keywords and types', () => {
-    it('highlights pointer and object keywords', () => {
-        expect(tokens('return ptrof self;')[0]).toEqual([
+describe('Duckling names', () => {
+    it('distinguishes word operators and predefined names', () => {
+        expect(tokens('return ptrof self as type; true false none')[0]).toEqual([
             ['return', 'keyword'],
-            ['ptrof', 'keyword'],
-            ['self', 'keyword'],
+            ['ptrof', 'keyword.operator'],
+            ['self', 'variable.predefined'],
+            ['as', 'keyword.operator'],
+            ['type', 'type.identifier'],
             [';', 'delimiter'],
+            ['true', 'constant.language'],
+            ['false', 'constant.language'],
+            ['none', 'constant.predefined'],
         ]);
     });
 
-    it.each(['i64', 'str', 'type', 'void', 'Array', 'Dict', 'Set'])('highlights %s as a builtin return type', type => {
-        expect(tokens(`fundecl describe() -> ${type}`)[0]).toEqual([
-            ['fundecl', 'keyword'],
-            ['describe', 'identifier'],
+    it('highlights primitive and conventional library types', () => {
+        const types = ['i64', 'str', 'type', 'void', 'Array', 'Dict', 'Set', 'f80'];
+        expect(tokens(types.join(' '))[0]).toEqual(types.map(type => [type, 'type.identifier']));
+    });
+
+    it('recognises declarations, attributes and calls without overriding keywords and types', () => {
+        expect(tokens('public fun décrire() -> i64; class Sample; namespace Demo;')[0]).toEqual([
+            ['public', 'keyword'],
+            ['fun', 'keyword'],
+            ['décrire', 'entity.name.function'],
             ['()', 'delimiter.parenthesis'],
             ['->', 'operator'],
-            [type, 'type.identifier'],
+            ['i64', 'type.identifier'],
+            [';', 'delimiter'],
+            ['class', 'keyword'],
+            ['Sample', 'type.identifier'],
+            [';', 'delimiter'],
+            ['namespace', 'keyword'],
+            ['Demo', 'type.identifier'],
+            [';', 'delimiter'],
+        ]);
+        expect(tokens('@inline décrire(); i64(); if();')[0]).toEqual([
+            ['@inline', 'annotation'],
+            ['décrire', 'entity.name.function'],
+            ['()', 'delimiter.parenthesis'],
+            [';', 'delimiter'],
+            ['i64', 'type.identifier'],
+            ['()', 'delimiter.parenthesis'],
+            [';', 'delimiter'],
+            ['if', 'keyword'],
+            ['()', 'delimiter.parenthesis'],
+            [';', 'delimiter'],
+        ]);
+        expect(tokens('fundecl prefix `; fun suffix .`;')[0]).toEqual([
+            ['fundecl', 'keyword'],
+            ['prefix', 'keyword'],
+            ['`', 'operator'],
+            [';', 'delimiter'],
+            ['fun', 'keyword'],
+            ['suffix', 'keyword'],
+            ['.`', 'operator'],
+            [';', 'delimiter'],
         ]);
     });
 });
 
 describe('Duckling numeric literals', () => {
     it.each([
-        ['42i32', 'number'],
-        ['0xFFu64', 'number.hex'],
-        ['0B1010u8', 'number.binary'],
-        ['0o755u16', 'number.octal'],
-        ['.5e+2f32', 'number'],
-        ['1.e-3f64', 'number'],
-        ['1.', 'number'],
-    ])('highlights %s as one numeric literal', (literal, type) => {
-        expect(tokens(literal)[0]).toEqual([[literal, type]]);
+        ['42', 'i32', 'number'],
+        ['0xFF', 'u64', 'number.hex'],
+        ['0B1010', 'u8', 'number.binary'],
+        ['0o755', 'u16', 'number.octal'],
+        ['.5e+2', 'f32', 'number'],
+        ['1.e-3', 'f64', 'number'],
+        ['1', 'f16', 'number'],
+        ['1', 'f128', 'number'],
+    ])('highlights %s with its %s suffix', (literal, suffix, type) => {
+        expect(tokens(literal + suffix)[0]).toEqual([
+            [literal, type],
+            [suffix, 'type.identifier'],
+        ]);
     });
 
-    it('ends base-prefixed numbers before underscores', () => {
-        expect(tokens('0xFF_00 0b10_01')[0]).toEqual([
-            ['0xFF', 'number.hex'],
-            ['_00', 'identifier'],
-            ['0b10', 'number.binary'],
-            ['_01', 'identifier'],
+    it('recovers from malformed suffixes without classifying them as numeric types', () => {
+        expect(tokens('1. 1f80 0xFF_00 0b10_01 1u64tail')[0]).toEqual([
+            ['1.', 'number'],
+            ['1f80', 'number'],
+            ['0xFF_00', 'number.hex'],
+            ['0b10_01', 'number.binary'],
+            ['1u64tail', 'number'],
         ]);
     });
 });
 
 describe('Duckling operators', () => {
     it('highlights builtin and custom symbol sequences', () => {
-        const operators = ['+=', '**', '<<=', '::', '.', '.?', '.*', '+*', '\\', '`'];
+        const operators = ['+=', '**', '<<=', '::', '.', '.?', '.*', '+*', '\\', '`', ':`', '->`'];
         expect(tokens(operators.join(' '))[0]).toEqual(operators.map(operator => [operator, 'operator']));
     });
 
-    it.each(['..', '.+'])('keeps %s separate from adjacent numbers', operator => {
+    it.each(['..', '.+', '.`'])('keeps %s separate from adjacent numbers', operator => {
         expect(tokens(`1${operator}2`)[0]).toEqual([
             ['1', 'number'],
             [operator, 'operator'],
@@ -102,8 +147,8 @@ describe('Duckling operators', () => {
 
 describe('Duckling comments', () => {
     it('keeps block comments across lines and resumes after the closing delimiter', () => {
-        expect(tokens('#{ comment\nreturn 1;\n#} let')).toEqual([
-            [['#{ comment', 'comment']],
+        expect(tokens('#{ #{ comment\nreturn 1;\n#} let')).toEqual([
+            [['#{ #{ comment', 'comment']],
             [['return 1;', 'comment']],
             [
                 ['#}', 'comment'],
@@ -116,6 +161,52 @@ describe('Duckling comments', () => {
         expect(tokens('#{#} let')[0]).toEqual([
             ['#{#}', 'comment'],
             ['let', 'keyword'],
+        ]);
+    });
+});
+
+describe('Duckling strings', () => {
+    it.each([
+        ['"', 'string'],
+        ["'", 'string.char'],
+        ['f"', 'string'],
+    ])('handles escaped and unescaped line endings in %s literals', (opening, type) => {
+        expect(tokens(`${opening}unfinished\nlet`)[1]).toEqual([['let', 'keyword']]);
+        expect(tokens(`${opening}continued\\\ntext${opening.slice(-1)}; let`)[1]).toEqual([
+            [`text${opening.slice(-1)}`, type],
+            [';', 'delimiter'],
+            ['let', 'keyword'],
+        ]);
+        expect(tokens(`${opening}escaped\\\\\nlet`)[1]).toEqual([['let', 'keyword']]);
+    });
+
+    it('keeps code-like text inside strings and comments', () => {
+        expect(tokens('"fun hidden() # \\" quote"; visible() # hidden()')[0]).toEqual([
+            ['"fun hidden() # ', 'string'],
+            ['\\"', 'string.escape'],
+            [' quote"', 'string'],
+            [';', 'delimiter'],
+            ['visible', 'entity.name.function'],
+            ['()', 'delimiter.parenthesis'],
+            ['# hidden()', 'comment'],
+        ]);
+    });
+
+    it('balances interpolation around nested braces, formatted strings, quoted text and comments', () => {
+        const [expression, tail] = tokens('f"{f"{ {value} }" + "}" + #{ } #} # }\n + call()} tail"; after()');
+        expect(expression).toContainEqual(['value', 'identifier']);
+        expect(expression).toContainEqual(['"}"', 'string']);
+        expect(expression).toContainEqual(['#{ } #}', 'comment']);
+        expect(expression).toContainEqual(['# }', 'comment']);
+        expect(tail).toEqual([
+            ['+', 'operator'],
+            ['call', 'entity.name.function'],
+            ['()', 'delimiter.parenthesis'],
+            ['}', 'delimiter.curly'],
+            [' tail"', 'string'],
+            [';', 'delimiter'],
+            ['after', 'entity.name.function'],
+            ['()', 'delimiter.parenthesis'],
         ]);
     });
 });

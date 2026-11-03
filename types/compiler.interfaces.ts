@@ -110,11 +110,15 @@ export type CompilerInfo = {
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
     supportsLeanCView?: boolean;
+    supportsJvmBytecodeView?: boolean;
     supportsClojureMacroExpView?: boolean;
     supportsYulView?: boolean;
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
+    // Whether the compiler colours its output differently when asked for colours that suit a dark background. Only
+    // these compilers cache a compilation separately for light and dark themes.
+    supportsDarkBackgroundColours?: boolean;
     supportsMarch?: boolean;
     supportsTarget?: boolean;
     supportsTargetIs?: boolean;

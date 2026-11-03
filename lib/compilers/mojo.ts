@@ -49,6 +49,7 @@ export class MojoCompiler extends BaseCompiler {
             'build',
             ...super.optionsForFilter(filters, outputFilename).map(option => {
                 if (option === '-S') return '--emit=asm';
+                if (option === '-c') return '--emit=object';
                 // Full debug info changes generated code; line tables suffice for source mapping.
                 if (option === '-g') return '-g1';
                 return option;
@@ -71,23 +72,25 @@ export class MojoCompiler extends BaseCompiler {
         return super.getSharedLibraryPathsAsArguments(libraries, libDownloadPath, toolchainPath, dirPath);
     }
 
-    override async generateIR(
+    override generateIR(
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = options.filter(
-            (opt, idx, arr) =>
-                opt !== '-o' &&
-                opt !== '--emit' &&
-                !opt.startsWith('--emit=') &&
-                arr[idx - 1] !== '-o' &&
-                arr[idx - 1] !== '--emit',
-        );
+        const newOptions = options.filter((opt, idx, arr) => opt !== '-o' && arr[idx - 1] !== '-o');
         newOptions.push('-o', this.getIrOutputFilename(inputFilename));
-        return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
+        return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
+    }
+
+    protected override isOutputLikelyLlvmIr(options: string[]) {
+        const index = options.findLastIndex(option => option === '--emit' || option.startsWith('--emit='));
+        const emit = options[index];
+        return (
+            (emit === '--emit' ? options[index + 1] === 'llvm' : emit === '--emit=llvm') ||
+            super.isOutputLikelyLlvmIr(options)
+        );
     }
 
     override getArgumentParserClass() {
