@@ -82,7 +82,11 @@ export function SetupSentry() {
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
-            dataCollection: {userInfo: false, httpBodies: []},
+            dataCollection: {
+                userInfo: false,
+                httpBodies: [],
+                urlQueryParams: {deny: ['forwarded', '-ip', 'remote-', 'via', '-user']},
+            },
             attachStacktrace: false,
             ignoreErrors: [
                 // NOTE: Monaco Editor patterns may not work reliably due to code minification
