@@ -28,6 +28,8 @@ import path from 'node:path';
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {ClientOptionsType} from '../options-handler.js';
+import {type BaseParser, DucklingParser} from './argument-parsers.js';
 
 export class DucklingCompiler extends BaseCompiler {
     static get key() {
@@ -37,6 +39,23 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
+    }
+
+    protected override getArgumentParserClass(): typeof BaseParser {
+        return DucklingParser;
+    }
+
+    override async initialise(
+        mtime: Date,
+        clientOptions: ClientOptionsType,
+        isPrediscovered = false,
+    ): Promise<BaseCompiler | null> {
+        const compiler = await super.initialise(mtime, clientOptions, isPrediscovered);
+        if (compiler && !isPrediscovered && this.compiler.cachedPossibleArguments) {
+            this.possibleArguments.populateOptions(this.compiler.cachedPossibleArguments);
+            delete this.compiler.cachedPossibleArguments;
+        }
+        return compiler;
     }
 
     override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
