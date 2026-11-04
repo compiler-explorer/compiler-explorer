@@ -76,6 +76,7 @@ export {
     DotNetNativeAotCompiler,
 } from './dotnet.js';
 export {DucklingCompiler} from './duckling.js';
+export {EcppsCompiler} from './ecpps.js';
 export {EDGCompiler} from './edg.js';
 export {ElixirCompiler} from './elixir.js';
 export {ElixirAsmCompiler} from './elixirasm.js';
@@ -126,6 +127,7 @@ export {MovfuscatorCompiler} from './movfuscator.js';
 export {MrustcCompiler} from './mrustc.js';
 export {Msp430Compiler} from './msp430.js';
 export {NasmCompiler} from './nasm.js';
+export {NativeImageCompiler} from './native-image.js';
 export {NexiumCompiler} from './nexium.js';
 export {NimCompiler} from './nim.js';
 export {NixCompiler} from './nix.js';

@@ -3100,6 +3100,7 @@ export class BaseCompiler {
         // Read before the cache key is built: making one deletes `execute` from these very filters, which are the
         // request's own object rather than a copy of it.
         const doExecute = parsedRequest.filters.execute;
+        this.fixBackendOptionsBeforeCacheKey(parsedRequest.backendOptions);
         const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
         const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
@@ -3471,6 +3472,16 @@ export class BaseCompiler {
         }
     }
 
+    fixBackendOptionsBeforeCacheKey(backendOptions: Record<string, any>) {
+        // A compiler whose output is the same on either background shares one cache entry between light and dark
+        // themes, and one that varies treats a request that doesn't say like one asking for a light background.
+        if (this.compiler.supportsDarkBackgroundColours) {
+            backendOptions.darkBackgroundColours = backendOptions.darkBackgroundColours === true;
+        } else {
+            delete backendOptions.darkBackgroundColours;
+        }
+    }
+
     async compile(
         source: string,
         options: string[],
@@ -3495,6 +3506,7 @@ export class BaseCompiler {
         }
 
         this.fixFiltersBeforeCacheKey(filters, options, files);
+        this.fixBackendOptionsBeforeCacheKey(backendOptions);
 
         const executeOptions: ExecutableExecutionOptions = {
             args: executeParameters.args || [],
@@ -3664,7 +3676,9 @@ export class BaseCompiler {
                 }
             }
             // TODO rephrase this so we don't need to reassign
-            result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
+            result = filters.demangle
+                ? await this.postProcessAsm(result, filters, result.compilationOptions ?? options)
+                : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
@@ -3812,7 +3826,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions, options?: string[]): Promise<ParsedAsmResult> {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 

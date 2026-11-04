@@ -35,6 +35,7 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {ArtifactHandler} from '../artifact-handler.js';
@@ -47,6 +48,7 @@ import * as LibUtils from '../lib-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {languagesService} from '../services/languages.service.js';
 import {Settings, SiteSettings} from '../settings.js';
+import type {Theme} from '../themes.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
 import {ExecutionCompilationOptions} from '../widgets/compilation-options.js';
@@ -78,6 +80,7 @@ export class Executor extends Pane<ExecutorState> {
     private readonly id: number;
     private deferCompiles: boolean;
     private needsCompile: boolean;
+    private darkBackgroundColours = false;
     private executionArguments: string;
     private executionStdin: string;
     private source: string;
@@ -94,6 +97,8 @@ export class Executor extends Pane<ExecutorState> {
     private fontScale: FontScale;
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
+    private initialStateLoaded = false;
+    private optionsChangedBeforeInitialStateLoad = false;
     private toggleWrapButton: Toggles;
     private outputContentRoot: JQuery<HTMLElement>;
     private executionStatusSection: JQuery<HTMLElement>;
@@ -162,6 +167,7 @@ export class Executor extends Pane<ExecutorState> {
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
+        this.eventHub.emit('requestTheme');
         new ExecutionCompilationOptions(this, this.id, result => result.buildResult ?? result.result);
 
         this.postInit(state);
@@ -169,6 +175,12 @@ export class Executor extends Pane<ExecutorState> {
 
     private async postInit(state: PaneState & ExecutorState) {
         await this.initLangAndCompiler(state);
+        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
+            this.options =
+                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
+            this.optionsField.val(this.options);
+        }
+        this.initialStateLoaded = true;
 
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
@@ -296,6 +308,7 @@ export class Executor extends Pane<ExecutorState> {
                 executorRequest: true,
                 skipAsm: true,
                 overrides: this.compilerShared.getOverrides(),
+                darkBackgroundColours: this.darkBackgroundColours,
             },
             filters: {execute: true},
             tools: [],
@@ -912,6 +925,7 @@ export class Executor extends Pane<ExecutorState> {
         this.eventHub.on('resize', this.resize, this);
         this.eventHub.on('findExecutors', this.sendExecutor, this);
         this.eventHub.on('languageChange', this.onLanguageChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
 
         this.fullTimingInfo.off('click').on('click', () => {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
@@ -954,7 +968,12 @@ export class Executor extends Pane<ExecutorState> {
             this.onExecStdinChange($(e.target).val() as string);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('input', optionsChange);
+        this.optionsField.on('change input', e => {
+            if (!this.initialStateLoaded) {
+                this.optionsChangedBeforeInitialStateLoad = true;
+            }
+            optionsChange(e);
+        });
 
         this.execArgsField.on('change', execArgsChange).on('input', execArgsChange);
 
@@ -1025,6 +1044,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onOptionsChange(options: string): void {
+        if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
         this.options = options;
         this.doTypicalOnChange();
     }
@@ -1199,6 +1219,13 @@ export class Executor extends Pane<ExecutorState> {
 
     setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string, compilerId?: string) {
         setCompilerVersionPopoverForPane(this, version, notification, compilerId);
+    }
+
+    onThemeChange(newTheme: Theme | null): void {
+        const darkBackgroundColours = newTheme?.darkBackgroundColours ?? false;
+        if (darkBackgroundColours === this.darkBackgroundColours) return;
+        this.darkBackgroundColours = darkBackgroundColours;
+        if (this.compiler?.supportsDarkBackgroundColours) this.compile();
     }
 
     override onSettingsChange(newSettings: SiteSettings): void {

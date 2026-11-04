@@ -207,7 +207,7 @@
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/hlsl.ts'
-          - 'etc/config/hlsl.*.properties'
+          - 'etc/config/hlsl.{defaults,amazon}.properties'
           - 'static/modes/hlsl-mode.ts'
 
 'lang-hook':
@@ -550,3 +550,60 @@
       - any-glob-to-any-file:
           - 'lib/compilers/perl.ts'
           - 'etc/config/perl.*.properties'
+
+'MS/Windows':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'etc/config/*.amazonwin.properties'
+          - 'etc/config/*.win*.properties'
+          - 'lib/compilers/win32*.ts'
+          - 'lib/compilers/wine-vc.ts'
+          - 'lib/compilers/wsl-vc.ts'
+          - 'lib/compilers/clangcl.ts'
+          - 'lib/compilers/pascal-win.ts'
+          - 'lib/compilers/amd-rga.ts'
+          - 'lib/demangler/win32*.ts'
+
+'msvc':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/win32-vc*.ts'
+          - 'lib/compilers/wine-vc.ts'
+          - 'lib/compilers/wsl-vc.ts'
+          - 'lib/compilers/clangcl.ts'
+          - 'lib/demangler/win32*.ts'
+          - 'lib/objdumper/vc.ts'
+          - 'lib/cfg/cfg-parsers/vc.ts'
+          - 'lib/parsers/asm-parser-vc*.ts'
+
+'gpu':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'etc/config/*.gpu.properties'
+          - 'etc/config/cuda.*.properties'
+          - 'etc/config/ptx.*.properties'
+          - 'etc/config/cutedsl.*.properties'
+          - 'etc/config/triton.*.properties'
+          - 'etc/config/tilelang.*.properties'
+          - 'etc/config/glsl.*.properties'
+          - 'etc/config/hlsl.{defaults,amazon}.properties'
+          - 'etc/config/slang.*.properties'
+          - 'etc/config/spirv.*.properties'
+          - 'etc/config/openclc.*.properties'
+          - 'etc/config/cpp_for_opencl.*.properties'
+          - 'lib/compilers/nvcc.ts'
+          - 'lib/compilers/nvcpp.ts'
+          - 'lib/compilers/ptxas.ts'
+          - 'lib/compilers/scale-nvcc-*.ts'
+          - 'lib/compilers/rga.ts'
+          - 'lib/compilers/cutedsl.ts'
+          - 'lib/compilers/triton.ts'
+          - 'lib/compilers/tilelang.ts'
+          - 'lib/compilers/glsl.ts'
+          - 'lib/compilers/hlsl.ts'
+          - 'lib/compilers/slang.ts'
+          - 'lib/compilers/spirv*.ts'
+          - 'lib/parsers/asm-parser-{amdgpu,ptx,sass,spirv}.ts'
+          - 'lib/asm-docs/{amdgpu,amdgpu-render,ptx,sass}.ts'
+          - 'lib/asm-docs/generated/asm-docs-{ptx,sass}.ts'
+          - 'static/panes/device-view*.ts'

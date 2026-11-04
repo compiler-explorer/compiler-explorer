@@ -429,6 +429,55 @@ describe('Rust compiler output', () => {
                 },
             },
         ]);
+
+        expect(
+            utils.parseRustOutput(
+                'error\n --> <source>:12:2\n12 | }\n   |  ^ consider adding a `main` function to `<source>`',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: 'error',
+                    severity: 3,
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:12:2',
+            },
+            {text: '12 | }'},
+            {
+                text: '   |  ^ consider adding a `main` function to `<source>`',
+                tag: {
+                    line: 12,
+                    column: 2,
+                    text: 'error',
+                    severity: 3,
+                    fixes: [
+                        {
+                            title: 'Add a `main` function',
+                            edits: [
+                                {
+                                    line: 12,
+                                    column: 2,
+                                    endline: 12,
+                                    endcolumn: 2,
+                                    text: '\n\npub fn main() {}',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        ]);
     });
 
     it('attaches filenames to errors from multiple files', () => {

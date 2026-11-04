@@ -53,7 +53,7 @@ describe('Health checks', () => {
     it('should use compilation queue', async () => {
         let count = 0;
         // @ts-expect-error: bypass the private _queue property
-        compilationQueue._queue.on('active', () => {
+        compilationQueue._queue.addEventListener('active', () => {
             count++;
         });
         await request(app).get('/healthcheck');

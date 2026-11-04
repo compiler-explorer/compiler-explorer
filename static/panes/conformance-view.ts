@@ -30,6 +30,7 @@ import {unwrapString} from '../../shared/assert.js';
 import {unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
@@ -222,8 +223,8 @@ export class Conformance extends Pane<ConformanceViewState> {
             config = {
                 // Compiler id which is being used
                 compilerId: '',
-                // Options which are in use
-                options: '',
+                // Options which are in use: a new entry starts with the language's defaults
+                options: languagesService.getLanguagesOrFail()[this.langId as LanguageKey]?.defaultOptions ?? '',
             };
         }
         const newSelector = this.selectorTemplate.clone();
