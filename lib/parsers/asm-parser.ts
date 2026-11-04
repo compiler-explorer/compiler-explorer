@@ -637,6 +637,26 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
+    // Functions that binaryHideFuncRe would hide but that a function we show calls or jumps to, e.g. libgcc's __divdc3
+    // in a statically linked binary. Only direct references count: following them transitively would pull in all of
+    // stdio from a call to printf.
+    private findReferencedHiddenFunctions(asmLines: string[]): Set<string> {
+        const referenced = new Set<string>();
+        if (this.binaryHideFuncRe === null) return referenced;
+        let funcIsShown = false;
+        for (const line of asmLines) {
+            const labelMatch = line.match(this.labelRe);
+            if (labelMatch) {
+                if (!labelMatch[2].startsWith('.L')) funcIsShown = this.isUserFunction(labelMatch[2]);
+                continue;
+            }
+            if (!funcIsShown || !line.endsWith('>')) continue;
+            const destMatch = line.match(this.destRe);
+            if (destMatch && !this.isUserFunction(destMatch[2])) referenced.add(destMatch[2]);
+        }
+        return referenced;
+    }
+
     // The temp dir matcher only knows forward slashes, but a Windows build records e.g. C:\Temp\<tempdir>\src\helper.cpp
     private isProgramFile(file: string) {
         const normalised = file.replaceAll('\\', '/');
@@ -692,6 +712,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         if (filters.preProcessBinaryAsmLines) asmLines = filters.preProcessBinaryAsmLines(asmLines);
 
+        const referencedHiddenFunctions = this.findReferencedHiddenFunctions(asmLines);
+        const isShown = (name: string) => this.isUserFunction(name) || referencedHiddenFunctions.has(name);
+
         for (const line of asmLines) {
             const labelsInLine: AsmResultLabel[] = [];
 
@@ -730,7 +753,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     functionLabels = [];
                     functionHasUserCode = false;
                 }
-                if (func && this.isUserFunction(func)) {
+                if (func && isShown(func)) {
                     asm.push({
                         text: func + ':',
                         source: null,
@@ -744,7 +767,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             if (func && (line === `${func}():` || line === `; ${func}():`)) continue;
 
-            if (!func || !this.isUserFunction(func)) continue;
+            if (!func || !isShown(func)) continue;
 
             // Within the user's functions, library code is code without line information: code inlined from another
             // file is still the user's, even though it doesn't belong to the main source

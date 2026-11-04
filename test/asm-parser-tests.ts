@@ -547,6 +547,98 @@ describe('AsmParser library code filtering of statically linked code in binary a
     });
 });
 
+describe('AsmParser hidden functions referenced from shown functions in binary asm', () => {
+    // Trimmed from gcc 15 `-static -g` output for a function dividing two complex doubles, built in /app. __divdc3
+    // comes from libgcc and has no line information; __libc_unused is never referenced, and __memset_sse2 is only
+    // referenced by __divdc3.
+    const objdump = [
+        '0000000000401845 <f>:',
+        'f():',
+        '/app/example.c:2',
+        '  401845:\tf3 0f 1e fa          \tendbr64',
+        '  40184d:\te8 1e 00 00 00       \tcall   401870 <__divdc3>',
+        '  401856:\tc3                   \tret',
+        '',
+        '0000000000401870 <__divdc3>:',
+        '__divdc3():',
+        '  401870:\tf3 0f 1e fa          \tendbr64',
+        '  40189b:\t0f 86 b7 00 00 00    \tjbe    401958 <__divdc3+0xe8>',
+        '  4018a0:\te8 00 00 00 00       \tcall   402000 <__memset_sse2>',
+        '  4018a5:\tc3                   \tret',
+        '',
+        '0000000000402000 <__memset_sse2>:',
+        '__memset_sse2():',
+        '  402000:\tc3                   \tret',
+        '',
+        '0000000000402010 <__libc_unused>:',
+        '__libc_unused():',
+        '  402010:\tc3                   \tret',
+    ].join('\n');
+    const hideFuncRe = '^(__.*|_(init|start|fini))$';
+    const parser = new AsmParser(((property: string, defaultValue?: unknown) =>
+        property === 'binaryHideFuncRe' ? hideFuncRe : defaultValue) as PropertyGetter);
+
+    function labels(asm: string, filters: Partial<ParseFiltersAndOutputOptions>) {
+        return parser
+            .processBinaryAsm(asm, filters)
+            .asm.map(line => line.text)
+            .filter(text => text.endsWith(':'));
+    }
+
+    it('should show a hidden function that a shown function calls', () => {
+        expect(labels(objdump, {})).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should link the call to the shown function', () => {
+        const result = parser.processBinaryAsm(objdump, {});
+        expect(result.labelDefinitions?.__divdc3).toBeDefined();
+        expect(result.asm.find(line => line.text.includes('call'))?.labels?.[0]?.name).toBe('__divdc3');
+    });
+
+    it('should not follow references from a function that was hidden', () => {
+        expect(labels(objdump, {})).not.toContain('__memset_sse2:');
+    });
+
+    it('should keep hiding a function that nothing shown refers to', () => {
+        expect(labels(objdump, {})).not.toContain('__libc_unused:');
+    });
+
+    it('should show a hidden function that is referenced before it is defined, or after', () => {
+        const calledFirst = objdump.replace('call   401870 <__divdc3>', 'call   402010 <__libc_unused>');
+        expect(labels(calledFirst, {})).toEqual(['f:', '__libc_unused:']);
+        const calledLater = [
+            '0000000000401000 <__helper>:',
+            '  401000:\tc3                   \tret',
+            '',
+            '0000000000401010 <main>:',
+            '  401010:\te8 eb ff ff ff       \tcall   401000 <__helper>',
+        ].join('\n');
+        expect(labels(calledLater, {})).toEqual(['__helper:', 'main:']);
+    });
+
+    it('should hide every `__` function when nothing shown refers to it', () => {
+        const hiddenOnly = objdump.split('\n').slice(7).join('\n');
+        expect(labels(hiddenOnly, {})).toEqual([]);
+    });
+
+    it('should remove the referenced function again as library code when it has no line information', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(['f:', ' endbr64', ' call   401870 <__divdc3>', ' ret']);
+        expect(Object.keys(result.labelDefinitions ?? {})).toEqual(['f']);
+    });
+
+    it("should keep the referenced function as library code when it has the program's line information", () => {
+        const withLines = objdump.replace('__divdc3():\n', '__divdc3():\n/app/divdc3.c:7\n');
+        expect(labels(withLines, {libraryCode: true})).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should not hide anything when there is no hide pattern', () => {
+        expect(new AsmParser().processBinaryAsm(objdump, {}).asm.filter(line => line.text.endsWith(':'))).toHaveLength(
+            4,
+        );
+    });
+});
+
 describe('AsmParser directive filtering', () => {
     const parser = new AsmParser();
     // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
