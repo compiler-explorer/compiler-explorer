@@ -134,18 +134,14 @@ describe('Duckling compiler', () => {
     it('puts the module path after the subcommand and preserves user options', () => {
         const compiler = makeCompiler();
         const inputFilename = '/tmp/example.dk';
-        const options = (compiler as any).optionsForFilter({}, '/tmp/example.s');
-
-        expect(options).toEqual(['compile_module', '--no-incremental', '--dump-ir', 'asm']);
         expect(
-            (compiler as any).orderArguments(
-                options,
-                inputFilename,
-                [],
-                [],
-                [],
-                [],
+            compiler.prepareArguments(
                 ['-O', '2', '--print-ir', 'hir,mir'],
+                {},
+                {},
+                inputFilename,
+                '/tmp/example.s',
+                [],
                 [],
             ),
         ).toEqual([
@@ -159,6 +155,39 @@ describe('Duckling compiler', () => {
             '--print-ir',
             'hir,mir',
         ]);
+    });
+
+    it('builds the native executable used for execution and binary disassembly', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const source = 'fun main() -> i64 = { return 42; }';
+        const key = compiler.getCacheKey(source, ['-O', '2'], {}, {binary: true}, [], [], []);
+        const executableFilename = path.join(workingDirectory, 'duck_build', 'example');
+        const executable = Buffer.from([0x7f, 0x45, 0x4c, 0x46]);
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            const inputFilename = path.join(workingDirectory, 'example.dk');
+            expect(args).toEqual([
+                'compile_modules',
+                inputFilename,
+                '--no-incremental',
+                '--output-file-name',
+                'example',
+                '-O',
+                '2',
+            ]);
+            expect(execOptions.customCwd).toBe(workingDirectory);
+            await expect(fs.readFile(inputFilename, 'utf8')).resolves.toBe(source);
+            await fs.writeFile(executableFilename, executable);
+            return makeExecResult();
+        });
+
+        const result = await compiler.buildExecutableInFolder(key, workingDirectory);
+
+        expect(result.code).toBe(0);
+        expect(exec).toHaveBeenCalledOnce();
+        expect(result.executableFilename).toBe(executableFilename);
+        expect(compiler.getOutputFilename(workingDirectory, 'example', key)).toBe(executableFilename);
+        await expect(fs.readFile(executableFilename)).resolves.toEqual(executable);
     });
 
     it('prepares Duckling artifacts and copies this module assembly to the CE output path', async () => {
