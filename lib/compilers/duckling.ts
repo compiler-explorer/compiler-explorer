@@ -25,7 +25,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationCacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {ClientOptionsType} from '../options-handler.js';
@@ -58,8 +63,24 @@ export class DucklingCompiler extends BaseCompiler {
         return compiler;
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
-        return ['compile_module', '--no-incremental', '--dump-ir', 'asm'];
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        return filters.binary || filters.execute
+            ? ['compile_modules', '--no-incremental', '--output-file-name', path.basename(outputFilename)]
+            : ['compile_module', '--no-incremental', '--dump-ir', 'asm'];
+    }
+
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {
+        return this.isCacheKey(key) && key.filters?.binary
+            ? this.getExecutableFilename(dirPath, outputFilebase)
+            : super.getOutputFilename(dirPath, outputFilebase, key);
+    }
+
+    override getExecutableFilename(dirPath: string, outputFilebase: string): string {
+        return path.join(dirPath, 'duck_build', outputFilebase);
+    }
+
+    protected override getSharedLibraryPathsAsArguments(): string[] {
+        return [];
     }
 
     override orderArguments(
@@ -101,7 +122,7 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions.customCwd = workingDirectory;
 
         const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
-        if (result.code !== 0) return result;
+        if (result.code !== 0 || filters?.binary || filters?.execute) return result;
 
         const moduleName = path.basename(inputFilename, path.extname(inputFilename));
         const artifactsDirectory = path.join(duckBuildDirectory, 'duck_debug_artifacts');
