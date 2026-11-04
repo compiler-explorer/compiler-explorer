@@ -39,6 +39,10 @@ function sourceModelValue(): Cypress.Chainable<string> {
     return cy.window().then((win: Cypress.AUTWindow) => win.monaco.editor.getEditors()[0].getModel()!.getValue());
 }
 
+function sourceCursorLine(): Cypress.Chainable<number> {
+    return cy.window().then((win: Cypress.AUTWindow) => win.monaco.editor.getEditors()[0].getPosition()!.lineNumber);
+}
+
 describe('Monaco language workers', () => {
     beforeEach(visitPage);
 
@@ -84,6 +88,16 @@ describe('Vim mode', () => {
         cy.get('.v-status').should('not.contain.text', 'INSERT');
     });
 
+    it('moves the cursor with G and gg', () => {
+        cy.window().then((win: Cypress.AUTWindow) => {
+            win.monaco.editor.getEditors()[0].setPosition({lineNumber: 2, column: 1});
+        });
+        cy.focused().type('G');
+        sourceCursorLine().should('equal', 3);
+        cy.focused().type('gg');
+        sourceCursorLine().should('equal', 1);
+    });
+
     it('runs normal mode commands against the model', () => {
         cy.focused().type('dd');
         sourceModelValue().should('equal', 'second\nthird');
@@ -117,5 +131,19 @@ describe('Compiler pane context menu', () => {
         cy.contains('.monaco-menu .action-label', 'View assembly documentation', {includeShadowDom: true})
             .closest('.action-item')
             .should('not.have.class', 'disabled');
+    });
+
+    it('does not offer the asm documentation action when the click is not on an instruction', () => {
+        setupAndWaitForCompilation();
+        // The context key defaults to true, so this only passes if the patched handler updates it for the click
+        compilerOutput()
+            .find('.view-line span')
+            .contains(/^square/)
+            .first()
+            .rightclick();
+        cy.contains('.monaco-menu .action-label', 'Copy', {includeShadowDom: true}).should('exist');
+        cy.contains('.monaco-menu .action-label', 'View assembly documentation', {includeShadowDom: true}).should(
+            'not.exist',
+        );
     });
 });
