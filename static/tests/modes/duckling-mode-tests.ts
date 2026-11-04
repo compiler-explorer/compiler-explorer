@@ -23,6 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+import {getEnterAction} from 'monaco-editor/esm/vs/editor/common/languages/enterAction.js';
+import {ILanguageConfigurationService} from 'monaco-editor/esm/vs/editor/common/languages/languageConfigurationRegistry.js';
+import {getReindentEditOperations} from 'monaco-editor/esm/vs/editor/contrib/indentation/common/indentation.js';
+import {StandaloneServices} from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js';
 import {describe, expect, it} from 'vitest';
 
 import '../../modes/duckling-mode.js';
@@ -208,5 +212,40 @@ describe('Duckling strings', () => {
             ['after', 'entity.name.function'],
             ['()', 'delimiter.parenthesis'],
         ]);
+    });
+});
+
+describe('Duckling indentation', () => {
+    it('indents blocks and grouped expressions without treating strings and comments as brackets', () => {
+        const source = [
+            'fun main() -> i64 = { # block',
+            '    # a comment ending with {',
+            '    let text = "{";',
+            '    let values = [',
+            '        call(',
+            '            1,',
+            '        ),',
+            '    ];',
+            '    return 0;',
+            '}',
+        ].join('\n');
+        const model = monaco.editor.createModel(source.replace(/^ +/gm, ''), 'duckling');
+        model.updateOptions({tabSize: 4, indentSize: 4, insertSpaces: true});
+        const configuration = StandaloneServices.get(ILanguageConfigurationService);
+        try {
+            const column = model.getLineMaxColumn(1);
+            expect(
+                getEnterAction(
+                    monaco.editor.EditorAutoIndentStrategy.Advanced,
+                    model,
+                    new monaco.Range(1, column, 1, column),
+                    configuration,
+                )?.indentAction,
+            ).toBe(monaco.languages.IndentAction.Indent);
+            model.applyEdits(getReindentEditOperations(model, configuration, 1, model.getLineCount()));
+            expect(model.getValue()).toBe(source);
+        } finally {
+            model.dispose();
+        }
     });
 });

@@ -183,8 +183,24 @@ monaco.languages.setMonarchTokensProvider('duckling', {
     },
 });
 
+// Indent after a trailing {, [ or (, allowing whitespace and an optional # comment.
+const increaseIndentPattern = /^(?!\s*#).*(?:\{|\[|\()\s*(?:#.*)?$/;
+const decreaseIndentPattern = /^\s*[}\])]/;
+
 monaco.languages.setLanguageConfiguration('duckling', {
     comments: {lineComment: '#', blockComment: ['#{', '#}']},
+    indentationRules: {
+        increaseIndentPattern,
+        decreaseIndentPattern,
+    },
+    onEnterRules: [
+        {
+            beforeText: increaseIndentPattern,
+            afterText: decreaseIndentPattern,
+            action: {indentAction: monaco.languages.IndentAction.IndentOutdent},
+        },
+        {beforeText: increaseIndentPattern, action: {indentAction: monaco.languages.IndentAction.Indent}},
+    ],
     brackets: [
         ['{', '}'],
         ['[', ']'],
