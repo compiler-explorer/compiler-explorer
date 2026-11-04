@@ -170,6 +170,18 @@ describe('Per-request temp directory cleanup', () => {
             expect(await utils.dirExists(dirs[0])).toBe(false);
         });
 
+        it('removes the project directory when preparing the build throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler as any, 'getSharedLibraryPathsAsLdLibraryPathsForExecution').mockImplementation(() => {
+                throw new Error('bad setup');
+            });
+
+            await expect(compiler.cmake(files, parsedRequest(), BypassCache.Compilation)).rejects.toThrow('bad setup');
+
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
         it('leaves the project directory for the sweep when delayCleanupTemp is set', async () => {
             const dirs = trackTempDirs(compiler);
             (compiler as any).delayCleanupTemp = true;

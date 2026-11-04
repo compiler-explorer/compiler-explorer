@@ -3135,17 +3135,19 @@ export class BaseCompiler {
                 async () => {
                     compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
 
-                    const build = await this.prepareProjectBuild(
-                        buildSystem,
-                        parsedRequest,
-                        files,
-                        libsAndOptions,
-                        toolchainPath,
-                        cacheKey,
-                        executablePackageHash,
-                    );
+                    const dirPath = await this.newTempDir();
                     try {
-                        const {dirPath, outputFilename} = build;
+                        const build = await this.prepareProjectBuild(
+                            buildSystem,
+                            parsedRequest,
+                            files,
+                            libsAndOptions,
+                            toolchainPath,
+                            cacheKey,
+                            executablePackageHash,
+                            dirPath,
+                        );
+                        const {outputFilename} = build;
 
                         let fullResult: CompilationResult | undefined;
                         if (packaged) {
@@ -3179,7 +3181,7 @@ export class BaseCompiler {
                             bypassCache,
                         );
                     } finally {
-                        await this.removeTempDir(build.dirPath);
+                        await this.removeTempDir(dirPath);
                     }
                 },
                 {abandonIfStale: !packaged},
@@ -3187,7 +3189,7 @@ export class BaseCompiler {
         );
     }
 
-    /** Where a project build happens and what it is building, worked out before any of it starts. */
+    /** What a project build in `dirPath` is building and how, worked out before any of it starts. */
     private async prepareProjectBuild(
         buildSystem: BuildSystemDriver,
         parsedRequest: ParsedRequest,
@@ -3196,9 +3198,8 @@ export class BaseCompiler {
         toolchainPath: string | undefined,
         cacheKey: CmakeCacheKey,
         executablePackageHash: string,
+        dirPath: string,
     ): Promise<ProjectBuild> {
-        const dirPath = await this.newTempDir();
-
         // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
             args: parsedRequest.executeParameters.args || [],
