@@ -59,7 +59,7 @@ export class ClangQueryTool extends BaseTool {
 
         let compileFlags = options.filter((option: string) => option !== sourcefile);
         if (!compilerExe.includes('clang++')) {
-            compileFlags.concat(this.tool.options);
+            compileFlags = compileFlags.concat(this.tool.options);
         }
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);

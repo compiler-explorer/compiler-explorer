@@ -36,6 +36,17 @@ export class BaseInstructionSetInfo {
         return 'base';
     }
 
+    // Lines starting with one of these are compiler-generated local labels (GCC's .L3, clang's .LBB0_2) or
+    // directives, never function names
+    get localLabelPrefixes(): string[] {
+        return ['.'];
+    }
+
+    // Whether the instruction following this one (its delay slot) executes before control is transferred
+    hasDelaySlot(instruction: string) {
+        return false;
+    }
+
     isJmpInstruction(x: string) {
         return (
             x.trim()[0] === 'j' ||

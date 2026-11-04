@@ -107,6 +107,10 @@ describe('dex2oat', () => {
         it('Method signature is prettified correctly', () => {
             return testPrettyMethodSignature(androidJavaInfo);
         });
+
+        it('Default profile lines are correctly extracted from .smali files', () => {
+            return testParseSmaliForDefaultProfile(androidJavaInfo, 'test/android/parse-data');
+        });
     });
 
     describe('android-kotlin', () => {
@@ -158,6 +162,10 @@ describe('dex2oat', () => {
 
         it('Method signature is prettified correctly', () => {
             return testPrettyMethodSignature(androidKotlinInfo);
+        });
+
+        it('Default profile lines are correctly extracted from .smali files', () => {
+            return testParseSmaliForDefaultProfile(androidKotlinInfo, 'test/android/parse-data');
         });
     });
 
@@ -322,5 +330,15 @@ describe('dex2oat', () => {
         for (const input in methodMap) {
             expect(compiler.prettyMethodSignature(input)).toEqual(methodMap[input]);
         }
+    }
+
+    async function testParseSmaliForDefaultProfile(info: CompilerInfo, baseFolder: string) {
+        const compiler = new Dex2OatCompiler(info, env);
+        const rawSmaliText = fs.readFileSync(`${baseFolder}/Square.smali`, {encoding: 'utf8'});
+
+        const profileLines: string[] = [];
+        compiler.parseSmaliForDefaultProfile(profileLines, rawSmaliText.split(/\n/));
+
+        expect(profileLines).toEqual(['LSquare;', 'HSLSquare;-><init>()V', 'HSLSquare;->square(I)I']);
     }
 });

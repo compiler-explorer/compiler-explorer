@@ -24,7 +24,9 @@
 
 import './utils.js';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {PutObjectCommand, S3} from '@aws-sdk/client-s3';
+import {mockClient} from 'aws-sdk-client-mock';
+import {beforeAll, beforeEach, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
@@ -81,5 +83,44 @@ describe('Compilation environment', () => {
         const ce = new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, new FormattingService());
         expect(ce.findBadOptions(['-O3', '-flto'])).toEqual([]);
         expect(ce.findBadOptions(['-O3', '-plugin'])).toEqual(['-plugin']);
+    });
+});
+
+describe('Temporary result storage', () => {
+    const mockS3 = mockClient(S3);
+    let compilationQueue: CompilationQueue;
+    let writtenKeys: string[];
+
+    beforeEach(() => {
+        compilationQueue = new CompilationQueue(1, 1000, 1000);
+        writtenKeys = [];
+        mockS3.reset();
+        mockS3.on(PutObjectCommand, {Bucket: 'test.bucket'}).callsFake(params => {
+            writtenKeys.push(params.Key);
+            return {};
+        });
+    });
+
+    function envForCacheConfig(cacheConfig: string) {
+        return new CompilationEnvironment(
+            new CompilerProps({}, fakeProps({...props, cacheConfig})),
+            fakeProps({}),
+            compilationQueue,
+            new FormattingService(),
+        );
+    }
+
+    // The deployed configuration is layered, so the cache is a MultiCache and never an S3Cache.
+    it('Reports the key it actually wrote to for a layered cache', async () => {
+        const ce = envForCacheConfig('InMemory(25);S3(test.bucket,cache,uk-north-1)');
+        const s3Key = await ce.tempCachePutWithTTL('some-key', '{"big": "result"}', 1, undefined);
+        expect(writtenKeys).toEqual([`cache/${s3Key}`]);
+    });
+
+    it('Reports the temp path when the cache is a bare S3 cache', async () => {
+        const ce = envForCacheConfig('S3(test.bucket,cache,uk-north-1)');
+        const s3Key = await ce.tempCachePutWithTTL('some-key', '{"big": "result"}', 1, undefined);
+        expect(s3Key).toMatch(/^temp\//);
+        expect(writtenKeys).toEqual([`cache/${s3Key}`]);
     });
 });

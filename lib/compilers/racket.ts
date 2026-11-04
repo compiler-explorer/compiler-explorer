@@ -216,12 +216,14 @@ export class RacketCompiler extends BaseCompiler {
         const compileStart = performance.now();
         const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
         const compileEnd = performance.now();
+        const result = {code: output.code, compilationOptions: options};
 
         if (output.timedOut) {
             return {
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -230,11 +232,17 @@ export class RacketCompiler extends BaseCompiler {
                 error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
         if (output.code !== 0) {
-            return;
+            return {
+                error: `Invocation failed with code ${output.code}`,
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
+            };
         }
 
         // Useful for local debugging
@@ -256,12 +264,14 @@ export class RacketCompiler extends BaseCompiler {
                 results: llvmOptPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: parseEnd - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }

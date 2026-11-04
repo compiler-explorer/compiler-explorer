@@ -50,7 +50,8 @@ export function SetupSentry(
         dsn: sentryDsn,
         release: releaseBuildNumber || gitReleaseName,
         environment: sentryEnv || defArgs.env[0],
-        sendDefaultPii: true, // equivalent to `{ip: true}` on older Sentry versions
+        dataCollection: {frameContextLines: 7},
+        attachStacktrace: false,
         beforeSend(event) {
             if (event.request?.data && shouldRedactRequestData(event.request.data)) {
                 event.request.data = {redacted: true};

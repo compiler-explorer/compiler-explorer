@@ -93,6 +93,7 @@ export type GccDumpOptions = {
     rtlDump?: boolean;
     ipaDump?: boolean;
     dumpFlags?: GccDumpFlags;
+    libraryFunctions?: boolean;
 };
 
 export type GccDumpOutput = {
@@ -135,6 +136,9 @@ export type CompilationRequestOptions = {
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
+        // Whether output is shown on a dark background, so colours made for one suit it better. Ignored by compilers
+        // without `supportsDarkBackgroundColours`.
+        darkBackgroundColours?: boolean;
     };
     executeParameters: UnparsedExecutionParams;
     filters: ParseFiltersAndOutputOptions;
@@ -190,6 +194,8 @@ export type CompilationResult = {
     didExecute?: boolean;
     validatorTool?: boolean;
     executableFilename?: string;
+    // Set while post-processing a project build, whose artifact is already the binary to disassemble.
+    objdumpInputFilename?: string;
     execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];
     gnatDebugTreeOutput?: ResultLine[];
@@ -215,7 +221,7 @@ export type CompilationResult = {
     irOutput?: {
         asm: ParsedAsmResultLine[];
         cfg?: CFGResult;
-    };
+    } & Pick<CompilationResult, 'code' | 'compilationOptions'>;
     clangirOutput?: ResultLine[];
 
     optPipelineOutput?: OptPipelineOutput;
@@ -230,6 +236,7 @@ export type CompilationResult = {
     haskellStgOutput?: ResultLine[];
     haskellCmmOutput?: ResultLine[];
     leanCOutput?: ResultLine[];
+    jvmBytecodeOutput?: ParsedAsmResultLine[];
 
     clojureMacroExpOutput?: ResultLine[];
 
@@ -284,6 +291,8 @@ export type DemanglerExecutionOptions = ExecutionOptions & {
     overrideSymbols?: string[];
     // Don't apply translations to the input - return it as-is.
     skipTranslation?: boolean;
+    // Characters that can continue an identifier: a symbol directly followed by one is left untranslated.
+    identifierChar?: RegExp;
 };
 
 export type BuildResult = CompilationResult & {

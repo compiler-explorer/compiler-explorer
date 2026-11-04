@@ -13,6 +13,16 @@
     {
       "labels": [],
       "source": null,
+      "text": "        .section .nv_fatbin, \"a\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".align 8"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "fatbinData:"
     },
     {
@@ -89,6 +99,11 @@
       "labels": [],
       "source": null,
       "text": ".quad 0x652e7466752e766e,0x766e2e007972746e,0x5a5f006f666e692e,0x5065726175717336"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".text"
     },
     {
       "labels": [],
@@ -477,11 +492,11 @@
     }
   ],
   "labelDefinitions": {
-    ".LC0": 39,
-    "_ZL15__fatDeviceText": 63,
-    "_ZL24__sti____cudaRegisterAllv": 41,
-    "_ZL26__cudaUnregisterBinaryUtilv": 21,
-    "fatbinData": 3,
-    "main": 29
+    ".LC0": 42,
+    "_ZL15__fatDeviceText": 66,
+    "_ZL24__sti____cudaRegisterAllv": 44,
+    "_ZL26__cudaUnregisterBinaryUtilv": 24,
+    "fatbinData": 5,
+    "main": 32
   }
 }

@@ -223,15 +223,18 @@ export class SPIRVCompiler extends BaseCompiler {
             this.filename(inputFilename),
             execOptions,
         );
+        const result = {code: output.code, compilationOptions: newOptions};
         if (output.code !== 0) {
             logger.error('Failed to run compiler to get IR code');
             return {
                 asm: output.stderr,
+                ...result,
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
         return {
             asm: ir.asm,
+            ...result,
         };
     }
 }

@@ -40,6 +40,23 @@ export class MultiCache extends BaseCache {
         this.upstream = upstream;
     }
 
+    override get isShared(): boolean {
+        return this.upstream.some(cache => cache.isShared);
+    }
+
+    override async putShared(
+        key: string,
+        value: Buffer,
+        ttlDays: number,
+        creator?: string,
+    ): Promise<string | undefined> {
+        for (const cache of this.upstream) {
+            const storedAs = await cache.putShared(key, value, ttlDays, creator);
+            if (storedAs) return storedAs;
+        }
+        return undefined;
+    }
+
     override statString(): string {
         return `${super.statString()}. ${this.upstream.map(c => `${c.details}: ${c.statString()}`).join('. ')}`;
     }

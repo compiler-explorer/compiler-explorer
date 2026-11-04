@@ -32,16 +32,17 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import {maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
 import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-import type {Fix, ResultLine} from '../types/resultline/resultline.interfaces.js';
+import type {Fix, ResultLine, ResultLineTag} from '../types/resultline/resultline.interfaces.js';
+
+export {ce_temp_prefix, maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
-
-export const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -93,37 +94,17 @@ export function expandTabs(line: string): string {
     });
 }
 
-// Matches everything up to and through a CE temp dir, `.../<ce_temp_prefix><suffix>/`.
-// We key off the ce_temp_prefix marker, NOT the live os.tmpdir(): the temp root varies
-// by host/config (macOS /var vs /private/var, an execution.tempDirRoot elsewhere) and
-// the path being masked may have been recorded under a different tmpdir than this one.
-// The marker is the only invariant — it's the same constant we create the dir with.
-// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]+` confines the match to one
-// non-empty path token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to
-// `-I/app/inc` (real temp paths never have empty `//` segments).
-// A user path that itself contains a `<ce_temp_prefix>...` segment would be masked too,
-// but that only affects displayed output (never what's compiled/executed) and needs a
-// deliberately odd dir name, so it's not worth a costlier scheme to prevent.
-const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*/`);
-
 /**
  * Removes the root dir from the given filepath, so that it will match to the user's filenames used
  *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
  */
 export function maskRootdir(filepath: string): string {
-    // TODO: this falsy guard is load-bearing against runtime `undefined` that the types
-    // don't catch — not declared `string | undefined` callers (TS would reject those),
-    // but type holes: a JSON.parse(...) result typed `any` (base-compiler cleanup) and a
-    // Record<number,string> index that's really `undefined` when the key is missing
-    // (noUncheckedIndexedAccess is off). Tighten those two sites, then this can go.
+    // Same load-bearing guard as the function above: it hands a falsy argument straight
+    // back, so an undefined that slipped through a type hole must not reach the strip.
     if (!filepath) return filepath;
-    // TEMPDIR_RE has a repeated path-segment group that backtracks on long input, and
-    // maskRootdir runs on every output line. Gate it behind a cheap linear substring
-    // check: the regex cannot match without the marker anyway. The trailing /app/ strip
-    // is anchored (no backtracking) and must run regardless, as paths may already be
-    // /app/-rooted from an earlier mask.
-    const masked = filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
-    return masked.replace(/^\/app\//, '');
+    // The trailing /app/ strip is anchored (no backtracking) and must run regardless, as
+    // paths may already be /app/-rooted from an earlier mask.
+    return maskRootdirKeepingAppPrefix(filepath).replace(/^\/app\//, '');
 }
 
 export function changeExtension(filename: string, newExtension: string): string {
@@ -155,7 +136,7 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
 
 function parseSeverity(message: string): number {
     if (message.startsWith('warning')) return 2;
-    if (message.startsWith('note')) return 1;
+    if (message.startsWith('note') || message.startsWith('help')) return 1;
     return 3;
 }
 
@@ -265,9 +246,21 @@ export function parseOutput(
     return result;
 }
 
+/**
+ * The name the editor knows a diagnostic's file by: the path relative to the directory the compilation's sources were
+ * written to, with `/` separators, which is the name a tree pane gives that file. Two files that share a basename,
+ * such as a crate's `a/mod.rs` and `b/mod.rs`, stay distinct. A file outside that directory, such as the standard
+ * library, keeps the `..` distance in its name, so it matches no file of the compilation and marks no editor.
+ */
+function diagnosticFile(filename: string, inputFilename?: string): string | undefined {
+    if (!inputFilename) return filename === '<source>' ? undefined : filename;
+    if (filename === '<source>') return path.basename(inputFilename);
+    const root = path.dirname(inputFilename);
+    return path.relative(root, path.resolve(root, filename)).split(path.sep).join('/');
+}
+
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
-    const inputBasename = inputFilename ? path.basename(inputFilename) : undefined;
-    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix}[] = [
+    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix | undefined}[] = [
         {
             re: / *help: add `#!\[feature\((.*?)\)]`/,
             makeFix: ([_, featureName]) => ({
@@ -298,35 +291,59 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                 ],
             }),
         },
+        {
+            re: /consider adding a `main` function to `[^`]+`/,
+            makeFix: ([_]) =>
+                currentDiagnostic?.tag
+                    ? {
+                          title: 'Add a `main` function',
+                          edits: [
+                              {
+                                  line: currentDiagnostic.tag.line,
+                                  column: currentDiagnostic.tag.column,
+                                  endline: currentDiagnostic.tag.line,
+                                  endcolumn: currentDiagnostic.tag.column,
+                                  text: '\n\npub fn main() {}',
+                              },
+                          ],
+                      }
+                    : undefined,
+        },
     ];
 
-    const re = /^\s+-->\s+(?<filename>.*):(?<line>\d+):(?<column>\d+)/;
+    const primaryRe = /^\s+-->\s+(?<filename>.*):(?<line>\d+):(?<column>\d+)/;
+    // a location in another file inside the snippet of the diagnostic above it, which has no headline of its own
+    const secondaryRe = /^\s*:::\s+(?<filename>.*):(?<line>\d+):(?<column>\d+)/;
+    // the underline under a related location's source line, and its label: `  | ------------- not found for this enum`
+    const labelRe = /^\s*\|\s*[\^~+-]+\s+(?<label>\S.*?)\s*$/;
     const result: ResultLine[] = [];
     let currentDiagnostic: ResultLine | undefined;
+    let relatedFrame: ResultLineTag | undefined;
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
             const filteredLine = filterEscapeSequences(line);
-            const match = filteredLine.match(re);
+            const primary = filteredLine.match(primaryRe);
+            const match = primary ?? filteredLine.match(secondaryRe);
 
             if (match?.groups) {
-                const file =
-                    match.groups.filename === '<source>' ? inputBasename : path.basename(match.groups.filename);
+                const file = diagnosticFile(match.groups.filename, inputFilename);
                 const line = Number.parseInt(match.groups.line, 10);
                 const column = Number.parseInt(match.groups.column, 10);
 
-                currentDiagnostic = result.pop();
-                if (currentDiagnostic !== undefined) {
-                    const text = filterEscapeSequences(currentDiagnostic.text);
-                    currentDiagnostic.tag = {
+                const headline = primary ? result.pop() : undefined;
+                if (headline !== undefined) {
+                    currentDiagnostic = headline;
+                    const text = filterEscapeSequences(headline.text);
+                    headline.tag = {
                         file,
                         line,
                         column,
                         text,
                         severity: parseSeverity(text),
                     };
-                    result.push(currentDiagnostic);
+                    result.push(headline);
                 }
 
                 lineObj.tag = {
@@ -336,12 +353,23 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     text: '', // Left empty so that it does not show up in the editor
                     severity: 3,
                 };
+                relatedFrame = primary ? undefined : lineObj.tag;
+            } else if (relatedFrame) {
+                const label = filteredLine.match(labelRe);
+                if (label?.groups) {
+                    lineObj.tag = {...relatedFrame, text: label.groups.label, severity: 1};
+                    relatedFrame = undefined;
+                } else if (/^[A-Za-z]/.test(filteredLine)) {
+                    // the next headline: the related location had no label
+                    relatedFrame = undefined;
+                }
             }
 
             const fixes = quickfixes.flatMap(({re, makeFix}) => {
                 const match = filteredLine.match(re);
                 if (match) {
-                    return [makeFix(match)];
+                    const fix = makeFix(match);
+                    return fix ? [fix] : [];
                 } else {
                     return [];
                 }
@@ -370,6 +398,11 @@ export function anonymizeIp(ip: string): string {
         return ip;
     }
     if (ip.includes(':')) {
+        // An IPv4-mapped IPv6 address such as ::ffff:203.0.113.42, which is what req.ip looks
+        // like for IPv4 clients of a dual-stack server
+        if (ip.includes('.')) {
+            return ip.replace(/\.\d{1,3}$/, '.0');
+        }
         // IPv6
         return ip.replace(/(?::[\dA-Fa-f]{0,4}){3}$/, ':0:0:0');
     }
@@ -556,6 +589,21 @@ export function resolveWithinDir(dirPath: string, filename: string): string {
     const normalized = path.normalize(path.join(dirPath, filename));
     if (!isPathInside(dirPath, normalized)) throw new Error('Invalid filename');
     return normalized;
+}
+
+/**
+ * Returns an error message if a request's `customOutputFilename` is not a string, or names a path that would leave the
+ * compilation directory. `buildDir` is where the name is resolved from, relative to that directory: a CMake artifact
+ * is named from `build`, so `../` reaches the project's own files.
+ */
+export function checkCustomOutputFilename(filename: unknown, buildDir = '.'): string | null {
+    if (filename === undefined || filename === null || filename === '') return null;
+    if (typeof filename !== 'string') return 'Invalid filename';
+    // No directory exists yet when a request is parsed. Joining rather than normalising keeps a leading separator
+    // from hiding a '..', as path.join(dir, '/../x') leaves dir.
+    const relative = path.join(buildDir, filename);
+    if (relative === '.' || relative === '..' || relative.startsWith('..' + path.sep)) return 'Invalid filename';
+    return null;
 }
 
 export async function fileExists(filename: string): Promise<boolean> {

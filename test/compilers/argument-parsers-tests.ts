@@ -29,6 +29,7 @@ import {
     BaseParser,
     ClangParser,
     GCCParser,
+    GnuCobolParser,
     ICCParser,
     PascalParser,
     RustParser,
@@ -395,5 +396,73 @@ describe('Rust help message parser', () => {
                 timesused: 0,
             },
         });
+    });
+});
+
+describe('GnuCOBOL argument parser', () => {
+    function dialectOptions(dialects: string[]) {
+        return dialects.map(dialect => ({name: dialect, value: dialect}));
+    }
+
+    it('should list GnuCOBOL 1.1 dialects from one-per-line help', async () => {
+        const help = [
+            '  -m                    Build a dynamically loadable module (default)',
+            '  -std=<dialect>        Warnings/features for a specific dialect :',
+            '                          cobol2002   Cobol 2002',
+            '                          cobol85     Cobol 85',
+            '                          ibm         IBM Compatible',
+            '                          mvs         MVS Compatible',
+            '                          bs2000      BS2000 Compatible',
+            '                          mf          Micro Focus Compatible',
+            '                          default     When not specified',
+            '                        See config/default.conf and config/*.conf',
+            '  -free                 Use free source format',
+            '  -fixed                Use fixed source format (default)',
+        ].join('\n');
+        const compiler = makeCompiler(help);
+        const parser = new GnuCobolParser(compiler);
+        const stdvers = await parser.getPossibleStdvers();
+        expect(stdvers).toEqual(dialectOptions(['cobol2002', 'cobol85', 'ibm', 'mvs', 'bs2000', 'mf', 'default']));
+    });
+
+    it('should list GnuCOBOL 3.x dialects from comma-separated help', async () => {
+        const help = [
+            '  -m                    build a dynamically loadable module (default)',
+            '  -std=<dialect>        warnings/features for a specific dialect',
+            '                        <dialect> can be one of:',
+            '                        default, cobol2014, cobol2002, cobol85, xopen,',
+            '                        ibm-strict, ibm, mvs-strict, mvs,',
+            '                        mf-strict, mf, bs2000-strict, bs2000,',
+            '                        acu-strict, acu, rm-strict, rm, gcos-strict,',
+            '                        gcos;',
+            '                        see configuration files in directory config',
+            '  -F, --free            use free source format (alias for -fformat=free)',
+        ].join('\n');
+        const compiler = makeCompiler(help);
+        const parser = new GnuCobolParser(compiler);
+        const stdvers = await parser.getPossibleStdvers();
+        expect(stdvers).toEqual(
+            dialectOptions([
+                'default',
+                'cobol2014',
+                'cobol2002',
+                'cobol85',
+                'xopen',
+                'ibm-strict',
+                'ibm',
+                'mvs-strict',
+                'mvs',
+                'mf-strict',
+                'mf',
+                'bs2000-strict',
+                'bs2000',
+                'acu-strict',
+                'acu',
+                'rm-strict',
+                'rm',
+                'gcos-strict',
+                'gcos',
+            ]),
+        );
     });
 });

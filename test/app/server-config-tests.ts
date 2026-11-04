@@ -24,9 +24,12 @@
 
 import * as Sentry from '@sentry/node';
 import type {NextFunction, Request, Response, Router} from 'express';
+import express from 'express';
 import type {Express} from 'express-serve-static-core';
+import request from 'supertest';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import type {TrustProxySetting} from '../../lib/app/config.interfaces.js';
 import {ServerOptions} from '../../lib/app/server.interfaces.js';
 import {setupBaseServerConfig} from '../../lib/app/server-config.js';
 import * as logger from '../../lib/logger.js';
@@ -105,6 +108,7 @@ describe('Server Config Module', () => {
             mockOptions = {
                 sentrySlowRequestMs: 1000,
                 httpRoot: '',
+                trustProxy: 2,
             } as ServerOptions;
         });
 
@@ -112,7 +116,7 @@ describe('Server Config Module', () => {
             setupBaseServerConfig(mockOptions, mockRenderConfig, mockWebServer, mockRouter);
 
             // Verify critical server configurations
-            expect(mockWebServer.set).toHaveBeenCalledWith('trust proxy', true);
+            expect(mockWebServer.set).toHaveBeenCalledWith('trust proxy', 2);
             expect(mockWebServer.set).toHaveBeenCalledWith('view engine', 'pug');
             expect(mockWebServer.use).toHaveBeenCalled();
             expect(mockWebServer.use).toHaveBeenCalledWith(mockOptions.httpRoot, mockRouter);
@@ -161,6 +165,55 @@ describe('Server Config Module', () => {
 
             expect(mockRes.status).toHaveBeenCalledWith(500);
             expect(logger.logger.error).toHaveBeenCalled();
+        });
+    });
+
+    describe('trust proxy', () => {
+        const LOOPBACK = /^(::ffff:)?127\.0\.0\.1$|^::1$/;
+
+        // Runs a real Express app through setupBaseServerConfig and reports what it resolved as the client.
+        async function clientSeenWith(trustProxy: TrustProxySetting, forwardedFor?: string) {
+            const app = express();
+            const router = express.Router();
+            router.get('/whoami', (req, res) => {
+                res.json({ip: req.ip, ips: req.ips});
+            });
+            const options = {sentrySlowRequestMs: 0, httpRoot: '/', trustProxy} as ServerOptions;
+            setupBaseServerConfig(options, vi.fn(), app, router);
+            let req = request(app).get('/whoami');
+            if (forwardedFor !== undefined) req = req.set('X-Forwarded-For', forwardedFor);
+            const res = await req;
+            expect(res.status).toBe(200);
+            return res.body as {ip: string; ips: string[]};
+        }
+
+        it('ignores a client-supplied hop when the hop count matches the proxy chain', async () => {
+            // A scanner sends "127.0.0.1"; CloudFront appends the viewer, the ALB appends the CloudFront edge.
+            const seen = await clientSeenWith(2, '127.0.0.1, 203.0.113.9, 198.51.100.7');
+            expect(seen.ip).toBe('203.0.113.9');
+            expect(seen.ips).toEqual(['203.0.113.9', '198.51.100.7']);
+        });
+
+        it('resolves the viewer when nothing was spoofed', async () => {
+            const seen = await clientSeenWith(2, '203.0.113.9, 198.51.100.7');
+            expect(seen.ip).toBe('203.0.113.9');
+        });
+
+        it('falls back to the socket address when there are fewer hops than trusted', async () => {
+            const seen = await clientSeenWith(2);
+            expect(seen.ip).toMatch(LOOPBACK);
+            expect(seen.ips).toEqual([]);
+        });
+
+        it('trusts a proxy on the same host by default', async () => {
+            const seen = await clientSeenWith('loopback', '203.0.113.9');
+            expect(seen.ip).toBe('203.0.113.9');
+        });
+
+        it('never consults X-Forwarded-For when disabled', async () => {
+            const seen = await clientSeenWith(false, '203.0.113.9');
+            expect(seen.ip).toMatch(LOOPBACK);
+            expect(seen.ips).toEqual([]);
         });
     });
 

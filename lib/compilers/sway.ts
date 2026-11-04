@@ -237,6 +237,8 @@ export class SwayCompiler extends BaseCompiler {
                           asm: irLines.map(line => ({
                               text: line.text,
                           })),
+                          code: buildResult.code,
+                          compilationOptions: buildOptions,
                       }
                     : undefined,
         };

@@ -40,6 +40,7 @@ import {ClientOptionsHandler} from '../options-handler.js';
 import {SetupSentry} from '../sentry.js';
 import {createSources} from '../sources/index.js';
 import {loadSponsorsFromString} from '../sponsors.js';
+import {startupPhases} from '../startup-phases.js';
 import {getStorageTypeByKey} from '../storage/index.js';
 import {initializeCompilationEnvironment} from './compilation-env.js';
 import {setupCompilerChangeHandling} from './compiler-changes.js';
@@ -65,6 +66,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     startWineInit();
 
     RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
+    startupPhases.mark('aws-init');
 
     const {compilationEnvironment, compileHandler} = await initializeCompilationEnvironment(
         appArgs,
@@ -72,6 +74,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         ceProps,
         awsProps,
     );
+    startupPhases.mark('compilation-env');
 
     const sources = createSources();
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
@@ -100,8 +103,10 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     );
 
     logVersionInfo(appArgs);
+    startupPhases.mark('handlers');
 
     const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
+    startupPhases.mark('discovery-finish');
 
     const serverOptions = {
         staticPath: appArgs.staticPath || path.join(distPath, 'static'),
@@ -112,7 +117,10 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         sentrySlowRequestMs: ceProps('sentrySlowRequestMs', 0),
         manifestPath: distPath,
         extraBodyClass: config.extraBodyClass,
+        siteLogo: config.siteLogo,
+        favicon: config.favicon,
         maxUploadSize: config.maxUploadSize,
+        trustProxy: config.trustProxy,
     };
 
     const serverDependencies = {
@@ -131,6 +139,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         serverOptions,
         serverDependencies,
     );
+    startupPhases.mark('web-server');
 
     const routeApi = setupRoutesAndApi(
         router,
@@ -144,6 +153,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilationEnvironment,
         ceProps,
     );
+    startupPhases.mark('routes');
 
     await setupCompilerChangeHandling(
         initialCompilers,
@@ -154,6 +164,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilerFinder,
         appArgs,
     );
+    startupPhases.mark('compiler-change');
 
     if (appArgs.metricsPort) {
         logger.info(`Running metrics server on port ${appArgs.metricsPort}`);
@@ -166,11 +177,20 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     if (isExecutionWorker) {
         await initHostSpecialties();
-        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
+        controllers.healthcheckController.setExecutionWorkerHealthCheck(
+            startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment),
+        );
     }
 
     if (isCompilationWorker) {
-        startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment, appArgs);
+        // A worker hands large results to its reader through shared storage, so without one it
+        // would drop every result over the websocket size limit. Say so now rather than per
+        // compilation, where it surfaces only as the reader timing out.
+        if (!compilationEnvironment.hasSharedCache())
+            throw new Error('Compilation worker mode needs a cacheConfig with an S3 layer to hand results over');
+        controllers.healthcheckController.setCompilationWorkerHealthCheck(
+            startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment, appArgs),
+        );
     }
 
     startListening(webServer, appArgs);

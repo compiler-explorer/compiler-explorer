@@ -23,13 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 import {TableGenParser} from './argument-parsers.js';
 
 export class TableGenCompiler extends BaseCompiler {
     static get key() {
         return 'tablegen';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        // the output is the record dump or the generated C++, which the asm parser would mangle
+        this.asm = new AsmParserCpp();
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {

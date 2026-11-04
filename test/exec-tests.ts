@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
@@ -181,6 +181,7 @@ describe('Execution tests', async () => {
                 exec.getNsJailCfgFilePath('sandbox'),
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 '/path/to/compiler',
                 '1',
                 '2',
@@ -215,6 +216,7 @@ describe('Execution tests', async () => {
                 '/some/custom/cwd:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './exec',
                 '/app/file',
                 '/not/custom/file',
@@ -298,6 +300,7 @@ describe('Execution tests', async () => {
                 '/tmp/hellow:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -317,6 +320,7 @@ describe('Execution tests', async () => {
                 '/tmp/hellow:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -337,6 +341,7 @@ describe('Execution tests', async () => {
                 '--env=SOME_DOTNET_THING=/app/dotnet',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -358,6 +363,7 @@ describe('Execution tests', async () => {
                 '--env=CXX_FLAGS=-L/usr/lib -L/app/curl/lib -L/app/fmt/lib',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -379,6 +385,7 @@ describe('Execution tests', async () => {
                 '--env=LD_LIBRARY_PATH=' + ['/usr/lib', '/app/lib'].join(path.delimiter),
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -399,6 +406,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     'subdir/output.s',
                 ]);
             }
@@ -423,6 +431,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     '/opt/compiler-explorer/cmake/bin/cmake',
                     '..',
                 ]);
@@ -461,6 +470,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     '/opt/compiler-explorer/compiler/bin/g++',
                     '-c',
                     '-S',
@@ -471,6 +481,43 @@ describe('Execution tests', async () => {
                     '/app/build/example.o',
                 ]);
             }
+        });
+    });
+
+    describe('registered execution backends', () => {
+        const result: UnprocessedExecResult = {
+            code: 0,
+            okToCache: true,
+            filenameTransform: x => x,
+            stdout: 'from the backend',
+            stderr: '',
+            execTime: 0,
+            timedOut: false,
+            truncated: false,
+        };
+        const backend = {execute: vi.fn().mockResolvedValue(result), sandbox: vi.fn().mockResolvedValue(result)};
+
+        beforeAll(() => {
+            props.initialize(path.resolve('./test/test-properties/execution-backend'), ['test']);
+            exec.registerExecutionBackend('test-backend', backend);
+        });
+        afterAll(() => {
+            props.reset();
+        });
+
+        it('should run executions through the backend named by executionType', async () => {
+            await expect(exec.execute('/bin/thing', ['arg'], {})).resolves.toBe(result);
+            expect(backend.execute).toHaveBeenCalledWith('/bin/thing', ['arg'], {});
+        });
+
+        it('should run sandboxed executions through the backend named by sandboxType', async () => {
+            await expect(exec.sandbox('/bin/thing', ['arg'], {})).resolves.toBe(result);
+            expect(backend.sandbox).toHaveBeenCalledWith('/bin/thing', ['arg'], {});
+        });
+
+        it('should refuse to replace an existing backend', () => {
+            expect(() => exec.registerExecutionBackend('test-backend', backend)).toThrow(/already registered/);
+            expect(() => exec.registerExecutionBackend('nsjail', backend)).toThrow(/already registered/);
         });
     });
 });

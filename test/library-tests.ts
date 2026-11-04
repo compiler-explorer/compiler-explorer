@@ -322,3 +322,113 @@ describe('Library directories (fortran)', () => {
         expect(paths).toContain('-isystem/opt/compiler-explorer/libs/curl/7.83.1/include');
     });
 });
+
+describe('Library directories (glibc sysroot)', () => {
+    let ce: CompilationEnvironment;
+    let compiler: BaseCompiler;
+
+    const glibcRoot = '/opt/compiler-explorer/glibc/2.42/x86_64-linux-gnu';
+    const glibc = [{id: 'glibc', version: '242'}];
+    const fmt = [{id: 'fmt', version: '10'}];
+
+    const info: Partial<CompilerInfo> = {
+        exe: '',
+        remote: {
+            target: 'foo',
+            path: 'bar',
+            cmakePath: 'cmake',
+            basePath: '/',
+        },
+        lang: 'c++',
+        ldPath: [],
+        libPath: [],
+        libsArr: ['glibc.242', 'fmt.10'],
+    };
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+        compiler = new BaseCompiler(info as CompilerInfo, ce);
+        (compiler as any).alwaysResetLdPath = true;
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': {
+                    glibc: {
+                        id: 'glibc',
+                        name: 'glibc',
+                        versions: {
+                            242: {
+                                version: '2.42',
+                                liblink: [],
+                                libpath: [glibcRoot + '/lib'],
+                                path: [],
+                                sysroot: glibcRoot,
+                                dynamicLinker: glibcRoot + '/lib/ld-linux-x86-64.so.2',
+                            },
+                        },
+                    } as unknown as OptionsHandlerLibrary,
+                    fmt: {
+                        id: 'fmt',
+                        name: '{fmt}',
+                        versions: {
+                            10: {
+                                version: '1.0',
+                                liblink: ['fmtd'],
+                                libpath: ['/opt/compiler-explorer/libs/fmt/1.0/lib'],
+                                path: ['/opt/compiler-explorer/libs/fmt/1.0/include'],
+                            },
+                        },
+                    } as unknown as OptionsHandlerLibrary,
+                },
+            },
+        } as unknown as ClientOptionsType);
+    });
+
+    it('should pass the sysroot as an include argument', () => {
+        const args = compiler.getIncludeArguments(glibc, '/tmp/compiler-explorer-compiler-123');
+        expect(args).toContain('--sysroot=' + glibcRoot);
+    });
+
+    it('should select the dynamic linker and search the toolchain runtime directories', () => {
+        const args = (compiler as any).getSharedLibraryPathsAsArguments(
+            glibc,
+            undefined,
+            '/opt/compiler-explorer/gcc-15.2.0',
+            '/tmp/compiler-explorer-compiler-123',
+        );
+        expect(args).toContain('-Wl,--dynamic-linker=' + glibcRoot + '/lib/ld-linux-x86-64.so.2');
+        expect(args).toContain('-L' + path.join('/opt/compiler-explorer/gcc-15.2.0', 'lib64'));
+    });
+
+    it('should not search the toolchain runtime directories without a sysroot library', () => {
+        const args = (compiler as any).getSharedLibraryPathsAsArguments(
+            fmt,
+            undefined,
+            '/opt/compiler-explorer/gcc-15.2.0',
+            '/tmp/compiler-explorer-compiler-123',
+        );
+        expect(args).not.toContain('-L' + path.join('/opt/compiler-explorer/gcc-15.2.0', 'lib64'));
+        expect(args.some((arg: string) => arg.startsWith('-Wl,--dynamic-linker='))).toBe(false);
+    });
+
+    it('should keep a library with its own dynamic linker out of LD_LIBRARY_PATH', () => {
+        const libraries = [...glibc, ...fmt];
+        const compileLdPaths = (compiler as any).getSharedLibraryPathsAsLdLibraryPaths(libraries);
+        expect(compileLdPaths).not.toContain(glibcRoot + '/lib');
+        expect(compileLdPaths).toContain('/opt/compiler-explorer/libs/fmt/1.0/lib');
+
+        const executionLdPaths = compiler.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+            {
+                libraries,
+                compiler: undefined,
+                source: '',
+                options: [],
+                backendOptions: undefined,
+                tools: [],
+                files: [],
+            },
+            '/tmp/compiler-explorer-compiler-123',
+        );
+        expect(executionLdPaths).not.toContain(glibcRoot + '/lib');
+        expect(executionLdPaths).toContain('/opt/compiler-explorer/libs/fmt/1.0/lib');
+    });
+});

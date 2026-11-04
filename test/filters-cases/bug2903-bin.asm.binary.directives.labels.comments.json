@@ -16,9 +16,9 @@
         "00"
       ],
       "source": {
-        "file": null,
+        "file": "main.cpp",
         "line": 4,
-        "mainsource": true
+        "mainsource": false
       },
       "text": " mov    edi,0x64"
     },
@@ -41,9 +41,9 @@
         "00"
       ],
       "source": {
-        "file": null,
+        "file": "main.cpp",
         "line": 4,
-        "mainsource": true
+        "mainsource": false
       },
       "text": " jmp    401120 <_Z6squarei>"
     },
@@ -59,9 +59,9 @@
         "00"
       ],
       "source": {
-        "file": null,
+        "file": "main.cpp",
         "line": 4,
-        "mainsource": true
+        "mainsource": false
       },
       "text": " nop    WORD PTR [rax+rax*1+0x0]"
     },

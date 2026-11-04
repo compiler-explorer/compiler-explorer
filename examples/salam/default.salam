@@ -1,0 +1,24 @@
+// Type your code here, or load an example.
+func add(a: int, b: int): int:
+    ret a + b
+end
+
+func factorial(a): int:
+    if a > 1:
+        ret a * factorial(a - 1)
+    else:
+        ret 1
+    end
+end
+
+func main:
+    println add(2, 3)
+
+    mut index := 1
+    until index < 5:
+        println "Current index: " + index
+        println "Factorial of " + index + " is " + factorial(index)
+        println "---"
+        index += 1
+    end
+end

@@ -28,6 +28,7 @@ import GoldenLayout from 'golden-layout';
 import {parse} from '../shared/stacktrace.js';
 import {serialiseState} from '../shared/url-serialization.js';
 import {options} from './options.js';
+import {isWorkerErrorNoise} from './sentry-filters.js';
 import {SiteSettings} from './settings.js';
 
 let layout: GoldenLayout;
@@ -81,6 +82,12 @@ export function SetupSentry() {
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
+            dataCollection: {
+                userInfo: false,
+                httpBodies: [],
+                urlQueryParams: {deny: ['forwarded', '-ip', 'remote-', 'via', '-user']},
+            },
+            attachStacktrace: false,
             ignoreErrors: [
                 // NOTE: Monaco Editor patterns may not work reliably due to code minification
                 // Source mapping happens AFTER beforeSend/ignoreErrors processing
@@ -123,6 +130,9 @@ export function SetupSentry() {
                     if (event.exception.values[0].value?.includes('_doHitTestWithCaretPositionFromPoint')) {
                         return null; // Don't send to Sentry
                     }
+                }
+                if (isWorkerErrorNoise(event)) {
+                    return null;
                 }
                 return event;
             },
