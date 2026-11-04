@@ -38,7 +38,7 @@ import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolSt
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
-import {toolsService} from '../services/tools.service.js';
+import {type ToolEntry, toolsService} from '../services/tools.service.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -70,6 +70,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     optionsField: JQuery;
     localStdinField: JQuery;
     createToolInputView: () => ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME>;
+    private argChoicesApplied = false;
 
     wrapButton: JQuery;
     wrapTitle: JQuery;
@@ -222,6 +223,33 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 this.eventHub.emit('setToolInput', this.compilerInfo.compilerId, this.toolId, state.stdin);
             }
         }
+    }
+
+    private applyArgChoices(toolInfo: ToolEntry) {
+        const choices = toolInfo.argChoices;
+        if (this.argChoicesApplied || !choices || choices.length === 0) return;
+        this.argChoicesApplied = true;
+
+        const current = unwrapString(this.optionsField.val());
+        const defaultArg = toolInfo.args ?? '';
+        // The backend matches stages case-insensitively, so a saved or hand-typed value in any case is kept.
+        const matching = (arg: string) => choices.find(choice => choice.toLowerCase() === arg.trim().toLowerCase());
+        const initial = matching(current) ?? matching(defaultArg) ?? choices[0];
+
+        const select = $(
+            '<select class="tool-arg-choices form-select form-select-sm" aria-label="Tool mode"></select>',
+        );
+        for (const choice of choices) {
+            select.append($('<option></option>').val(choice).text(choice));
+        }
+        select.val(initial);
+        select.on('change', () => {
+            this.optionsField.val(unwrapString(select.val())).trigger('change');
+        });
+
+        this.optionsField.val(initial).addClass('d-none').after(select);
+        this.showPanel(this.toggleArgs, this.panelArgs);
+        if (initial !== current) this.optionsField.trigger('change');
     }
 
     getInputArgs() {
@@ -433,6 +461,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 : undefined;
 
             if (toolInfo) {
+                this.applyArgChoices(toolInfo);
                 this.toggleStdin.prop('disabled', false);
 
                 if (this.monacoStdin && !this.monacoEditorOpen && !this.monacoEditorHasBeenAutoOpened) {

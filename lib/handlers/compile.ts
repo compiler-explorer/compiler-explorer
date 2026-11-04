@@ -60,6 +60,7 @@ import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
+import {startupPhases} from '../startup-phases.js';
 import {KnownBuildMethod} from '../stats.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
@@ -330,9 +331,11 @@ export class CompileHandler implements ICompileHandler {
         try {
             this.clientOptions = clientOptions;
             const totalCompilers = compilers.length;
+            startupPhases.mark('discovery-load');
             logger.info('Creating compilers: ' + totalCompilers);
             let compilersCreated = 0;
             const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
+            startupPhases.mark('create-compilers');
             for (const compiler of createdCompilers) {
                 const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};
@@ -357,6 +360,7 @@ export class CompileHandler implements ICompileHandler {
                     createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
                 );
             }
+            startupPhases.mark('possible-arguments');
             this.compilersById = compilersById;
             return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
