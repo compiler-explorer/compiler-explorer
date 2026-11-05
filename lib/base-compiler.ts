@@ -2813,7 +2813,7 @@ export class BaseCompiler {
             rustMacroExpResult,
             clojureMacroExpResult,
             toolsResult,
-        ] = await Promise.all([
+        ] = await utils.allSettledOrThrow([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
             makeAst ? this.generateAST(inputFilename, options) : undefined,
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : undefined,
@@ -2833,7 +2833,7 @@ export class BaseCompiler {
             makeRustHir ? this.generateRustHir(inputFilename, options) : undefined,
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : undefined,
             makeClojureMacroExp ? this.generateClojureMacroExpansion(inputFilename, options) : undefined,
-            Promise.all(
+            utils.allSettledOrThrow(
                 this.runToolsOfType(
                     tools,
                     'independent',
@@ -3724,7 +3724,7 @@ export class BaseCompiler {
 
         result.tools = _.union(
             result.tools || [],
-            await Promise.all(this.runToolsOfType(tools, 'postcompilation', compilationInfo)),
+            await utils.allSettledOrThrow(this.runToolsOfType(tools, 'postcompilation', compilationInfo)),
         );
 
         result = await this.extractDeviceCode(result, filters, compilationInfo);
@@ -4285,7 +4285,7 @@ but nothing was dumped. Possible causes are:
                       result.asm = contents.toString();
                       return result;
                   })();
-        return Promise.all([asmPromise, optPromise, stackUsagePromise]);
+        return utils.allSettledOrThrow([asmPromise, optPromise, stackUsagePromise]);
     }
 
     handlePostProcessResult(result, postResult: UnprocessedExecResult): CompilationResult {

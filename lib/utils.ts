@@ -41,6 +41,22 @@ import type {Fix, ResultLine, ResultLineTag} from '../types/resultline/resultlin
 
 export {ce_temp_prefix, maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
 
+/**
+ * Like Promise.all, but waits for every promise to settle before rejecting with the first rejection, for work that
+ * shares something (e.g. a temporary directory) that is cleaned up as soon as this returns or throws.
+ */
+export async function allSettledOrThrow<T extends readonly unknown[]>(
+    promises: [...T],
+): Promise<{-readonly [K in keyof T]: Awaited<T[K]>}> {
+    const results = await Promise.allSettled(promises);
+    for (const result of results) {
+        if (result.status === 'rejected') throw result.reason;
+    }
+    return results.map(result => (result as PromiseFulfilledResult<unknown>).value) as {
+        -readonly [K in keyof T]: Awaited<T[K]>;
+    };
+}
+
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
 

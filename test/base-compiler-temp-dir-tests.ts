@@ -110,6 +110,25 @@ describe('Per-request temp directory cleanup', () => {
             expect(await utils.dirExists(dirs[0])).toBe(false);
         });
 
+        it('lets the other views finish with the source before removing the directory when one throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            compiler.compiler.supportsAstView = true;
+            vi.spyOn(compiler, 'runCompiler').mockRejectedValue(new Error('compiler fell over'));
+            let sourceWasThere: boolean | undefined;
+            vi.spyOn(compiler, 'generateAST').mockImplementation(async inputFilename => {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                sourceWasThere = await utils.fileExists(inputFilename);
+                return [];
+            });
+
+            await expect(
+                compiler.compile('int main() {}', [], {produceAst: true}, {}, BypassCache.None, [], {}, [], []),
+            ).rejects.toThrow('compiler fell over');
+
+            expect(sourceWasThere).toBe(true);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
         it('removes the directory after a successful compilation', async () => {
             const dirs = trackTempDirs(compiler);
             vi.spyOn(compiler, 'doCompilation').mockImplementation(async (_input, dirPath) => [
