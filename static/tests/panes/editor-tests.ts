@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ShiftCommand} from 'monaco-editor/esm/vs/editor/common/commands/shiftCommand';
 import {describe, expect, it, vi} from 'vitest';
 
 // the editor module builds one of these at import time, and its constructor asks the server for the builtin sources
@@ -29,7 +30,7 @@ vi.mock('../../widgets/load-save.js', () => ({LoadSave: class {}}));
 vi.mock('monaco-vim', () => ({initVimMode: () => undefined}));
 
 import {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-import {Editor} from '../../panes/editor.js';
+import {Editor, patchVimIndentLine} from '../../panes/editor.js';
 
 /**
  * What the parser hands the editor for rustc 1.96 building `example.rs` with `mod a;`: an error in the main source, a
@@ -127,5 +128,44 @@ describe('Editor duplication', () => {
             componentName: 'codeEditor',
             componentState: {id: undefined, lang: 'rust', source: 'fn main() {}'},
         });
+    });
+});
+
+describe('vim indentation', () => {
+    const cursorConfig = {tabSize: 4, indentSize: 4, insertSpaces: true, useTabStops: true, autoIndent: 4};
+
+    function makeVimMode() {
+        const languageConfigurationService = {getLanguageConfiguration: vi.fn()};
+        const editor = {
+            _getViewModel: () => ({cursorConfig}),
+            executeCommand: vi.fn(),
+            languageConfigurationService,
+        };
+        const vimMode: any = {editor};
+        patchVimIndentLine(vimMode);
+        return {vimMode, editor, languageConfigurationService};
+    }
+
+    it('hands the editor language configuration service to the shift command', () => {
+        const {vimMode, editor, languageConfigurationService} = makeVimMode();
+
+        vimMode.indentLine(1);
+
+        const [source, command] = editor.executeCommand.mock.calls[0];
+        expect(source).toBe('vim');
+        expect(command).toBeInstanceOf(ShiftCommand);
+        expect((command as any)._languageConfigurationService).toBe(languageConfigurationService);
+    });
+
+    it('indents the requested line and unindents when asked to', () => {
+        const {vimMode, editor} = makeVimMode();
+
+        vimMode.indentLine(2, true);
+        vimMode.indentLine(2, false);
+
+        const [indent, unindent] = editor.executeCommand.mock.calls.map(([, command]) => command as any);
+        expect(indent._selection.startLineNumber).toBe(3);
+        expect(indent._opts.isUnshift).toBe(false);
+        expect(unindent._opts.isUnshift).toBe(true);
     });
 });

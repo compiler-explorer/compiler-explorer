@@ -27,6 +27,7 @@ import {Buffer} from 'buffer';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
+import {ShiftCommand} from 'monaco-editor/esm/vs/editor/common/commands/shiftCommand';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
@@ -83,6 +84,34 @@ const loadSave = new loadSaveLib.LoadSave();
 type ResultLineWithSourcePane = ResultLine & {
     sourcePane: string;
 };
+
+// monaco-vim builds ShiftCommand without the language configuration service that monaco 0.55 needs, so `>>` throws on
+// a line whose indentation isn't a multiple of the indent size (https://github.com/brijeshb42/monaco-vim/issues/175).
+export function patchVimIndentLine(vimMode: any): void {
+    vimMode.indentLine = function (this: any, line: number, indentRight = true) {
+        const editor = this.editor;
+        const cursorConfig = editor._getViewModel
+            ? editor._getViewModel().cursorConfig
+            : editor._getCursors().context.config;
+        const pos = new monaco.Position(line + 1, 1);
+        const selection = monaco.Selection.fromPositions(pos, pos);
+        editor.executeCommand(
+            'vim',
+            new ShiftCommand(
+                selection,
+                {
+                    isUnshift: !indentRight,
+                    tabSize: cursorConfig.tabSize,
+                    indentSize: cursorConfig.indentSize,
+                    insertSpaces: cursorConfig.insertSpaces,
+                    useTabStops: cursorConfig.useTabStops,
+                    autoIndent: cursorConfig.autoIndent,
+                },
+                editor.languageConfigurationService,
+            ),
+        );
+    };
+}
 
 export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, EditorState> {
     private id: number;
@@ -510,6 +539,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     enableVim(): void {
         const statusElem = this.domRoot.find('.v-status')[0];
         const vimMode = monacoVim.initVimMode(this.editor, statusElem);
+        patchVimIndentLine(vimMode);
         this.vimMode = vimMode;
         this.vimFlag.prop('class', 'btn btn-info');
         (this.editor as any).vimInUse = true;
