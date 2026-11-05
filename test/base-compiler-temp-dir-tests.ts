@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {ClangCompiler} from '../lib/compilers/clang.js';
 import {LocalExecutionEnvironment} from '../lib/execution/base-execution-env.js';
 import * as utils from '../lib/utils.js';
 import {BypassCache, CompilationResult} from '../types/compilation/compilation.interfaces.js';
@@ -293,6 +296,15 @@ describe('Per-request temp directory cleanup', () => {
         });
         const files = [{filename: 'main.cpp', contents: 'int main() {}'}];
 
+        const builtOk = (dirPath: string) => ({
+            code: 0,
+            timedOut: false,
+            stdout: [],
+            stderr: [],
+            buildsteps: [],
+            result: compiledResult(dirPath),
+        });
+
         it('removes the project directory once the build has been post-processed', async () => {
             const dirs = trackTempDirs(compiler);
             vi.spyOn(compiler as any, 'runProjectBuild').mockImplementation(async (build: any) => {
@@ -326,6 +338,31 @@ describe('Per-request temp directory cleanup', () => {
 
             expect(dirs).toHaveLength(1);
             expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('removes the project directory when preparing the build throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler as any, 'getSharedLibraryPathsAsLdLibraryPathsForExecution').mockImplementation(() => {
+                throw new Error('bad setup');
+            });
+
+            await expect(compiler.cmake(files, parsedRequest(), BypassCache.Compilation)).rejects.toThrow('bad setup');
+
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('leaves the project directory for the sweep when delayCleanupTemp is set', async () => {
+            const dirs = trackTempDirs(compiler);
+            (compiler as any).delayCleanupTemp = true;
+            vi.spyOn(compiler as any, 'runProjectBuild').mockImplementation(async (build: any) =>
+                builtOk(build.dirPath),
+            );
+
+            await compiler.cmake(files, parsedRequest(), BypassCache.Compilation);
+
+            expect(await utils.dirExists(dirs[0])).toBe(true);
+            await fs.rm(dirs[0], {recursive: true, force: true});
         });
     });
 
@@ -375,5 +412,52 @@ describe('LocalExecutionEnvironment cleanup', () => {
     it('is harmless before anything was downloaded', async () => {
         const env = new LocalExecutionEnvironment(ce);
         await expect(env.cleanup()).resolves.toBeUndefined();
+    });
+});
+
+describe('ClangCompiler.afterCompilation', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    const afterCompilation = (clang: ClangCompiler, result: CompilationResult, delayCaching: boolean) =>
+        clang.afterCompilation(
+            result,
+            false,
+            clang.getCacheKey('int main() {}', [], {}, {}, [], [], []),
+            {args: [], stdin: '', ldPath: [], env: {}},
+            [],
+            {skipAsm: true},
+            {} as any,
+            [],
+            undefined,
+            undefined,
+            BypassCache.Compilation,
+            undefined,
+            delayCaching,
+        );
+
+    let clang: ClangCompiler;
+    let dir: string;
+
+    beforeEach(async () => {
+        const ce = makeCompilationEnvironment({languages, doCache: false});
+        clang = new ClangCompiler(makeFakeCompilerInfo({exe: 'clang', lang: 'c++', ldPath: [], libPath: []}), ce);
+        vi.spyOn(clang, 'addTimeTraceToResult').mockResolvedValue(undefined);
+        dir = await clang.newTempDir();
+    });
+
+    afterEach(async () => {
+        await fs.rm(dir, {recursive: true, force: true});
+    });
+
+    it('cleans up after itself when it is the whole of a compilation', async () => {
+        await afterCompilation(clang, compiledResult(dir), false);
+
+        expect(await utils.dirExists(dir)).toBe(false);
+    });
+
+    it('leaves the directory to the project build when told the caller is not finished with it', async () => {
+        await afterCompilation(clang, compiledResult(dir), true);
+
+        expect(await utils.dirExists(dir)).toBe(true);
     });
 });

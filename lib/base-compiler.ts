@@ -3514,7 +3514,7 @@ export class BaseCompiler {
         if (fullResult.result) delete fullResult.result.dirPath;
 
         this.cleanupResult(fullResult);
-        // Never the cached copy: afterCmakeCompilation cached it before the cleanup just above, so
+        // Never the cached copy: afterCmakeCompilation cached it before the path was stripped above, so
         // it still names the temporary directories we mask here.
         await this.storeOversizedResult(fullResult, cacheKey, false);
 
