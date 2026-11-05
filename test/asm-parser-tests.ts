@@ -729,6 +729,29 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
         expect(mov?.labels).toEqual([]);
     });
 
+    it('should find the target of a branch whose address follows a register operand', () => {
+        const asm = [
+            '0000000000010000 <main>:',
+            '/app/a.c:1',
+            '   10000:\t00000097          \tauipc\tra,0x0',
+            '   10004:\t0040006f          \tjal\tra,10100 <__h>',
+            '   10008:\tfe051ce3          \tbnez\ta0,10200 <__g+0x4>',
+            '',
+            '0000000000010100 <__h>:',
+            '/usr/l.c:2',
+            '   10100:\t8082              \tret',
+            '',
+            '0000000000010200 <__g>:',
+            '/usr/l.c:2',
+            '   10200:\t8082              \tret',
+        ].join('\n');
+        const result = parser.processBinaryAsm(asm, {});
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['main:', '__h:', '__g:']);
+        const jal = result.asm.find(line => line.text.includes('jal'));
+        expect(jal?.labels).toEqual([{name: '__h', range: {startCol: 16, endCol: 19}}]);
+        expect(jal?.text.slice(15, 18)).toBe('__h');
+    });
+
     it('should keep the PLT hidden when a shown stub jumps to it', () => {
         const pltParser = new AsmParser(((property: string, defaultValue?: unknown) =>
             property === 'binaryHideFuncRe' ? '^(__.*|\\.plt.*)$' : defaultValue) as PropertyGetter);
@@ -947,6 +970,62 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
                     call(0x404001, '__b'),
                 ];
                 expect(texts(defaultLimit(), asm)).toEqual(['main:', ' nop', ' call   402000 <__b>']);
+            });
+
+            it('should not let a PLT stub use up the cap, since nothing can promote it', () => {
+                const asm = [
+                    '0000000000401000 <main>:',
+                    nop(0),
+                    call(0x401001, '__h'),
+                    '0000000000402000 <.plt>:',
+                    ...nops(5100),
+                    '0000000000410000 <__h>:',
+                    nop(1),
+                    nop(2),
+                    nop(3),
+                ];
+                const pltParser = new AsmParser(((property: string, defaultValue?: unknown) =>
+                    property === 'binaryHideFuncRe' ? '^(__.*|\\.plt.*)$' : defaultValue) as PropertyGetter);
+                const result = pltParser.processBinaryAsm(asm.join('\n'), {});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['main:', '__h:']);
+            });
+
+            it('should keep a hidden function whole when a local label inside it is followed by library code', () => {
+                const asm = [
+                    '0000000000401000 <main>:',
+                    '/app/a.c:1',
+                    call(0x401000, '__h1'),
+                    nop(0),
+                    '0000000000402000 <__h1>:',
+                    '/app/a.c:2',
+                    nop(1),
+                    '/usr/l.c:3',
+                    nop(2),
+                    '0000000000402009 <.Lpcrel_hi2>:',
+                    '/usr/l.c:4',
+                    nop(3),
+                    nop(4),
+                    '0000000000403000 <s1>:',
+                    '/app/a.c:5',
+                    nop(5),
+                ];
+                expect(
+                    defaultLimit()
+                        .processBinaryAsm(asm.join('\n'), {libraryCode: true})
+                        .asm.map(line => line.text),
+                ).toEqual([
+                    'main:',
+                    ' call   402000 <__h1>',
+                    ' nop',
+                    '__h1:',
+                    ' nop',
+                    ' nop',
+                    '.Lpcrel_hi2:',
+                    ' nop',
+                    ' nop',
+                    's1:',
+                    ' nop',
+                ]);
             });
 
             it('should keep a hidden function without user code out when library code is filtered', () => {

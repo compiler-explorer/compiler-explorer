@@ -430,7 +430,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
         this.destRe = /\s([\da-f]+)\s+<([^+>]+)(\+0x[\da-f]+)?>$/;
-        this.binaryReferenceStartRe = /\s[\da-f]+\s+</;
+        // RISC-V, PowerPC and s390x print the address straight after a register operand: `jal ra,10008 <sym>`
+        this.binaryReferenceStartRe = /[\s,][\da-f]+\s+</;
         // An x86 objdump comment about data an instruction reads (`# 404028 <sym>`). Elsewhere `#` is an immediate
         // prefix (`tbz w0, #0, <target>`), which is never followed by whitespace.
         this.binaryCommentRe = /\s#\s/;
@@ -652,6 +653,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
+    // PLT stubs and the .plt section they jump to stay hidden even when something shown refers to them
+    private isPltName(name: string) {
+        return name.startsWith('.plt') || name.includes('@plt');
+    }
+
     // `.L` labels are local labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions
     private startsFunction(label: string) {
         return !label.startsWith('.L');
@@ -676,8 +682,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     private hiddenReferenceTarget(line: string): string | undefined {
         const target = this.referenceTarget(line);
         if (!target) return undefined;
-        // PLT stubs and the .plt section they jump to stay hidden
-        if (target.startsWith('.plt') || target.includes('@plt')) return undefined;
+        if (this.isPltName(target)) return undefined;
         return this.isUserFunction(target) ? undefined : target;
     }
 
@@ -894,8 +899,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     hiddenFunction = null;
                     skippingFunction = false;
                     if (!this.isUserFunction(func)) {
-                        if (heldHiddenLines >= this.maxAsmLines) hiddenCapReached = true;
-                        if (hiddenCapReached) {
+                        // A PLT name is never promoted, so holding it would only use up the cap
+                        if (!this.isPltName(func) && heldHiddenLines >= this.maxAsmLines) hiddenCapReached = true;
+                        if (this.isPltName(func) || hiddenCapReached) {
                             skippingFunction = true;
                         } else {
                             hiddenFunction = {name: func, at: asm.length, lines: [], labels: {}};
