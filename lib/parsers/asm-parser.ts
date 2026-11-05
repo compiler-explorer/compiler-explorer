@@ -650,9 +650,17 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 if (!labelMatch[2].startsWith('.L')) funcIsShown = this.isUserFunction(labelMatch[2]);
                 continue;
             }
-            if (!funcIsShown || !line.endsWith('>')) continue;
-            const destMatch = line.match(this.destRe);
-            if (destMatch && !this.isUserFunction(destMatch[2])) referenced.add(destMatch[2]);
+            if (!funcIsShown) continue;
+            // Like the main loop's view of an instruction, only its operand counts, not a comment about data it reads
+            const commentStart = line.indexOf('#');
+            const instruction = (commentStart === -1 ? line : line.slice(0, commentStart)).trimEnd();
+            if (!instruction.endsWith('>')) continue;
+            const destMatch = instruction.match(this.destRe);
+            if (!destMatch) continue;
+            const target = destMatch[2];
+            // PLT stubs and the .plt section they jump to stay hidden
+            if (target.startsWith('.plt') || target.includes('@plt')) continue;
+            if (!this.isUserFunction(target)) referenced.add(target);
         }
         return referenced;
     }

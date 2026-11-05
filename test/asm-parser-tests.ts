@@ -632,6 +632,36 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
         expect(labels(withLines, {libraryCode: true})).toEqual(['f:', '__divdc3:']);
     });
 
+    it('should not count a reference in a data comment', () => {
+        const asm = [
+            '0000000000401000 <main>:',
+            '  401000:\t48 8b 05 d9 2f 00 00 \tmov    0x2fd9(%rip),%rax        # 404fe0 <__gmon_start__>',
+            '',
+            '0000000000404fe0 <__gmon_start__>:',
+            '  404fe0:\tc3                   \tret',
+        ].join('\n');
+        expect(labels(asm, {})).toEqual(['main:']);
+    });
+
+    it('should find a reference followed by trailing whitespace', () => {
+        const asm = objdump.replace('call   401870 <__divdc3>', 'call   401870 <__divdc3>  ');
+        expect(labels(asm, {})).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should keep the PLT hidden when a shown stub jumps to it', () => {
+        const pltParser = new AsmParser(((property: string, defaultValue?: unknown) =>
+            property === 'binaryHideFuncRe' ? '^(__.*|\\.plt.*)$' : defaultValue) as PropertyGetter);
+        const asm = [
+            '0000000000402020 <.plt>:',
+            '  402020:\tff 35 e2 2f 00 00    \tpush   0x2fe2(%rip)',
+            '',
+            '0000000000402030 <puts@plt>:',
+            '  402030:\te9 eb ff ff ff       \tjmp    402020 <.plt>',
+        ].join('\n');
+        const text = pltParser.processBinaryAsm(asm, {}).asm.map(line => line.text);
+        expect(text.filter(line => line.endsWith(':'))).toEqual(['puts@plt:']);
+    });
+
     it('should not hide anything when there is no hide pattern', () => {
         expect(new AsmParser().processBinaryAsm(objdump, {}).asm.filter(line => line.text.endsWith(':'))).toHaveLength(
             4,
