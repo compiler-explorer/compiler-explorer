@@ -64,8 +64,11 @@ export class DucklingCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
-        return filters.binary || filters.execute
-            ? ['compile_modules', '--no-incremental', '--output-file-name', path.basename(outputFilename)]
+        if (filters.binary || filters.execute) {
+            return ['compile_modules', '--no-incremental', '--output-file-name', path.basename(outputFilename)];
+        }
+        return filters.binaryObject
+            ? ['compile_module', '--no-incremental']
             : ['compile_module', '--no-incremental', '--dump-ir', 'asm'];
     }
 
@@ -124,6 +127,22 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
         if (result.code !== 0 || filters?.binary || filters?.execute) return result;
 
+        const outputFilename = this.getOutputFilename(workingDirectory, this.outputFilebase);
+        if (filters?.binaryObject) {
+            const objectFiles = (await fs.readdir(duckBuildDirectory, {recursive: true})).filter(filename =>
+                filename.endsWith('.o'),
+            );
+            if (objectFiles.length !== 1) {
+                result.code = 1;
+                result.stderr.push({
+                    text: `Duckling reported success but produced ${objectFiles.length} object files; expected exactly one`,
+                });
+                return result;
+            }
+            await fs.copyFile(path.join(duckBuildDirectory, objectFiles[0]), outputFilename);
+            return result;
+        }
+
         const moduleName = path.basename(inputFilename, path.extname(inputFilename));
         const artifactsDirectory = path.join(duckBuildDirectory, 'duck_debug_artifacts');
         let artifacts: string[] = [];
@@ -144,7 +163,6 @@ export class DucklingCompiler extends BaseCompiler {
             return result;
         }
 
-        const outputFilename = this.getOutputFilename(workingDirectory, this.outputFilebase);
         await fs.copyFile(path.join(artifactsDirectory, assemblyFiles[0]), outputFilename);
         return result;
     }
