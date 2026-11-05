@@ -784,6 +784,56 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
             expect(text).not.toContain(truncationMarker);
         });
 
+        it('should show a hidden function called early even when the shown code is over the limit', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(3),
+                '0000000000401000 <main>:',
+                '  401000:\te8 00 00 00 00       \tcall   400000 <__h>',
+                ...nops(40),
+            ];
+            const result = limitedParser(20).processBinaryAsm(asm.join('\n'), {});
+            const text = result.asm.map(line => line.text);
+            expect(text).toHaveLength(21);
+            expect(text[0]).toBe('__h:');
+            expect(text[4]).toBe('main:');
+            expect(text[5]).toBe(' call   400000 <__h>');
+            expect(text.at(-1)).toBe(truncationMarker);
+            expect(result.labelDefinitions).toEqual({__h: 1, main: 5});
+            expect(result.asm[5].labels).toEqual([{name: '__h', range: {startCol: 17, endCol: 20}}]);
+        });
+
+        it('should not show a hidden function that would straddle the cut', () => {
+            const asm = [
+                '0000000000400000 <__s>:',
+                ...nops(2),
+                '0000000000400100 <__big>:',
+                ...nops(17),
+                '0000000000401000 <main>:',
+                '  401000:\te8 00 00 00 00       \tcall   400000 <__s>',
+                '  401005:\te8 00 00 00 00       \tcall   400100 <__big>',
+                ...nops(30),
+            ];
+            const text = texts(limitedParser(20), asm);
+            expect(text.filter(line => line.endsWith(':'))).toEqual(['__s:', 'main:']);
+            expect(text).toHaveLength(21);
+            expect(text.at(-1)).toBe(truncationMarker);
+        });
+
+        it('should not show a hidden function whose only caller is cut by the limit', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(4),
+                '0000000000401000 <main>:',
+                ...nops(25),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__h>',
+            ];
+            const text = texts(limitedParser(20), asm);
+            expect(text).toHaveLength(21);
+            expect(text[0]).toBe('main:');
+            expect(text.at(-1)).toBe(truncationMarker);
+        });
+
         it('should only truncate shown code when it alone exceeds the limit', () => {
             const asm = [
                 '0000000000400000 <__a>:',

@@ -670,26 +670,61 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return this.isUserFunction(target) ? undefined : target;
     }
 
-    // Shows the functions that binaryHideFuncRe hides but that a line of the output calls or jumps to. Shown code has
-    // priority: a hidden function is only added if it fits, and only references from lines that made it into the
-    // output count. Only direct references count: following them transitively would pull in all of stdio from a call
-    // to printf.
+    // Which of the hidden functions to show, given shown code that may already be at the limit. The output is the shown
+    // lines and the chosen functions merged in file order and cut at the limit, so every chosen function has to end
+    // before the cut and be referenced from a line before it. Start with everything that a shown line refers to and
+    // drop what doesn't qualify until nothing does. Shown code never moves out of the output for the sake of a
+    // function that isn't referenced from it, and showing a function pushes out only the shown code that follows it.
+    private chooseHiddenFunctions(
+        shownCount: number,
+        hiddenFunctions: HiddenFunction[],
+        firstReference: Map<string, number>,
+    ): HiddenFunction[] {
+        const limit = this.maxAsmLines;
+        const kept = hiddenFunctions.filter(func => firstReference.has(func.name) && func.at <= shownCount);
+        for (;;) {
+            // heldBefore[i] is how many lines the kept functions ahead of kept[i] hold
+            const heldBefore = [0];
+            for (const func of kept) heldBefore.push(heldBefore[heldBefore.length - 1] + func.lines.length);
+            // The first reference is the one that matters: if it is cut, so are the rest
+            const positionOfShownLine = (index: number) => {
+                let low = 0;
+                let high = kept.length;
+                while (low < high) {
+                    const mid = (low + high) >> 1;
+                    if (kept[mid].at <= index) low = mid + 1;
+                    else high = mid;
+                }
+                return index + heldBefore[low];
+            };
+            // Only the last failing function goes each time: dropping one pulls what follows it back into the output,
+            // which can rescue the others
+            let failing = -1;
+            for (let i = kept.length - 1; i >= 0 && failing === -1; i--) {
+                const fits = kept[i].at + heldBefore[i] + kept[i].lines.length <= limit;
+                if (!fits || positionOfShownLine(firstReference.get(kept[i].name)!) >= limit) failing = i;
+            }
+            if (failing === -1) return kept;
+            kept.splice(failing, 1);
+        }
+    }
+
+    // Shows the functions that binaryHideFuncRe hides but that a line of the output calls or jumps to. Only direct
+    // references count: following them transitively would pull in all of stdio from a call to printf.
     private addReferencedHiddenFunctions(
         asm: ParsedAsmResultLine[],
         labelDefinitions: Record<string, number>,
         hiddenFunctions: HiddenFunction[],
         referenceTargets: Map<ParsedAsmResultLine, string>,
-        truncated: boolean,
     ): ParsedAsmResultLine[] {
-        if (hiddenFunctions.length === 0 || truncated) return asm;
-        const referenced = new Set<string>();
-        for (const line of asm) {
-            const target = referenceTargets.get(line);
-            if (target) referenced.add(target);
+        const firstReference = new Map<string, number>();
+        if (hiddenFunctions.length > 0) {
+            asm.forEach((line, index) => {
+                const target = referenceTargets.get(line);
+                if (target && !firstReference.has(target)) firstReference.set(target, index);
+            });
         }
-        const kept = hiddenFunctions.filter(func => referenced.has(func.name) && func.at <= asm.length);
-        let total = asm.length + kept.reduce((sum, func) => sum + func.lines.length, 0);
-        while (kept.length > 0 && total > this.maxAsmLines) total -= kept.pop()!.lines.length;
+        const kept = this.chooseHiddenFunctions(asm.length, hiddenFunctions, firstReference);
         if (kept.length === 0) return asm;
 
         // insertedBefore[i] is how many lines are inserted ahead of shown line i
@@ -757,7 +792,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
         const markTruncated = () => {
             if (truncated) return;
-            asm.push({text: '[truncated; too many lines]', source: null, labels: []});
             truncated = true;
         };
         // A function kept for its user code may have run past the limit while it could still be removed
@@ -896,13 +930,17 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         }
         removeFunctionIfLibrary();
 
-        const shownAsm = this.addReferencedHiddenFunctions(
-            asm,
-            labelDefinitions,
-            hiddenFunctions,
-            referenceTargets,
-            truncated,
-        );
+        const shownAsm = this.addReferencedHiddenFunctions(asm, labelDefinitions, hiddenFunctions, referenceTargets);
+        if (shownAsm.length > this.maxAsmLines) {
+            shownAsm.splice(this.maxAsmLines);
+            truncated = true;
+        }
+        if (truncated) {
+            for (const [label, index] of Object.entries(labelDefinitions)) {
+                if (index > this.maxAsmLines) delete labelDefinitions[label];
+            }
+            shownAsm.push({text: '[truncated; too many lines]', source: null, labels: []});
+        }
         this.removeLabelsWithoutDefinition(shownAsm, labelDefinitions);
 
         const endTime = process.hrtime.bigint();
