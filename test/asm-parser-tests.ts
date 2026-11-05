@@ -643,6 +643,32 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
         expect(labels(asm, {})).toEqual(['main:']);
     });
 
+    // aarch64-linux-gnu-objdump style: `#` is the immediate prefix there, not a comment
+    it('should find an aarch64 tbz target, where # is an immediate and not a comment', () => {
+        const asm = [
+            '00000000004005a0 <main>:',
+            '  4005a0:\t36000040 \ttbz\tw0, #0, 4005a8 <__hidden>',
+            '  4005a4:\td65f03c0 \tret',
+            '',
+            '00000000004005a8 <__hidden>:',
+            '  4005a8:\td65f03c0 \tret',
+        ].join('\n');
+        expect(labels(asm, {})).toEqual(['main:', '__hidden:']);
+    });
+
+    it('should find targets after aarch64 immediates, with a cmp before them', () => {
+        const asm = [
+            '00000000004005a0 <main>:',
+            '  4005a0:\t71000c1f \tcmp\tw0, #3',
+            '  4005a4:\tb7f80041 \ttbnz\tx1, #63, 4005ac <__other>',
+            '  4005a8:\td65f03c0 \tret',
+            '',
+            '00000000004005ac <__other>:',
+            '  4005ac:\td65f03c0 \tret',
+        ].join('\n');
+        expect(labels(asm, {})).toEqual(['main:', '__other:']);
+    });
+
     it('should find a reference followed by trailing whitespace', () => {
         const asm = objdump.replace('call   401870 <__divdc3>', 'call   401870 <__divdc3>  ');
         expect(labels(asm, {})).toEqual(['f:', '__divdc3:']);

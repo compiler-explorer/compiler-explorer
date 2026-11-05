@@ -651,8 +651,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 continue;
             }
             if (!funcIsShown) continue;
-            // Like the main loop's view of an instruction, only its operand counts, not a comment about data it reads
-            const commentStart = line.indexOf('#');
+            // Only the operand counts, not an x86 comment about data it reads (`# 404028 <sym>`). Elsewhere `#` is an
+            // immediate prefix (`tbz w0, #0, <target>`) and never followed by whitespace.
+            const commentStart = line.search(/\s#\s/);
             const instruction = (commentStart === -1 ? line : line.slice(0, commentStart)).trimEnd();
             if (!instruction.endsWith('>')) continue;
             const destMatch = instruction.match(this.destRe);
