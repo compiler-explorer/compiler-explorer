@@ -139,7 +139,22 @@
       "text": ""
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_RNvCs4me6dhhIFVM_7example7add_u32",
+          "range": {
+            "endCol": 35,
+            "startCol": 1
+          }
+        },
+        {
+          "name": "_RNvCs4me6dhhIFVM_7example7add_i32",
+          "range": {
+            "endCol": 72,
+            "startCol": 38
+          }
+        }
+      ],
       "source": null,
       "text": "_RNvCs4me6dhhIFVM_7example7add_u32 = _RNvCs4me6dhhIFVM_7example7add_i32"
     },
