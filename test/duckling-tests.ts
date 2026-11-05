@@ -88,6 +88,8 @@ describe('Duckling compiler', () => {
             '  -O, --llvm-opt <level>   Set optimization level.',
             '                           Possible values are: 0, 1, 2, 3, s, z.',
             '                           See https://llvm.org/doxygen/classllvm_1_1OptimizationLevel.html',
+            '  --print-ir <categories>  Print selected intermediate representations to stdout.',
+            '                           Possible values are: hir, mir, lir, dbc.',
             '  --artifact-location <path>',
             '                           Path to compilation artifacts.',
             '',
@@ -101,6 +103,11 @@ describe('Duckling compiler', () => {
             '-O 2': {
                 description:
                     'Set optimization level. Possible values are: 0, 1, 2, 3, s, z. -O is short for --llvm-opt.',
+                timesused: 0,
+            },
+            '--print-ir hir': {
+                description:
+                    'Print intermediate representations to Compiler Output. Values: hir, mir, lir (comma-separated).',
                 timesused: 0,
             },
         });
@@ -130,7 +137,18 @@ describe('Duckling compiler', () => {
         const options = (compiler as any).optionsForFilter({}, '/tmp/example.s');
 
         expect(options).toEqual(['compile_module', '--no-incremental', '--dump-ir', 'asm']);
-        expect((compiler as any).orderArguments(options, inputFilename, [], [], [], [], ['-O', '2'], [])).toEqual([
+        expect(
+            (compiler as any).orderArguments(
+                options,
+                inputFilename,
+                [],
+                [],
+                [],
+                [],
+                ['-O', '2', '--print-ir', 'hir,mir'],
+                [],
+            ),
+        ).toEqual([
             'compile_module',
             inputFilename,
             '--no-incremental',
@@ -138,6 +156,8 @@ describe('Duckling compiler', () => {
             'asm',
             '-O',
             '2',
+            '--print-ir',
+            'hir,mir',
         ]);
     });
 
