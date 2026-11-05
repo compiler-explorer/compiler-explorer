@@ -788,6 +788,14 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         let truncated = false;
         let hiddenFunction: HiddenFunction | null = null;
         const hiddenFunctions: HiddenFunction[] = [];
+        // The lines held for hiddenFunctions, referenced or not, are capped at the limit so that a binary with a lot of
+        // hidden code can't use unbounded memory. A function that takes the pool past the cap is dropped, and once the
+        // cap has been reached no later function is held, however small: at most the limit's worth of them could be
+        // shown anyway, and the later ones are the first to go.
+        let heldHiddenLines = 0;
+        let hiddenCapReached = false;
+        // Set for a hidden function that isn't being held, so that its local labels don't start showing its code
+        let skippingFunction = false;
         const referenceTargets = new Map<ParsedAsmResultLine, string>();
         // Hidden functions' lines go into their own buffer so they never count towards the limit
         let out = asm;
@@ -795,11 +803,32 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const removeFunctionIfLibrary = () => {
             if (!mayRemoveFunction()) return;
             if (hiddenFunction) {
+                heldHiddenLines -= hiddenFunction.lines.length;
                 hiddenFunctions.pop();
                 return;
             }
             asm.splice(functionStart);
             for (const label of functionLabels) delete labelDefinitions[label];
+        };
+        const abandonHiddenFunction = () => {
+            if (!hiddenFunction) return;
+            heldHiddenLines -= hiddenFunction.lines.length;
+            hiddenFunctions.pop();
+            hiddenFunction = null;
+            hiddenCapReached = true;
+            skippingFunction = true;
+        };
+        // Whether the line was kept: a line of a hidden function that is over the cap drops the whole function
+        const pushLine = (line: ParsedAsmResultLine) => {
+            if (hiddenFunction) {
+                if (heldHiddenLines >= this.maxAsmLines) {
+                    abandonHiddenFunction();
+                    return false;
+                }
+                heldHiddenLines++;
+            }
+            out.push(line);
+            return true;
         };
         const markTruncated = () => {
             if (truncated) return;
@@ -863,21 +892,27 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     functionLabels = [];
                     functionHasUserCode = false;
                     hiddenFunction = null;
+                    skippingFunction = false;
                     if (!this.isUserFunction(func)) {
-                        hiddenFunction = {name: func, at: asm.length, lines: [], labels: {}};
-                        hiddenFunctions.push(hiddenFunction);
+                        if (heldHiddenLines >= this.maxAsmLines) hiddenCapReached = true;
+                        if (hiddenCapReached) {
+                            skippingFunction = true;
+                        } else {
+                            hiddenFunction = {name: func, at: asm.length, lines: [], labels: {}};
+                            hiddenFunctions.push(hiddenFunction);
+                        }
                     }
                     out = hiddenFunction ? hiddenFunction.lines : asm;
                 }
-                if (func && (hiddenFunction || this.isUserFunction(func))) {
-                    out.push({
+                if (func && !skippingFunction && (hiddenFunction || this.isUserFunction(func))) {
+                    const pushed = pushLine({
                         text: func + ':',
                         source: null,
                         labels: labelsInLine,
                     });
                     if (hiddenFunction) {
-                        hiddenFunction.labels[func] = out.length;
-                    } else {
+                        if (pushed) hiddenFunction.labels[func] = out.length;
+                    } else if (pushed) {
                         labelDefinitions[func] = out.length;
                         functionLabels.push(func);
                     }
@@ -887,7 +922,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             if (func && (line === `${func}():` || line === `; ${func}():`)) continue;
 
-            if (!func || !(hiddenFunction || this.isUserFunction(func))) continue;
+            if (!func || skippingFunction || !(hiddenFunction || this.isUserFunction(func))) continue;
 
             // Within the user's functions, library code is code without line information: code inlined from another
             // file is still the user's, even though it doesn't belong to the main source
@@ -917,7 +952,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     source: source,
                     labels: labelsInLine,
                 };
-                out.push(instruction);
+                if (!pushLine(instruction)) continue;
                 if (!hiddenFunction && this.binaryHideFuncRe !== null) {
                     const target = this.hiddenReferenceTarget(line);
                     if (target) referenceTargets.set(instruction, target);
@@ -932,7 +967,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const relocdata = match.groups.relocdata;
                 // value/addend matched but not used yet.
                 // const match_value = relocdata.match(this.relocDataSymNameRe);
-                out.push({
+                pushLine({
                     text: `   ${relocname} ${relocdata}`,
                     address: address,
                 });

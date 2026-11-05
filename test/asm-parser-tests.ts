@@ -889,6 +889,85 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
             expect(text.at(-1)).toBe(truncationMarker);
         });
 
+        describe('holding hidden functions', () => {
+            // Mirrors the "hidden functions and the line limit" cases of the C++ parser, which must agree
+            const call = (address: number, target: string) =>
+                `  ${address.toString(16)}:\te8 00 00 00 00       \tcall   402000 <${target}>`;
+            const defaultLimit = () => limitedParser(5000);
+
+            it('should skip every later hidden function once the cap is reached, however small', () => {
+                // __b is never called but still counts towards the cap, so __c is skipped rather than held
+                const asm = [
+                    '0000000000401000 <__a>:',
+                    ...nops(3000),
+                    '0000000000402000 <__b>:',
+                    ...nops(3000),
+                    '0000000000403000 <__c>:',
+                    ...nops(10),
+                    '0000000000404000 <main>:',
+                    nop(0),
+                    call(0x404001, '__a'),
+                    call(0x404006, '__c'),
+                ];
+                const result = defaultLimit().processBinaryAsm(asm.join('\n'), {});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['__a:', 'main:']);
+            });
+
+            it('should hold hidden functions that stay under the cap, referenced or not', () => {
+                const asm = [
+                    '0000000000401000 <__a>:',
+                    ...nops(1000),
+                    '0000000000402000 <__b>:',
+                    ...nops(1000),
+                    '0000000000403000 <__c>:',
+                    ...nops(10),
+                    '0000000000404000 <main>:',
+                    nop(0),
+                    call(0x404001, '__a'),
+                    call(0x404006, '__c'),
+                ];
+                const result = defaultLimit().processBinaryAsm(asm.join('\n'), {});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+                    '__a:',
+                    '__c:',
+                    'main:',
+                ]);
+            });
+
+            it('should not show the rest of a dropped hidden function after a local label', () => {
+                const asm = [
+                    '0000000000401000 <__a>:',
+                    ...nops(3000),
+                    '0000000000402000 <__b>:',
+                    ...nops(2500),
+                    '0000000000403000 <.L1>:',
+                    ...nops(10),
+                    '0000000000404000 <main>:',
+                    nop(0),
+                    call(0x404001, '__b'),
+                ];
+                expect(texts(defaultLimit(), asm)).toEqual(['main:', ' nop', ' call   402000 <__b>']);
+            });
+
+            it('should keep a hidden function without user code out when library code is filtered', () => {
+                const asm = [
+                    '0000000000400000 <f>:',
+                    '/app/example.c:2',
+                    nop(0),
+                    '0000000000402000 <__lib>:',
+                    nop(1),
+                    '0000000000402010 <.L1>:',
+                    nop(2),
+                    '0000000000404000 <g>:',
+                    '/app/example.c:3',
+                    nop(3),
+                    call(0x404001, '__lib'),
+                ];
+                const result = defaultLimit().processBinaryAsm(asm.join('\n'), {libraryCode: true});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['f:', 'g:']);
+            });
+        });
+
         it('should only truncate shown code when it alone exceeds the limit', () => {
             const asm = [
                 '0000000000400000 <__a>:',
