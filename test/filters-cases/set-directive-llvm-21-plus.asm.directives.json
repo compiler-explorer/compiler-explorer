@@ -1,0 +1,358 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "; https://godbolt.org/z/hsMaPocc8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_RNvCs4me6dhhIFVM_7example7add_i32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 13
+      },
+      "text": "        lea     eax, [rdi + rsi]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": null,
+        "line": 14
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_RNvCs4me6dhhIFVM_7example8call_i32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 13,
+        "file": null,
+        "line": 18
+      },
+      "text": "        mov     eax, dword ptr [rdi + 4]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 18
+      },
+      "text": "        mov     esi, dword ptr [rdi + 8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 18
+      },
+      "text": "        mov     edi, eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp1:"
+    },
+    {
+      "labels": [
+        {
+          "name": "_RNvCs4me6dhhIFVM_7example7add_i32@GOTPCREL",
+          "range": {
+            "endCol": 77,
+            "startCol": 34
+          },
+          "target": "_RNvCs4me6dhhIFVM_7example7add_i32"
+        }
+      ],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 18
+      },
+      "text": "        jmp     qword ptr [rip + _RNvCs4me6dhhIFVM_7example7add_i32@GOTPCREL]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_RNvCs4me6dhhIFVM_7example8call_u32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 13,
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     eax, dword ptr [rdi]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     esi, dword ptr [rdi + 4]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     edi, eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp3:"
+    },
+    {
+      "labels": [
+        {
+          "name": "_RNvCs4me6dhhIFVM_7example7add_i32@GOTPCREL",
+          "range": {
+            "endCol": 77,
+            "startCol": 34
+          },
+          "target": "_RNvCs4me6dhhIFVM_7example7add_i32"
+        }
+      ],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 3
+      },
+      "text": "        jmp     qword ptr [rip + _RNvCs4me6dhhIFVM_7example7add_i32@GOTPCREL]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_RNvCs4me6dhhIFVM_7example7add_u32 = _RNvCs4me6dhhIFVM_7example7add_i32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_loc0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_loc1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_start0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsec_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsec_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsec_end2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_ranges0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    "_RNvCs4me6dhhIFVM_7example7add_i32": 2,
+    "_RNvCs4me6dhhIFVM_7example7add_u32": 29,
+    "_RNvCs4me6dhhIFVM_7example8call_i32": 9,
+    "_RNvCs4me6dhhIFVM_7example8call_u32": 19
+  }
+}
