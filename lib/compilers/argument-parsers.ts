@@ -1396,6 +1396,14 @@ export class DucklingParser extends BaseParser {
                 description: `${llvmOpt.description.replace(/ See https?:\/\/\S+/g, '')} -O is short for --llvm-opt.`,
             };
         }
+        const printIr = discoveredOptions['--print-ir <categories>'];
+        if (printIr) {
+            options['--print-ir hir'] = {
+                ...printIr,
+                description:
+                    'Print intermediate representations to Compiler Output. Values: hir, mir, lir (comma-separated).',
+            };
+        }
         this.compiler.compiler.cachedPossibleArguments = options;
         this.compiler.possibleArguments.populateOptions(options);
         return this.compiler;
