@@ -39,6 +39,12 @@ function sourceModelValue(): Cypress.Chainable<string> {
     return cy.window().then((win: Cypress.AUTWindow) => win.monaco.editor.getEditors()[0].getModel()!.getValue());
 }
 
+function sourceLine(lineNumber: number): Cypress.Chainable<string> {
+    return cy
+        .window()
+        .then((win: Cypress.AUTWindow) => win.monaco.editor.getEditors()[0].getModel()!.getLineContent(lineNumber));
+}
+
 function sourceCursorLine(): Cypress.Chainable<number> {
     return cy.window().then((win: Cypress.AUTWindow) => win.monaco.editor.getEditors()[0].getPosition()!.lineNumber);
 }
@@ -106,6 +112,19 @@ describe('Vim mode', () => {
     it("indents with >> (monaco-vim drives Monaco's internal ShiftCommand)", () => {
         cy.focused().type('>>');
         sourceModelValue().should('match', /^\s+first\n/);
+    });
+
+    // Lines already on a tab stop take a simpler path through the shift command than lines that are not
+    it('indents a line that is not on a tab stop with >> to the next one', () => {
+        setMonacoEditorContent('a\n  b\nc');
+        cy.focused().type('ggj>>');
+        sourceLine(2).should('equal', '    b');
+    });
+
+    it('unindents a line that is not on a tab stop with << to the previous one', () => {
+        setMonacoEditorContent('a\n      b\nc');
+        cy.focused().type('ggj<<');
+        sourceLine(2).should('equal', '    b');
     });
 });
 
