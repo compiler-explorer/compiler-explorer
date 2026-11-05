@@ -101,6 +101,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected lineRe: RegExp;
     protected labelRe: RegExp;
     protected destRe: RegExp;
+    private binaryReferenceStartRe: RegExp;
     protected binaryCommentRe: RegExp;
     protected commentRe: RegExp;
     protected instOpcodeRe: RegExp;
@@ -429,6 +430,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
         this.destRe = /\s([\da-f]+)\s+<([^+>]+)(\+0x[\da-f]+)?>$/;
+        this.binaryReferenceStartRe = /\s[\da-f]+\s+</;
         // An x86 objdump comment about data an instruction reads (`# 404028 <sym>`). Elsewhere `#` is an immediate
         // prefix (`tbz w0, #0, <target>`), which is never followed by whitespace.
         this.binaryCommentRe = /\s#\s/;
@@ -655,16 +657,25 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !label.startsWith('.L');
     }
 
+    // The symbol a direct call or jump refers to, as in `call 401100 <name+0x4>`. Demangled names can hold `<`, `>` and
+    // `+`, so the name runs from the first `<` that follows an address to the last `>`, less any `+0x` offset.
+    private referenceTarget(line: string): string | undefined {
+        const commentStart = line.search(this.binaryCommentRe);
+        const instruction = commentStart === -1 ? line : line.slice(0, commentStart);
+        const end = instruction.lastIndexOf('>');
+        const addressMatch = this.binaryReferenceStartRe.exec(instruction);
+        if (end === -1 || !addressMatch) return undefined;
+        const start = addressMatch.index + addressMatch[0].length;
+        if (start >= end) return undefined;
+        const name = instruction.slice(start, end).replace(/\+0x[\da-f]+$/, '');
+        return name || undefined;
+    }
+
     // The hidden function that a direct call or jump on this line refers to, e.g. libgcc's __divdc3 in a statically
     // linked binary.
     private hiddenReferenceTarget(line: string): string | undefined {
-        if (!line.includes('<')) return undefined;
-        const commentStart = line.search(this.binaryCommentRe);
-        const instruction = (commentStart === -1 ? line : line.slice(0, commentStart)).trimEnd();
-        if (!instruction.endsWith('>')) return undefined;
-        const destMatch = instruction.match(this.destRe);
-        if (!destMatch) return undefined;
-        const target = destMatch[2];
+        const target = this.referenceTarget(line);
+        if (!target) return undefined;
         // PLT stubs and the .plt section they jump to stay hidden
         if (target.startsWith('.plt') || target.includes('@plt')) return undefined;
         return this.isUserFunction(target) ? undefined : target;
@@ -888,10 +899,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const address = Number.parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
-                const destMatch = line.match(this.destRe);
-                if (destMatch) {
-                    const labelName = destMatch[2];
-                    const startCol = disassembly.indexOf(labelName) + 1;
+                const labelName = this.referenceTarget(line);
+                if (labelName) {
+                    const startCol = disassembly.lastIndexOf(labelName) + 1;
                     labelsInLine.push({
                         name: labelName,
                         range: {

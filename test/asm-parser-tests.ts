@@ -674,6 +674,61 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
         expect(labels(asm, {})).toEqual(['f:', '__divdc3:']);
     });
 
+    it('should link a call that is followed by trailing whitespace', () => {
+        const asm = objdump.replace('call   401870 <__divdc3>', 'call   401870 <__divdc3>  ');
+        const call = parser.processBinaryAsm(asm, {}).asm.find(line => line.text.includes('call'));
+        expect(call?.labels?.map(label => label.name)).toEqual(['__divdc3']);
+    });
+
+    describe('with demangled names', () => {
+        const iterator = '__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()';
+        const demangled = [
+            '0000000000401000 <main>:',
+            `  401000:\te8 fb 00 00 00       \tcall   401100 <${iterator}>`,
+            '  401005:\tc3                   \tret',
+            '',
+            `0000000000401100 <${iterator}>:`,
+            '  401100:\tc3                   \tret',
+        ].join('\n');
+
+        it('should show and link a hidden function whose name contains > and +', () => {
+            const result = parser.processBinaryAsm(demangled, {});
+            expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+                'main:',
+                `${iterator}:`,
+            ]);
+            const call = result.asm.find(line => line.text.includes('call'));
+            expect(call?.labels?.map(label => label.name)).toEqual([iterator]);
+            const range = call?.labels?.[0].range;
+            expect(call?.text.slice((range?.startCol ?? 0) - 1, (range?.endCol ?? 0) - 1)).toBe(iterator);
+        });
+
+        it('should strip a +0x offset after a name containing >', () => {
+            const asm = demangled.replace(`call   401100 <${iterator}>`, `jmp    401100 <${iterator}+0x4>`);
+            const call = parser.processBinaryAsm(asm, {}).asm.find(line => line.text.includes('jmp'));
+            expect(call?.labels?.map(label => label.name)).toEqual([iterator]);
+        });
+    });
+
+    it('should link a +0x offset to the base name', () => {
+        const result = parser.processBinaryAsm(objdump.replace('<__divdc3>', '<__divdc3+0x8>'), {});
+        const call = result.asm.find(line => line.text.includes('call'));
+        expect(call?.labels?.map(label => label.name)).toEqual(['__divdc3']);
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should not link or follow an x86 data comment', () => {
+        const asm = [
+            '0000000000401000 <main>:',
+            '  401000:\t48 8b 05 d9 2f 00 00 \tmov    0x2fd9(%rip),%rax        # 404fe0 <__gmon_start__>',
+            '',
+            '0000000000404fe0 <__gmon_start__>:',
+            '  404fe0:\tc3                   \tret',
+        ].join('\n');
+        const mov = parser.processBinaryAsm(asm, {}).asm.find(line => line.text.includes('mov'));
+        expect(mov?.labels).toEqual([]);
+    });
+
     it('should keep the PLT hidden when a shown stub jumps to it', () => {
         const pltParser = new AsmParser(((property: string, defaultValue?: unknown) =>
             property === 'binaryHideFuncRe' ? '^(__.*|\\.plt.*)$' : defaultValue) as PropertyGetter);
