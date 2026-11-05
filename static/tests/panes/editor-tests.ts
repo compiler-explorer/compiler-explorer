@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ShiftCommand} from 'monaco-editor/esm/vs/editor/common/commands/shiftCommand';
+import {ShiftCommand} from 'monaco-editor/editor/common/commands/shiftCommand';
 import {describe, expect, it, vi} from 'vitest';
 
 // the editor module builds one of these at import time, and its constructor asks the server for the builtin sources
