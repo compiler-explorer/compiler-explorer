@@ -92,6 +92,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected lineRe: RegExp;
     protected labelRe: RegExp;
     protected destRe: RegExp;
+    protected binaryCommentRe: RegExp;
     protected commentRe: RegExp;
     protected instOpcodeRe: RegExp;
     protected commentOnly: RegExp;
@@ -419,6 +420,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
         this.destRe = /\s([\da-f]+)\s+<([^+>]+)(\+0x[\da-f]+)?>$/;
+        // An x86 objdump comment about data an instruction reads (`# 404028 <sym>`). Elsewhere `#` is an immediate
+        // prefix (`tbz w0, #0, <target>`), which is never followed by whitespace.
+        this.binaryCommentRe = /\s#\s/;
         this.commentRe = /[#;]/;
         this.instOpcodeRe = /(\.inst\.?\w?)\s*(.*)/;
 
@@ -637,6 +641,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
+    // `.L` labels are local labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions
+    private startsFunction(label: string) {
+        return !label.startsWith('.L');
+    }
+
     // Functions that binaryHideFuncRe would hide but that a function we show calls or jumps to, e.g. libgcc's __divdc3
     // in a statically linked binary. Only direct references count: following them transitively would pull in all of
     // stdio from a call to printf.
@@ -645,15 +654,13 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         if (this.binaryHideFuncRe === null) return referenced;
         let funcIsShown = false;
         for (const line of asmLines) {
-            const labelMatch = line.match(this.labelRe);
+            const labelMatch = line.endsWith('>:') ? line.match(this.labelRe) : null;
             if (labelMatch) {
-                if (!labelMatch[2].startsWith('.L')) funcIsShown = this.isUserFunction(labelMatch[2]);
+                if (this.startsFunction(labelMatch[2])) funcIsShown = this.isUserFunction(labelMatch[2]);
                 continue;
             }
-            if (!funcIsShown) continue;
-            // Only the operand counts, not an x86 comment about data it reads (`# 404028 <sym>`). Elsewhere `#` is an
-            // immediate prefix (`tbz w0, #0, <target>`) and never followed by whitespace.
-            const commentStart = line.search(/\s#\s/);
+            if (!funcIsShown || !line.includes('<')) continue;
+            const commentStart = line.search(this.binaryCommentRe);
             const instruction = (commentStart === -1 ? line : line.slice(0, commentStart)).trimEnd();
             if (!instruction.endsWith('>')) continue;
             const destMatch = instruction.match(this.destRe);
@@ -753,9 +760,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             if (match) {
                 func = match[2];
                 // Don't let a function with no line records (e.g. CRT code without debug info) inherit the previous
-                // function's line; objdump prints a function's first record after its label. `.L` labels are local
-                // labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions.
-                if (!func.startsWith('.L')) {
+                // function's line; objdump prints a function's first record after its label.
+                if (this.startsFunction(func)) {
                     source = null;
                     removeFunctionIfLibrary();
                     functionStart = asm.length;

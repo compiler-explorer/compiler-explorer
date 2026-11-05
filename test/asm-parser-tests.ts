@@ -688,6 +688,20 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
         expect(text.filter(line => line.endsWith(':'))).toEqual(['puts@plt:']);
     });
 
+    it('should keep PLT stubs hidden when the hide pattern covers them, as Go does', () => {
+        const goParser = new AsmParser(((property: string, defaultValue?: unknown) =>
+            property === 'binaryHideFuncRe' ? '^(_.*|.*@plt)$' : defaultValue) as PropertyGetter);
+        const asm = [
+            '0000000000401000 <main.main>:',
+            '  401000:\te8 2b 10 00 00       \tcall   402030 <write@plt>',
+            '',
+            '0000000000402030 <write@plt>:',
+            '  402030:\tff 25 e2 2f 00 00    \tjmp    *0x2fe2(%rip)',
+        ].join('\n');
+        const text = goParser.processBinaryAsm(asm, {}).asm.map(line => line.text);
+        expect(text.filter(line => line.endsWith(':'))).toEqual(['main.main:']);
+    });
+
     it('should not hide anything when there is no hide pattern', () => {
         expect(new AsmParser().processBinaryAsm(objdump, {}).asm.filter(line => line.text.endsWith(':'))).toHaveLength(
             4,
