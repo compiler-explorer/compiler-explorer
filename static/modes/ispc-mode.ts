@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as cpp from 'monaco-editor/esm/vs/languages/definitions/cpp/cpp';
+import * as cpp from 'monaco-editor/languages/definitions/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const ispc = $.extend(true, {}, cpp.language); // deep copy

@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as rust from 'monaco-editor/esm/vs/languages/definitions/rust/rust';
+import * as rust from 'monaco-editor/languages/definitions/rust/rust';
 
 // We need to patch the existing rust definition to fix hexadecimal literal highlighting
 // This fixes a bug where hex literals with underscores after hex letters (like 0x01_02_0a_0b)

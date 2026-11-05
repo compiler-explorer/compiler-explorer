@@ -52,7 +52,7 @@ declare module '*.png' {
 }
 
 // Monaco ships its Monarch grammars without type declarations.
-declare module 'monaco-editor/esm/vs/languages/definitions/*' {
+declare module 'monaco-editor/languages/definitions/*' {
     export const conf: import('monaco-editor').languages.LanguageConfiguration;
     export const language: import('monaco-editor').languages.IMonarchLanguage;
 }

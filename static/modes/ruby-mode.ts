@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as ruby from 'monaco-editor/esm/vs/languages/definitions/ruby/ruby';
+import * as ruby from 'monaco-editor/languages/definitions/ruby/ruby';
 
 // Hopefully temporary: upstream's Ruby grammar throws "trying to pop an empty stack" on valid code such as
 // `x = if a ... end`, because it only opens a block for `if` at the start of a statement, so the `end` pops the
