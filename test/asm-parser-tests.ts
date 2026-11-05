@@ -702,6 +702,101 @@ describe('AsmParser hidden functions referenced from shown functions in binary a
         expect(text.filter(line => line.endsWith(':'))).toEqual(['main.main:']);
     });
 
+    describe('with the line limit', () => {
+        const limitedParser = (maxLinesOfAsm: number) =>
+            new AsmParser(((property: string, defaultValue?: unknown) => {
+                if (property === 'binaryHideFuncRe') return hideFuncRe;
+                if (property === 'maxLinesOfAsm') return maxLinesOfAsm;
+                return defaultValue;
+            }) as PropertyGetter);
+        const truncationMarker = '[truncated; too many lines]';
+        const nop = (address: number) => `  ${(0x401000 + address).toString(16)}:\t90                   \tnop`;
+        const nops = (count: number) => Array.from({length: count}, (_, i) => nop(i));
+        const texts = (parserToUse: AsmParser, asm: string[]) =>
+            parserToUse.processBinaryAsm(asm.join('\n'), {}).asm.map(line => line.text);
+
+        it('should not let a hidden function defined before its caller push the call out of the output', () => {
+            const asm = (withBig: boolean) => [
+                ...(withBig ? ['0000000000400000 <__big>:', ...nops(99)] : []),
+                '0000000000401000 <main>:',
+                ...nops(4985),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__big>',
+                '0000000000406000 <after>:',
+                nop(0),
+                nop(1),
+            ];
+            const result = limitedParser(5000).processBinaryAsm(asm(true).join('\n'), {});
+            const plain = limitedParser(5000).processBinaryAsm(asm(false).join('\n'), {});
+            expect(result.asm.map(line => line.text)).toEqual(plain.asm.map(line => line.text));
+            expect(result.asm.map(line => line.text)).not.toContain(truncationMarker);
+            expect(result.asm.map(line => line.text)).toContain(' call   400000 <__big>');
+            expect(result.asm.find(line => line.text.includes('call'))?.labels).toEqual([]);
+        });
+
+        it('should not show a hidden function whose caller was truncated away', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(9),
+                '0000000000401000 <f>:',
+                ...nops(6000),
+                '0000000000410000 <main>:',
+                '  410000:\te8 00 00 00 00       \tcall   400000 <__h>',
+            ];
+            const text = texts(limitedParser(5000), asm);
+            expect(text).toHaveLength(5001);
+            expect(text[0]).toBe('f:');
+            expect(text.at(-1)).toBe(truncationMarker);
+            expect(text).not.toContain('__h:');
+        });
+
+        it('should show a hidden function that fits alongside the shown code', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(9),
+                '0000000000401000 <main>:',
+                ...nops(4),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__h>',
+            ];
+            const result = limitedParser(16).processBinaryAsm(asm.join('\n'), {});
+            const text = result.asm.map(line => line.text);
+            expect(text).toHaveLength(16);
+            expect(text[0]).toBe('__h:');
+            expect(result.labelDefinitions).toEqual({__h: 1, main: 11});
+        });
+
+        it('should remove shown hidden functions, last first, before truncating shown code', () => {
+            const asm = [
+                '0000000000400000 <__a>:',
+                ...nops(4),
+                '0000000000400100 <__b>:',
+                ...nops(9),
+                '0000000000400200 <__c>:',
+                ...nops(4),
+                '0000000000401000 <main>:',
+                ...nops(4),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__a>',
+                '  405005:\te8 00 00 00 00       \tcall   400100 <__b>',
+                '  40500a:\te8 00 00 00 00       \tcall   400200 <__c>',
+            ];
+            // 8 shown lines, __a is 5, __b is 10 and __c is 5: __c then __b have to go for __a to fit
+            const text = texts(limitedParser(14), asm);
+            expect(text.filter(line => line.endsWith(':'))).toEqual(['__a:', 'main:']);
+            expect(text).not.toContain(truncationMarker);
+        });
+
+        it('should only truncate shown code when it alone exceeds the limit', () => {
+            const asm = [
+                '0000000000400000 <__a>:',
+                ...nops(4),
+                '0000000000401000 <main>:',
+                ...nops(9),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__a>',
+            ];
+            const text = texts(limitedParser(5), asm);
+            expect(text).toEqual(['main:', ...nops(4).map(() => ' nop'), truncationMarker]);
+        });
+    });
+
     it('should not hide anything when there is no hide pattern', () => {
         expect(new AsmParser().processBinaryAsm(objdump, {}).asm.filter(line => line.text.endsWith(':'))).toHaveLength(
             4,
