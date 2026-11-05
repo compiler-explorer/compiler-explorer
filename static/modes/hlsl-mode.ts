@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+import * as cpp from 'monaco-editor/languages/definitions/cpp/cpp';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const hlsl = $.extend(true, {}, cpp.language);

@@ -143,7 +143,13 @@ export default {
     },
     resolve: {
         alias: {
-            'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
+            'monaco-editor$': 'monaco-editor/editor/editor.api',
+            // monaco-vim still imports Monaco through pre-0.56 deep paths, which the package's "exports" map no longer
+            // allows. Map exactly those requests onto the supported subpaths, and remove these two aliases once
+            // monaco-vim ships https://github.com/brijeshb42/monaco-vim/pull/172.
+            'monaco-editor/esm/vs/editor/editor.api$': 'monaco-editor/editor/editor.api',
+            'monaco-editor/esm/vs/editor/common/commands/shiftCommand$':
+                'monaco-editor/editor/common/commands/shiftCommand',
             // The package's "browser" export is a UMD bundle with its own copy of monaco-editor inlined, which
             // is out of step with ours. The exports map blocks deep imports, hence the absolute path.
             'monaco-vim$': path.resolve(__dirname, 'node_modules/monaco-vim/dist/index.mjs'),

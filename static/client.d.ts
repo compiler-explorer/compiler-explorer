@@ -51,6 +51,31 @@ declare module '*.png' {
     export default src;
 }
 
+// Monaco ships its Monarch grammars without type declarations.
+declare module 'monaco-editor/languages/definitions/*' {
+    export const conf: import('monaco-editor').languages.LanguageConfiguration;
+    export const language: import('monaco-editor').languages.IMonarchLanguage;
+}
+
+// Only used by patchVimIndentLine, which works around https://github.com/brijeshb42/monaco-vim/issues/175: remove both
+// together once that is fixed.
+declare module 'monaco-editor/editor/common/commands/shiftCommand' {
+    export class ShiftCommand {
+        constructor(
+            range: import('monaco-editor').Selection,
+            opts: {
+                isUnshift: boolean;
+                tabSize: number;
+                indentSize: number;
+                insertSpaces: boolean;
+                useTabStops: boolean;
+                autoIndent: number;
+            },
+            languageConfigurationService: unknown,
+        );
+    }
+}
+
 declare module 'lodash.clonedeep' {
     const cloneDeep: <T>(value: T) => T;
     export = cloneDeep;
