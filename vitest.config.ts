@@ -17,7 +17,8 @@ export default defineConfig({
             },
             {
                 resolve: {
-                    // Maps the pre-0.56 deep paths (still used by monaco-vim and by editor.ts) onto Monaco's "exports" map.
+                    // The pre-0.56 deep paths (still used by monaco-vim and editor.ts) need mapping onto Monaco's
+                    // "exports" map.
                     alias: [{find: /^monaco-editor\/esm\/vs\//, replacement: 'monaco-editor/'}],
                 },
                 test: {

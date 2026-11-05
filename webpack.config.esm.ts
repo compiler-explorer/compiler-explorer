@@ -143,9 +143,9 @@ export default {
     },
     resolve: {
         alias: {
-            // monaco-vim still imports Monaco through pre-0.56 deep paths, which the package's "exports" map no longer
-            // allows. Map exactly those requests onto the supported subpaths (brijeshb42/monaco-vim#172).
             'monaco-editor$': 'monaco-editor/editor/editor.api',
+            // monaco-vim and editor.ts still import Monaco through pre-0.56 deep paths, which the package's "exports"
+            // map no longer allows. Map exactly those requests onto the supported subpaths (brijeshb42/monaco-vim#172).
             'monaco-editor/esm/vs/editor/editor.api$': 'monaco-editor/editor/editor.api',
             'monaco-editor/esm/vs/editor/common/commands/shiftCommand$':
                 'monaco-editor/editor/common/commands/shiftCommand',
