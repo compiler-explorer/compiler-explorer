@@ -190,6 +190,41 @@ describe('Duckling compiler', () => {
         await expect(fs.readFile(executableFilename)).resolves.toEqual(executable);
     });
 
+    it.each([0, 1, 2])('requires exactly one binary object (found %i)', async objectCount => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const outputFilename = compiler.getOutputFilename(workingDirectory, 'example');
+        const filters = {binaryObject: true};
+        const object = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0x00]);
+        const options = compiler.prepareArguments(['-O', '2'], filters, {}, inputFilename, outputFilename, [], []);
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+            expect(args).toEqual(['compile_module', inputFilename, '--no-incremental', '-O', '2']);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'nested');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            for (let i = 0; i < objectCount; i++) {
+                await fs.writeFile(path.join(artifactsDirectory, `query-${i}.o`), object);
+            }
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            '/duckling/bin/duckc',
+            options,
+            inputFilename,
+            makeExecOptions(),
+            filters,
+        );
+
+        expect(result.code).toBe(objectCount === 1 ? 0 : 1);
+        if (objectCount === 1) {
+            await expect(fs.readFile(outputFilename)).resolves.toEqual(object);
+        } else {
+            expect(result.stderr.map(line => line.text).join('\n')).toContain('expected exactly one');
+            await expect(fs.stat(outputFilename)).rejects.toThrow();
+        }
+    });
+
     it('prepares Duckling artifacts and copies this module assembly to the CE output path', async () => {
         const compiler = makeCompiler();
         const workingDirectory = newTempDir();
