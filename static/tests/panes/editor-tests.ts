@@ -116,6 +116,21 @@ describe('Editor diagnostics', () => {
     });
 });
 
+describe('Editor duplication', () => {
+    it('opens a new editor holding the same source and language', () => {
+        const view = Object.create(Editor.prototype) as Editor;
+        Object.assign(view, {
+            currentLanguage: {id: 'rust'},
+            getSource: () => 'fn main() {}',
+        });
+        expect(view.getDuplicateEditorConfig()).toEqual({
+            type: 'component',
+            componentName: 'codeEditor',
+            componentState: {id: undefined, lang: 'rust', source: 'fn main() {}'},
+        });
+    });
+});
+
 describe('vim indentation', () => {
     const cursorConfig = {tabSize: 4, indentSize: 4, insertSpaces: true, useTabStops: true, autoIndent: 4};
 
