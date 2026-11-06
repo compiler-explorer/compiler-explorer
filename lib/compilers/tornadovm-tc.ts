@@ -77,6 +77,11 @@ export class TornadoVmTcCompiler extends JavaCompiler {
         return {cuda: 'cuda', opencl: 'openclc', metal: 'metal'}[this.target];
     }
 
+    /** The JDK of the configured runtime (`compiler.<id>.runtime`, e.g. `.../jdk-25.0.2/bin/java`). */
+    javaHome(): string {
+        return path.dirname(path.dirname(this.javaRuntime));
+    }
+
     async tornadoApiJars(): Promise<string[]> {
         const dir = path.join(this.tornadovmHome, 'share', 'java', 'tornado');
         const files = await fs.readdir(dir);
@@ -116,7 +121,8 @@ export class TornadoVmTcCompiler extends JavaCompiler {
         if (!execOptions) execOptions = this.getDefaultExecOptions();
         const dirPath = path.dirname(inputFilename);
         execOptions.customCwd = dirPath;
-        execOptions.env = {...execOptions.env, TORNADOVM_HOME: this.tornadovmHome};
+        // bin/tc runs `$JAVA_HOME/bin/java`, else whatever `java` is on the PATH: point it at the configured JDK.
+        execOptions.env = {...execOptions.env, TORNADOVM_HOME: this.tornadovmHome, JAVA_HOME: this.javaHome()};
 
         const sourceIndex = options.findIndex(option => option.endsWith('.java'));
         const {tc: tcOptions, javac: userOptions} = this.splitOptions(options.slice(0, sourceIndex));

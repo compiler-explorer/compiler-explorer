@@ -100,4 +100,10 @@ describe('TornadoVM TC', () => {
         compiler.optionsForFilter(filters);
         expect(filters.binary).toBe(false);
     });
+
+    it('runs TC on the JDK of the configured runtime, not on JAVA_HOME or the PATH', () => {
+        const compiler = new TornadoVmTcCompiler(info, env);
+        compiler.javaRuntime = '/opt/compiler-explorer/jdk-25.0.2/bin/java';
+        expect(compiler.javaHome()).toEqual('/opt/compiler-explorer/jdk-25.0.2');
+    });
 });
