@@ -66,23 +66,27 @@ describe('Packager', () => {
         await expect(fs.stat(unpackedFilepath)).resolves.toBeDefined();
     }, 5000);
 
-    it('should keep file modes and follow symlinks', async () => {
-        const pack = new Packager();
+    it.skipIf(process.platform === 'win32')(
+        'should keep file modes and follow symlinks',
+        async () => {
+            const pack = new Packager();
 
-        const dirPath = newTempDir();
-        await writeTestFile(path.join(dirPath, 'hello.sh'));
-        await fs.chmod(path.join(dirPath, 'hello.sh'), 0o755);
-        await fs.symlink('hello.sh', path.join(dirPath, 'link.sh'));
+            const dirPath = newTempDir();
+            await writeTestFile(path.join(dirPath, 'hello.sh'));
+            await fs.chmod(path.join(dirPath, 'hello.sh'), 0o755);
+            await fs.symlink('hello.sh', path.join(dirPath, 'link.sh'));
 
-        const targzPath = path.join(newTempDir(), 'package.tgz');
-        await pack.package(dirPath, targzPath);
-        const unpackPath = newTempDir();
-        await pack.unpack(targzPath, unpackPath);
+            const targzPath = path.join(newTempDir(), 'package.tgz');
+            await pack.package(dirPath, targzPath);
+            const unpackPath = newTempDir();
+            await pack.unpack(targzPath, unpackPath);
 
-        const unpackedMode = (await fs.stat(path.join(unpackPath, 'hello.sh'))).mode & 0o777;
-        expect(unpackedMode).toEqual(0o755);
-        expect((await fs.lstat(path.join(unpackPath, 'link.sh'))).isSymbolicLink()).toBe(false);
-    }, 5000);
+            const unpackedMode = (await fs.stat(path.join(unpackPath, 'hello.sh'))).mode & 0o777;
+            expect(unpackedMode).toEqual(0o755);
+            expect((await fs.lstat(path.join(unpackPath, 'link.sh'))).isSymbolicLink()).toBe(false);
+        },
+        5000,
+    );
 
     // A FIFO that has a holder but no data blocks the stream for real, in a filesystem call, with no error.
     describe.skipIf(process.platform === 'win32')('when a stream stalls', () => {
