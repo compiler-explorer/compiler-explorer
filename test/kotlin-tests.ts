@@ -60,7 +60,7 @@ describe('Kotlin IR in the AST view', () => {
     });
 
     describe('Generating the IR', () => {
-        it('dumps the IR from a compile of its own, away from the main output', async () => {
+        it('dumps the IR from a compile of its own inside the working directory', async () => {
             const compiler = makeCompiler(env, '2.2.20');
             const sourceDir = newTempDir();
             const inputFilename = path.join(sourceDir, 'example.kt');
@@ -71,25 +71,20 @@ describe('Kotlin IR in the AST view', () => {
                     await fs.mkdir(moduleDir, {recursive: true});
                     await fs.writeFile(
                         path.join(moduleDir, '00_BEFORE.ExternalPackageParentPatcherLowering.ir'),
-                        `MODULE_FRAGMENT name:<main>\n  FILE fqName:<root> fileName:${inputFilename}\n`,
+                        'MODULE_FRAGMENT name:<main>\n',
                     );
                     return {code: 0} as CompilationResult;
                 });
 
             const result = await compiler.generateAST(inputFilename, ['-Xopt-in=kotlin.RequiresOptIn', inputFilename]);
 
-            expect(result.map(line => line.text)).toEqual([
-                'MODULE_FRAGMENT name:<main>',
-                '  FILE fqName:<root> fileName:example.kt',
-            ]);
+            expect(result).toEqual([{text: 'MODULE_FRAGMENT name:<main>'}]);
             const [exe, options] = runCompiler.mock.calls[0];
             expect(exe).toEqual('kotlinc');
             expect(options).toContain('-Xphases-to-dump-before=ExternalPackageParentPatcherLowering');
             expect(options.slice(-2)).toEqual(['-Xopt-in=kotlin.RequiresOptIn', inputFilename]);
-            // Class files from this compile must stay out of the directory the bytecode listing reads
-            const classDir = options[options.indexOf('-d') + 1];
-            expect(path.dirname(classDir)).not.toEqual(sourceDir);
-            expect(path.dirname(classDir)).toEqual(path.dirname(optionValue(options, '-Xdump-directory=')!));
+            expect(optionValue(options, '-Xdump-directory=')).toEqual(path.join(sourceDir, 'kotlin-ir'));
+            expect(options[options.indexOf('-d') + 1]).toEqual(path.join(sourceDir, 'kotlin-ir.jar'));
         });
 
         async function generatedOptions(userOptions: string[]) {
@@ -136,7 +131,7 @@ describe('Kotlin IR in the AST view', () => {
             await fs.writeFile(path.join(moduleDir, '10_BEFORE.Second.ir'), 'second\n');
             await fs.writeFile(path.join(moduleDir, '02_BEFORE.First.ir'), 'first\nline\n');
 
-            const result = await compiler.readIrDumps(dumpDir, newTempDir());
+            const result = await compiler.readIrDumps(dumpDir);
             expect(result.map(line => line.text)).toEqual(['first', 'line', '', 'second']);
         });
 
@@ -158,7 +153,7 @@ describe('Kotlin IR in the AST view', () => {
                 await fs.writeFile(path.join(dumpDir, name), content);
             }
 
-            const result = await compiler.readIrDumps(dumpDir, newTempDir());
+            const result = await compiler.readIrDumps(dumpDir);
             expect(result.map(line => line.text).filter(text => text)).toEqual([
                 'module 0 before',
                 'module 0 after',
@@ -170,23 +165,9 @@ describe('Kotlin IR in the AST view', () => {
             ]);
         });
 
-        it('hides the temporary directory from source paths', async () => {
-            const compiler = makeCompiler(env, '2.2.20');
-            const sourceDir = newTempDir();
-            const dumpDir = path.join(newTempDir(), 'kotlin-ir');
-            await fs.mkdir(path.join(dumpDir, 'main'), {recursive: true});
-            await fs.writeFile(
-                path.join(dumpDir, 'main', '00_BEFORE.ExternalPackageParentPatcherLowering.ir'),
-                `// FILE: example.kt\n// path: ${path.join(sourceDir, 'example.kt')}\n`,
-            );
-
-            const result = await compiler.readIrDumps(dumpDir, sourceDir);
-            expect(result.map(line => line.text)).toEqual(['// FILE: example.kt', '// path: example.kt']);
-        });
-
         it('reports when nothing was dumped', async () => {
             const compiler = makeCompiler(env, '2.2.20');
-            const result = await compiler.readIrDumps(path.join(newTempDir(), 'kotlin-ir'), newTempDir());
+            const result = await compiler.readIrDumps(path.join(newTempDir(), 'kotlin-ir'));
             expect(result).toEqual([{text: '<No Kotlin IR generated>'}]);
         });
     });

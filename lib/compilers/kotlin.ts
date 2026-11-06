@@ -71,10 +71,12 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
     }
 
     override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
-        const dirPath = await this.newTempDir();
+        // Both outputs have to be inside the compile's working directory, the only one shared into the sandbox. The
+        // class files go into a jar, as the bytecode listing reads every .class file under that directory.
+        const dirPath = path.dirname(inputFilename);
         const dumpDirectory = path.join(dirPath, 'kotlin-ir');
         // Where this compile writes is ours to decide: a user's own -d or -Xdump-directory would send its output
-        // somewhere it isn't read, or into the main compile's directory
+        // somewhere it isn't read, or put class files where the bytecode listing would find them
         const compileOptions = this.filterUserOptionsWithArg(options, new Set(['-d'])).filter(
             option => !option.startsWith('-Xdump-directory'),
         );
@@ -88,7 +90,7 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
                 ...phaseOptions,
                 `-Xdump-directory=${dumpDirectory}`,
                 '-d',
-                path.join(dirPath, 'classes'),
+                path.join(dirPath, 'kotlin-ir.jar'),
                 ...compileOptions,
             ],
             inputFilename,
@@ -97,10 +99,10 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
         if (result.code !== 0) {
             return [{text: 'Failed to run compiler to get Kotlin IR'}];
         }
-        return this.readIrDumps(dumpDirectory, path.dirname(inputFilename));
+        return this.readIrDumps(dumpDirectory);
     }
 
-    async readIrDumps(dumpDirectory: string, sourceDirectory: string): Promise<ResultLine[]> {
+    async readIrDumps(dumpDirectory: string): Promise<ResultLine[]> {
         if (!(await utils.dirExists(dumpDirectory))) {
             return [{text: '<No Kotlin IR generated>'}];
         }
@@ -116,14 +118,13 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
             }))
             .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file))
             .map(({file}) => file);
-        const contents = await Promise.all(dumpFiles.map(file => fs.readFile(file, 'utf8')));
-        // The dumps name the source by its absolute path, which would otherwise expose the temporary directory
-        const directoryPrefix = sourceDirectory + path.sep;
-        return contents
-            .map(content => content.split(directoryPrefix).join('').trimEnd())
-            .join('\n\n')
-            .split('\n')
-            .map(line => ({text: line}));
+        const results = await Promise.all(dumpFiles.map(file => this.readIrDumpFile(file)));
+        return results.flatMap((result, index) => (index === 0 ? result : [{text: ''}, ...result]));
+    }
+
+    async readIrDumpFile(file: string): Promise<ResultLine[]> {
+        const content = await fs.readFile(file, 'utf8');
+        return utils.splitLines(content.trimEnd()).map(text => ({text}));
     }
 
     static irDumpFileOrder(filename: string): number {
