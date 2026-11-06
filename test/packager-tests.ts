@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {execFileSync} from 'node:child_process';
+import {randomBytes} from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import {Packager} from '../lib/packager.js';
 import {newTempDir} from './utils.js';
@@ -63,4 +65,55 @@ describe('Packager', () => {
         const unpackedFilepath = path.join(unpackPath, 'hello.txt');
         await expect(fs.stat(unpackedFilepath)).resolves.toBeDefined();
     }, 5000);
+
+    it('should keep file modes and follow symlinks', async () => {
+        const pack = new Packager();
+
+        const dirPath = newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.sh'));
+        await fs.chmod(path.join(dirPath, 'hello.sh'), 0o755);
+        await fs.symlink('hello.sh', path.join(dirPath, 'link.sh'));
+
+        const targzPath = path.join(newTempDir(), 'package.tgz');
+        await pack.package(dirPath, targzPath);
+        const unpackPath = newTempDir();
+        await pack.unpack(targzPath, unpackPath);
+
+        const unpackedMode = (await fs.stat(path.join(unpackPath, 'hello.sh'))).mode & 0o777;
+        expect(unpackedMode).toEqual(0o755);
+        expect((await fs.lstat(path.join(unpackPath, 'link.sh'))).isSymbolicLink()).toBe(false);
+    }, 5000);
+
+    // A FIFO that has a holder but no data blocks the stream for real, in a filesystem call, with no error.
+    describe.skipIf(process.platform === 'win32')('when a stream stalls', () => {
+        async function withFifo(fifoPath: string, fn: () => Promise<void>) {
+            execFileSync('mkfifo', [fifoPath]);
+            const holder = await fs.open(fifoPath, 'r+');
+            try {
+                await fn();
+            } finally {
+                // Closing the last other end is what lets the blocked read or write return.
+                await holder.close();
+            }
+        }
+
+        it('should reject when unpacking never gets any data', async () => {
+            const fifoPath = path.join(newTempDir(), 'package.tgz');
+            await withFifo(fifoPath, async () => {
+                await expect(new Packager(100).unpack(fifoPath, newTempDir())).rejects.toThrow(/timed out after 100ms/);
+            });
+        }, 5000);
+
+        it('should reject and remove the output when packing can never finish writing', async () => {
+            const dirPath = newTempDir();
+            // Incompressible and larger than a pipe's buffer, so the write blocks.
+            await fs.writeFile(path.join(dirPath, 'random.bin'), randomBytes(1024 * 1024));
+
+            const fifoPath = path.join(newTempDir(), 'package.tgz');
+            await withFifo(fifoPath, async () => {
+                await expect(new Packager(100).package(dirPath, fifoPath)).rejects.toThrow(/timed out after 100ms/);
+                await vi.waitFor(() => expect(fs.stat(fifoPath)).rejects.toThrow(/ENOENT/));
+            });
+        }, 5000);
+    });
 });

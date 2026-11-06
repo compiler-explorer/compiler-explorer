@@ -22,33 +22,71 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {promisify} from 'node:util';
+import {createReadStream, createWriteStream} from 'node:fs';
+import fs from 'node:fs/promises';
+import type {Readable, Transform, Writable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
+import zlib from 'node:zlib';
 
-import TarGzip from 'node-targz';
+import tar from 'tar-fs';
 
-const compress = promisify(TarGzip.compress);
-const decompress = promisify(TarGzip.decompress);
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 export class Packager {
+    constructor(private readonly timeoutMs: number = DEFAULT_TIMEOUT_MS) {}
+
     async package(directory: string, destination: string): Promise<string> {
         return await this.tarGzFiles(directory, destination);
     }
 
     async unpack(packageFile: string, destination: string): Promise<string> {
-        await decompress({source: packageFile, destination});
+        await this.pipeWithTimeout(
+            `Unpacking ${packageFile}`,
+            createReadStream(packageFile),
+            zlib.createGunzip(),
+            tar.extract(destination) as unknown as Writable,
+        );
         return destination;
     }
 
     async tarGzFiles(cwd: string, destination: string): Promise<string> {
-        await compress({
-            source: cwd,
-            destination,
-            level: 3,
-            memLevel: 9,
-            options: {
-                dereference: true,
-            },
-        });
+        try {
+            await this.pipeWithTimeout(
+                `Packing ${cwd}`,
+                tar.pack(cwd, {dereference: true}) as unknown as Readable,
+                zlib.createGzip({level: 3, memLevel: 9}),
+                createWriteStream(destination),
+            );
+        } catch (err) {
+            // Not awaited: if the filesystem is what stalled, this could hang too.
+            fs.rm(destination, {force: true}).catch(() => {});
+            throw err;
+        }
         return destination;
+    }
+
+    // The tar-fs streams are streamx ones, hence the casts in the callers: pipeline() takes them, but they aren't typed
+    // as Node's Readable and Writable.
+    private async pipeWithTimeout(
+        description: string,
+        source: Readable,
+        transform: Transform,
+        destination: Writable,
+    ): Promise<void> {
+        let timer: NodeJS.Timeout | undefined;
+        // Raced rather than relying on destroy() to fail the pipeline: a stream stuck in a filesystem call doesn't
+        // close until that call returns, and the pipeline waits for it.
+        const timedOut = new Promise<never>((_, reject) => {
+            timer = setTimeout(() => {
+                const error = new Error(`${description} timed out after ${this.timeoutMs}ms`);
+                for (const stream of [source, transform, destination]) stream.destroy(error);
+                reject(error);
+            }, this.timeoutMs);
+        });
+        try {
+            await Promise.race([pipeline(source, transform, destination), timedOut]);
+        } finally {
+            clearTimeout(timer);
+        }
     }
 }
