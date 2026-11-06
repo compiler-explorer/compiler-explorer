@@ -40,6 +40,7 @@ import {ClientOptionsHandler} from '../options-handler.js';
 import {SetupSentry} from '../sentry.js';
 import {createSources} from '../sources/index.js';
 import {loadSponsorsFromString} from '../sponsors.js';
+import {startupPhases} from '../startup-phases.js';
 import {getStorageTypeByKey} from '../storage/index.js';
 import {initializeCompilationEnvironment} from './compilation-env.js';
 import {setupCompilerChangeHandling} from './compiler-changes.js';
@@ -65,6 +66,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     startWineInit();
 
     RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
+    startupPhases.mark('aws-init');
 
     const {compilationEnvironment, compileHandler} = await initializeCompilationEnvironment(
         appArgs,
@@ -72,6 +74,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         ceProps,
         awsProps,
     );
+    startupPhases.mark('compilation-env');
 
     const sources = createSources();
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
@@ -100,8 +103,10 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     );
 
     logVersionInfo(appArgs);
+    startupPhases.mark('handlers');
 
     const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
+    startupPhases.mark('discovery-finish');
 
     const serverOptions = {
         staticPath: appArgs.staticPath || path.join(distPath, 'static'),
@@ -134,6 +139,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         serverOptions,
         serverDependencies,
     );
+    startupPhases.mark('web-server');
 
     const routeApi = setupRoutesAndApi(
         router,
@@ -147,6 +153,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilationEnvironment,
         ceProps,
     );
+    startupPhases.mark('routes');
 
     await setupCompilerChangeHandling(
         initialCompilers,
@@ -157,6 +164,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilerFinder,
         appArgs,
     );
+    startupPhases.mark('compiler-change');
 
     if (appArgs.metricsPort) {
         logger.info(`Running metrics server on port ${appArgs.metricsPort}`);
