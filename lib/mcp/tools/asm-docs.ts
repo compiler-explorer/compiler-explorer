@@ -40,6 +40,7 @@ export function registerAsmDocsTool(server: McpServer): void {
         {
             title: 'Look up assembly instruction',
             readOnlyHint: true,
+            destructiveHint: false,
             openWorldHint: false,
         },
         async ({instruction_set, opcode}) => {

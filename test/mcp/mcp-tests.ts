@@ -145,6 +145,26 @@ describe('MCP endpoint', () => {
             'lookup_asm_instruction',
         ]);
     });
+
+    it('gives every tool explicit readOnly, destructive and openWorld hints', async () => {
+        await postJsonRpc(app, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+                protocolVersion: '2024-11-05',
+                capabilities: {},
+                clientInfo: {name: 'test', version: '0.0.0'},
+            },
+        });
+        const res = await postJsonRpc(app, {jsonrpc: '2.0', id: 2, method: 'tools/list'});
+        const body = parseMcpResponse(res);
+        for (const tool of body.result.tools) {
+            expect(typeof tool.annotations.readOnlyHint, tool.name).toBe('boolean');
+            expect(tool.annotations.destructiveHint, tool.name).toBe(false);
+            expect(tool.annotations.openWorldHint, tool.name).toBe(false);
+        }
+    });
 });
 
 function postJsonRpc(app: express.Express, payload: object) {
