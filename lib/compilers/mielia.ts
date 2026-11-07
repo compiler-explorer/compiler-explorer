@@ -45,8 +45,8 @@ export class MieliaCompiler extends BaseCompiler {
 
     // Mielia's command line takes verbs and positional arguments only. All build
     // settings live in config.toml, not in flags. The `codegen` verb runs the
-    // build up to LLVM IR and writes it next to the source file (example.mie ->
-    // example.ll) without running opt, clang or the linker.
+    // build up to LLVM IR and writes it to the path it is given, without running
+    // opt, clang or the linker.
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [];
     }
@@ -61,11 +61,10 @@ export class MieliaCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        // `codegen <file>` writes <file>.ll (example.mie -> example.ll), which is what
-        // getOutputFilename() below points CE at. The second positional of `codegen` is the
-        // output path, so a stray user option would be read as a file name. Pass only the
-        // verb and the file.
-        return ['codegen', this.filename(inputFilename)];
+        // `codegen <file> <out.ll>` writes the LLVM IR to the named path, which is what
+        // getOutputFilename() below points CE at. User options are not passed: a stray one
+        // would be read as a file name.
+        return ['codegen', this.filename(inputFilename), `${this.outputFilebase}.ll`];
     }
 
     // The primary output is the emitted LLVM IR itself.
