@@ -386,7 +386,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override registerCallbacks(): void {
-        this.container.on('shown', this.resize, this);
+        this.container.on('shown', () => {
+            this.resize();
+            _.defer(() => {
+                this.editor.render(true);
+            });
+        });
         this.container.on('open', () => {
             this.sendEditor();
         });
