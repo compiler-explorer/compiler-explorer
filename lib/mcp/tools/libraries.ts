@@ -63,6 +63,7 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
         {
             title: 'List libraries',
             readOnlyHint: true,
+            destructiveHint: false,
             openWorldHint: false,
         },
         async ({language, match, maxResults, lean}) => {
