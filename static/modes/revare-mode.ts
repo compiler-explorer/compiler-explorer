@@ -29,7 +29,6 @@ function definition(): monaco.languages.IMonarchLanguage {
         defaultToken: '',
 
         keywords: [
-            // Declarations
             'routine',
             'entity',
             'record',
@@ -38,71 +37,65 @@ function definition(): monaco.languages.IMonarchLanguage {
             'crashable',
             'variant',
             'protocol',
-            // Bindings
             'var',
             'preset',
             'lateinit',
-            // Visibility / placement
             'secret',
             'posted',
             'common',
-            // Self references
             'me',
             'Me',
-            // Conformance and constraints
             'obeys',
-            'disobeys',
             'needs',
             'relates',
-            // Control flow
+            'everywhere',
             'if',
             'elseif',
             'else',
             'then',
-            'unless',
             'when',
             'is',
             'isnot',
-            'isonly',
+            'until',
             'loop',
-            'while',
             'for',
+            'with',
             'break',
             'continue',
             'return',
             'throw',
-            'absent',
+            'todo',
             'becomes',
-            // Modules
-            'import',
-            'module',
-            // Misc
-            'using',
-            'as',
-            'define',
-            'pass',
-            'with',
-            'given',
             'in',
-            'notin',
             'to',
             'til',
             'by',
-            'discard',
-            // Logical operators
+            'steal',
+            'import',
+            'module',
+            'using',
+            'as',
+            'define',
+            'nothing',
+            'given',
+            'drop',
+            'viewing',
+            'modifying',
             'and',
             'or',
             'not',
-            'but',
-            // Literals
             'true',
             'false',
             'None',
             'none',
-            // Memory / interop
+            'danger',
             'dangerous',
-            'external',
-            'steal',
+            'expand',
+            'infallible',
+            'try',
+            'check',
+            'inf',
+            'nan',
         ],
 
         operators: [
@@ -147,7 +140,6 @@ function definition(): monaco.languages.IMonarchLanguage {
             '~',
             '<<',
             '>>',
-            '<<<',
             '>>>',
             // Assignment
             '=',
@@ -172,7 +164,6 @@ function definition(): monaco.languages.IMonarchLanguage {
             '^=',
             '<<=',
             '>>=',
-            '<<<=',
             '>>>=',
             '??=',
             // Failure and optionals
@@ -229,8 +220,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 ],
 
-                // Numbers — base-prefixed, floats, then integers; literal suffixes
-                // (1_s64, 2.5f32, 100ms, 4gib, 3j64, 1dn ...) ride along with \w*
+                // Numbers: base-prefixed, floats, then integers. A unit suffix (100ms, 4kib) rides along with \w*
                 [/0[xX][0-9a-fA-F_]+\w*/, 'number.hex'],
                 [/0[oO][0-7_]+\w*/, 'number.octal'],
                 [/0[bB][01_]+\w*/, 'number.binary'],
@@ -266,5 +256,5 @@ function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
-monaco.languages.register({id: 'razorforge'});
-monaco.languages.setMonarchTokensProvider('razorforge', definition());
+monaco.languages.register({id: 'revare'});
+monaco.languages.setMonarchTokensProvider('revare', definition());

@@ -1,0 +1,38 @@
+# FizzBuzz from 1 to 15.
+#
+# Introduces:
+#   a counted loop: a block that jumps back to itself with the next i
+#   when, which picks the first arm whose condition holds
+#   write, which writes text and values to a writer in one line
+#   routine parameters (out, last) are visible in every block, but values made in entry are not
+
+import Hosted
+
+### Writes one line for each number from 1 to `last`: `Fizz` for multiples of 3, `Buzz` for multiples of 5,
+### `FizzBuzz` for multiples of both, and the number itself otherwise.
+### :param out: Where the lines go.
+### :param last: The last number to write.
+routine fizzbuzz(out: @ConsoleOutput, last: U64) -> None
+    for i in 1 to last
+        by_3: Bool = i % 3 == 0
+        by_5: Bool = i % 5 == 0
+        when
+            by_3 and by_5 =>
+                word: @[Byte] = "FizzBuzz"
+                out.write("{word}\n")
+            by_3 =>
+                word: @[Byte] = "Fizz"
+                out.write("{word}\n")
+            by_5 =>
+                word: @[Byte] = "Buzz"
+                out.write("{word}\n")
+            else => out.write("{i}\n")
+    then
+        return
+
+### Plays FizzBuzz from 1 to 15 on standard output.
+routine start() -> None
+    # A writer's methods take a pointer, so fizzbuzz takes standard output's: Console.output().
+    out: @ConsoleOutput = Console.output()
+    fizzbuzz(out, last: 15)
+    return

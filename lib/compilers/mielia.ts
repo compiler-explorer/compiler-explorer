@@ -30,9 +30,9 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
-export class RazorForgeCompiler extends BaseCompiler {
+export class MieliaCompiler extends BaseCompiler {
     static get key() {
-        return 'razorforge';
+        return 'mielia';
     }
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -43,12 +43,10 @@ export class RazorForgeCompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
     }
 
-    // RazorForge's CLI takes verbs and positional arguments only — all build
-    // configuration lives in razorforge.toml, not flags. The `codegen` verb runs
-    // semantic analysis and code generation ONLY, writing LLVM IR next to the
-    // source file (example.rf -> example.ll) without invoking opt/clang/lld or
-    // linking a native executable. (`build` would run the full opt->clang->link
-    // pipeline — heavier and unnecessary for the IR view.)
+    // Mielia's command line takes verbs and positional arguments only. All build
+    // settings live in config.toml, not in flags. The `codegen` verb runs the
+    // build up to LLVM IR and writes it next to the source file (example.mie ->
+    // example.ll) without running opt, clang or the linker.
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [];
     }
@@ -63,10 +61,10 @@ export class RazorForgeCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        // `codegen <file>` defaults its output to <file>.ll (example.rf -> example.ll),
-        // which is exactly what getOutputFilename() below points CE at. RazorForge takes
-        // no build flags, and codegen's optional 2nd positional is the output path — so a
-        // stray user option would be misread as an output filename. Pass only the verb + file.
+        // `codegen <file>` writes <file>.ll (example.mie -> example.ll), which is what
+        // getOutputFilename() below points CE at. The second positional of `codegen` is the
+        // output path, so a stray user option would be read as a file name. Pass only the
+        // verb and the file.
         return ['codegen', this.filename(inputFilename)];
     }
 

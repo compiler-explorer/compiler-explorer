@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Lapila logo">
+  <g transform="rotate(45 50 50)">
+    <rect x="17" y="17" width="31" height="31" rx="3.5" fill="#c9d8f5"/>
+    <rect x="52" y="17" width="31" height="31" rx="3.5" fill="#8fb0f0"/>
+    <rect x="17" y="52" width="31" height="31" rx="3.5" fill="#8fb0f0"/>
+    <rect x="52" y="52" width="31" height="31" rx="3.5" fill="#5b8de0"/>
+  </g>
+  <circle cx="44" cy="78" r="3.4" fill="#16161a"/>
+  <circle cx="56" cy="78" r="3.4" fill="#16161a"/>
+</svg>
