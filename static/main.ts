@@ -356,8 +356,9 @@ function findConfig(
             }
 
             if (config) {
-                // replace anything in the default config with that from the hash
-                config = _.extend(defaultConfig, config);
+                // replace anything in the default config with that from the hash. defaultConfig must stay
+                // untouched: it's what start() falls back to if this config fails to load.
+                config = _.extend({}, defaultConfig, config);
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
@@ -373,6 +374,7 @@ function findConfig(
         }
     } else {
         config = _.extend(
+            {},
             defaultConfig,
             {
                 settings: {
