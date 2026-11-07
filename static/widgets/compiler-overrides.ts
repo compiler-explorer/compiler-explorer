@@ -390,7 +390,7 @@ export class CompilerOverridesWidget {
     // Only keep the overrides that apply to this compiler. Set the overrides to their
     // defaults if they are not configured. Without a compiler the applicable overrides are
     // unknown, so we keep the configuration as-is. setCompiler() re-filters once it resolves.
-    private filterForCompiler(configured: ConfiguredOverrides): ConfiguredOverrides {
+    private filterForCompiler(configured: ConfiguredOverrides, previous?: CompilerInfo): ConfiguredOverrides {
         if (!this.compiler) {
             return configured;
         }
@@ -400,7 +400,11 @@ export class CompilerOverridesWidget {
         for (const ov of this.compiler.possibleOverrides ?? []) {
             if (ov.name === CompilerOverrideType.env) continue;
             const config = configured.find(config => config.name === ov.name);
-            if (config) {
+            if (
+                config &&
+                config.name !== CompilerOverrideType.env &&
+                this.shouldKeepValue(ov, config.value, previous)
+            ) {
                 filtered.push(config);
             } else if (!this.dirtyOverrides.has(ov.name) && ov.default) {
                 filtered.push({
@@ -418,7 +422,20 @@ export class CompilerOverridesWidget {
         return filtered;
     }
 
+    private shouldKeepValue(
+        ov: CompilerOverrideNameAndOptions | CompilerOverrideString,
+        value: string,
+        previous?: CompilerInfo,
+    ): boolean {
+        if (ov.type === 'options' && !ov.values.some(v => v.value === value)) return false;
+        // A value the user hasn't touched that equals the previous compiler's default was most likely
+        // seeded from it, so it makes way for this compiler's default (if it has one).
+        const previousDefault = previous?.possibleOverrides?.find(p => p.name === ov.name)?.default;
+        return this.dirtyOverrides.has(ov.name) || value !== previousDefault;
+    }
+
     async setCompiler(compilerId: string, languageId: string | undefined, signal: AbortSignal) {
+        const previous = this.compiler;
         if (languageId) {
             const compilers = await compilersService.getCompilersForLang(languageId);
 
@@ -430,7 +447,7 @@ export class CompilerOverridesWidget {
             this.compiler = undefined;
         }
 
-        this.configured = this.filterForCompiler(this.configured);
+        this.configured = this.filterForCompiler(this.configured, previous);
         this.updateButton();
     }
 
