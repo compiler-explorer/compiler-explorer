@@ -124,7 +124,15 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
 
     async readIrDumpFile(file: string): Promise<ResultLine[]> {
         const content = await fs.readFile(file, 'utf8');
-        return utils.splitLines(content.trimEnd()).map(text => ({text}));
+        return utils
+            .splitLines(content.trimEnd())
+            .map(text => {
+                // Rewrite filepath in the FILE IR nodes.
+                return text.replace(/^(\s*FILE\s.*\bfileName:)(.+)$/, (match, prefix, path) => {
+                    return `${prefix}${utils.maskRootdir(path)}`;
+                });
+            })
+            .map(text => ({text}));
     }
 
     static irDumpFileOrder(filename: string): number {
