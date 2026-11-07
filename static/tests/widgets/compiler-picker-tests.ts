@@ -147,5 +147,28 @@ describe('CompilerPicker', () => {
             expect(picker.tomSelect).toBeNull();
             expect(popup.show).not.toHaveBeenCalled();
         });
+
+        it('neither rebuilds nor opens the popup if the picker is destroyed while retrying', async () => {
+            let finishRetry: (value: typeof compilers) => void = () => {};
+            const getCompilersForLang = vi
+                .fn()
+                .mockRejectedValueOnce(new Error('Failed to fetch'))
+                .mockReturnValueOnce(
+                    new Promise(resolve => {
+                        finishRetry = resolve;
+                    }),
+                )
+                .mockResolvedValue(compilers);
+            const {domRoot, picker} = makePicker(getCompilersForLang);
+            await flush();
+
+            domRoot.find('.picker-popout-button').trigger('click');
+            picker.destroy();
+            finishRetry(compilers);
+            await flush();
+
+            expect(tomSelectOptions).not.toHaveBeenCalled();
+            expect(popup.show).not.toHaveBeenCalled();
+        });
     });
 });

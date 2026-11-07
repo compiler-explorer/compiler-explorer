@@ -96,6 +96,8 @@ export class CompilerPicker {
     }
 
     destroy() {
+        // An initialisation still waiting on the compiler list then gives up instead of rebuilding a closed picker.
+        ++this.initNonce;
         this.eventHub.unsubscribe();
         if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
