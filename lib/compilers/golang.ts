@@ -176,6 +176,13 @@ export class GolangCompiler extends BaseCompiler {
         await fs.cp(moduleSourcesPath, pkgModPath, {recursive: true, force: false});
     }
 
+    protected getGoModDirectiveVersion(): string {
+        const minimum = '1.21.0';
+        const version = Semver.coerce(this.compiler.semver);
+        if (!version || Semver.lt(version, minimum)) return minimum;
+        return version.version;
+    }
+
     protected async generateGoMod(inputDir: string, libraries: string[], dirPath: string): Promise<void> {
         const goModPath = path.join(inputDir, 'go.mod');
         const goSumPath = path.join(inputDir, 'go.sum');
@@ -188,7 +195,7 @@ export class GolangCompiler extends BaseCompiler {
         if (existingGoMod) {
             goModContent = await fs.readFile(goModPath, 'utf-8');
         } else {
-            goModContent = 'module example\n\ngo 1.21\n';
+            goModContent = `module example\n\ngo ${this.getGoModDirectiveVersion()}\n`;
         }
 
         // Collect require statements and sum entries from all libraries
