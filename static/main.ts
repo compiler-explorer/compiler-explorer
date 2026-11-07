@@ -125,8 +125,26 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
     return [themer, currentSettings];
 }
 
+// A sandboxed iframe without allow-same-origin throws on any use of document.cookie. Treat that like a browser with
+// cookies turned off, which reads nothing back and ignores writes, as local.ts does for localStorage.
+function getCookie(key: string): string | undefined {
+    try {
+        return jsCookie.get(key);
+    } catch {
+        return undefined;
+    }
+}
+
+function setCookie(key: string, value: string, attributes: Cookies.CookieAttributes) {
+    try {
+        jsCookie.set(key, value, attributes);
+    } catch {
+        // See getCookie
+    }
+}
+
 function hasCookieConsented(options: CompilerExplorerOptions) {
-    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
+    return getCookie(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
 function isMobileViewer() {
@@ -150,7 +168,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                setCookie(options.policies.privacy.key, policyDocuments.privacy.hash, {
                     expires: 365,
                     sameSite: 'strict',
                 });
@@ -407,11 +425,11 @@ function initializeResetLayoutLink() {
 
 function initPolicies(options: CompilerExplorerOptions) {
     if (options.policies.privacy.enabled) {
-        if (jsCookie.get(options.policies.privacy.key) == null) {
+        if (getCookie(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it',
             });
-        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+        } else if (policyDocuments.privacy.hash !== getCookie(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
             const ppolicyBellNotification = $('#policyBellNotification');
             const pprivacyBellNotification = $('#privacyBellNotification');
@@ -428,13 +446,13 @@ function initPolicies(options: CompilerExplorerOptions) {
         }
     }
     simpleCooks.setOnDoConsent(() => {
-        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
+        setCookie(options.policies.cookies.key, policyDocuments.cookies.hash, {
             expires: 365,
             sameSite: 'strict',
         });
     });
     simpleCooks.setOnDontConsent(() => {
-        jsCookie.set(options.policies.cookies.key, '', {
+        setCookie(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
     });
@@ -450,7 +468,7 @@ function initPolicies(options: CompilerExplorerOptions) {
         $(window).trigger('resize');
     });
     // '' means no consent. Hash match means consent of old. Null means new user!
-    const storedCookieConsent = jsCookie.get(options.policies.cookies.key);
+    const storedCookieConsent = getCookie(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
         if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
