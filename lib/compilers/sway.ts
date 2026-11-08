@@ -122,9 +122,20 @@ export class SwayCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: Partial<ParseFiltersAndOutputOptions>,
     ): Promise<CompilationResult> {
-        // Make a temp directory for a forc project
-        const projectDir = await this.newTempDir();
+        // Everything the result needs is read out of the forc project directory before this returns.
+        return await this.withTempDir(projectDir =>
+            this.buildForcProject(projectDir, compiler, options, inputFilename, execOptions, filters),
+        );
+    }
 
+    private async buildForcProject(
+        projectDir: string,
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: Partial<ParseFiltersAndOutputOptions>,
+    ): Promise<CompilationResult> {
         const {symbolsPath} = await setupForcProject(projectDir, inputFilename, this.std);
 
         // Run `forc build`
@@ -220,7 +231,6 @@ export class SwayCompiler extends BaseCompiler {
             inputFilename,
             execTime: buildResult.execTime,
             okToCache: true,
-            dirPath: projectDir,
             irOutput:
                 irLines.length > 0
                     ? {

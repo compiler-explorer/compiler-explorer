@@ -201,8 +201,9 @@ async function doOneExecution(
     const msg = await queue.pop();
     if (msg?.guid) {
         const startTime = Date.now();
+        let executor: LocalExecutionEnvironment | undefined;
         try {
-            const executor = new LocalExecutionEnvironment(compilationEnvironment);
+            executor = new LocalExecutionEnvironment(compilationEnvironment);
             await executor.downloadExecutablePackage(msg.hash);
             const result = await executor.execute(msg.params);
 
@@ -232,6 +233,8 @@ async function doOneExecution(
                 duration,
                 msg.sentTimestampMs,
             );
+        } finally {
+            await executor?.cleanup();
         }
     }
 }

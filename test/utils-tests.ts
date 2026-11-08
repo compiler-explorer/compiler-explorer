@@ -1112,3 +1112,24 @@ describe('checkCustomOutputFilename', () => {
         }
     });
 });
+
+describe('allSettledOrThrow', () => {
+    it('resolves to the values in order', async () => {
+        expect(await utils.allSettledOrThrow([Promise.resolve(1), 'two', Promise.resolve(3)])).toEqual([1, 'two', 3]);
+    });
+
+    it('waits for every promise to settle before rejecting with the first rejection', async () => {
+        let slowFinished = false;
+        const slow = new Promise<void>(resolve =>
+            setTimeout(() => {
+                slowFinished = true;
+                resolve();
+            }, 20),
+        );
+
+        await expect(
+            utils.allSettledOrThrow([Promise.reject(new Error('first')), slow, Promise.reject(new Error('second'))]),
+        ).rejects.toThrow('first');
+        expect(slowFinished).toBe(true);
+    });
+});
