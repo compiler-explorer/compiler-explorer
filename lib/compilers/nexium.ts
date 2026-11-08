@@ -26,11 +26,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {getTargetFromCompilerCommand} from '../toolchain-utils.js';
 
 // Nexium (https://londopy.github.io/nexium/) compiles to C and drives a C
 // compiler. Without the binary filter, the output pane shows the C that
@@ -146,6 +148,24 @@ export class NexiumCompiler extends BaseCompiler {
             out.push(line);
         }
         return {asm: out.map(text => ({text}))};
+    }
+
+    override async populatePossibleOverrides() {
+        // llvm-objdump reads any architecture, so a cross clang's binary can be shown
+        this.addCCompilerOverride(true);
+        await super.populatePossibleOverrides();
+    }
+
+    override changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
+        options = super.changeOptionsBasedOnOverrides(options, overrides);
+        const cc = this.getOverriddenCCompiler(overrides);
+        if (!cc) return options;
+
+        // --cc wins over NX_CC; nx passes -march=x86-64 unless it is told the target, the C it emits is the same
+        options = options.concat('--cc', cc);
+        const target = getTargetFromCompilerCommand(cc);
+        if (target) options = options.concat('--target', target);
+        return options;
     }
 
     override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {

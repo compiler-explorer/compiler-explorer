@@ -24,6 +24,8 @@
 
 import path from 'node:path';
 
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -67,6 +69,17 @@ export class ValaCompiler extends BaseCompiler {
         }
 
         return execOptions;
+    }
+
+    override async populatePossibleOverrides() {
+        this.addCCompilerOverride(false);
+        await super.populatePossibleOverrides();
+    }
+
+    override applyOverridesToExecOptions(execOptions: ExecutionOptions, overrides: ConfiguredOverrides): void {
+        super.applyOverridesToExecOptions(execOptions, overrides);
+        const cc = this.getOverriddenCCompiler(overrides);
+        if (cc && execOptions.env) execOptions.env.CC = cc;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
