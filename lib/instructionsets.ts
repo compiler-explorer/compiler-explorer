@@ -100,6 +100,9 @@ export class InstructionSets {
             ez80: {
                 target: ['ez80'],
             },
+            hexagon: {
+                target: ['hexagon'],
+            },
             hppa: {
                 target: ['hppa'],
             },
