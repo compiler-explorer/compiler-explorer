@@ -22,23 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
+import {BaseCache} from '../lib/cache/base.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
+import {ZigCXX} from '../lib/compilers/zigcxx.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
 import {BypassCache, CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
+import {
+    makeCompilationEnvironment,
+    makeFakeCompilerInfo,
+    makeFakeParseFiltersAndOutputOptions,
+    newTempDir,
+} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -107,6 +115,47 @@ describe('Basic compiler invariants', () => {
         expect(result.buildResult?.compilationOptions).toEqual(['-O3', '/app/example.cpp']);
         expect(result.result?.compilationOptions).toEqual(['-DFOO', '/app/main.cpp']);
         expect(result.result?.inputFilename).toEqual('main.cpp');
+    });
+
+    it('should check the final output path, whatever produced it', () => {
+        expect(() => compiler.assertInsideDir('/tmp/ce-dir', '/tmp/ce-dir/output.s')).not.toThrow();
+        for (const outside of ['/etc/passwd', '/tmp/ce-dir', '/tmp/ce-dir/../other', '/tmp/ce-dir-sibling/output.s']) {
+            expect(() => compiler.assertInsideDir('/tmp/ce-dir', outside)).toThrow('Invalid filename');
+        }
+    });
+
+    it('should assert on an escaping custom output filename that reached compile()', async () => {
+        await expect(
+            compiler.compile(
+                'int main(){}',
+                [],
+                {customOutputFilename: '../../escape'},
+                makeFakeParseFiltersAndOutputOptions({}),
+                BypassCache.None,
+                [],
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+    });
+
+    it('should refuse to compile when the output path is outside the directory', async () => {
+        const runCompiler = vi.spyOn(compiler, 'runCompiler');
+        vi.spyOn(compiler, 'getOutputFilename').mockReturnValue('/somewhere/else/output.s');
+        await expect(
+            compiler.doCompilation(
+                '/tmp/ce-dir/example.cpp',
+                '/tmp/ce-dir',
+                {backendOptions: {}} as any,
+                [],
+                makeFakeParseFiltersAndOutputOptions({}),
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+        expect(runCompiler).not.toHaveBeenCalled();
     });
 
     it('should skip version check if forced to', async () => {
@@ -720,6 +769,179 @@ describe('Target hints', () => {
     });
 });
 
+describe('Configured -march versus user-selected CPU', () => {
+    let ce: CompilationEnvironment;
+
+    const riscvOptions = '-target riscv64-unknown-linux-gnu -march=rv64gc -mabi=lp64d';
+
+    function makeCompiler(options: string) {
+        return new ClangCompiler(makeFakeCompilerInfo({exe: 'clang', lang: 'c++', ldPath: [], options}), ce);
+    }
+
+    function prepareArguments(compiler: ClangCompiler, userOptions: string[]) {
+        return compiler.prepareArguments(
+            userOptions,
+            makeFakeParseFiltersAndOutputOptions({}),
+            {},
+            'example.cpp',
+            'output.s',
+            [],
+            [],
+        );
+    }
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    it('keeps the configured -march when the user does not pick a CPU or architecture', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-O3']);
+        expect(args).toContain('-march=rv64gc');
+    });
+
+    it('drops the configured RISC-V -march when the user picks a CPU', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-O3', '-mcpu=sifive-p670']);
+        expect(args.filter(arg => arg.startsWith('-march='))).toEqual([]);
+        expect(args).toContain('-mcpu=sifive-p670');
+        expect(args).toContain('-mabi=lp64d');
+        expect(args).toContain('riscv64-unknown-linux-gnu');
+    });
+
+    it('leaves only the user -march when the user picks a RISC-V architecture', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-march=rv64gcv_zbb']);
+        expect(args.filter(arg => arg.startsWith('-march='))).toEqual(['-march=rv64gcv_zbb']);
+    });
+
+    it('keeps the configured -march for other architectures', () => {
+        const compiler = makeCompiler('-target aarch64-linux-gnu -march=armv8.8-a+sve2');
+        const args = prepareArguments(compiler, ['-mcpu=cortex-a53']);
+        expect(args).toContain('-march=armv8.8-a+sve2');
+    });
+});
+
+describe('Clang demangling for Windows MSVC targets', () => {
+    let ce: CompilationEnvironment;
+    let compiler: ClangCompiler;
+    let binDir: string;
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+        binDir = newTempDir();
+        for (const tool of ['clang++', 'llvm-cxxfilt', 'llvm-undname']) fs.writeFileSync(path.join(binDir, tool), '');
+        compiler = new ClangCompiler(
+            makeFakeCompilerInfo({
+                exe: path.join(binDir, 'clang++'),
+                lang: 'c++',
+                ldPath: [],
+                // What ClangParser detects from clang --help: -target is a hidden alias
+                supportsTargetIs: true,
+                demanglerType: 'cpp',
+                demanglerArgs: [],
+            }),
+            ce,
+        );
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function mockDemanglerExec(c: ClangCompiler = compiler) {
+        return vi.spyOn(c, 'exec').mockImplementation(async (exe, _args, options) => ({
+            code: 0,
+            okToCache: true,
+            filenameTransform: f => f,
+            // Like llvm-undname: echo each name, then its demangling, then an empty line
+            stdout: exe.endsWith('llvm-undname') ? `${options.input?.trim()}\nint square(int)\n\n` : '',
+            stderr: '',
+            execTime: 0,
+            timedOut: false,
+            truncated: false,
+        }));
+    }
+
+    function demangle(options: string[], c: ClangCompiler = compiler) {
+        return c.postProcessAsm(
+            {okToCache: true, asm: [{text: '"?square@@YAHH@Z":'}, {text: '        imul    ecx, ecx'}]},
+            makeFakeParseFiltersAndOutputOptions({demangle: true}),
+            options,
+        );
+    }
+
+    it.each([
+        ['--target=x86_64-pc-windows-msvc'],
+        ['--target=aarch64-pc-windows-msvc19.40.0'],
+        ['-target', 'x86_64-pc-win32'],
+        ['--target', 'x86_64-pc-windows-msvc'],
+        ['--target=x86_64-pc-linux-gnu', '-target', 'x86_64-pc-windows-msvc'],
+    ])('uses llvm-undname for %s', async (...target) => {
+        const execSpy = mockDemanglerExec();
+        const result = await demangle(['-O2', ...target, 'example.cpp']);
+        expect(execSpy.mock.calls[0][0]).toBe(path.join(binDir, 'llvm-undname'));
+        expect(result.asm[0].text).toBe('int square(int):');
+    });
+
+    it.each([
+        [[]],
+        [['--target=x86_64-pc-windows-gnu']],
+        [['-target', 'x86_64-pc-windows-msvc', '--target=x86_64-pc-linux-gnu']],
+    ])('does not use llvm-undname for %j', async options => {
+        const execSpy = mockDemanglerExec();
+        const result = await demangle(options);
+        expect(execSpy.mock.calls.map(([exe]) => exe)).not.toContain(path.join(binDir, 'llvm-undname'));
+        expect(result.asm[0].text).toBe('"?square@@YAHH@Z":');
+    });
+
+    it('uses the target from the actual compilation arguments in afterCompilation', async () => {
+        const execSpy = mockDemanglerExec();
+        vi.spyOn(ce, 'cachePut').mockResolvedValue();
+        const result = await compiler.afterCompilation(
+            {
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
+                okToCache: true,
+                externalParserUsed: true,
+                asm: [{text: '"?square@@YAHH@Z":'}],
+                // As if --target came from the compiler's configured options rather than the user
+                compilationOptions: ['-O2', '--target=x86_64-pc-windows-msvc', 'example.cpp'],
+            } as CompilationResult,
+            false,
+            {compiler: {}, source: '', options: ['-O2'], backendOptions: {}, tools: [], libraries: [], files: []},
+            {} as any,
+            [],
+            {skipPopArgs: true},
+            makeFakeParseFiltersAndOutputOptions({demangle: true}),
+            ['-O2'],
+            undefined,
+            undefined,
+            BypassCache.None,
+        );
+        expect(execSpy.mock.calls[0][0]).toBe(path.join(binDir, 'llvm-undname'));
+        expect(result.asm[0].text).toBe('int square(int):');
+    });
+
+    it('only uses llvm-undname for zig with an explicit -msvc target', async () => {
+        const zig = new ZigCXX(
+            makeFakeCompilerInfo({
+                exe: path.join(binDir, 'zig'),
+                lang: 'c++',
+                ldPath: [],
+                semver: '0.14.0',
+                supportsHyphenTarget: true,
+                demanglerType: 'cpp',
+                demanglerArgs: [],
+            }),
+            ce,
+        );
+        const execSpy = mockDemanglerExec(zig);
+        expect((await demangle(['-target', 'x86_64-windows'], zig)).asm[0].text).toBe('"?square@@YAHH@Z":');
+        expect((await demangle(['-target', 'x86_64-windows-msvc'], zig)).asm[0].text).toBe('int square(int):');
+        expect(execSpy.mock.calls.map(([exe]) => exe)).toEqual([path.join(binDir, 'llvm-undname')]);
+    });
+});
+
 describe('Rust options', () => {
     let ce: CompilationEnvironment;
     const executingCompilerInfo = makeFakeCompilerInfo({
@@ -861,5 +1083,44 @@ describe('An executor request whose result is too large to send', () => {
         expect(result).toBe(execResult);
         expect(stored).toHaveBeenCalledOnce();
         expect(stored.mock.calls[0][0]).toBe(execResult);
+    });
+});
+
+describe('Dark background colours in the compilation cache key', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    async function cacheKeyHash(supportsDarkBackgroundColours: boolean, backendOptions: Record<string, any>) {
+        const env = makeCompilationEnvironment({languages});
+        const compiler = new BaseCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: 'c++', options: '', supportsDarkBackgroundColours}),
+            env,
+        );
+        const cacheGet = vi.spyOn(env, 'cacheGet').mockResolvedValue({code: 0, stdout: [], stderr: []});
+        vi.spyOn(compiler as any, 'storeOversizedResult').mockResolvedValue(undefined);
+
+        await compiler.compile(
+            'int main() {}',
+            [],
+            backendOptions,
+            makeFakeParseFiltersAndOutputOptions({}),
+            BypassCache.None,
+            [],
+            {args: [], stdin: ''} as any,
+            [],
+            [],
+        );
+        return BaseCache.hash(cacheGet.mock.calls[0][0] as any);
+    }
+
+    it('shares one entry between light and dark themes for a compiler that ignores the background', async () => {
+        const unspecified = await cacheKeyHash(false, {});
+        expect(await cacheKeyHash(false, {darkBackgroundColours: false})).toEqual(unspecified);
+        expect(await cacheKeyHash(false, {darkBackgroundColours: true})).toEqual(unspecified);
+    });
+
+    it('keeps an entry per background for a compiler that colours for it, defaulting to light', async () => {
+        const unspecified = await cacheKeyHash(true, {});
+        expect(await cacheKeyHash(true, {darkBackgroundColours: false})).toEqual(unspecified);
+        expect(await cacheKeyHash(true, {darkBackgroundColours: true})).not.toEqual(unspecified);
     });
 });

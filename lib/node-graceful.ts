@@ -14,6 +14,8 @@ export class Graceful {
     private static DEADLY_SIGNALS = ['SIGTERM', 'SIGINT', 'SIGBREAK', 'SIGHUP'];
 
     public static exitOnDouble = true;
+    /** A repeat of the exit signal within this long is the same stop request delivered twice, so it doesn't count. */
+    public static duplicateSignalWindowMs = 1000;
     public static timeout = 30000;
 
     private static _captureExceptions = false;
@@ -21,6 +23,8 @@ export class Graceful {
     private static listeners: GracefulListener[] = [];
     private static isRegistered = false;
     private static isExiting = false;
+    private static exitSignal: string | undefined;
+    private static exitStartedAtMs = 0;
     private static exceptionListener = (event: any) => {
         process.exitCode = 1;
         Graceful.onDeadlyEvent('uncaughtException', event);
@@ -84,6 +88,11 @@ export class Graceful {
         Graceful.updateRegistration();
     }
 
+    /** Whether this signal is handled here, exiting once every exit listener has finished. */
+    public static handlesSignal(signal: string) {
+        return Graceful.isRegistered && Graceful.DEADLY_SIGNALS.includes(signal);
+    }
+
     public static exit(code?: number | string, signal = 'SIGTERM') {
         const exitSignal = typeof code === 'string' ? code : signal;
 
@@ -97,13 +106,20 @@ export class Graceful {
     private static onDeadlyEvent(signal: string, details?: object) {
         // console.log(signal, details);
         if (Graceful.isExiting) {
-            if (Graceful.exitOnDouble) Graceful.killProcess(true);
+            // Under systemd, node can get one SIGTERM from systemd and another relayed by sudo, milliseconds apart.
+            // Only a later repeat is someone asking to skip the graceful exit.
+            const isDuplicate =
+                signal === Graceful.exitSignal &&
+                Date.now() - Graceful.exitStartedAtMs < Graceful.duplicateSignalWindowMs;
+            if (Graceful.exitOnDouble && !isDuplicate) Graceful.killProcess(true);
             return;
         }
 
         const listeners = Graceful.listeners.slice(0);
 
         Graceful.isExiting = true;
+        Graceful.exitSignal = signal;
+        Graceful.exitStartedAtMs = Date.now();
 
         let completedListeners = 0;
         const done = () => {

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {createHash} from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -51,6 +52,26 @@ const manifestPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 
+// monaco-editor-webpack-plugin computes a worker's [contenthash] from its tiny entry stub, not from the bundle webpack
+// builds from it, so toolchain changes alter the worker's bytes without altering its name. The CDN requires a name to
+// always map to the same bytes, so fold the versions of everything that shapes the bundle into the name.
+const workerBuildPackages = [
+    'monaco-editor',
+    'monaco-editor-webpack-plugin',
+    'terser',
+    'terser-webpack-plugin',
+    'webpack',
+];
+function installedVersion(pkg: string): string {
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, 'node_modules', pkg, 'package.json'), 'utf8')).version;
+}
+const workerBuildSalt = createHash('sha256')
+    .update(
+        workerBuildPackages.map(pkg => `${pkg}@${installedVersion(pkg)}`).join('\n'),
+    )
+    .digest('hex')
+    .slice(0, 8);
+
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -78,7 +99,7 @@ const plugins: Webpack.WebpackPluginInstance[] = [
             'clojure',
             'xml',
         ],
-        filename: isDev ? '[name].worker.js' : '[name].worker.[contenthash].js',
+        filename: isDev ? '[name].worker.js' : `[name].worker.${workerBuildSalt}.[contenthash].js`,
     }),
     new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : '[name].[contenthash].css',
@@ -123,6 +144,9 @@ export default {
     resolve: {
         alias: {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
+            // The package's "browser" export is a UMD bundle with its own copy of monaco-editor inlined, which
+            // is out of step with ours. The exports map blocks deep imports, hence the absolute path.
+            'monaco-vim$': path.resolve(__dirname, 'node_modules/monaco-vim/dist/index.mjs'),
         },
         fallback: {
             path: 'path-browserify',
@@ -205,6 +229,12 @@ export default {
             {
                 test: /\.js$/,
                 loader: 'source-map-loader',
+            },
+            {
+                // monaco-vim's ESM build imports monaco-editor internals without file extensions, which strict .mjs
+                // resolution rejects.
+                test: /monaco-vim[/\\]dist[/\\]index\.mjs$/,
+                resolve: {fullySpecified: false},
             },
         ],
     },

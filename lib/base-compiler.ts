@@ -688,7 +688,7 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
+        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(objdumpInputFile))) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
@@ -1030,6 +1030,24 @@ export class BaseCompiler {
         });
     }
 
+    getSharedLibraryDynamicLinker(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || foundVersion.dynamicLinker === undefined) return [];
+            return [foundVersion.dynamicLinker];
+        });
+    }
+
+    // A library that brings its own dynamic linker (e.g. glibc) finds its libraries through that loader. Putting them
+    // on LD_LIBRARY_PATH would make the host-built compiler and tools load a foreign libc.
+    private withoutOwnDynamicLinker(libraries: SelectedLibraryVersion[]): SelectedLibraryVersion[] {
+        return libraries.filter(selectedLib => this.findLibVersion(selectedLib)?.dynamicLinker === undefined);
+    }
+
+    private usesLibrarySysroot(libraries: SelectedLibraryVersion[]): boolean {
+        return libraries.some(selectedLib => !!this.findLibVersion(selectedLib)?.sysroot);
+    }
+
     getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -1051,6 +1069,8 @@ export class BaseCompiler {
     ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
+        // TODO: make configurable
+        const dynamicLinkerFlag = '-Wl,--dynamic-linker=';
 
         let toolchainLibraryPaths: string[] = [];
         if (toolchainPath) {
@@ -1066,8 +1086,11 @@ export class BaseCompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
+            // --sysroot stops clang looking outside the sysroot for the GCC runtime (libgcc_s, libstdc++)
+            this.usesLibrarySysroot(libraries) ? toolchainLibraryPaths.map(path => libPathFlag + path) : [],
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
+            this.getSharedLibraryDynamicLinker(libraries, dirPath).map(path => dynamicLinkerFlag + path),
         );
     }
 
@@ -1079,7 +1102,7 @@ export class BaseCompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(libraries), dirPath),
         );
     }
 
@@ -1093,7 +1116,7 @@ export class BaseCompiler {
             this.compiler.ldPath,
             this.getExtraLdPaths(key),
             this.compiler.libPath,
-            this.getSharedLibraryPaths(key.libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(key.libraries), dirPath),
         );
     }
 
@@ -1115,6 +1138,9 @@ export class BaseCompiler {
 
     getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        // TODO: make configurable
+        const sysrootFlag = '--sysroot=';
+
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
@@ -1123,6 +1149,9 @@ export class BaseCompiler {
             if (foundVersion.packagedheaders) {
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
                 paths.push(includeFlag + includePath);
+            }
+            if (foundVersion.sysroot) {
+                paths.push(sysrootFlag + foundVersion.sysroot);
             }
             return paths;
         });
@@ -2183,6 +2212,7 @@ export class BaseCompiler {
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binaryObject = false;
@@ -2304,11 +2334,13 @@ export class BaseCompiler {
                     inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
                 }
 
+                const executableFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+                this.assertInsideDir(dirPath, executableFilename);
                 return Object.assign({}, buildResults, {
                     code: 0,
                     inputFilename: inputFilename,
                     dirPath: dirPath,
-                    executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
+                    executableFilename,
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
@@ -2391,32 +2423,36 @@ export class BaseCompiler {
     async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
-        const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
+        try {
+            const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
 
-        // cant use this.writeAllFiles here because outputFilename is used as the file to execute
-        //  instead of inputFilename
+            // cant use this.writeAllFiles here because outputFilename is used as the file to execute
+            //  instead of inputFilename
 
-        await fs.writeFile(outputFilename, source);
-        if (key.files && key.files.length > 0) {
-            await this.writeMultipleFiles(key.files, dirPath);
+            await fs.writeFile(outputFilename, source);
+            if (key.files && key.files.length > 0) {
+                await this.writeMultipleFiles(key.files, dirPath);
+            }
+
+            this.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
+
+            const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
+            return {
+                ...result,
+                didExecute: true,
+                buildResult: {
+                    code: 0,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
+                    downloads: [],
+                    executableFilename: outputFilename,
+                    compilationOptions: [],
+                },
+            };
+        } finally {
+            await this.removeTempDir(dirPath);
         }
-
-        this.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
-
-        const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
-        return {
-            ...result,
-            didExecute: true,
-            buildResult: {
-                code: 0,
-                timedOut: false,
-                stdout: [],
-                stderr: [],
-                downloads: [],
-                executableFilename: outputFilename,
-                compilationOptions: [],
-            },
-        };
     }
 
     async doExecution(
@@ -2661,6 +2697,7 @@ export class BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
@@ -2836,10 +2873,14 @@ export class BaseCompiler {
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, backendOptions.produceOptInfo);
     }
 
-    async doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
-        if (buildResult.dirPath && !this.delayCleanupTemp) {
-            await fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
+    async removeTempDir(dirPath: string) {
+        if (!this.delayCleanupTemp) {
+            await fs.rm(dirPath, {recursive: true, force: true}).catch(() => {});
         }
+    }
+
+    async doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
+        if (buildResult.dirPath) await this.removeTempDir(buildResult.dirPath);
         buildResult.dirPath = undefined;
     }
 
@@ -2978,6 +3019,21 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    /**
+     * Called before a project build's artifact is disassembled, for a compiler to pick up what the build left next to
+     * it, as the single-file path does in optionsForFilter.
+     */
+    async prepareArtifactDisassembly(
+        _artifactFilename: string,
+        _filters: ParseFiltersAndOutputOptions,
+    ): Promise<void> {}
+
+    /**
+     * Called once a project build has succeeded, for a compiler to put next to the artifact what running it needs, as
+     * the single-file path does in buildExecutableInFolder.
+     */
+    async prepareArtifactExecution(_artifactFilename: string): Promise<void> {}
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
@@ -3052,6 +3108,7 @@ export class BaseCompiler {
         // Read before the cache key is built: making one deletes `execute` from these very filters, which are the
         // request's own object rather than a copy of it.
         const doExecute = parsedRequest.filters.execute;
+        this.fixBackendOptionsBeforeCacheKey(parsedRequest.backendOptions);
         const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
         const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
@@ -3078,49 +3135,61 @@ export class BaseCompiler {
                 async () => {
                     compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
 
-                    const build = await this.prepareProjectBuild(
-                        buildSystem,
-                        parsedRequest,
-                        files,
-                        libsAndOptions,
-                        toolchainPath,
-                        cacheKey,
-                        executablePackageHash,
-                    );
-                    const {dirPath, outputFilename} = build;
-
-                    let fullResult: CompilationResult | undefined;
-                    if (packaged) {
-                        // Falls through to building it if the package turns out not to be usable.
-                        const cached: CompilationResult | false = await this.unpackExecutablePackage(
-                            packaged,
+                    const dirPath = await this.newTempDir();
+                    try {
+                        const build = await this.prepareProjectBuild(
+                            buildSystem,
+                            parsedRequest,
+                            files,
+                            libsAndOptions,
+                            toolchainPath,
                             cacheKey,
                             executablePackageHash,
                             dirPath,
                         );
-                        if (cached) {
-                            cached.retreivedFromCache = true;
+                        const {outputFilename} = build;
 
-                            delete cached.inputFilename;
-                            delete cached.dirPath;
-                            cached.executableFilename = outputFilename;
-                            fullResult = cached;
+                        let fullResult: CompilationResult | undefined;
+                        if (packaged) {
+                            // Falls through to building it if the package turns out not to be usable.
+                            const cached: CompilationResult | false = await this.unpackExecutablePackage(
+                                packaged,
+                                cacheKey,
+                                executablePackageHash,
+                                dirPath,
+                            );
+                            if (cached) {
+                                cached.retreivedFromCache = true;
+
+                                delete cached.inputFilename;
+                                delete cached.dirPath;
+                                cached.executableFilename = outputFilename;
+                                fullResult = cached;
+                            }
                         }
+                        if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
+
+                        // Wanted by the cleanup at the end whether or not there is anything to run.
+                        if (fullResult.result) fullResult.result.dirPath = dirPath;
+                        if (doExecute) await this.executeProjectArtifact(build, fullResult);
+
+                        return await this.finishProjectBuild(
+                            build,
+                            fullResult,
+                            parsedRequest,
+                            libsAndOptions,
+                            bypassCache,
+                        );
+                    } finally {
+                        await this.removeTempDir(dirPath);
                     }
-                    if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
-
-                    // Wanted by the cleanup at the end whether or not there is anything to run.
-                    if (fullResult.result) fullResult.result.dirPath = dirPath;
-                    if (doExecute) await this.executeProjectArtifact(build, fullResult);
-
-                    return await this.finishProjectBuild(build, fullResult, parsedRequest, libsAndOptions, bypassCache);
                 },
                 {abandonIfStale: !packaged},
             ),
         );
     }
 
-    /** Where a project build happens and what it is building, worked out before any of it starts. */
+    /** What a project build in `dirPath` is building and how, worked out before any of it starts. */
     private async prepareProjectBuild(
         buildSystem: BuildSystemDriver,
         parsedRequest: ParsedRequest,
@@ -3129,9 +3198,8 @@ export class BaseCompiler {
         toolchainPath: string | undefined,
         cacheKey: CmakeCacheKey,
         executablePackageHash: string,
+        dirPath: string,
     ): Promise<ProjectBuild> {
-        const dirPath = await this.newTempDir();
-
         // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
             args: parsedRequest.executeParameters.args || [],
@@ -3253,6 +3321,8 @@ export class BaseCompiler {
             });
         }
 
+        // Ahead of packaging, so that what running it needs is in the package too
+        await this.prepareArtifactExecution(outputFilename);
         await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
 
         compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -3383,14 +3453,8 @@ export class BaseCompiler {
 
         if (fullResult.result) delete fullResult.result.dirPath;
 
-        // Cleanup temp directory after execution is complete
-        await this.doTempfolderCleanup(fullResult);
-        if (fullResult.result) {
-            await this.doTempfolderCleanup(fullResult.result);
-        }
-
         this.cleanupResult(fullResult);
-        // Never the cached copy: afterCmakeCompilation cached it before the cleanup just above, so
+        // Never the cached copy: afterCmakeCompilation cached it before the path was stripped above, so
         // it still names the temporary directories we mask here.
         await this.storeOversizedResult(fullResult, cacheKey, false);
 
@@ -3421,6 +3485,16 @@ export class BaseCompiler {
         }
     }
 
+    fixBackendOptionsBeforeCacheKey(backendOptions: Record<string, any>) {
+        // A compiler whose output is the same on either background shares one cache entry between light and dark
+        // themes, and one that varies treats a request that doesn't say like one asking for a light background.
+        if (this.compiler.supportsDarkBackgroundColours) {
+            backendOptions.darkBackgroundColours = backendOptions.darkBackgroundColours === true;
+        } else {
+            delete backendOptions.darkBackgroundColours;
+        }
+    }
+
     async compile(
         source: string,
         options: string[],
@@ -3435,6 +3509,9 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
+        // Request parsing has already rejected a bad filename; reaching here with one is a bug.
+        assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
@@ -3442,6 +3519,7 @@ export class BaseCompiler {
         }
 
         this.fixFiltersBeforeCacheKey(filters, options, files);
+        this.fixBackendOptionsBeforeCacheKey(backendOptions);
 
         const executeOptions: ExecutableExecutionOptions = {
             args: executeParameters.args || [],
@@ -3611,7 +3689,9 @@ export class BaseCompiler {
                 }
             }
             // TODO rephrase this so we don't need to reassign
-            result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
+            result = filters.demangle
+                ? await this.postProcessAsm(result, filters, result.compilationOptions ?? options)
+                : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
@@ -3759,7 +3839,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions, options?: string[]): Promise<ParsedAsmResult> {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 
@@ -4155,6 +4235,11 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
+    /** Throws if `filename` is not inside `dirPath`. */
+    assertInsideDir(dirPath: string, filename: string) {
+        if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
+    }
+
     checkOptions(options: string[]) {
         const error = this.env.findBadOptions(options);
         if (error.length > 0) return `Bad options: ${error.join(', ')}`;
@@ -4167,7 +4252,9 @@ but nothing was dumped. Possible causes are:
         if (exeFilename.includes('icc')) {
             return ICCParser;
         }
-        if (exe.includes('clangir')) {
+        // ClangIR compilers share the trunk clang binary, so identify them by name (as
+        // ClangParser does for supportsClangirView), not by exe path.
+        if (this.compiler.name?.includes('clangir')) {
             return ClangirParser;
         }
         if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {

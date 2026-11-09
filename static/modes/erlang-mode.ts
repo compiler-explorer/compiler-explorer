@@ -26,6 +26,13 @@ import * as monaco from 'monaco-editor';
 
 function definition(): monaco.languages.IMonarchLanguage {
     return {
+        brackets: [
+            {open: '{', close: '}', token: 'delimiter.curly'},
+            {open: '[', close: ']', token: 'delimiter.square'},
+            {open: '(', close: ')', token: 'delimiter.parenthesis'},
+            {open: '<<', close: '>>', token: 'delimiter.binary'},
+        ],
+
         commands: ['-module', '-export', '-compile', '-record'],
 
         funcdef: ['when', '->', 'if', 'end', 'unknown', 'case', 'of', 'receive', 'after'],
@@ -61,7 +68,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 ],
 
                 [/[(){}[\]]/, '@brackets'],
-                [/<<.*>>/, '@brackets'],
+                [/<<|>>/, '@brackets'],
 
                 [
                     /@symbols/,

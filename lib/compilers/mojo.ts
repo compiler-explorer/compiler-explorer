@@ -22,12 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import semver from 'semver';
 
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-import {changeExtension} from '../utils.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
+import type {CompilationEnvironment} from '../compilation-env.js';
 import {MojoParser} from './argument-parsers.js';
 
 export class MojoCompiler extends BaseCompiler {
@@ -35,72 +37,68 @@ export class MojoCompiler extends BaseCompiler {
         return 'mojo';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
-        this.delayCleanupTemp = true;
-        this.compiler.supportsOptOutput = true;
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit', 'llvm'];
         this.compiler.minIrArgs = ['--emit=llvm'];
     }
 
-    override getOutputFilename(dirPath: string, inputFileBase: string) {
-        // This method tells CE where to find the assembly output
-        const outputPath = path.join(dirPath, inputFileBase + '.s');
-        return outputPath;
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+        return [
+            'build',
+            ...super.optionsForFilter(filters, outputFilename).map(option => {
+                if (option === '-S') return '--emit=asm';
+                if (option === '-c') return '--emit=object';
+                // Full debug info changes generated code; line tables suffice for source mapping.
+                if (option === '-g') return '-g1';
+                return option;
+            }),
+        ];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
-        if (filters.binary) return ['build'];
-        return ['build', '--emit=asm', '-o', outputFilename];
+    override getSharedLibraryPathsAsArguments(
+        libraries: SelectedLibraryVersion[],
+        libDownloadPath: string | undefined,
+        toolchainPath: string | undefined,
+        dirPath: string,
+    ) {
+        const version = semver.coerce(this.compiler.version);
+        // Older Mojo releases reject -Xlinker.
+        if (!version || semver.lt(version, '0.26.1')) {
+            return [];
+        }
+
+        return super.getSharedLibraryPathsAsArguments(libraries, libDownloadPath, toolchainPath, dirPath);
     }
 
-    override getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        const executablePath = path.join(dirPath, 'example');
-        return executablePath;
-    }
-
-    override getIrOutputFilename(inputFilename: string): string {
-        return inputFilename.replace(/\.mojo$/, '.ll');
-    }
-
-    override async generateIR(
+    override generateIR(
         inputFilename: string,
         options: string[],
-        irOptions: any,
+        irOptions: LLVMIrBackendOptions,
         produceCfg: boolean,
-        filters: any,
+        filters: ParseFiltersAndOutputOptions,
     ) {
-        // Remove -o/--emit and their values from options
-        const filteredOptions: string[] = options.filter(
-            (opt, idx, arr) =>
-                opt !== '-o' &&
-                opt !== '--emit' &&
-                !opt.startsWith('--emit=') &&
-                arr[idx - 1] !== '-o' &&
-                arr[idx - 1] !== '--emit',
+        const newOptions = options.filter((opt, idx, arr) => opt !== '-o' && arr[idx - 1] !== '-o');
+        newOptions.push('-o', this.getIrOutputFilename(inputFilename));
+        return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
+    }
+
+    protected override isOutputLikelyLlvmIr(options: string[]) {
+        const index = options.findLastIndex(option => option === '--emit' || option.startsWith('--emit='));
+        const emit = options[index];
+        return (
+            (emit === '--emit' ? options[index + 1] === 'llvm' : emit === '--emit=llvm') ||
+            super.isOutputLikelyLlvmIr(options)
         );
-        // Compute the .ll output path
-        const llPath = changeExtension(inputFilename, '.ll');
-        const newOptions = [...filteredOptions, '--emit=llvm', '-o', llPath];
-        const execOptions = this.getDefaultExecOptions();
-        execOptions.maxOutput = 1024 * 1024 * 1024;
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.compileFilename, execOptions);
-        const result = {code: output.code, compilationOptions: newOptions};
-        if (output.code !== 0) {
-            console.error('Mojo IR build failed:', newOptions, output.stderr, output.stdout);
-            return {asm: [{text: 'Failed to run compiler to get IR code'}], ...result};
-        }
-        const irText = await fs.readFile(llPath, 'utf8');
-        return {asm: irText.split('\n').map(text => ({text})), ...result};
     }
 
     override getArgumentParserClass() {
         return MojoParser;
+    }
+
+    override getAllPossibleTargetFlags(): string[][] {
+        return [[`--target-triple=${c_value_placeholder}`], ['--target-triple', c_value_placeholder]];
     }
 
     override getDefaultExecOptions() {

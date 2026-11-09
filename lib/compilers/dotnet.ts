@@ -38,6 +38,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 import {DotNetPdbParser, type DotNetSourceMapping} from '../parsers/pdb-parser-dotnet.js';
 import * as utils from '../utils.js';
@@ -1122,6 +1123,13 @@ export class DotNetIlDasmCompiler extends DotNetCompiler {
 export class DotNetIlSpyCompiler extends DotNetCompiler {
     static get key() {
         return 'dotnetilspy';
+    }
+
+    generatedCodeParser = new AsmParserCpp();
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
+        // the output is the decompiled C#, which the JIT disassembly parser would mangle
+        return this.generatedCodeParser.process(result.asm, filters);
     }
 }
 

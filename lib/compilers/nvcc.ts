@@ -34,8 +34,10 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {asSafeVer} from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
 
@@ -46,6 +48,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
     ptxParser: PTXAsmParser;
+    tileIrParser: MlirAsmParser;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
@@ -53,6 +56,7 @@ export class NvccCompiler extends BaseCompiler {
         this.compiler.supportsDeviceAsmView = true;
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
         this.ptxParser = new PTXAsmParser(this.compilerProps);
+        this.tileIrParser = new MlirAsmParser();
     }
 
     // TODO: (for all of CUDA)
@@ -101,6 +105,30 @@ export class NvccCompiler extends BaseCompiler {
             result.asm = `<No output: ${Path.basename(unwrap(nvdisasm))} returned ${code}>`;
         }
         return result;
+    }
+
+    async tileirdisasm(outputFilename: string, result: any, maxOutput: number) {
+        const {tileirdisasm} = this.compiler;
+        const {code, execTime, stdout} = await this.exec(unwrap(tileirdisasm), [outputFilename], {
+            maxOutput,
+            customCwd: result.dirPath,
+        });
+
+        if (code === 0) {
+            result.objdumpTime = execTime;
+            result.asm = stdout;
+        } else {
+            result.asm = `<No output: ${Path.basename(unwrap(tileirdisasm))} returned ${code}>`;
+        }
+        return result;
+    }
+
+    async readPtx(ptxFilename: string, maxSize: number) {
+        const {size} = await fs.stat(ptxFilename);
+        if (size >= maxSize) {
+            return {asm: `<No output: generated PTX was too large (${size} > ${maxSize} bytes)>`};
+        }
+        return {asm: await fs.readFile(ptxFilename, 'utf8')};
     }
 
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
@@ -209,16 +237,28 @@ export class NvccCompiler extends BaseCompiler {
             const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
             await Promise.all(
                 files
-                    .filter(f => f.endsWith('.ptx') || f.endsWith('.cubin'))
+                    .filter(
+                        f =>
+                            f.endsWith('.ptx') ||
+                            f.endsWith('.cubin') ||
+                            (f.endsWith('.tilebc') && !!this.compiler.tileirdisasm),
+                    )
                     .map(async name => {
-                        const type = name.endsWith('.ptx') ? 'PTX' : 'SASS';
+                        const type = name.endsWith('.ptx') ? 'PTX' : name.endsWith('.tilebc') ? 'Tile IR' : 'SASS';
                         const {asm} =
                             type === 'PTX'
-                                ? {asm: await fs.readFile(Path.join(dirPath, name), 'utf8')}
-                                : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
+                                ? await this.readPtx(Path.join(dirPath, name), maxSize)
+                                : type === 'Tile IR'
+                                  ? await this.tileirdisasm(Path.join(dirPath, name), {dirPath}, maxSize)
+                                  : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
-                        const parser = type === 'PTX' ? this.ptxParser : this.deviceAsmParser;
+                        const parser =
+                            type === 'PTX'
+                                ? this.ptxParser
+                                : type === 'Tile IR'
+                                  ? this.tileIrParser
+                                  : this.deviceAsmParser;
                         Object.assign(devices, {
                             [nameAndArch]: await this.postProcessAsm(
                                 {
@@ -233,5 +273,54 @@ export class NvccCompiler extends BaseCompiler {
             result.devices = devices;
         }
         return result;
+    }
+}
+
+// Refer to "etc/config/cuda.dev.win32.properties" for proper configuration
+export class NvccWin32Compiler extends NvccCompiler {
+    static override get key() {
+        return 'nvcc-win32';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+        this.asm = new VcAsmParser(this.compilerProps);
+
+        if (process.platform !== 'win32') {
+            throw new Error('NvccWin32Compiler can only be used on Windows');
+        }
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+        let compilerOptions: string[] = [];
+        let nvccOutput = outputFilename;
+        if (!filters.binary && !filters.binaryObject) {
+            // Caller expects that `outputFilename` is an assembly file
+            const outputObj = outputFilename.replace(/\.\w+$/, '.obj');
+            const outputPdb = outputFilename.replace(/\.\w+$/, '.pdb');
+            compilerOptions = [
+                '/nologo',
+                '/FA',
+                '/c',
+                '/Fa' + this.filename(outputFilename),
+                '/Fo' + this.filename(outputObj.replaceAll('\\', '/')),
+                '/Zi',
+                '/Fd' + this.filename(outputPdb),
+            ];
+            nvccOutput = outputObj;
+        } else if (filters.binaryObject) {
+            // Caller expects that `outputFilename` is an object file
+            compilerOptions = ['/nologo', '/c', '/Fo' + this.filename(outputFilename.replaceAll('\\', '/')), '/Zi'];
+            nvccOutput = outputFilename;
+        } else {
+            // Caller expects that `outputFilename` is the executable
+            compilerOptions = ['/nologo', '/Fe' + this.filename(outputFilename.replaceAll('\\', '/')), '/Zi'];
+            nvccOutput = outputFilename;
+        }
+        const nvccOptions = ['-o', this.filename(nvccOutput), '-g', '-lineinfo', '--keep-device-functions'];
+        if (!filters.execute) {
+            nvccOptions.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
+        }
+        return [...nvccOptions, '-Xcompiler', compilerOptions.join(',')];
     }
 }

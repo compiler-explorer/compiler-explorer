@@ -105,4 +105,5 @@ register('go', 'gofmt', true);
 register('co2', 'co2fmt', true);
 register('rustp', 'rustfmt', true);
 register('dart', 'dartformat', true);
+register('mojo', 'mojo', true);
 register('v', 'vfmt', true);

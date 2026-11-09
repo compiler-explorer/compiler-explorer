@@ -34,12 +34,14 @@ export class PELabelReconstructor {
     private readonly jumpRegex: RegExp;
     private readonly callRegex: RegExp;
     private readonly int3Regex: RegExp;
+    private readonly programLibraries: string[];
 
     constructor(
         asmLines: string[],
         dontLabelUnmappedAddresses: boolean,
         mapFileReader: MapFileReader,
         needsReconstruction = true,
+        programLibraries: string[] = [],
     ) {
         this.asmLines = asmLines;
         this.addressesToLabel = [];
@@ -52,6 +54,7 @@ export class PELabelReconstructor {
 
         this.mapFileReader = mapFileReader;
         this.needsReconstruction = needsReconstruction;
+        this.programLibraries = programLibraries;
     }
 
     /**
@@ -228,8 +231,7 @@ export class PELabelReconstructor {
      *  if an address doesn't have a mapped name, it is called <Laddress>
      */
     insertLabels() {
-        let currentSegment: Segment | undefined;
-        let segmentChanged = false;
+        let currentUnit: string | undefined;
 
         let lineIdx = 0;
         while (lineIdx < this.asmLines.length) {
@@ -241,10 +243,7 @@ export class PELabelReconstructor {
                 const address = Number.parseInt(addressStr, 16);
 
                 const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(undefined, address);
-                if (segmentInfo) {
-                    currentSegment = segmentInfo;
-                    segmentChanged = true;
-                }
+                if (segmentInfo?.unitName) currentUnit = segmentInfo.unitName;
 
                 let namedAddr: Segment | undefined;
                 let labelLine: string | undefined;
@@ -275,17 +274,35 @@ export class PELabelReconstructor {
                     }
                 }
 
-                const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
-                if (lineInfo && currentSegment?.unitName) {
-                    this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':' + lineInfo.lineNumber);
-                    lineIdx++;
-                } else if (segmentChanged && currentSegment) {
-                    this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':0');
+                // A Visual Studio segment is a whole section, so the unit a function came from is its symbol's
+                if (namedAddr?.unitName) currentUnit = namedAddr.unitName;
+
+                // Tagged whenever the unit is known: a section that starts with int3 padding has no instruction left
+                // at its start address once shortenInt3s collapsed it, so its start can't be what turns tagging on
+                if (currentUnit && PELabelReconstructor.isProgramUnit(currentUnit, this.programLibraries)) {
+                    const lineNumber = this.mapFileReader.getLineInfoByAddress(undefined, address)?.lineNumber ?? 0;
+                    // An object from one of the program's libraries goes by its own name, as `file:line` can't take
+                    // the `library:` before it
+                    const objectName = currentUnit.slice(currentUnit.indexOf(':') + 1);
+                    this.asmLines.splice(lineIdx, 0, '/app/' + objectName + ':' + lineNumber);
                     lineIdx++;
                 }
             }
 
             lineIdx++;
         }
+    }
+
+    /**
+     * The linker names an object it took from a library archive `<library>:<object>`, and its own entries e.g.
+     * `<absolute>`. Only code from the program's own objects, and from the libraries it built itself, is given them
+     * as its source, so that the rest counts as library code.
+     */
+    static isProgramUnit(unitName: string, programLibraries: string[] = []) {
+        if (unitName.startsWith('<')) return false;
+        const colon = unitName.indexOf(':');
+        if (colon === -1) return true;
+        const library = unitName.slice(0, colon).toLowerCase();
+        return programLibraries.some(programLibrary => programLibrary.toLowerCase() === library);
     }
 }

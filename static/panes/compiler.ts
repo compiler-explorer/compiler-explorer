@@ -58,6 +58,7 @@ import {options} from '../options.js';
 import {languagesService} from '../services/languages.service.js';
 import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
+import type {Theme} from '../themes.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
 import {CompilationOptions} from '../widgets/compilation-options.js';
@@ -159,6 +160,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private needsCompile: boolean;
     private deviceViewOpen: boolean;
     private options: string;
+    private optionsChangedBeforeInitialStateLoad = false;
     private source: string;
     private assembly: Assembly[];
     private lastResult: CompilationResult | null;
@@ -176,7 +178,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
-    private compilerPicker: CompilerPicker;
+    private compilerPicker: CompilerPicker | undefined;
     private compiler: CompilerInfo | null;
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
@@ -199,6 +201,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreButton: JQuery<HTMLButtonElement>;
     private haskellStgButton: JQuery<HTMLButtonElement>;
     private haskellCmmButton: JQuery<HTMLButtonElement>;
+    private jvmBytecodeButton: JQuery<HTMLButtonElement>;
+    private jvmBytecodeViewOpen = false;
     private leanCButton: JQuery<HTMLButtonElement>;
     private clojureMacroExpButton: JQuery<HTMLButtonElement>;
     private yulButton: JQuery<HTMLButtonElement>;
@@ -257,6 +261,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private cfgViewOpenCount: number;
     private irCfgViewOpenCount: number;
     private wantOptInfo?: boolean;
+    private darkBackgroundColours = false;
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
     private irViewOpen: boolean;
@@ -345,6 +350,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
+        this.eventHub.emit('requestTheme');
         new CompilationOptions(this, this.id, result => result.result ?? result, this.filters);
 
         this.postInit(state);
@@ -352,6 +358,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     private async postInit(state: MonacoPaneState & CompilerState) {
         await this.initLangAndCompiler(state);
+        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
+            this.options =
+                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
+            this.optionsField.val(this.options);
+        }
         // The lang/compiler are now resolved from our own state. Only after this point may we
         // react to languageChange broadcasts; an earlier one (e.g. the editor's initial firstTime
         // broadcast, which can arrive while the await above is still pending) would otherwise reset
@@ -454,7 +465,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const result = await this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
-        this.updateLibraries();
+        await this.updateLibraries();
     }
 
     override close(): void {
@@ -462,7 +473,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.unsubscribe();
         this.eventHub.emit('compilerClose', this.id, this.sourceTreeId ?? 0);
         this.editor.dispose();
-        this.compilerPicker.destroy();
+        this.compilerPicker?.destroy();
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
@@ -663,6 +674,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.id,
                 this.source,
                 this.lastResult?.leanCOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
+        const createJvmBytecodeView = () => {
+            return Components.getJvmBytecodeViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.jvmBytecodeOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
@@ -950,6 +972,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createLeanCView());
+        });
+
+        createDragSource(this.container.layoutManager, this.jvmBytecodeButton, () => createJvmBytecodeView()).on(
+            'dragStart',
+            hidePaneAdder,
+        );
+
+        this.jvmBytecodeButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createJvmBytecodeView());
         });
 
         createDragSource(this.container.layoutManager, this.rustMacroExpButton, () => createRustMacroExpView()).on(
@@ -1399,6 +1433,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceClojureMacroExp: this.clojureMacroExpViewOpen,
                 produceYul: this.yulViewOpen ? this.yulOptions : null,
                 overrides: this.getCurrentState().overrides,
+                darkBackgroundColours: this.darkBackgroundColours,
             },
             filters: this.getEffectiveFilters(),
             tools: this.getActiveTools(newTools),
@@ -1872,6 +1907,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         this.compileInfoLabel.text(infoLabelText);
+        // Resize in case the compile info wraps the bottom bar onto another line
+        this.resize();
 
         this.postCompilationResult(request, result.result ?? result);
 
@@ -2564,6 +2601,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton = this.domRoot.find('.btn.view-haskellCore');
         this.haskellStgButton = this.domRoot.find('.btn.view-haskellStg');
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
+        this.jvmBytecodeButton = this.domRoot.find('.btn.view-jvmBytecode');
         this.leanCButton = this.domRoot.find('.btn.view-leanC');
         this.clojureMacroExpButton = this.domRoot.find('.btn.view-clojuremacroexp');
         this.yulButton = this.domRoot.find('.btn.view-yul');
@@ -2636,8 +2674,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         await this.libsWidget.stateLoaded;
     }
 
+    // Never rejects: callers await this while compiles are deferred, and a failed library fetch must not leave
+    // the pane unable to compile. On failure the libs widget just keeps its previous state.
     async updateLibraries(): Promise<void> {
-        if (this.libsWidget) {
+        if (!this.libsWidget) return;
+        try {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
                 filteredLibraries = await LibUtils.getSupportedLibraries(
@@ -2647,7 +2688,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 );
             }
 
-            this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+            await this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+        } catch (e) {
+            SentryCapture(e, 'Compiler.updateLibraries');
         }
     }
 
@@ -2865,6 +2908,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellStgButton.prop('disabled', this.haskellStgViewOpen);
         this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
         this.leanCButton.prop('disabled', this.leanCViewOpen);
+        this.jvmBytecodeButton.prop('disabled', this.jvmBytecodeViewOpen);
         this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
         this.rustHirButton.prop('disabled', this.rustHirViewOpen);
         this.clojureMacroExpButton.prop('disabled', this.clojureMacroExpViewOpen);
@@ -2890,6 +2934,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
         this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
         this.leanCButton.toggle(!!this.compiler.supportsLeanCView);
+        this.jvmBytecodeButton.toggle(!!this.compiler.supportsJvmBytecodeView);
         this.clojureMacroExpButton.toggle(!!this.compiler.supportsClojureMacroExpView);
         this.yulButton.toggle(!!this.compiler.supportsYulView);
         // TODO(jeremy-rifkin): Disable cfg button when binary mode is set?
@@ -3072,6 +3117,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('haskellStgViewClosed', this.onHaskellStgViewClosed, this);
         this.eventHub.on('haskellCmmViewOpened', this.onHaskellCmmViewOpened, this);
         this.eventHub.on('haskellCmmViewClosed', this.onHaskellCmmViewClosed, this);
+        this.eventHub.on('jvmBytecodeViewOpened', id => {
+            if (id === this.id) {
+                this.jvmBytecodeViewOpen = true;
+                this.jvmBytecodeButton.prop('disabled', true);
+            }
+        });
+        this.eventHub.on('jvmBytecodeViewClosed', id => {
+            if (id === this.id) {
+                this.jvmBytecodeViewOpen = false;
+                this.jvmBytecodeButton.prop('disabled', false);
+            }
+        });
         this.eventHub.on('leanCViewOpened', this.onLeanCViewOpened, this);
         this.eventHub.on('leanCViewClosed', this.onLeanCViewClosed, this);
         this.eventHub.on('leanCViewOptionsUpdated', this.onLeanCViewOptionsUpdated, this);
@@ -3104,6 +3161,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         });
         this.eventHub.on('languageChange', this.onLanguageChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
 
         this.eventHub.on('initialised', this.undefer, this);
 
@@ -3133,7 +3191,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // "input" rather than "keyup": it covers every edit, including the ones that
         // involve no keystroke at all (middle-click paste, drag and drop, autofill).
-        this.optionsField.on('change', optionsChange).on('input', optionsChange);
+        this.optionsField.on('change input', e => {
+            if (!this.initialStateLoaded) {
+                this.optionsChangedBeforeInitialStateLoad = true;
+            }
+            optionsChange(e);
+        });
 
         this.mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
         this.editor.onMouseMove(e => {
@@ -3183,6 +3246,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onOptionsChange(options: string): void {
         if (this.options !== options) {
+            if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
             this.options = options;
             this.updateState();
             this.compile();
@@ -3233,7 +3297,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.deferCompiles = true;
         this.needsCompile = true;
 
-        this.updateLibraries();
+        await this.updateLibraries();
         this.updateState();
         this.updateCompilerUI();
 
@@ -3502,6 +3566,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (editorId === this.sourceEditorId || (treeId && treeId === this.sourceTreeId)) {
             this.compile();
         }
+    }
+
+    onThemeChange(newTheme: Theme | null): void {
+        const darkBackgroundColours = newTheme?.darkBackgroundColours ?? false;
+        if (darkBackgroundColours === this.darkBackgroundColours) return;
+        this.darkBackgroundColours = darkBackgroundColours;
+        if (this.compiler?.supportsDarkBackgroundColours) this.compile();
     }
 
     override onSettingsChange(newSettings: SiteSettings): void {
@@ -3777,9 +3848,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.updateState();
                 this.updateCompilerUI();
                 this.setAssembly({asm: this.fakeAsm('')});
-                // this is a workaround to delay compilation further until the Editor sends a compile request
-                this.needsCompile = false;
-
+                // The libraries widget asks for a compile whenever its language changes, whatever compileOnChange says
+                if (!this.settings.compileOnChange) this.needsCompile = false;
                 this.undefer();
                 this.sendCompiler();
             });

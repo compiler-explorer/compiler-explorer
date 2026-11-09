@@ -24,10 +24,17 @@
 
 import path from 'node:path';
 
-import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {
+    BuildResult,
+    BypassCache,
+    CacheKey,
+    CompilationCacheKey,
+    CompilationResult,
+} from '../../types/compilation/compilation.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
+import * as utils from '../utils.js';
 import {GCCCompiler} from './gcc.js';
 
 export class Win32MingWGcc extends GCCCompiler {
@@ -39,6 +46,11 @@ export class Win32MingWGcc extends GCCCompiler {
         const paths: string[] = super.getExtraPaths();
 
         return [...paths, path.normalize(path.dirname(this.compiler.exe))];
+    }
+
+    // As CMake names an executable on Windows, whatever its target name already ends with
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
+        return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
     override optionsForFilter(
@@ -81,17 +93,23 @@ export class Win32MingWGcc extends GCCCompiler {
     override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const result = await super.buildExecutableInFolder(key, dirPath);
 
-        if (result.code === 0) {
-            await copyNeededDlls(
-                dirPath,
-                result.executableFilename,
-                this.exec,
-                this.compiler.objdumper,
-                this.getDefaultExecOptions(),
-            );
-        }
+        if (result.code === 0) await this.prepareArtifactExecution(result.executableFilename);
 
         return result;
+    }
+
+    override async prepareArtifactExecution(artifactFilename: string) {
+        if (!(await utils.fileExists(artifactFilename))) return;
+        const execOptions = this.getDefaultExecOptions();
+        // Where the sandbox lets objdump read the executable
+        execOptions.customCwd = path.dirname(artifactFilename);
+        await copyNeededDlls(
+            path.dirname(artifactFilename),
+            artifactFilename,
+            this.exec,
+            this.compiler.objdumper,
+            execOptions,
+        );
     }
 
     override async handleExecution(

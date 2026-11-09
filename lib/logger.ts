@@ -30,6 +30,9 @@ import winston from 'winston';
 import LokiTransport from 'winston-loki';
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
+
+import {Graceful} from './node-graceful.js';
+
 /**
  * Options required for configuring logging
  */
@@ -122,12 +125,16 @@ function logToLoki(url: string) {
         labels: {job: 'ce'},
         batching: true,
         interval: 3,
+        // Its own shutdown hook exits with 128+signal as soon as the batch is sent, cutting short anything else
+        // still finishing on SIGTERM (like a queue worker's drain), so flush through Graceful alongside those instead.
+        gracefulShutdown: false,
         // remove color from log level label - loki really doesn't like it
         format: winston.format.uncolorize({
             message: false,
             raw: false,
         }),
     });
+    Graceful.on('exit', () => transport.flush());
 
     logger.add(transport);
     logger.info('Configured loki');

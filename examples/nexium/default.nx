@@ -1,0 +1,8 @@
+// Type your code here, or load an example.
+fn square(num: i32) -> i32 !allocates !panics {
+    return num *% num
+}
+
+fn main() {
+    println("{}", .{square(12)})
+}

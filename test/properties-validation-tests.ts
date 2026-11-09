@@ -244,6 +244,27 @@ baz=qux
             expect(result.orphanedCompilerExe).toHaveLength(0);
         });
 
+        it('should treat a group exe as the exe of each compiler in the group', () => {
+            const result = validate(
+                `compilers=&grp:c\ngroup.grp.compilers=a:b\ngroup.grp.exe=/opt/compiler-explorer/tool\ncompiler.a.name=A\ncompiler.b.name=B\ncompiler.c.exe=/opt/compiler-explorer/c`,
+            );
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+
+        it('should treat a group exe as the exe of compilers in nested groups', () => {
+            const result = validate(
+                `compilers=&outer:c\ngroup.outer.compilers=&inner\ngroup.outer.exe=/opt/compiler-explorer/tool\ngroup.inner.compilers=a\ncompiler.a.name=A\ncompiler.c.exe=/opt/compiler-explorer/c`,
+            );
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+
+        it('should still report a compiler outside the group with no exe', () => {
+            const result = validate(
+                `compilers=&grp:c\ngroup.grp.compilers=a\ngroup.grp.exe=/opt/compiler-explorer/tool\ncompiler.a.exe=/opt/compiler-explorer/a\ncompiler.c.name=C`,
+            );
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'c'}));
+        });
+
         it('should ignore remote compiler references (with @)', () => {
             const result = validate(`compilers=gcc:remote@host\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`);
             expect(result.orphanedCompilerExe).toHaveLength(0);
@@ -452,6 +473,44 @@ compilers=orphan
             ['files with no compiler definitions', 'someProperty=value', 'c++.amazon.properties'],
         ])('should not flag %s', (_, content, filename) => {
             expect(validate(content, filename).noCompilersList).toBe(false);
+        });
+    });
+
+    describe('overlay files', () => {
+        const overlay = `# Overlay: tweaks c++.foo.properties
+compilers=extra
+group.mygroup.options=-O2
+compiler.basecompiler.name=Renamed
+compiler.extra.exe=/opt/compiler-explorer/extra/bin/extra
+compiler.extra.name=Extra
+compiler.extra.name=Extra again
+`;
+        const notOverlay = overlay.replace('# Overlay: tweaks c++.foo.properties\n', '');
+
+        it('should recognise an overlay by its first line', () => {
+            expect(parsePropertiesFileRaw(overlay, 'c++.foo-bar.properties').isOverlay).toBe(true);
+            expect(parsePropertiesFileRaw('# overlay\ncompiler.a.name=A', 'x.properties').isOverlay).toBe(true);
+            expect(parsePropertiesFileRaw(notOverlay, 'c++.foo-bar.properties').isOverlay).toBe(false);
+            expect(parsePropertiesFileRaw(`# Base file\n${overlay}`, 'c++.foo-bar.properties').isOverlay).toBe(false);
+        });
+
+        it('should skip orphan checks in overlays', () => {
+            const result = validate(overlay, 'c++.foo-bar.properties');
+            expect(result.orphanedCompilerExe).toEqual([]);
+            expect(result.orphanedCompilerId).toEqual([]);
+            expect(result.orphanedGroups).toEqual([]);
+            expect(validate('# Overlay\ncompiler.gcc.name=GCC', 'c++.foo-bar.properties').noCompilersList).toBe(false);
+        });
+
+        it('should still run other checks in overlays', () => {
+            const result = validate(overlay, 'c++.foo-bar.properties');
+            expect(result.duplicateKeys.map(i => i.id)).toEqual(['compiler.extra.name']);
+        });
+
+        it('should run orphan checks on the same content without the marker', () => {
+            const result = validate(notOverlay, 'c++.foo-bar.properties');
+            expect(result.orphanedCompilerId.map(i => i.id)).toEqual(['basecompiler']);
+            expect(result.orphanedGroups.map(i => i.id)).toEqual(['mygroup']);
         });
     });
 

@@ -260,7 +260,7 @@ function diagnosticFile(filename: string, inputFilename?: string): string | unde
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
-    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix}[] = [
+    const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix | undefined}[] = [
         {
             re: / *help: add `#!\[feature\((.*?)\)]`/,
             makeFix: ([_, featureName]) => ({
@@ -290,6 +290,24 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     },
                 ],
             }),
+        },
+        {
+            re: /consider adding a `main` function to `[^`]+`/,
+            makeFix: ([_]) =>
+                currentDiagnostic?.tag
+                    ? {
+                          title: 'Add a `main` function',
+                          edits: [
+                              {
+                                  line: currentDiagnostic.tag.line,
+                                  column: currentDiagnostic.tag.column,
+                                  endline: currentDiagnostic.tag.line,
+                                  endcolumn: currentDiagnostic.tag.column,
+                                  text: '\n\npub fn main() {}',
+                              },
+                          ],
+                      }
+                    : undefined,
         },
     ];
 
@@ -350,7 +368,8 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
             const fixes = quickfixes.flatMap(({re, makeFix}) => {
                 const match = filteredLine.match(re);
                 if (match) {
-                    return [makeFix(match)];
+                    const fix = makeFix(match);
+                    return fix ? [fix] : [];
                 } else {
                     return [];
                 }
@@ -379,6 +398,11 @@ export function anonymizeIp(ip: string): string {
         return ip;
     }
     if (ip.includes(':')) {
+        // An IPv4-mapped IPv6 address such as ::ffff:203.0.113.42, which is what req.ip looks
+        // like for IPv4 clients of a dual-stack server
+        if (ip.includes('.')) {
+            return ip.replace(/\.\d{1,3}$/, '.0');
+        }
         // IPv6
         return ip.replace(/(?::[\dA-Fa-f]{0,4}){3}$/, ':0:0:0');
     }
@@ -565,6 +589,21 @@ export function resolveWithinDir(dirPath: string, filename: string): string {
     const normalized = path.normalize(path.join(dirPath, filename));
     if (!isPathInside(dirPath, normalized)) throw new Error('Invalid filename');
     return normalized;
+}
+
+/**
+ * Returns an error message if a request's `customOutputFilename` is not a string, or names a path that would leave the
+ * compilation directory. `buildDir` is where the name is resolved from, relative to that directory: a CMake artifact
+ * is named from `build`, so `../` reaches the project's own files.
+ */
+export function checkCustomOutputFilename(filename: unknown, buildDir = '.'): string | null {
+    if (filename === undefined || filename === null || filename === '') return null;
+    if (typeof filename !== 'string') return 'Invalid filename';
+    // No directory exists yet when a request is parsed. Joining rather than normalising keeps a leading separator
+    // from hiding a '..', as path.join(dir, '/../x') leaves dir.
+    const relative = path.join(buildDir, filename);
+    if (relative === '.' || relative === '..' || relative.startsWith('..' + path.sep)) return 'Invalid filename';
+    return null;
 }
 
 export async function fileExists(filename: string): Promise<boolean> {

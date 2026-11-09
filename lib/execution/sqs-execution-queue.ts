@@ -28,8 +28,9 @@ import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js
 import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import {Graceful} from '../node-graceful.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-import {getHash} from '../utils.js';
+import {getHash, sleep} from '../utils.js';
 import {LocalExecutionEnvironment} from './_all.js';
 import {BaseExecutionTriple} from './base-execution-triple.js';
 import {PersistentEventsSender} from './events-websocket.js';
@@ -60,12 +61,14 @@ export class SqsExecuteQueueBase {
 }
 
 export class SqsExecuteRequester extends SqsExecuteQueueBase {
-    private async sendMsg(url: string, body: string) {
+    private async sendMsg(url: string, body: string, groupId: string) {
         try {
             return await this.sqs.sendMessage({
                 QueueUrl: url,
                 MessageBody: body,
-                MessageGroupId: 'default',
+                // One group per request: FIFO hands out nothing more from a group while one of its messages is in
+                // flight, so a shared group would let a single stranded message stall every execution on the queue.
+                MessageGroupId: groupId,
                 MessageDeduplicationId: getHash(body),
             });
         } catch (e) {
@@ -78,16 +81,25 @@ export class SqsExecuteRequester extends SqsExecuteQueueBase {
         const body = JSON.stringify(message);
         const url = this.getSqsQueueUrl(triple);
 
-        return this.sendMsg(url, body);
+        return this.sendMsg(url, body, message.guid);
     }
 }
 
 export class SqsWorkerMode extends SqsExecuteQueueBase {
     protected triples: BaseExecutionTriple[];
+    private draining = false;
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
         super(props, awsProps);
         this.triples = getExecutionTriplesForCurrentHost();
+    }
+
+    startDraining() {
+        this.draining = true;
+    }
+
+    isDraining() {
+        return this.draining;
     }
 
     private async receiveMsg(url: string) {
@@ -112,6 +124,13 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
 
+            // A long poll that started before shutdown can still be handed a message: put it straight back rather
+            // than leave it invisible until the visibility timeout expires.
+            if (this.draining) {
+                await this.makeVisibleAgain(url, queued_message.ReceiptHandle);
+                return undefined;
+            }
+
             try {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
@@ -132,6 +151,22 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
         }
 
         return undefined;
+    }
+
+    private async makeVisibleAgain(url: string, receiptHandle: string | undefined) {
+        if (!receiptHandle) return;
+        try {
+            await this.sqs.changeMessageVisibility({
+                QueueUrl: url,
+                ReceiptHandle: receiptHandle,
+                VisibilityTimeout: 0,
+            });
+            logger.info('Returned an execution message to the queue while draining');
+        } catch (e) {
+            logger.error(
+                `Failed to return an execution message to the queue while draining: ${e instanceof Error ? e.message : String(e)}`,
+            );
+        }
     }
 }
 
@@ -211,33 +246,28 @@ export function startExecutionWorkerThread(
     // Create persistent WebSocket sender (execution workers don't require acknowledgments)
     const persistentSender = new PersistentEventsSender(compilationEnvironment.ceProps, false);
 
-    // Handle graceful shutdown
-    const shutdown = async () => {
-        logger.info('Shutting down execution worker - closing persistent WebSocket connection');
-        await persistentSender.close();
-        process.exit(0);
-    };
-
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
-
     // allow 2 executions at the same time
     // Note: With WaitTimeSeconds=20, the receiveMessage call will wait up to 20 seconds
-    // for a message to arrive. The 100ms timeout only applies between successful message
+    // for a message to arrive. The 100ms sleep only applies between successful message
     // processing, providing immediate response when messages are available.
-
-    const doExecutionWork1 = async () => {
-        await doOneExecution(queue, compilationEnvironment, persistentSender);
-        setTimeout(doExecutionWork1, 100);
+    const runThread = async (startDelayMs: number) => {
+        await sleep(startDelayMs);
+        while (!queue.isDraining()) {
+            await doOneExecution(queue, compilationEnvironment, persistentSender);
+            await sleep(100);
+        }
     };
+    const threads = [runThread(1500), runThread(1530)];
 
-    const doExecutionWork2 = async () => {
-        await doOneExecution(queue, compilationEnvironment, persistentSender);
-        setTimeout(doExecutionWork2, 100);
-    };
-
-    setTimeout(doExecutionWork1, 1500);
-    setTimeout(doExecutionWork2, 1530);
+    // Exiting with a receive still open can strand a message SQS has already handed to it, so let the open receives
+    // and running executions finish first. Graceful bounds how long this may take.
+    Graceful.on('exit', async () => {
+        logger.info('Draining execution worker - finishing open receives and running executions');
+        queue.startDraining();
+        await Promise.allSettled(threads);
+        logger.info('Execution worker drained - closing persistent WebSocket connection');
+        await persistentSender.close();
+    });
 
     return () => !persistentSender.hasFailedPermanently();
 }

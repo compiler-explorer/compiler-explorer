@@ -27,7 +27,6 @@ import path from 'node:path';
 import process from 'node:process';
 
 import PromClient from 'prom-client';
-import urljoin from 'url-join';
 
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
@@ -37,6 +36,11 @@ import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
 import type {AppConfiguration, TrustProxySetting} from './config.interfaces.js';
+
+// Consumers concatenate paths directly (e.g. `${httpRoot}z/id`), so the trailing slash matters.
+function withSingleTrailingSlash(url: string): string {
+    return url.replace(/\/*$/, '/');
+}
 
 /**
  * Measures event loop lag to monitor server performance.
@@ -170,11 +174,13 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
     const maxUploadSize = ceProps('maxUploadSize', '1mb');
     const extraBodyClass = ceProps('extraBodyClass', appArgs.devMode ? 'dev' : '');
+    const siteLogo = ceProps('siteLogo', '');
+    const favicon = ceProps('favicon', '');
     const storageSolution = compilerProps.ceProps('storageSolution', 'local');
-    const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
+    const httpRoot = withSingleTrailingSlash(ceProps('httpRoot', '/'));
 
     const staticUrl = ceProps<string | undefined>('staticUrl');
-    const staticRoot = urljoin(staticUrl || httpRoot, '/');
+    const staticRoot = withSingleTrailingSlash(staticUrl || httpRoot);
     const trustProxy = ceProps<TrustProxySetting>('trustProxy', 'loopback');
 
     return {
@@ -184,6 +190,8 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
         staticMaxAgeSecs,
         maxUploadSize,
         extraBodyClass,
+        siteLogo,
+        favicon,
         storageSolution,
         httpRoot,
         staticRoot,

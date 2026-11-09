@@ -36,8 +36,6 @@ import {options} from './options.js';
 import {languagesService} from './services/languages.service.js';
 import {Themes, themes} from './themes.js';
 
-export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
-
 export type Keymap = 'vscode' | 'jetbrains';
 
 export interface SiteSettings {
@@ -64,7 +62,7 @@ export interface SiteSettings {
     executorCompileOnChange: boolean;
     shakeStatusIconOnWarnings: boolean;
     defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
-    formatBase: FormatBase;
+    formatBase: string;
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
     hoverShowSource: boolean;
@@ -387,7 +385,9 @@ export class Settings {
             this.eventHub.emit('broadcastFontScale', Number.parseInt(e.target.value, 10));
         });
 
-        const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
+        const formats = options.formatStyles;
+        // A stored style the server no longer offers would be rejected, so fall back to the default
+        if (!formats.includes(this.settings.formatBase)) this.settings.formatBase = formats[0];
         const formatsData = formats.map(format => {
             return {label: format, desc: format};
         });

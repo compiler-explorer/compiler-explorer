@@ -36,40 +36,19 @@ export class LLVMWin32Demangler extends Win32Demangler {
         const translations: Record<string, string> = {};
         const flags = ['--no-access-specifier', '--no-calling-convention'];
 
-        const demangleFromStdin = async (stdin: string) => {
-            const args = [...flags];
-            const execOptions = this.compiler.getDefaultExecOptions();
-            execOptions.input = stdin;
-            const output = await this.compiler.exec(this.demanglerExe, args, execOptions);
-            const oArray = utils.splitLines(output.stdout);
-            const outputArray = oArray.filter(Boolean);
+        const symbols = new Set(unwrap(this.win32RawSymbols));
+        const execOptions = this.compiler.getDefaultExecOptions();
+        execOptions.input = [...symbols].join('\n') + '\n';
+        const output = await this.compiler.exec(this.demanglerExe, flags, execOptions);
 
-            // llvm-undname just output:
-            // mangledName
-            // unmangledName
-            for (let i = 0; i < outputArray.length; ++i) {
-                if (this.hasQuotesAroundDecoratedLabels) {
-                    translations[`"${outputArray[i]}"`] = outputArray[++i];
-                } else {
-                    translations[outputArray[i]] = outputArray[++i];
-                }
+        // For each input line llvm-undname echoes the line, then prints the demangled name only if demangling
+        // succeeded (the error goes to stderr), then an empty line: so a symbol yields one or two lines.
+        for (const block of output.stdout.split(/(?:\r?\n){2,}/)) {
+            const [mangled, demangled] = utils.splitLines(block);
+            if (demangled && symbols.has(mangled)) {
+                translations[this.hasQuotesAroundDecoratedLabels ? `"${mangled}"` : mangled] = demangled;
             }
-        };
-
-        unwrap(this.win32RawSymbols).sort();
-
-        let lastSymbol: string | null = null;
-        const symbolArray: string[] = [];
-        for (const symb of unwrap(this.win32RawSymbols)) {
-            if (symb === lastSymbol) {
-                continue;
-            }
-            lastSymbol = symb;
-            symbolArray.push(symb);
         }
-
-        const stdin = symbolArray.join('\n') + '\n';
-        await demangleFromStdin(stdin);
 
         this.translations = translations;
         return translations;

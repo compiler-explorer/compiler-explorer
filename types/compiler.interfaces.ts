@@ -110,11 +110,15 @@ export type CompilerInfo = {
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
     supportsLeanCView?: boolean;
+    supportsJvmBytecodeView?: boolean;
     supportsClojureMacroExpView?: boolean;
     supportsYulView?: boolean;
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
+    // Whether the compiler colours its output differently when asked for colours that suit a dark background. Only
+    // these compilers cache a compilation separately for light and dark themes.
+    supportsDarkBackgroundColours?: boolean;
     supportsMarch?: boolean;
     supportsTarget?: boolean;
     supportsTargetIs?: boolean;
@@ -144,6 +148,7 @@ export type CompilerInfo = {
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
+    skipExeCheck: boolean;
     buildenvsetup?: {
         id: string;
         props: (name: string, def?: any) => any;
@@ -182,6 +187,7 @@ export type CompilerInfo = {
     cachedPossibleArguments?: any;
     cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
+    tileirdisasm?: string;
     ptxas?: string;
     mtime?: any;
     $order: number;

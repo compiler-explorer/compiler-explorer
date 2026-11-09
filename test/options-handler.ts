@@ -38,6 +38,7 @@ import {getRemoteId} from '../shared/remote-utils.js';
 import {UrlTestCases} from '../shared/url-testcases.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {ToolInfo} from '../types/tool.interfaces.js';
 import {makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -392,6 +393,28 @@ describe('Options handler', () => {
         expect(handler.getHash()).not.toEqual('');
         expect(JSON.parse(handler.getJSON())).toHaveProperty('compilers', []);
     });
+    it('should offer the configured clang-format styles to the client', () => {
+        const handler = new ClientOptionsHandler(
+            [],
+            new properties.CompilerProps(
+                languages,
+                properties.fakeProps({'formatter.clangformat.styles': 'MyCorp:Google:LLVM'}),
+            ),
+            {env: ['dev']} as unknown as AppArguments,
+        );
+        expect(handler.get().formatStyles).toEqual(['MyCorp', 'Google', 'LLVM']);
+    });
+    it('should offer the built-in clang-format styles when none are configured', () => {
+        expect(optionsHandler.get().formatStyles).toEqual([
+            'Google',
+            'LLVM',
+            'Mozilla',
+            'Chromium',
+            'WebKit',
+            'Microsoft',
+            'GNU',
+        ]);
+    });
     it('should get static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
         const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
@@ -585,6 +608,58 @@ describe('Options handler', () => {
                 },
             },
         });
+    });
+
+    it('should only offer tools whose exe is missing locally if they skip the exe check', () => {
+        const toolProps = properties.fakeProps({
+            'tools.remotetool.name': 'Remote Tool',
+            'tools.remotetool.exe': '/nonexistent/remotetool',
+            'tools.remotetool.type': 'independent',
+            'tools.remotetool.class': 'testing-tool',
+            'tools.remotetool.skipExeCheck': true,
+            'tools.missingtool.name': 'Missing Tool',
+            'tools.missingtool.exe': '/nonexistent/missingtool',
+            'tools.missingtool.type': 'independent',
+            'tools.missingtool.class': 'testing-tool',
+        });
+        const handler = new ClientOptionsHandler([], new properties.CompilerProps(languages, toolProps), {
+            env: ['dev'],
+        } as unknown as AppArguments);
+
+        const tools = handler.parseTools({fake: 'remotetool:missingtool'});
+
+        expect(Object.keys(tools.fake)).toEqual(['remotetool']);
+    });
+
+    it('should only give tools argChoices when they define some', () => {
+        const toolProps = properties.fakeProps({
+            'tools.choosytool.name': 'Choosy Tool',
+            'tools.choosytool.exe': CURRENT_FILE_PATH,
+            'tools.choosytool.type': 'independent',
+            'tools.choosytool.class': 'testing-tool',
+            'tools.choosytool.argChoices': 'IR:Virtual Instructions:AST',
+            'tools.emptytool.name': 'Empty Tool',
+            'tools.emptytool.exe': CURRENT_FILE_PATH,
+            'tools.emptytool.type': 'independent',
+            'tools.emptytool.class': 'testing-tool',
+            'tools.emptytool.argChoices': '',
+            'tools.plaintool.name': 'Plain Tool',
+            'tools.plaintool.exe': CURRENT_FILE_PATH,
+            'tools.plaintool.type': 'independent',
+            'tools.plaintool.class': 'testing-tool',
+        });
+        const handler = new ClientOptionsHandler([], new properties.CompilerProps(languages, toolProps), {
+            env: ['dev'],
+        } as unknown as AppArguments);
+
+        const tools = handler.parseTools({fake: 'choosytool:emptytool:plaintool'}) as unknown as Record<
+            string,
+            Record<string, {tool: ToolInfo}>
+        >;
+
+        expect(tools.fake.choosytool.tool.argChoices).toEqual(['IR', 'Virtual Instructions', 'AST']);
+        expect(tools.fake.emptytool.tool.argChoices).toBeUndefined();
+        expect(tools.fake.plaintool.tool.argChoices).toBeUndefined();
     });
 
     it('should correctly resolve remote urls', () => {

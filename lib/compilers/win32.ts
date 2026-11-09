@@ -39,21 +39,26 @@ import {BaseCompiler} from '../base-compiler.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
+import {VcObjdumper} from '../objdumper/vc.js';
+import {AsmParser} from '../parsers/asm-parser.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
+import * as utils from '../utils.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
         return 'win32';
     }
 
-    binaryAsmParser: VcAsmParser;
+    binaryAsmParser: AsmParser;
     supportsMapFile = true;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.binaryAsmParser = new VcAsmParser();
+        // VcAsmParser only passes dumpbin's output through; objdump's is what AsmParser filters and labels.
+        this.binaryAsmParser =
+            this.compiler.objdumperType === VcObjdumper.key ? new VcAsmParser() : new AsmParser(this.compilerProps);
     }
 
     private findExistingLibFile(libName: string, libPaths: string[]): string | null {
@@ -98,6 +103,53 @@ export class Win32Compiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
+    }
+
+    getMapFilename(outputFilename: string) {
+        return outputFilename + '.map';
+    }
+
+    private useMapFile(filters: ParseFiltersAndOutputOptions, mapFilename: string, programLibraries: string[] = []) {
+        const mapFileReader = new MapFileReaderVS(mapFilename);
+
+        filters.preProcessBinaryAsmLines = asmLines => {
+            const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader, true, programLibraries);
+            reconstructor.run('output.s.obj');
+
+            return reconstructor.asmLines;
+        };
+    }
+
+    override async prepareArtifactDisassembly(artifactFilename: string, filters: ParseFiltersAndOutputOptions) {
+        if (!this.supportsMapFile) return;
+        // Where `link /MAP` puts it without being given a name
+        const mapFilename = artifactFilename.replace(/\.exe$/i, '') + '.map';
+        if (!(await utils.fileExists(mapFilename))) return;
+
+        // The project's own library targets are its code as much as its executable's objects are
+        const buildFiles = await fs.promises.readdir(path.dirname(artifactFilename), {recursive: true});
+        const programLibraries = buildFiles
+            .filter(file => file.toLowerCase().endsWith('.lib'))
+            .map(file => path.basename(file).slice(0, -'.lib'.length));
+        this.useMapFile(filters, mapFilename, programLibraries);
+    }
+
+    /**
+     * What CMake needs to build like CE builds with a compiler that takes MSVC's options
+     */
+    protected getMsvcStyleCMakeArgs(linkerFlags: string[] = []): string[] {
+        // The map the disassembly is labelled and filtered with
+        if (this.supportsMapFile) linkerFlags = ['/MAP', ...linkerFlags];
+        return [
+            // Debug information in the object file, rather than in a pdb written through mspdbsrv
+            '-DCMAKE_POLICY_DEFAULT_CMP0141=NEW',
+            '-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded',
+            // CMake builds Debug by default, which needs the debug runtime (ucrtbased.dll), so use /MD like other compiles
+            '-DCMAKE_POLICY_DEFAULT_CMP0091=NEW',
+            '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL',
+            // _INIT so these add to the project's own linker flags
+            ...(linkerFlags.length > 0 ? [`-DCMAKE_EXE_LINKER_FLAGS_INIT=${linkerFlags.join(' ')}`] : []),
+        ];
     }
 
     override getObjdumpInputFilename(baseFilename: string, filters?: ParseFiltersAndOutputOptions): string {
@@ -194,6 +246,8 @@ export class Win32Compiler extends BaseCompiler {
 
         if (filters.binary) {
             preLink = ['/link'];
+            // Asked of the linker rather than with /Fm, which clang-cl doesn't pass on
+            if (this.supportsMapFile) preLink.push('/MAP:' + this.filename(this.getMapFilename(outputFilename)));
             libLinks = this.getSharedLibraryLinks(libraries);
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
             const libPathsForLinking = this.getSharedLibraryPaths(libraries, dirPath);
@@ -211,7 +265,7 @@ export class Win32Compiler extends BaseCompiler {
         if (linkIndex !== -1) {
             linkUserOptions = userOptions.slice(linkIndex + 1);
             compileUserOptions = userOptions.slice(0, linkIndex);
-            preLink = ['/link'];
+            if (preLink.length === 0) preLink = ['/link'];
         }
 
         return options.concat(
@@ -258,18 +312,7 @@ export class Win32Compiler extends BaseCompiler {
                 '/Zi', // complete debugging information
             ];
 
-            if (this.supportsMapFile) {
-                const mapFilename = outputFilename + '.map';
-                const mapFileReader = new MapFileReaderVS(mapFilename);
-
-                filters.preProcessBinaryAsmLines = asmLines => {
-                    const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
-                    reconstructor.run('output.s.obj');
-
-                    return reconstructor.asmLines;
-                };
-                options.push('/Fm' + this.filename(mapFilename));
-            }
+            if (this.supportsMapFile) this.useMapFile(filters, this.getMapFilename(outputFilename));
 
             return options;
         }

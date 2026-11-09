@@ -1,0 +1,285 @@
+{
+    "asm": [
+        {
+            "text": "branch(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addi    sp, sp, -16",
+            "source": {
+                "file": null,
+                "line": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      ra, 12(sp)",
+            "source": {
+                "file": null,
+                "line": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      s0, 8(sp)",
+            "source": {
+                "file": null,
+                "line": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    s0, sp, 16",
+            "source": {
+                "file": null,
+                "line": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      a0, 0(sp)",
+            "source": {
+                "file": null,
+                "line": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      a0, 0(sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 7
+            },
+            "labels": []
+        },
+        {
+            "text": "        bnez    a0, .LBB0_2",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 9
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_2",
+                    "range": {
+                        "startCol": 21,
+                        "endCol": 28
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        j       .LBB0_1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 9
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_1",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 24
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_1:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        li      a0, 13",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      a0, 4(sp)",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        j       .LBB0_3",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_3",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 24
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_2:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        li      a0, 42",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      a0, 4(sp)",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        j       .LBB0_3",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_3",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 24
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_3:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      a0, 4(sp)",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      ra, 12(sp)",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      s0, 8(sp)",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    sp, sp, 16",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        ret",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "branch(int):": {
+            "nodes": [
+                {
+                    "id": "branch(int):",
+                    "label": "branch(int):\n        addi    sp, sp, -16\n        sw      ra, 12(sp)\n        sw      s0, 8(sp)\n        addi    s0, sp, 16\n        sw      a0, 0(sp)\n        lw      a0, 0(sp)\n        bnez    a0, .LBB0_2"
+                },
+                {
+                    "id": "branch(int):@8",
+                    "label": "branch(int):@8\n        j       .LBB0_1"
+                },
+                {
+                    "id": ".LBB0_1:",
+                    "label": ".LBB0_1:\n        li      a0, 13\n        sw      a0, 4(sp)\n        j       .LBB0_3"
+                },
+                {
+                    "id": ".LBB0_2:",
+                    "label": ".LBB0_2:\n        li      a0, 42\n        sw      a0, 4(sp)\n        j       .LBB0_3"
+                },
+                {
+                    "id": ".LBB0_3:",
+                    "label": ".LBB0_3:\n        lw      a0, 4(sp)\n        lw      ra, 12(sp)\n        lw      s0, 8(sp)\n        addi    sp, sp, 16\n        ret"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "branch(int):",
+                    "to": ".LBB0_2:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "branch(int):",
+                    "to": "branch(int):@8",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "branch(int):@8",
+                    "to": ".LBB0_1:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": ".LBB0_1:",
+                    "to": ".LBB0_3:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": ".LBB0_2:",
+                    "to": ".LBB0_3:",
+                    "arrows": "to",
+                    "color": "blue"
+                }
+            ]
+        }
+    }
+}

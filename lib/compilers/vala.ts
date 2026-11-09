@@ -29,6 +29,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 
 export class ValaCompiler extends BaseCompiler {
     static get key() {
@@ -37,6 +38,7 @@ export class ValaCompiler extends BaseCompiler {
 
     ccPath: string;
     pkgconfigPath: string;
+    generatedCodeParser = new AsmParserCpp();
 
     constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compiler, env);
@@ -46,6 +48,12 @@ export class ValaCompiler extends BaseCompiler {
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'c';
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
+        // the binary output is a disassembly; otherwise it is the generated C, which the asm parser would mangle
+        if (filters.binary) return super.processAsm(result, filters, options);
+        return this.generatedCodeParser.process(result.asm, filters);
     }
 
     override getDefaultExecOptions() {

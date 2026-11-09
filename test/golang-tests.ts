@@ -57,6 +57,9 @@ async function testGoAsm(baseFilename: string) {
     const asmLines = utils.splitLines(fs.readFileSync(baseFilename + '.asm').toString());
 
     const result = {
+        code: 0,
+        timedOut: false,
+        stdout: [],
         stderr: asmLines.map(line => {
             return {
                 text: line,
@@ -64,10 +67,12 @@ async function testGoAsm(baseFilename: string) {
         }),
     };
 
-    const [output] = await compiler.postProcess(result);
+    const [output] = await compiler.postProcess(result, '/tmp/output.s', {});
     const expectedOutput = utils.splitLines(fs.readFileSync(baseFilename + '.output.asm').toString());
     expect(utils.splitLines(output.asm)).toEqual(expectedOutput);
     expect(output).toEqual({
+        code: 0,
+        timedOut: false,
         asm: expectedOutput.join('\n'),
         stdout: [],
         stderr: [],
@@ -166,6 +171,38 @@ describe('GO optionsForFilter', () => {
         );
         const options = compiler.optionsForFilter({binary: true} as any, '/tmp/output', []);
         expect(options).not.toContain('-trimpath');
+    });
+});
+
+describe('GO binary mode', () => {
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('Disassembles the built binary rather than reading asm from stderr', async () => {
+        const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
+        vi.spyOn(compiler, 'supportsObjdump').mockReturnValue(true);
+        const objdump = vi
+            .spyOn(compiler, 'objdump')
+            .mockImplementation(async (_outputFilename, result) => ({...result, asm: '<disassembly>'}));
+        const result = {
+            code: 0,
+            timedOut: false,
+            stdout: [],
+            stderr: [{text: './example.go:5:6: can inline Square'}],
+        };
+
+        const [output] = await compiler.postProcess(result, '/tmp/output.s', {binary: true});
+
+        expect(objdump).toHaveBeenCalledOnce();
+        expect(objdump.mock.calls[0][0]).toEqual('/tmp/output.s');
+        expect(output.asm).toEqual('<disassembly>');
+        expect(output.stdout.map(line => line.text)).toEqual(['<source>:5:6: can inline Square']);
+        expect(output.stderr).toEqual([]);
     });
 });
 

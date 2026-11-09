@@ -33,7 +33,7 @@ export class ClangCFGParser extends BaseCFGParser {
     }
 
     override filterData(assembly: ResultLine[]) {
-        const jmpLabelRegex = /\.LBB\d+_\d+:/;
+        const jmpLabelRegex = /(?:\.L|\$)BB\d+_\d+:/;
         const isCode = (x: ResultLine) =>
             x?.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
 
@@ -53,6 +53,6 @@ export class ClangCFGParser extends BaseCFGParser {
     }
 
     override extractJmpTargetName(inst: string) {
-        return inst.match(/\.LBB\d+_\d+/) + ':';
+        return inst.match(/(?:\.L|\$)BB\d+_\d+/) + ':';
     }
 }
