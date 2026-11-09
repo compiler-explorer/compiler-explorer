@@ -29,6 +29,14 @@ function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: 'invalid',
 
+        brackets: [
+            {open: '{', close: '}', token: 'delimiter.curly'},
+            {open: '.{', close: '}', token: 'delimiter.curly'},
+            {open: '[', close: ']', token: 'delimiter.square'},
+            {open: '(', close: ')', token: 'delimiter.parenthesis'},
+            {open: '<<', close: '>>', token: 'delimiter.binary'},
+        ],
+
         keywords: [
             'fn',
             'let',
@@ -200,7 +208,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 {include: '@whitespace'},
 
                 // binary patterns and brackets
-                [/<<|>>/, '@brackets'],
+                [/(<<|>>)(?!=)/, '@brackets'],
                 [/[{}()[\]]/, '@brackets'],
                 [/\.\{/, '@brackets'],
                 [

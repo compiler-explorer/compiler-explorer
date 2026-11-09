@@ -225,3 +225,28 @@ describe('Known good state test', () => {
         }
     });
 });
+
+describe('Unloadable state test', () => {
+    beforeEach(() => {
+        const state = {
+            version: 4,
+            content: [
+                {
+                    type: 'row',
+                    content: [{type: 'component', componentName: 'editor', componentState: {id: 1, lang: 'c++'}}],
+                },
+            ],
+        };
+        cy.visit(`/#${serialiseState(state)}`, {
+            onBeforeLoad: win => {
+                stubConsoleOutput(win);
+            },
+        });
+    });
+
+    it('Falls back to the default layout when the state names an unknown component', () => {
+        cy.get('@consoleLog').should('be.calledWithMatch', 'resetting layout to default');
+        cy.get('span.lm_title:visible').contains('source');
+        cy.get('span.lm_title:visible').contains('Editor #1');
+    });
+});
