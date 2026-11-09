@@ -1389,6 +1389,10 @@ export class DucklingParser extends BaseParser {
                 ? this.parseLines(result.stdout + result.stderr, optionWithDescription, optionWithoutDescription)
                 : {};
         const options: PossibleArguments = {};
+        if (discoveredOptions['--asm-syntax <dialect>']) {
+            this.compiler.compiler.intelAsm = '--asm-syntax intel';
+            this.compiler.compiler.supportsIntel = true;
+        }
         const llvmOpt = discoveredOptions['--llvm-opt <level>'];
         if (llvmOpt) {
             options['-O 2'] = {

@@ -67,9 +67,12 @@ export class DucklingCompiler extends BaseCompiler {
         if (filters.binary || filters.execute) {
             return ['compile_modules', '--no-incremental', '--output-file-name', path.basename(outputFilename)];
         }
-        return filters.binaryObject
-            ? ['compile_module', '--no-incremental']
-            : ['compile_module', '--no-incremental', '--dump-ir', 'asm'];
+        const options = ['compile_module', '--no-incremental'];
+        if (!filters.binaryObject) {
+            options.push('--dump-ir', 'asm');
+            if (filters.intel && this.compiler.intelAsm) options.push(...this.compiler.intelAsm.split(' '));
+        }
+        return options;
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {

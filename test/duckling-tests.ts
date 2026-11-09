@@ -90,6 +90,7 @@ describe('Duckling compiler', () => {
             '                           See https://llvm.org/doxygen/classllvm_1_1OptimizationLevel.html',
             '  --print-ir <categories>  Print selected intermediate representations to stdout.',
             '                           Possible values are: hir, mir, lir, dbc.',
+            '  --asm-syntax <dialect>  Set the x86 assembly dump syntax.',
             '  --artifact-location <path>',
             '                           Path to compilation artifacts.',
             '',
@@ -97,6 +98,20 @@ describe('Duckling compiler', () => {
         const execCompilerCached = vi.spyOn(compiler, 'execCompilerCached').mockResolvedValue(makeExecResult(0, help));
 
         await expect(compiler.initialise(new Date(), clientOptions)).resolves.toBe(compiler);
+
+        expect(compiler.compiler.supportsIntel).toBe(true);
+        expect(compiler.optionsForFilter({intel: true}, 'example.s')).toEqual([
+            'compile_module',
+            '--no-incremental',
+            '--dump-ir',
+            'asm',
+            '--asm-syntax',
+            'intel',
+        ]);
+        expect(compiler.optionsForFilter({intel: true, binaryObject: true}, 'example.o')).toEqual([
+            'compile_module',
+            '--no-incremental',
+        ]);
 
         const suggestions = compiler.possibleArguments.getPopularArguments();
         expect(suggestions).toEqual({
@@ -129,6 +144,7 @@ describe('Duckling compiler', () => {
 
         await expect(compiler.initialise(new Date(), {libs: {}} as ClientOptionsType)).resolves.toBe(compiler);
         expect(compiler.possibleArguments.getPopularArguments()).toEqual({});
+        expect(compiler.compiler.supportsIntel).toBe(false);
     });
 
     it('puts the module path after the subcommand and preserves user options', () => {
