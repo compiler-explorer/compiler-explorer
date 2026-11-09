@@ -33,7 +33,7 @@ import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo, newTempDir} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeLlvmIrBackendOptions, newTempDir} from './utils.js';
 
 const languages = {duckling: {id: 'duckling' as LanguageKey}};
 const environment = makeCompilationEnvironment({languages});
@@ -90,6 +90,8 @@ describe('Duckling compiler', () => {
             '                           See https://llvm.org/doxygen/classllvm_1_1OptimizationLevel.html',
             '  --print-ir <categories>  Print selected intermediate representations to stdout.',
             '                           Possible values are: hir, mir, lir, dbc.',
+            '  --dump-ir <categories>   Dump selected intermediate representations to files.',
+            '                           Supported categories: llvm (.ll), llvm-opt (.opt.ll), asm (.s).',
             '  --artifact-location <path>',
             '                           Path to compilation artifacts.',
             '',
@@ -98,6 +100,8 @@ describe('Duckling compiler', () => {
 
         await expect(compiler.initialise(new Date(), clientOptions)).resolves.toBe(compiler);
 
+        expect(compiler.compiler.supportsIrView).toBe(true);
+        expect(compiler.compiler.supportsIrViewOptToggleOption).toBe(true);
         const suggestions = compiler.possibleArguments.getPopularArguments();
         expect(suggestions).toEqual({
             '-O 2': {
@@ -129,6 +133,7 @@ describe('Duckling compiler', () => {
 
         await expect(compiler.initialise(new Date(), {libs: {}} as ClientOptionsType)).resolves.toBe(compiler);
         expect(compiler.possibleArguments.getPopularArguments()).toEqual({});
+        expect(compiler.compiler.supportsIrView).toBe(false);
     });
 
     it('puts the module path after the subcommand and preserves user options', () => {
@@ -161,7 +166,9 @@ describe('Duckling compiler', () => {
         const compiler = makeCompiler();
         const workingDirectory = newTempDir();
         const source = 'fun main() -> i64 = { return 42; }';
-        const key = compiler.getCacheKey(source, ['-O', '2'], {}, {binary: true}, [], [], []);
+        compiler.compiler.supportsIrView = true;
+        const backendOptions = {produceIr: makeFakeLlvmIrBackendOptions({showOptimized: true})};
+        const key = compiler.getCacheKey(source, ['-O', '2'], backendOptions, {binary: true}, [], [], []);
         const executableFilename = path.join(workingDirectory, 'duck_build', 'example');
         const executable = Buffer.from([0x7f, 0x45, 0x4c, 0x46]);
         const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
@@ -249,6 +256,58 @@ describe('Duckling compiler', () => {
         expect(result.code).toBe(0);
         expect(exec).toHaveBeenCalledOnce();
         await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
+    it.each([
+        {showOptimized: false, category: 'llvm', expected: 'raw'},
+        {showOptimized: true, category: 'llvm-opt', expected: 'optimized'},
+        {showOptimized: true, category: 'llvm-opt', expected: undefined},
+    ])('reads LLVM IR from the assembly invocation ($expected)', async ({showOptimized, category, expected}) => {
+        const compiler = makeCompiler();
+        compiler.compiler.supportsIrView = true;
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'example.dk');
+        const assembly = 'main:\n\tretq\n';
+        const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async () => {
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'pkg.example.s'), assembly);
+            await fs.writeFile(path.join(artifactsDirectory, 'pkg.example.ll'), 'declare void @raw()\n');
+            await fs.writeFile(path.join(artifactsDirectory, 'std.std.opt.ll'), 'declare void @stdlib()\n');
+            if (expected) {
+                await fs.writeFile(path.join(artifactsDirectory, 'pkg.example.opt.ll'), 'declare void @optimized()\n');
+            }
+            return makeExecResult();
+        });
+
+        const backendOptions = {produceIr: makeFakeLlvmIrBackendOptions({showOptimized})};
+        const key = compiler.getCacheKey('', ['-O', '2', '--dump-ir=hir'], backendOptions, {}, [], [], []);
+        const [result] = await compiler.doCompilation(
+            inputFilename,
+            workingDirectory,
+            key,
+            key.options,
+            {},
+            backendOptions,
+            [],
+            [],
+        );
+
+        expect(exec).toHaveBeenCalledExactlyOnceWith(
+            '/duckling/bin/duckc',
+            ['compile_module', inputFilename, '--no-incremental', '-O', '2', '--dump-ir', `asm,hir,${category}`],
+            expect.anything(),
+        );
+        expect(result.code).toBe(0);
+        expect(result.asm).toBe(assembly);
+        const irText = result.irOutput.asm.map((line: {text: string}) => line.text).join('\n');
+        if (expected) {
+            expect(result.irOutput.code).toBe(0);
+            expect(irText).toContain(`@${expected}()`);
+        } else {
+            expect(result.irOutput.code).toBe(1);
+            expect(irText).toContain('Expected one .opt.ll artifact for example.dk, found 0');
+        }
     });
 
     it('fails when Duckling exits successfully but does not write assembly for this module', async () => {

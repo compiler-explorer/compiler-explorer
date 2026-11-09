@@ -31,7 +31,10 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {ClientOptionsType} from '../options-handler.js';
 import {type BaseParser, DucklingParser} from './argument-parsers.js';
@@ -70,6 +73,65 @@ export class DucklingCompiler extends BaseCompiler {
         return filters.binaryObject
             ? ['compile_module', '--no-incremental']
             : ['compile_module', '--no-incremental', '--dump-ir', 'asm'];
+    }
+
+    protected override shouldGenerateIRFromMainCompilation(): boolean {
+        return true;
+    }
+
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries: SelectedLibraryVersion[],
+        overrides: ConfiguredOverrides,
+    ): string[] {
+        const options = super.prepareArguments(
+            userOptions,
+            filters,
+            backendOptions,
+            inputFilename,
+            outputFilename,
+            libraries,
+            overrides,
+        );
+        const irOptions: LLVMIrBackendOptions | undefined = backendOptions?.produceIr;
+        if (!irOptions || !this.compiler.supportsIrView || filters.execute) return options;
+
+        const dumpCategories = new Set<string>();
+        const args = options.slice(0, 2);
+        for (let i = 2; i < options.length; i++) {
+            const option = options[i];
+            if (option === '--dump-ir' && options[i + 1] && !options[i + 1].startsWith('-')) {
+                for (const category of options[++i].split(',')) dumpCategories.add(category);
+            } else if (option.startsWith('--dump-ir=')) {
+                for (const category of option.slice('--dump-ir='.length).split(',')) dumpCategories.add(category);
+            } else {
+                args.push(option);
+            }
+        }
+        dumpCategories.add(irOptions.showOptimized ? 'llvm-opt' : 'llvm');
+        return [...args, '--dump-ir', [...dumpCategories].join(',')];
+    }
+
+    override async processIrOutput(output: CompilationResult, irOptions: LLVMIrBackendOptions) {
+        if (!output.inputFilename) throw new Error('Missing Duckling input filename');
+
+        const inputFilename = path.basename(output.inputFilename);
+        const moduleName = path.basename(inputFilename, path.extname(inputFilename));
+        const artifactsDirectory = path.join(path.dirname(output.inputFilename), 'duck_build', 'duck_debug_artifacts');
+        const extension = irOptions.showOptimized ? 'opt.ll' : 'll';
+        const matches = (await fs.readdir(artifactsDirectory)).filter(filename =>
+            filename.endsWith(`.${moduleName}.${extension}`),
+        );
+        if (matches.length !== 1) {
+            throw new Error(`Expected one .${extension} artifact for ${inputFilename}, found ${matches.length}`);
+        }
+
+        const ir = await fs.readFile(path.join(artifactsDirectory, matches[0]), 'utf8');
+        return this.llvmIr.process(ir, irOptions);
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey): string {

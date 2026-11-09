@@ -1389,6 +1389,11 @@ export class DucklingParser extends BaseParser {
                 ? this.parseLines(result.stdout + result.stderr, optionWithDescription, optionWithoutDescription)
                 : {};
         const options: PossibleArguments = {};
+        const dumpIr = discoveredOptions['--dump-ir <categories>'];
+        const supportsIr = /\bllvm-opt\b/.test(dumpIr?.description ?? '');
+        this.compiler.compiler.supportsIrView = supportsIr;
+        this.compiler.compiler.supportsIrViewOptToggleOption = supportsIr;
+
         const llvmOpt = discoveredOptions['--llvm-opt <level>'];
         if (llvmOpt) {
             options['-O 2'] = {
