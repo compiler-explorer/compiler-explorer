@@ -81,6 +81,7 @@ describe.each([
             getActiveTools: () => [],
             getCurrentState: () => ({}),
             compileFromEditorSource,
+            optPipelineViewOpenCount: vi.fn(),
         });
         const sentDarkBackgroundColours = () =>
             compileFromEditorSource.mock.calls.map(([options]) => options.compilerOptions.darkBackgroundColours);
