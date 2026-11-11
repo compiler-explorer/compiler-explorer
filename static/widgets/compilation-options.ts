@@ -92,24 +92,14 @@ export class BaseCompilationOptions<P extends Pane<object>> {
         const infoLine =
             '<div class="compiler-arg-warning info">You can configure icon animations in Settings>Compilation</div>\n';
 
-        // Dispose any existing popover
-        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
-        if (existingPopover) existingPopover.dispose();
-
-        // Create new popover
-        BootstrapUtils.initPopover(this.prependOptions, {
-            content:
+        BootstrapUtils.setHtmlPopoverContent(this.prependOptions, {
+            body:
                 warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
                 '\n' +
                 (warnings.length > 0 ? infoLine : '') +
                 escapeHTML(content || 'No options in use') +
                 `\n<div class="compiler-arg-warning-shake-setting"></div>`,
-            html: true,
-            template:
-                '<div class="popover' +
-                (content ? ' compiler-options-popover' : '') +
-                '" role="tooltip"><div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+            className: content ? 'compiler-options-popover' : '',
         });
 
         // TODO: Kind of redundant with compiler-service's handleCompilationStatus and overriding what that function

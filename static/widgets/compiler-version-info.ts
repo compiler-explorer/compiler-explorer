@@ -87,24 +87,13 @@ function reallySetCompilerVersionPopover(
         bodyContent.append(hiddenSection);
     }
 
-    // Dispose of existing popover
-    const existingPopover = BootstrapUtils.getPopoverInstance(pane.fullCompilerName);
-    if (existingPopover) existingPopover.dispose();
-
-    // Initialize a new popover; may not exist in embedded links.
-    BootstrapUtils.initPopoverIfExists(pane.fullCompilerName, {
-        html: true,
+    // The element may not exist in embedded links.
+    BootstrapUtils.setHtmlPopoverContent(pane.fullCompilerName, {
         title: notification
             ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
             : 'Full compiler version',
-        content: bodyContent,
-        template:
-            '<div class="popover' +
-            (version ? ' compiler-options-popover' : '') +
-            '" role="tooltip">' +
-            '<div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
-            '</div>',
+        body: bodyContent[0],
+        className: version ? 'compiler-options-popover' : '',
     });
 }
 

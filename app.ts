@@ -31,6 +31,7 @@ import {setBaseDirectory} from './lib/assert.js';
 import {initialiseLogging, logger} from './lib/logger.js';
 import {Graceful} from './lib/node-graceful.js';
 import * as props from './lib/properties.js';
+import {startupPhases} from './lib/startup-phases.js';
 import * as utils from './lib/utils.js';
 
 // Set base directory for resolving paths
@@ -73,6 +74,7 @@ initialiseLogging(appArgs.loggingOptions);
 const distPath = utils.resolvePathFromAppRoot('.');
 const config = loadConfiguration(appArgs);
 const awsProps = props.propsFor('aws');
+startupPhases.mark('config');
 
 // Initialize and start the application
 initialiseApplication({

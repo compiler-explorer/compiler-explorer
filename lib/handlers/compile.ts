@@ -60,6 +60,7 @@ import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
+import {startupPhases} from '../startup-phases.js';
 import {KnownBuildMethod} from '../stats.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
@@ -330,9 +331,11 @@ export class CompileHandler implements ICompileHandler {
         try {
             this.clientOptions = clientOptions;
             const totalCompilers = compilers.length;
+            startupPhases.mark('discovery-load');
             logger.info('Creating compilers: ' + totalCompilers);
             let compilersCreated = 0;
             const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
+            startupPhases.mark('create-compilers');
             for (const compiler of createdCompilers) {
                 const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};
@@ -357,6 +360,7 @@ export class CompileHandler implements ICompileHandler {
                     createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
                 );
             }
+            startupPhases.mark('possible-arguments');
             this.compilersById = compilersById;
             return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
@@ -722,70 +726,67 @@ export class CompileHandler implements ICompileHandler {
 
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)
-            .then(
-                result => {
-                    if (result.didExecute || result.execResult?.didExecute)
-                        this.executeCounter.inc({language: compiler.lang.id});
-                    if (req.accepts(['text', 'json']) === 'json') {
-                        delete result.s3Key; // Remove s3Key before sending to user
-                        res.send(result);
-                    } else {
-                        res.set('Content-Type', 'text/plain');
-                        try {
-                            if (!_.isEmpty(this.textBanner)) res.write('# ' + this.textBanner + '\n');
-                            res.write(textify(result.asm, backendOptions.filterAnsi));
-                            if (result.code !== 0) res.write('\n# Compiler exited with result code ' + result.code);
-                            if (!_.isEmpty(result.stdout))
-                                res.write('\nStandard out:\n' + textify(result.stdout, backendOptions.filterAnsi));
-                            if (!_.isEmpty(result.stderr))
-                                res.write('\nStandard error:\n' + textify(result.stderr, backendOptions.filterAnsi));
+            .then(result => {
+                if (result.didExecute || result.execResult?.didExecute)
+                    this.executeCounter.inc({language: compiler.lang.id});
+                if (req.accepts(['text', 'json']) === 'json') {
+                    delete result.s3Key; // Remove s3Key before sending to user
+                    res.send(result);
+                } else {
+                    res.set('Content-Type', 'text/plain');
+                    try {
+                        if (!_.isEmpty(this.textBanner)) res.write('# ' + this.textBanner + '\n');
+                        res.write(textify(result.asm, backendOptions.filterAnsi));
+                        if (result.code !== 0) res.write('\n# Compiler exited with result code ' + result.code);
+                        if (!_.isEmpty(result.stdout))
+                            res.write('\nStandard out:\n' + textify(result.stdout, backendOptions.filterAnsi));
+                        if (!_.isEmpty(result.stderr))
+                            res.write('\nStandard error:\n' + textify(result.stderr, backendOptions.filterAnsi));
 
-                            if (result.execResult) {
-                                res.write('\n\n# Execution result with exit code ' + result.execResult.code + '\n');
-                                if (!_.isEmpty(result.execResult.stdout)) {
-                                    res.write(
-                                        '# Standard out:\n' +
-                                            textify(result.execResult.stdout, backendOptions.filterAnsi),
-                                    );
-                                }
-                                if (!_.isEmpty(result.execResult.stderr)) {
-                                    res.write(
-                                        '\n# Standard error:\n' +
-                                            textify(result.execResult.stderr, backendOptions.filterAnsi),
-                                    );
-                                }
+                        if (result.execResult) {
+                            res.write('\n\n# Execution result with exit code ' + result.execResult.code + '\n');
+                            if (!_.isEmpty(result.execResult.stdout)) {
+                                res.write(
+                                    '# Standard out:\n' + textify(result.execResult.stdout, backendOptions.filterAnsi),
+                                );
                             }
-                        } catch (ex) {
-                            SentryCapture(ex, 'lib/handlers/compile.ts res.write');
-                            res.write(`Error handling request: ${ex}`);
+                            if (!_.isEmpty(result.execResult.stderr)) {
+                                res.write(
+                                    '\n# Standard error:\n' +
+                                        textify(result.execResult.stderr, backendOptions.filterAnsi),
+                                );
+                            }
                         }
-                        res.end('\n');
+                    } catch (ex) {
+                        SentryCapture(ex, 'lib/handlers/compile.ts res.write');
+                        res.write(`Error handling request: ${ex}`);
                     }
-                },
-                error => {
-                    if (typeof error === 'string') {
-                        logger.error('Error during compilation 1: ', {error});
+                    res.end('\n');
+                }
+            })
+            .catch(error => {
+                if (typeof error === 'string') {
+                    logger.error('Error during compilation 1: ', {error});
+                } else {
+                    if (error.stack) {
+                        logger.error('Error during compilation 2: ', error);
+                        SentryCapture(error, 'compile failed');
+                    } else if (error.code) {
+                        logger.error('Error during compilation 3: ', error.code);
+                        if (typeof error.stderr === 'string') {
+                            error.stdout = utils.parseOutput(error.stdout);
+                            error.stderr = utils.parseOutput(error.stderr);
+                        }
+                        res.end(JSON.stringify(error));
+                        return;
                     } else {
-                        if (error.stack) {
-                            logger.error('Error during compilation 2: ', error);
-                            SentryCapture(error, 'compile failed');
-                        } else if (error.code) {
-                            logger.error('Error during compilation 3: ', error.code);
-                            if (typeof error.stderr === 'string') {
-                                error.stdout = utils.parseOutput(error.stdout);
-                                error.stderr = utils.parseOutput(error.stderr);
-                            }
-                            res.end(JSON.stringify(error));
-                            return;
-                        } else {
-                            logger.error('Error during compilation 4: ', error);
-                        }
-
-                        error = `Internal Compiler Explorer error: ${error.stack || error}`;
+                        logger.error('Error during compilation 4: ', error);
                     }
-                    res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
-                },
-            );
+
+                    error = `Internal Compiler Explorer error: ${error.stack || error}`;
+                }
+                res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
+            });
     }
 }
 
