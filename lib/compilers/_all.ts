@@ -185,6 +185,7 @@ export {TileLangCompiler} from './tilelang.js';
 export {TinyCCompiler} from './tinyc.js';
 export {TinyGoCompiler} from './tinygo.js';
 export {ToitCompiler} from './toit.js';
+export {TornadoVmTcCompiler} from './tornadovm-tc.js';
 export {TritonCompiler} from './triton.js';
 export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
