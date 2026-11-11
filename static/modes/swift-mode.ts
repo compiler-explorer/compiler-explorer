@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
+import * as swift from 'monaco-editor/languages/definitions/swift/swift';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const swiftPatched = $.extend(true, {}, swift.language); // deep copy
