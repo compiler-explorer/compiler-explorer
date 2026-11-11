@@ -497,12 +497,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const currentState = this.getCurrentState();
 
             // Extract only the fields we need, with proper defaults
-            const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang, overrides} = currentState;
+            const {
+                source = DEFAULT_EDITOR_ID,
+                filters,
+                options = '',
+                compiler,
+                libs,
+                lang,
+                overrides,
+                tree,
+            } = currentState;
 
             return {
                 type: 'component',
                 componentName: COMPILER_COMPONENT_NAME,
-                componentState: {source, filters, options, compiler, libs, lang, overrides},
+                componentState: {source, filters, options, compiler, libs, lang, overrides, tree},
             };
         };
         const createOptView = () => {
