@@ -23,6 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+import {ILanguageConfigurationService} from 'monaco-editor/esm/vs/editor/common/languages/languageConfigurationRegistry.js';
+import {getReindentEditOperations} from 'monaco-editor/esm/vs/editor/contrib/indentation/common/indentation.js';
+import {StandaloneServices} from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js';
 
 monaco.languages.register({id: 'duckling'});
 
@@ -183,8 +186,24 @@ monaco.languages.setMonarchTokensProvider('duckling', {
     },
 });
 
+// Indent after a trailing {, [ or (, allowing whitespace and an optional # comment.
+const increaseIndentPattern = /^(?!\s*#).*(?:\{|\[|\()\s*(?:#.*)?$/;
+const decreaseIndentPattern = /^\s*[}\])]/;
+
 monaco.languages.setLanguageConfiguration('duckling', {
     comments: {lineComment: '#', blockComment: ['#{', '#}']},
+    indentationRules: {
+        increaseIndentPattern,
+        decreaseIndentPattern,
+    },
+    onEnterRules: [
+        {
+            beforeText: increaseIndentPattern,
+            afterText: decreaseIndentPattern,
+            action: {indentAction: monaco.languages.IndentAction.IndentOutdent},
+        },
+        {beforeText: increaseIndentPattern, action: {indentAction: monaco.languages.IndentAction.Indent}},
+    ],
     brackets: [
         ['{', '}'],
         ['[', ']'],
@@ -197,4 +216,14 @@ monaco.languages.setLanguageConfiguration('duckling', {
         {open: '"', close: '"', notIn: ['string', 'comment']},
         {open: "'", close: "'", notIn: ['string', 'comment']},
     ],
+});
+
+monaco.languages.registerDocumentFormattingEditProvider('duckling', {
+    provideDocumentFormattingEdits(model) {
+        const configuration = StandaloneServices.get(ILanguageConfigurationService);
+        return getReindentEditOperations(model, configuration, 1, model.getLineCount()).map(edit => ({
+            range: edit.range,
+            text: edit.text ?? '',
+        }));
+    },
 });
