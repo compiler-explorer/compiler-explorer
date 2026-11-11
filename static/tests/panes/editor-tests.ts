@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ShiftCommand} from 'monaco-editor/esm/vs/editor/common/commands/shiftCommand';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 // the editor module builds one of these at import time, and its constructor asks the server for the builtin sources
 vi.mock('../../widgets/load-save.js', () => ({LoadSave: class {}}));
@@ -31,6 +31,7 @@ vi.mock('monaco-vim', () => ({initVimMode: () => undefined}));
 
 import {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
 import {Editor, patchVimIndentLine} from '../../panes/editor.js';
+import {type LanguageMap, languagesService} from '../../services/languages.service.js';
 
 /**
  * What the parser hands the editor for rustc 1.96 building `example.rs` with `mod a;`: an error in the main source, a
@@ -191,5 +192,58 @@ describe('Editor shown lifecycle', () => {
         expect(view.resize).toHaveBeenCalled();
         await new Promise(resolve => setTimeout(resolve, 10));
         expect(editorInstance.render).toHaveBeenCalledWith(true);
+    });
+});
+
+describe('Editor language from a link without one', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('takes the language from the compiler of the executor that opens', async () => {
+        const executor = {id: 2, originalCompilerId: 'cgdefault'};
+        const view = Object.create(Editor.prototype) as Editor;
+        Object.assign(view, {
+            id: 1,
+            waitingForLanguage: true,
+            ourExecutors: {},
+            container: {
+                layoutManager: {root: {getComponentsByName: (name: string) => (name === 'executor' ? [executor] : [])}},
+            },
+            hub: {compilerService: {processFromLangAndCompiler: async () => ({compiler: {lang: 'c'}})}},
+            changeLanguage: vi.fn(),
+            maybeEmitChange: vi.fn(),
+        });
+
+        await view.onExecutorOpen(2, 1);
+
+        expect(view.changeLanguage).toHaveBeenCalledWith('c');
+        expect(view.maybeEmitChange).toHaveBeenCalledWith(true);
+    });
+
+    it('keeps waiting through the initial language the constructor sets', () => {
+        vi.spyOn(languagesService, 'getLanguagesOrFail').mockReturnValue({
+            'c++': {id: 'c++', monaco: 'cppp'},
+        } as unknown as LanguageMap);
+        const view = Object.create(Editor.prototype) as Editor;
+        Object.assign(view, {
+            id: 1,
+            waitingForLanguage: true,
+            settings: {},
+            editor: {getModel: () => null},
+            eventHub: {emit: vi.fn()},
+            isCpp: {set: vi.fn()},
+            isClean: {set: vi.fn()},
+            initLoadSaver: vi.fn(),
+            updateLanguageTooltip: vi.fn(),
+            updateTitle: vi.fn(),
+            updateState: vi.fn(),
+        });
+
+        view.onLanguageChange('c++', true);
+        expect((view as any).waitingForLanguage).toBe(true);
+
+        view.onLanguageChange('c++');
+        expect((view as any).waitingForLanguage).toBe(false);
     });
 });

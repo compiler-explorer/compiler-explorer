@@ -22,8 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {serialiseState} from '../../shared/url-serialization.js';
-import {assertNoConsoleOutput, setupAndWaitForCompilation, stubConsoleOutput} from '../support/utils';
+import {risonify, serialiseState} from '../../shared/url-serialization.js';
+import {
+    assertNoConsoleOutput,
+    compilerOutput,
+    findPane,
+    monacoEditorTextShouldContain,
+    setupAndWaitForCompilation,
+    stubConsoleOutput,
+} from '../support/utils';
 
 const PANE_DATA_MAP = {
     codeEditor: {name: 'Editor', selector: 'new-editor'},
@@ -248,5 +255,61 @@ describe('Unloadable state test', () => {
         cy.get('@consoleLog').should('be.calledWithMatch', 'resetting layout to default');
         cy.get('span.lm_title:visible').contains('source');
         cy.get('span.lm_title:visible').contains('Editor #1');
+    });
+});
+
+describe('Links without an editor language', () => {
+    // Old links can store an editor's source without its language, so the editor has to take the language from the
+    // compiler of the first pane that opens on it. The default language is C++, so a C compiler shows the difference.
+    const source =
+        '#include <stdio.h>\nint lang_marker(int num) { return num * 3; }\nint main(void) { printf("from C"); }';
+
+    function visitLinkWith(componentName: 'compiler' | 'executor') {
+        const state = {
+            version: 4,
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        {type: 'component', componentName: 'codeEditor', componentState: {id: 1, source}},
+                        {type: 'component', componentName, componentState: {compiler: 'cgdefault', source: 1}},
+                    ],
+                },
+            ],
+        };
+        cy.visit(`/#${serialiseState(state)}`, {
+            onBeforeLoad: win => {
+                stubConsoleOutput(win);
+            },
+        });
+    }
+
+    afterEach(() => {
+        return cy.window().then(_win => {
+            assertNoConsoleOutput();
+        });
+    });
+
+    it('takes the language from a compiler pane', () => {
+        visitLinkWith('compiler');
+        cy.get('span.lm_title:visible').contains('C source');
+        monacoEditorTextShouldContain(compilerOutput(), 'lang_marker');
+    });
+
+    it('takes the language from an executor pane', () => {
+        visitLinkWith('executor');
+        cy.get('span.lm_title:visible').contains('C source');
+        findPane('Executor').find('.execution-stdout', {timeout: 15000}).should('contain.text', 'from C');
+    });
+
+    it('takes the language from the compiler of a version 3 link', () => {
+        const oldState = {version: 3, compilers: [{source, compiler: 'cgdefault', options: ''}], filterAsm: {}};
+        cy.visit(`/#${risonify(oldState)}`, {
+            onBeforeLoad: win => {
+                stubConsoleOutput(win);
+            },
+        });
+        cy.get('span.lm_title:visible').contains('C source');
+        monacoEditorTextShouldContain(compilerOutput(), 'lang_marker');
     });
 });
