@@ -154,3 +154,42 @@ describe('vim indentation', () => {
         expect(unindent._opts.isUnshift).toBe(true);
     });
 });
+
+describe('Editor shown lifecycle', () => {
+    it('forces editor render when container is shown', async () => {
+        const callbacks: Record<string, () => void> = {};
+        const container = {
+            on: vi.fn((event: string, cb: () => void) => {
+                callbacks[event] = cb;
+            }),
+            layoutManager: {on: vi.fn()},
+        };
+        const editorInstance = {
+            render: vi.fn(),
+            getModel: () => null,
+            onMouseMove: vi.fn(),
+            onDidChangeCursorSelection: vi.fn(),
+            onDidFocusEditorText: vi.fn(),
+            onDidBlurEditorText: vi.fn(),
+            onDidChangeCursorPosition: vi.fn(),
+        };
+        const view = Object.create(Editor.prototype) as Editor;
+        Object.assign(view, {
+            container,
+            editor: editorInstance,
+            eventHub: {on: vi.fn(), emit: vi.fn()},
+            settings: {delayAfterChange: 0},
+            resize: vi.fn(),
+        });
+
+        view.registerCallbacks();
+
+        expect(container.on).toHaveBeenCalledWith('shown', expect.any(Function));
+
+        callbacks.shown();
+
+        expect(view.resize).toHaveBeenCalled();
+        await new Promise(resolve => setTimeout(resolve, 10));
+        expect(editorInstance.render).toHaveBeenCalledWith(true);
+    });
+});
