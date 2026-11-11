@@ -4,5 +4,7 @@
     "name": "ISA_A64_xml_A_profile-2023-03.tar.gz",
     "subdir": "ISA_A64_xml_A_profile-2023-03"
   },
-  "documentation": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
+  "documentation": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/",
+  "preferredIndex": "index.xml",
+  "preferredFiles": ["mov_orr_log_shift"]
 }

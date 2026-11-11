@@ -188,8 +188,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "AND":
             return {
-                "tooltip": "Bitwise AND (vector). This instruction performs a bitwise AND between the two source SIMD&FP registers, and writes the result to the destination SIMD&FP register.",
-                "html": "<p>Bitwise AND (vector). This instruction performs a bitwise AND between the two source SIMD&amp;FP registers, and writes the result to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Bitwise AND (immediate) performs a bitwise AND of a register value and an immediate value, and writes the result to the destination register.",
+                "html": "<p>Bitwise AND (immediate) performs a bitwise AND of a register value and an immediate value, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -566,8 +566,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "BIC":
             return {
-                "tooltip": "Bitwise bit Clear (vector, immediate). This instruction reads each vector element from the destination SIMD&FP register, performs a bitwise AND between each result and the complement of an immediate constant, places the result into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Bitwise bit Clear (vector, immediate). This instruction reads each vector element from the destination SIMD&amp;FP register, performs a bitwise AND between each result and the complement of an immediate constant, places the result into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Bitwise Bit Clear (shifted register) performs a bitwise AND of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register.",
+                "html": "<p>Bitwise Bit Clear (shifted register) performs a bitwise AND of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -906,15 +906,15 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "CLS":
             return {
-                "tooltip": "Count Leading Sign bits (vector). This instruction counts the number of consecutive bits following the most significant bit that are the same as the most significant bit in each vector element in the source SIMD&FP register, places the result into a vector, and writes the vector to the destination SIMD&FP register. The count does not include the most significant bit itself.",
-                "html": "<p>Count Leading Sign bits (vector). This instruction counts the number of consecutive bits following the most significant bit that are the same as the most significant bit in each vector element in the source SIMD&amp;FP register, places the result into a vector, and writes the vector to the destination SIMD&amp;FP register. The count does not include the most significant bit itself.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Count Leading Sign bits counts the number of leading bits of the source register that have the same value as the most significant bit of the register, and writes the result to the destination register. This count does not include the most significant bit of the source register.",
+                "html": "<p>Count Leading Sign bits counts the number of leading bits of the source register that have the same value as the most significant bit of the register, and writes the result to the destination register. This count does not include the most significant bit of the source register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
         case "CLZ":
             return {
-                "tooltip": "Count Leading Zero bits (vector). This instruction counts the number of consecutive zeros, starting from the most significant bit, in each vector element in the source SIMD&FP register, places the result into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Count Leading Zero bits (vector). This instruction counts the number of consecutive zeros, starting from the most significant bit, in each vector element in the source SIMD&amp;FP register, places the result into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Count Leading Zeros counts the number of consecutive binary zero bits, starting from the most significant bit in the source register, and places the count in the destination register.",
+                "html": "<p>Count Leading Zeros counts the number of consecutive binary zero bits, starting from the most significant bit in the source register, and places the count in the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -1579,8 +1579,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "EOR":
             return {
-                "tooltip": "Bitwise Exclusive-OR (vector). This instruction performs a bitwise exclusive-OR operation between the two source SIMD&FP registers, and places the result in the destination SIMD&FP register.",
-                "html": "<p>Bitwise Exclusive-OR (vector). This instruction performs a bitwise exclusive-OR operation between the two source SIMD&amp;FP registers, and places the result in the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Bitwise Exclusive-OR (immediate) performs a bitwise exclusive-OR of a register value and an immediate value, and writes the result to the destination register.",
+                "html": "<p>Bitwise Exclusive-OR (immediate) performs a bitwise exclusive-OR of a register value and an immediate value, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3053,8 +3053,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LDAPUR":
             return {
-                "tooltip": "Load-Acquire RCpc SIMD&FP Register (unscaled offset). This instruction loads a SIMD&FP register from memory. The address that is used for the load is calculated from a base register value and an optional immediate offset.",
-                "html": "<p>Load-Acquire RCpc SIMD&amp;FP Register (unscaled offset). This instruction loads a SIMD&amp;FP register from memory. The address that is used for the load is calculated from a base register value and an optional immediate offset.</p><p>The instruction has memory ordering semantics as described in <xref linkend=\"BEIHCHEF\">Load-Acquire, Load-AcquirePC, and Store-Release</xref>, except that:</p><p>This difference in memory ordering is not described in the pseudocode.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Load-Acquire RCpc Register (unscaled) calculates an address from a base register and an immediate offset, loads a 32-bit word or 64-bit doubleword from memory, zero-extends it, and writes it to a register.",
+                "html": "<p>Load-Acquire RCpc Register (unscaled) calculates an address from a base register and an immediate offset, loads a 32-bit word or 64-bit doubleword from memory, zero-extends it, and writes it to a register.</p><p>The instruction has memory ordering semantics as described in <xref linkend=\"BEIHCHEF\">Load-Acquire, Load-AcquirePC, and Store-Release</xref>, except that:</p><p>This difference in memory ordering is not described in the pseudocode.</p><p>For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3354,8 +3354,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LDNP":
             return {
-                "tooltip": "Load Pair of SIMD&FP registers, with Non-temporal hint. This instruction loads a pair of SIMD&FP registers from memory, issuing a hint to the memory system that the access is non-temporal. The address that is used for the load is calculated from a base register value and an optional immediate offset.",
-                "html": "<p>Load Pair of SIMD&amp;FP registers, with Non-temporal hint. This instruction loads a pair of SIMD&amp;FP registers from memory, issuing a hint to the memory system that the access is non-temporal. The address that is used for the load is calculated from a base register value and an optional immediate offset.</p><p>For information about non-temporal pair instructions, see <xref linkend=\"BABJADHH\">Load/Store SIMD and Floating-point Non-temporal pair</xref>.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Load Pair of Registers, with non-temporal hint, calculates an address from a base register value and an immediate offset, loads two 32-bit words or two 64-bit doublewords from memory, and writes them to two registers.",
+                "html": "<p>Load Pair of Registers, with non-temporal hint, calculates an address from a base register value and an immediate offset, loads two 32-bit words or two 64-bit doublewords from memory, and writes them to two registers.</p><p>For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>. For information about Non-temporal pair instructions, see <xref linkend=\"CEGJCGDF\">Load/Store Non-temporal pair</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3410,8 +3410,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LDP":
             return {
-                "tooltip": "Load Pair of SIMD&FP registers. This instruction loads a pair of SIMD&FP registers from memory. The address that is used for the load is calculated from a base register value and an optional immediate offset.",
-                "html": "<p>Load Pair of SIMD&amp;FP registers. This instruction loads a pair of SIMD&amp;FP registers from memory. The address that is used for the load is calculated from a base register value and an optional immediate offset.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Load Pair of Registers calculates an address from a base register value and an immediate offset, loads two 32-bit words or two 64-bit doublewords from memory, and writes them to two registers. For information about memory accesses, see Load/Store addressing modes.",
+                "html": "<p>Load Pair of Registers calculates an address from a base register value and an immediate offset, loads two 32-bit words or two 64-bit doublewords from memory, and writes them to two registers. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3424,8 +3424,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LDR":
             return {
-                "tooltip": "Load SIMD&FP Register (immediate offset). This instruction loads an element from memory, and writes the result as a scalar to the SIMD&FP register. The address that is used for the load is calculated from a base register value, a signed immediate offset, and an optional offset that is a multiple of the element size.",
-                "html": "<p>Load SIMD&amp;FP Register (immediate offset). This instruction loads an element from memory, and writes the result as a scalar to the SIMD&amp;FP register. The address that is used for the load is calculated from a base register value, a signed immediate offset, and an optional offset that is a multiple of the element size.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Load Register (immediate) loads a word or doubleword from memory and writes it to a register. The address that is used for the load is calculated from a base register and an immediate offset. For information about memory accesses, see Load/Store addressing modes. The Unsigned offset variant scales the immediate offset value by the size of the value accessed before adding it to the base register value.",
+                "html": "<p>Load Register (immediate) loads a word or doubleword from memory and writes it to a register. The address that is used for the load is calculated from a base register and an immediate offset. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>. The Unsigned offset variant scales the immediate offset value by the size of the value accessed before adding it to the base register value.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3676,8 +3676,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LDUR":
             return {
-                "tooltip": "Load SIMD&FP Register (unscaled offset). This instruction loads a SIMD&FP register from memory. The address that is used for the load is calculated from a base register value and an optional immediate offset.",
-                "html": "<p>Load SIMD&amp;FP Register (unscaled offset). This instruction loads a SIMD&amp;FP register from memory. The address that is used for the load is calculated from a base register value and an optional immediate offset.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Load Register (unscaled) calculates an address from a base register and an immediate offset, loads a 32-bit word or 64-bit doubleword from memory, zero-extends it, and writes it to a register. For information about memory accesses, see Load/Store addressing modes.",
+                "html": "<p>Load Register (unscaled) calculates an address from a base register and an immediate offset, loads a 32-bit word or 64-bit doubleword from memory, zero-extends it, and writes it to a register. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3844,8 +3844,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "MOV":
             return {
-                "tooltip": "Read active elements from the source predicate and place in the corresponding elements of the destination predicate. Inactive elements in the destination predicate register are set to zero. Does not set the condition flags.",
-                "html": "<p>Read active elements from the source predicate and place in the corresponding elements of the destination predicate. Inactive elements in the destination predicate register are set to zero. Does not set the condition flags.</p>",
+                "tooltip": "Move (register) copies the value in a source register to the destination register.",
+                "html": "<p>Move (register) copies the value in a source register to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3963,8 +3963,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "MVN":
             return {
-                "tooltip": "Bitwise NOT (vector). This instruction reads each vector element from the source SIMD&FP register, places the inverse of each value into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Bitwise NOT (vector). This instruction reads each vector element from the source SIMD&amp;FP register, places the inverse of each value into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Bitwise NOT writes the bitwise inverse of a register value to the destination register.",
+                "html": "<p>Bitwise NOT writes the bitwise inverse of a register value to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -3998,8 +3998,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "NEG":
             return {
-                "tooltip": "Negate (vector). This instruction reads each vector element from the source SIMD&FP register, negates each value, puts the result into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Negate (vector). This instruction reads each vector element from the source SIMD&amp;FP register, negates each value, puts the result into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Negate (shifted register) negates an optionally-shifted register value, and writes the result to the destination register.",
+                "html": "<p>Negate (shifted register) negates an optionally-shifted register value, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -4068,8 +4068,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "ORN":
             return {
-                "tooltip": "Bitwise inclusive OR NOT (vector). This instruction performs a bitwise OR NOT between the two source SIMD&FP registers, and writes the result to the destination SIMD&FP register.",
-                "html": "<p>Bitwise inclusive OR NOT (vector). This instruction performs a bitwise OR NOT between the two source SIMD&amp;FP registers, and writes the result to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Bitwise OR NOT (shifted register) performs a bitwise (inclusive) OR of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register.",
+                "html": "<p>Bitwise OR NOT (shifted register) performs a bitwise (inclusive) OR of a register value and the complement of an optionally-shifted register value, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -4089,8 +4089,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "ORR":
             return {
-                "tooltip": "Bitwise inclusive OR (vector, immediate). This instruction reads each vector element from the destination SIMD&FP register, performs a bitwise OR between each result and an immediate constant, places the result into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Bitwise inclusive OR (vector, immediate). This instruction reads each vector element from the destination SIMD&amp;FP register, performs a bitwise OR between each result and an immediate constant, places the result into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Bitwise OR (immediate) performs a bitwise (inclusive) OR of a register value and an immediate register value, and writes the result to the destination register.",
+                "html": "<p>Bitwise OR (immediate) performs a bitwise (inclusive) OR of a register value and an immediate register value, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -4340,8 +4340,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "RBIT":
             return {
-                "tooltip": "Reverse Bit order (vector). This instruction reads each vector element from the source SIMD&FP register, reverses the bits of the element, places the results into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Reverse Bit order (vector). This instruction reads each vector element from the source SIMD&amp;FP register, reverses the bits of the element, places the results into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Reverse Bits reverses the bit order in a register.",
+                "html": "<p>Reverse Bits reverses the bit order in a register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -4557,22 +4557,22 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "REV16":
             return {
-                "tooltip": "Reverse elements in 16-bit halfwords (vector). This instruction reverses the order of 8-bit elements in each halfword of the vector in the source SIMD&FP register, places the results into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Reverse elements in 16-bit halfwords (vector). This instruction reverses the order of 8-bit elements in each halfword of the vector in the source SIMD&amp;FP register, places the results into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Reverse bytes in 16-bit halfwords reverses the byte order in each 16-bit halfword of a register.",
+                "html": "<p>Reverse bytes in 16-bit halfwords reverses the byte order in each 16-bit halfword of a register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
         case "REV32":
             return {
-                "tooltip": "Reverse elements in 32-bit words (vector). This instruction reverses the order of 8-bit or 16-bit elements in each word of the vector in the source SIMD&FP register, places the results into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Reverse elements in 32-bit words (vector). This instruction reverses the order of 8-bit or 16-bit elements in each word of the vector in the source SIMD&amp;FP register, places the results into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Reverse bytes in 32-bit words reverses the byte order in each 32-bit word of a register.",
+                "html": "<p>Reverse bytes in 32-bit words reverses the byte order in each 32-bit word of a register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
         case "REV64":
             return {
-                "tooltip": "Reverse elements in 64-bit doublewords (vector). This instruction reverses the order of 8-bit, 16-bit, or 32-bit elements in each doubleword of the vector in the source SIMD&FP register, places the results into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Reverse elements in 64-bit doublewords (vector). This instruction reverses the order of 8-bit, 16-bit, or 32-bit elements in each doubleword of the vector in the source SIMD&amp;FP register, places the results into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Reverse Bytes reverses the byte order in a 64-bit general-purpose register.",
+                "html": "<p>Reverse Bytes reverses the byte order in a 64-bit general-purpose register.</p><p>When assembling for Armv8.2, an assembler must support this pseudo-instruction. It is <arm-defined-word>optional</arm-defined-word> whether an assembler supports this pseudo-instruction when assembling for an architecture earlier than Armv8.2.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -5235,8 +5235,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "SMAX":
             return {
-                "tooltip": "Signed Maximum (vector). This instruction compares corresponding elements in the vectors in the two source SIMD&FP registers, places the larger of each pair of signed integer values into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Signed Maximum (vector). This instruction compares corresponding elements in the vectors in the two source SIMD&amp;FP registers, places the larger of each pair of signed integer values into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Signed Maximum (immediate) determines the signed maximum of the source register value and immediate, and writes the result to the destination register.",
+                "html": "<p>Signed Maximum (immediate) determines the signed maximum of the source register value and immediate, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -5270,8 +5270,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "SMIN":
             return {
-                "tooltip": "Signed Minimum (vector). This instruction compares corresponding elements in the vectors in the two source SIMD&FP registers, places the smaller of each of the two signed integer values into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Signed Minimum (vector). This instruction compares corresponding elements in the vectors in the two source SIMD&amp;FP registers, places the smaller of each of the two signed integer values into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Signed Minimum (immediate) determines the signed minimum of the source register value and immediate, and writes the result to the destination register.",
+                "html": "<p>Signed Minimum (immediate) determines the signed minimum of the source register value and immediate, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -5417,11 +5417,17 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
-        case "SMULL":
         case "SMULL2":
             return {
                 "tooltip": "Signed Multiply Long (vector, by element). This instruction multiplies each vector element in the lower or upper half of the first source SIMD&FP register by the specified vector element of the second source SIMD&FP register, places the result in a vector, and writes the vector to the destination SIMD&FP register. The destination vector elements are twice as long as the elements that are multiplied.",
                 "html": "<p>Signed Multiply Long (vector, by element). This instruction multiplies each vector element in the lower or upper half of the first source SIMD&amp;FP register by the specified vector element of the second source SIMD&amp;FP register, places the result in a vector, and writes the vector to the destination SIMD&amp;FP register. The destination vector elements are twice as long as the elements that are multiplied.</p><p>The <instruction>SMULL</instruction> instruction extracts vector elements from the lower half of the first source register. The <instruction>SMULL2</instruction> instruction extracts vector elements from the upper half of the first source register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
+            };
+
+        case "SMULL":
+            return {
+                "tooltip": "Signed Multiply Long multiplies two 32-bit register values, and writes the result to the 64-bit destination register.",
+                "html": "<p>Signed Multiply Long multiplies two 32-bit register values, and writes the result to the 64-bit destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -6379,8 +6385,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "STLUR":
             return {
-                "tooltip": "Store-Release SIMD&FP Register (unscaled offset). This instruction stores a single SIMD&FP register to memory. The address that is used for the store is calculated from a base register value and an optional immediate offset.",
-                "html": "<p>Store-Release SIMD&amp;FP Register (unscaled offset). This instruction stores a single SIMD&amp;FP register to memory. The address that is used for the store is calculated from a base register value and an optional immediate offset.</p><p>The instruction has memory ordering semantics, as described in <xref linkend=\"BEIHCHEF\">Load-Acquire, Load-AcquirePC, and Store-Release</xref>.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Store-Release Register (unscaled) calculates an address from a base register value and an immediate offset, and stores a 32-bit word or a 64-bit doubleword to the calculated address, from a register.",
+                "html": "<p>Store-Release Register (unscaled) calculates an address from a base register value and an immediate offset, and stores a 32-bit word or a 64-bit doubleword to the calculated address, from a register.</p><p>The instruction has memory ordering semantics as described in <xref linkend=\"BEIHCHEF\">Load-Acquire, Load-AcquirePC, and Store-Release</xref></p><p>For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -6428,8 +6434,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "STNP":
             return {
-                "tooltip": "Store Pair of SIMD&FP registers, with Non-temporal hint. This instruction stores a pair of SIMD&FP registers to memory, issuing a hint to the memory system that the access is non-temporal. The address used for the store is calculated from an address from a base register value and an immediate offset. For information about non-temporal pair instructions, see Load/Store SIMD and Floating-point Non-temporal pair.",
-                "html": "<p>Store Pair of SIMD&amp;FP registers, with Non-temporal hint. This instruction stores a pair of SIMD&amp;FP registers to memory, issuing a hint to the memory system that the access is non-temporal. The address used for the store is calculated from an address from a base register value and an immediate offset. For information about non-temporal pair instructions, see <xref linkend=\"BABJADHH\">Load/Store SIMD and Floating-point Non-temporal pair</xref>.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Store Pair of Registers, with non-temporal hint, calculates an address from a base register value and an immediate offset, and stores two 32-bit words or two 64-bit doublewords to the calculated address, from two registers. For information about memory accesses, see Load/Store addressing modes. For information about Non-temporal pair instructions, see Load/Store Non-temporal pair.",
+                "html": "<p>Store Pair of Registers, with non-temporal hint, calculates an address from a base register value and an immediate offset, and stores two 32-bit words or two 64-bit doublewords to the calculated address, from two registers. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>. For information about Non-temporal pair instructions, see <xref linkend=\"CEGJCGDF\">Load/Store Non-temporal pair</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -6463,15 +6469,15 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "STP":
             return {
-                "tooltip": "Store Pair of SIMD&FP registers. This instruction stores a pair of SIMD&FP registers to memory. The address used for the store is calculated from a base register value and an immediate offset.",
-                "html": "<p>Store Pair of SIMD&amp;FP registers. This instruction stores a pair of SIMD&amp;FP registers to memory. The address used for the store is calculated from a base register value and an immediate offset.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Store Pair of Registers calculates an address from a base register value and an immediate offset, and stores two 32-bit words or two 64-bit doublewords to the calculated address, from two registers. For information about memory accesses, see Load/Store addressing modes.",
+                "html": "<p>Store Pair of Registers calculates an address from a base register value and an immediate offset, and stores two 32-bit words or two 64-bit doublewords to the calculated address, from two registers. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
         case "STR":
             return {
-                "tooltip": "Store SIMD&FP register (immediate offset). This instruction stores a single SIMD&FP register to memory. The address that is used for the store is calculated from a base register value and an immediate offset.",
-                "html": "<p>Store SIMD&amp;FP register (immediate offset). This instruction stores a single SIMD&amp;FP register to memory. The address that is used for the store is calculated from a base register value and an immediate offset.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Store Register (immediate) stores a word or a doubleword from a register to memory. The address that is used for the store is calculated from a base register and an immediate offset. For information about memory accesses, see Load/Store addressing modes.",
+                "html": "<p>Store Register (immediate) stores a word or a doubleword from a register to memory. The address that is used for the store is calculated from a base register and an immediate offset. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -6632,8 +6638,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "STUR":
             return {
-                "tooltip": "Store SIMD&FP register (unscaled offset). This instruction stores a single SIMD&FP register to memory. The address that is used for the store is calculated from a base register value and an optional immediate offset.",
-                "html": "<p>Store SIMD&amp;FP register (unscaled offset). This instruction stores a single SIMD&amp;FP register to memory. The address that is used for the store is calculated from a base register value and an optional immediate offset.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Store Register (unscaled) calculates an address from a base register value and an immediate offset, and stores a 32-bit word or a 64-bit doubleword to the calculated address, from a register. For information about memory accesses, see Load/Store addressing modes.",
+                "html": "<p>Store Register (unscaled) calculates an address from a base register value and an immediate offset, and stores a 32-bit word or a 64-bit doubleword to the calculated address, from a register. For information about memory accesses, see <xref linkend=\"CHDIIIBB\">Load/Store addressing modes</xref>.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -7267,8 +7273,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "UMAX":
             return {
-                "tooltip": "Unsigned Maximum (vector). This instruction compares corresponding elements in the vectors in the two source SIMD&FP registers, places the larger of each pair of unsigned integer values into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Unsigned Maximum (vector). This instruction compares corresponding elements in the vectors in the two source SIMD&amp;FP registers, places the larger of each pair of unsigned integer values into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Unsigned Maximum (immediate) determines the unsigned maximum of the source register value and immediate, and writes the result to the destination register.",
+                "html": "<p>Unsigned Maximum (immediate) determines the unsigned maximum of the source register value and immediate, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -7295,8 +7301,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "UMIN":
             return {
-                "tooltip": "Unsigned Minimum (vector). This instruction compares corresponding vector elements in the two source SIMD&FP registers, places the smaller of each of the two unsigned integer values into a vector, and writes the vector to the destination SIMD&FP register.",
-                "html": "<p>Unsigned Minimum (vector). This instruction compares corresponding vector elements in the two source SIMD&amp;FP registers, places the smaller of each of the two unsigned integer values into a vector, and writes the vector to the destination SIMD&amp;FP register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "tooltip": "Unsigned Minimum (immediate) determines the unsigned minimum of the source register value and immediate, and writes the result to the destination register.",
+                "html": "<p>Unsigned Minimum (immediate) determines the unsigned minimum of the source register value and immediate, and writes the result to the destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -7428,11 +7434,17 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
-        case "UMULL":
         case "UMULL2":
             return {
                 "tooltip": "Unsigned Multiply Long (vector, by element). This instruction multiplies each vector element in the lower or upper half of the first source SIMD&FP register by the specified vector element of the second source SIMD&FP register, places the results in a vector, and writes the vector to the destination SIMD&FP register. The destination vector elements are twice as long as the elements that are multiplied.",
                 "html": "<p>Unsigned Multiply Long (vector, by element). This instruction multiplies each vector element in the lower or upper half of the first source SIMD&amp;FP register by the specified vector element of the second source SIMD&amp;FP register, places the results in a vector, and writes the vector to the destination SIMD&amp;FP register. The destination vector elements are twice as long as the elements that are multiplied.</p><p>The <instruction>UMULL</instruction> instruction extracts vector elements from the lower half of the first source register. The <instruction>UMULL2</instruction> instruction extracts vector elements from the upper half of the first source register.</p><p>Depending on the settings in the <xref linkend=\"AArch64.cpacr_el1\">CPACR_EL1</xref>, <xref linkend=\"AArch64.cptr_el2\">CPTR_EL2</xref>, and <xref linkend=\"AArch64.cptr_el3\">CPTR_EL3</xref> registers, and the current Security state and Exception level, an attempt to execute the instruction might be trapped.</p>",
+                "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
+            };
+
+        case "UMULL":
+            return {
+                "tooltip": "Unsigned Multiply Long multiplies two 32-bit register values, and writes the result to the 64-bit destination register.",
+                "html": "<p>Unsigned Multiply Long multiplies two 32-bit register values, and writes the result to the 64-bit destination register.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
@@ -7867,6 +7879,13 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             return {
                 "tooltip": "Unsigned Extend Byte extracts an 8-bit value from a register, zero-extends it to the size of the register, and writes the result to the destination register.",
                 "html": "<p>Unsigned Extend Byte extracts an 8-bit value from a register, zero-extends it to the size of the register, and writes the result to the destination register.</p>",
+                "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
+            };
+
+        case "UXTW":
+            return {
+                "tooltip": "Zero-extend the least-significant sub-element of each active element of the source vector, and place the results in the corresponding elements of the destination vector. Inactive elements in the destination vector register remain unmodified.",
+                "html": "<p>Zero-extend the least-significant sub-element of each active element of the source vector, and place the results in the corresponding elements of the destination vector. Inactive elements in the destination vector register remain unmodified.</p>",
                 "url": "https://developer.arm.com/documentation/ddi0602/latest/Base-Instructions/"
             };
 
