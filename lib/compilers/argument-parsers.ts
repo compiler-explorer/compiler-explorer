@@ -30,7 +30,7 @@ import _ from 'underscore';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {Argument} from '../../types/compiler-arguments.interfaces.js';
+import type {Argument, PossibleArguments} from '../../types/compiler-arguments.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import {getExamplesRoot} from '../sources/builtin.js';
@@ -1376,5 +1376,36 @@ export class GlslangParser extends BaseParser {
         const options = this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2);
         this.compiler.possibleArguments.populateOptions(options);
         return options;
+    }
+}
+
+export class DucklingParser extends BaseParser {
+    override async parse() {
+        const optionWithDescription = /^ {2}(?:--?[A-Za-z0-9-]+,\s*)?(--?[A-Za-z0-9-]+(?:\s+<[^>]+>)?)\s{2,}(.*)$/;
+        const optionWithoutDescription = /^ {2}(?:--?[A-Za-z0-9-]+,\s*)?(--?[A-Za-z0-9-]+(?:\s+<[^>]+>)?)/;
+        const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, ['compile_module', '--help']);
+        const discoveredOptions =
+            result.code === 0
+                ? this.parseLines(result.stdout + result.stderr, optionWithDescription, optionWithoutDescription)
+                : {};
+        const options: PossibleArguments = {};
+        const llvmOpt = discoveredOptions['--llvm-opt <level>'];
+        if (llvmOpt) {
+            options['-O 2'] = {
+                ...llvmOpt,
+                description: `${llvmOpt.description.replace(/ See https?:\/\/\S+/g, '')} -O is short for --llvm-opt.`,
+            };
+        }
+        const printIr = discoveredOptions['--print-ir <categories>'];
+        if (printIr) {
+            options['--print-ir hir'] = {
+                ...printIr,
+                description:
+                    'Print intermediate representations to Compiler Output. Values: hir, mir, lir (comma-separated).',
+            };
+        }
+        this.compiler.compiler.cachedPossibleArguments = options;
+        this.compiler.possibleArguments.populateOptions(options);
+        return this.compiler;
     }
 }
