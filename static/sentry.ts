@@ -28,7 +28,7 @@ import GoldenLayout from 'golden-layout';
 import {parse} from '../shared/stacktrace.js';
 import {serialiseState} from '../shared/url-serialization.js';
 import {options} from './options.js';
-import {isWorkerErrorNoise} from './sentry-filters.js';
+import {isWorkerErrorNoise, restoreRethrownFrames} from './sentry-filters.js';
 import {SiteSettings} from './settings.js';
 
 let layout: GoldenLayout;
@@ -134,6 +134,7 @@ export function SetupSentry() {
                 if (isWorkerErrorNoise(event)) {
                     return null;
                 }
+                restoreRethrownFrames(event);
                 return event;
             },
         });
