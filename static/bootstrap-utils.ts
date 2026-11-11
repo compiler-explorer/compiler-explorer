@@ -357,11 +357,14 @@ function updateShownPopover(element: HTMLElement, content: HtmlPopoverContent, p
 
     const header = tip.querySelector('.popover-header');
     const body = tip.querySelector('.popover-body');
-    // Bootstrap falls back to the element's original title attribute when no title is given
-    const title = content.title || element.getAttribute('data-bs-original-title') || '';
-    if (!body || !content.body || !!header !== !!title) return false;
+    // Bootstrap falls back to the element's original title attribute (plain text) when no title is given
+    const fallbackTitle = element.getAttribute('data-bs-original-title') || '';
+    if (!body || !content.body || !!header !== !!(content.title || fallbackTitle)) return false;
 
-    if (header) setPopoverPart(header, title);
+    if (header) {
+        if (content.title) setPopoverPart(header, content.title);
+        else header.textContent = fallbackTitle;
+    }
     setPopoverPart(body, content.body);
     for (const cls of (previous?.className ?? '').split(' ').filter(Boolean)) tip.classList.remove(cls);
     for (const cls of (content.className ?? '').split(' ').filter(Boolean)) tip.classList.add(cls);
