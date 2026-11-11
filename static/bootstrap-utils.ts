@@ -309,8 +309,68 @@ export type HtmlPopoverContent = {
 
 const htmlPopoverContents = new WeakMap<HTMLElement, HtmlPopoverContent>();
 
+const SAFE_URL_PATTERN = /^(?!javascript:)(?:[a-z0-9+.-]+:|[^&:/?#]*(?:[/?#]|$))/i;
+const URI_ATTRIBUTES = new Set(['background', 'cite', 'href', 'itemtype', 'longdesc', 'poster', 'src', 'xlink:href']);
+
+// Mirrors Bootstrap's (non-exported) HTML sanitizer, using the same allow list, so that content written directly into
+// a visible popover is filtered exactly as it would be if Bootstrap had rendered it.
+function sanitizePopoverHtml(html: string): string {
+    const allowList = Popover.Default.allowList as Record<string, (string | RegExp)[]>;
+    const body = new DOMParser().parseFromString(html, 'text/html').body;
+    for (const el of Array.from(body.querySelectorAll('*'))) {
+        const tag = el.nodeName.toLowerCase();
+        if (!(tag in allowList)) {
+            el.remove();
+            continue;
+        }
+        const allowed = [...(allowList['*'] ?? []), ...(allowList[tag] ?? [])];
+        for (const attrName of el.getAttributeNames()) {
+            const name = attrName.toLowerCase();
+            const ok = allowed.some(a => (typeof a === 'string' ? a === name : a.test(name)));
+            if (!ok || (URI_ATTRIBUTES.has(name) && !SAFE_URL_PATTERN.test(el.getAttribute(attrName) ?? ''))) {
+                el.removeAttribute(attrName);
+            }
+        }
+    }
+    return body.innerHTML;
+}
+
+function setPopoverPart(part: Element, value: string | Element): void {
+    if (typeof value === 'string') {
+        part.innerHTML = sanitizePopoverHtml(value);
+    } else {
+        part.replaceChildren(value);
+    }
+}
+
 /**
- * Set the content of an HTML popover, creating it on first use and updating it in place afterwards.
+ * Bootstrap's setContent() on a visible popover removes the popover element and calls show() again, so the popover
+ * visibly fades out and back in. Instead, write the new title and body straight into the element that is on screen.
+ *
+ * @returns false if the popover isn't currently shown, or its structure would change (title or body appearing or
+ * disappearing); the caller should then fall back to setContent()
+ */
+function updateShownPopover(element: HTMLElement, content: HtmlPopoverContent, previous?: HtmlPopoverContent): boolean {
+    const tipId = element.getAttribute('aria-describedby');
+    const tip = tipId ? document.getElementById(tipId) : null;
+    if (!tip?.classList.contains('popover') || !tip.classList.contains('show')) return false;
+
+    const header = tip.querySelector('.popover-header');
+    const body = tip.querySelector('.popover-body');
+    // Bootstrap falls back to the element's original title attribute when no title is given
+    const title = content.title || element.getAttribute('data-bs-original-title') || '';
+    if (!body || !content.body || !!header !== !!title) return false;
+
+    if (header) setPopoverPart(header, title);
+    setPopoverPart(body, content.body);
+    for (const cls of (previous?.className ?? '').split(' ').filter(Boolean)) tip.classList.remove(cls);
+    for (const cls of (content.className ?? '').split(' ').filter(Boolean)) tip.classList.add(cls);
+    return true;
+}
+
+/**
+ * Set the content of an HTML popover, creating it on first use and updating it in place afterwards (including while
+ * it is visible, without flicker).
  *
  * Replacing a popover with dispose() + new Popover() is unsafe: if it is still fading out, Bootstrap's queued
  * transition callback runs against the disposed instance and throws (https://github.com/twbs/bootstrap/issues/37474).
@@ -326,10 +386,15 @@ export function setHtmlPopoverContent(
     const element = getElement(elementOrSelector);
     if (!element) return null;
 
+    const previous = htmlPopoverContents.get(element);
     htmlPopoverContents.set(element, content);
     const existing = Popover.getInstance(element);
     if (existing) {
-        existing.setContent();
+        if (updateShownPopover(element, content, previous)) {
+            existing.update();
+        } else {
+            existing.setContent();
+        }
         return existing;
     }
 
