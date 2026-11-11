@@ -389,6 +389,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.container.on('shown', () => {
             this.resize();
             _.defer(() => {
+                // Flush cached line widths measured while hidden, since render(true) keeps unchanged ViewLine instances.
+                const viewLines = (this.editor as any)._modelData?.view?._viewLines;
+                if (viewLines?.onFlushed) {
+                    const prevMaxLineWidth = viewLines._maxLineWidth;
+                    viewLines.onFlushed(undefined);
+                    if (prevMaxLineWidth > 1) {
+                        viewLines._maxLineWidth = prevMaxLineWidth;
+                    }
+                }
                 this.editor.render(true);
             });
         });

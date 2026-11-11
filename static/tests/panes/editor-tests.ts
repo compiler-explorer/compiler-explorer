@@ -156,7 +156,7 @@ describe('vim indentation', () => {
 });
 
 describe('Editor shown lifecycle', () => {
-    it('forces editor render when container is shown', async () => {
+    function makeShownEditor(viewLines?: {_maxLineWidth: number; onFlushed: ReturnType<typeof vi.fn>}) {
         const callbacks: Record<string, () => void> = {};
         const container = {
             on: vi.fn((event: string, cb: () => void) => {
@@ -172,6 +172,7 @@ describe('Editor shown lifecycle', () => {
             onDidFocusEditorText: vi.fn(),
             onDidBlurEditorText: vi.fn(),
             onDidChangeCursorPosition: vi.fn(),
+            ...(viewLines ? {_modelData: {view: {_viewLines: viewLines}}} : {}),
         };
         const view = Object.create(Editor.prototype) as Editor;
         Object.assign(view, {
@@ -181,8 +182,12 @@ describe('Editor shown lifecycle', () => {
             settings: {delayAfterChange: 0},
             resize: vi.fn(),
         });
-
         view.registerCallbacks();
+        return {callbacks, container, editorInstance, view};
+    }
+
+    it('forces editor render when container is shown', async () => {
+        const {callbacks, container, editorInstance, view} = makeShownEditor();
 
         expect(container.on).toHaveBeenCalledWith('shown', expect.any(Function));
 
@@ -190,6 +195,43 @@ describe('Editor shown lifecycle', () => {
 
         expect(view.resize).toHaveBeenCalled();
         await new Promise(resolve => setTimeout(resolve, 10));
+        expect(editorInstance.render).toHaveBeenCalledWith(true);
+    });
+
+    it('flushes cached line widths before forcing render when shown', async () => {
+        const viewLines = {
+            _maxLineWidth: 1,
+            onFlushed: vi.fn(() => {
+                viewLines._maxLineWidth = 0;
+            }),
+        };
+        const {callbacks, editorInstance} = makeShownEditor(viewLines);
+
+        callbacks.shown();
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+        expect(viewLines.onFlushed).toHaveBeenCalledWith(undefined);
+        expect(viewLines.onFlushed.mock.invocationCallOrder[0]).toBeLessThan(
+            editorInstance.render.mock.invocationCallOrder[0],
+        );
+        expect(viewLines._maxLineWidth).toBe(0);
+        expect(editorInstance.render).toHaveBeenCalledWith(true);
+    });
+
+    it('preserves positive maxLineWidth across shown flush so horizontal scroll is retained', async () => {
+        const viewLines = {
+            _maxLineWidth: 420,
+            onFlushed: vi.fn(() => {
+                viewLines._maxLineWidth = 0;
+            }),
+        };
+        const {callbacks, editorInstance} = makeShownEditor(viewLines);
+
+        callbacks.shown();
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+        expect(viewLines.onFlushed).toHaveBeenCalledWith(undefined);
+        expect(viewLines._maxLineWidth).toBe(420);
         expect(editorInstance.render).toHaveBeenCalledWith(true);
     });
 });
