@@ -25,6 +25,7 @@
 // These tests cover the places where Compiler Explorer reaches into Monaco (or monaco-vim) internals that are not part
 // of Monaco's documented API. A Monaco upgrade that moves or renames any of them should fail here, not in production.
 
+import {serialiseState} from '../../shared/url-serialization.js';
 import {
     compilerOutput,
     setMonacoEditorContent,
@@ -164,5 +165,93 @@ describe('Compiler pane context menu', () => {
         cy.contains('.monaco-menu .action-label', 'View assembly documentation', {includeShadowDom: true}).should(
             'not.exist',
         );
+    });
+});
+
+describe('Hidden tab editor click hit-testing', () => {
+    it('positions the cursor in the middle of line 1 after switching from a hidden tab', () => {
+        const hiddenLine1 = 'int square(int num) {';
+        const state = {
+            version: 4,
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        {
+                            type: 'stack',
+                            activeItemIndex: 0,
+                            content: [
+                                {
+                                    type: 'component',
+                                    componentName: 'codeEditor',
+                                    componentState: {id: 1, lang: 'c++', source: '// visible tab\n'},
+                                },
+                                {
+                                    type: 'component',
+                                    componentName: 'codeEditor',
+                                    componentState: {
+                                        id: 2,
+                                        lang: 'c++',
+                                        source: `${hiddenLine1}\n    return num * num;\n}`,
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+        const linuxUA =
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+
+        cy.visit(`/#${serialiseState(state)}`, {
+            onBeforeLoad(win) {
+                stubConsoleOutput(win);
+                // Force Monaco's RenderedViewLine path on every OS so hidden DOM measurements cache _cachedWidth = 0
+                Object.defineProperty(win.navigator, 'userAgent', {
+                    value: linuxUA,
+                    configurable: true,
+                });
+            },
+        });
+
+        cy.contains('span.lm_title:visible', 'C++ source #1', {timeout: 30_000}).should('be.visible');
+
+        // Wait for Monaco's 200ms _asyncUpdateLineWidths timer to fire while the second tab is still hidden
+        cy.window().should((win: Cypress.AUTWindow) => {
+            const hiddenEditor = win.monaco.editor
+                .getEditors()
+                .find(ed => ed.getModel()?.getLineContent(1) === hiddenLine1) as any;
+            const viewLines = hiddenEditor?._modelData?.view?._viewLines;
+            expect(viewLines).to.exist;
+            expect(viewLines.onFlushed).to.be.a('function');
+            expect(viewLines._maxLineWidth).to.be.a('number');
+            expect(viewLines._asyncUpdateLineWidths.isScheduled()).to.be.false;
+        });
+
+        cy.contains('span.lm_title:visible', 'C++ source #2').click();
+        cy.contains('.monaco-editor:visible .view-lines', 'return num * num').should('be.visible');
+
+        cy.get('.monaco-editor:visible .view-line')
+            .first()
+            .then($line1 => {
+                const rect = $line1[0].getBoundingClientRect();
+                const $editor = $line1.closest('.monaco-editor');
+                const editorRect = $editor[0].getBoundingClientRect();
+                // Click inside the middle of line 1 rather than past the end of the line
+                const clickX = Math.round(rect.left + 80 - editorRect.left);
+                const clickY = Math.round(rect.top + rect.height / 2 - editorRect.top);
+                cy.wrap($editor).click(clickX, clickY);
+            });
+
+        cy.window().then((win: Cypress.AUTWindow) => {
+            const visibleEditor = win.monaco.editor
+                .getEditors()
+                .find(ed => ed.getModel()?.getLineContent(1) === hiddenLine1)!;
+            const pos = visibleEditor.getPosition()!;
+            const maxColumn = visibleEditor.getModel()!.getLineMaxColumn(1);
+            expect(pos.lineNumber).to.equal(1);
+            expect(pos.column).to.be.greaterThan(1).and.lessThan(maxColumn);
+        });
     });
 });
