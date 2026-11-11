@@ -44,6 +44,12 @@ describe('InstructionSets', () => {
         );
     });
 
+    it('should recognize hexagon from compiler target string', () => {
+        const isets = new InstructionSets();
+
+        expect(isets.getCompilerInstructionSetHint('hexagon-unknown-linux-musl')).toBe('hexagon');
+    });
+
     it('should recognize hppa from compiler target string', () => {
         const isets = new InstructionSets();
 
