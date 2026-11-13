@@ -232,6 +232,7 @@ describe('Compiler language change', () => {
             getEffectiveFilters: vi.fn(() => ({})),
             getActiveTools: vi.fn(() => []),
             compileFromEditorSource: vi.fn(),
+            optPipelineViewOpenCount: vi.fn(),
         });
         return compiler;
     }
