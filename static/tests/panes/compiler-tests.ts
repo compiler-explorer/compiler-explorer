@@ -59,6 +59,15 @@ describe('Compiler output editor', () => {
             }),
         );
     });
+
+    it('keeps the compiler id from its state for an editor that is waiting for a language', () => {
+        const compiler = Object.create(Compiler.prototype) as Compiler;
+        Object.assign(compiler, {hub: {compilerService: {}}});
+
+        compiler.initializeStateDependentProperties({compiler: 'cgdefault', source: 1} as any);
+
+        expect(compiler.originalCompilerId).toBe('cgdefault');
+    });
 });
 
 describe('Compiler default options', () => {

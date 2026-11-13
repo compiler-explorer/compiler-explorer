@@ -69,6 +69,7 @@ import {Hub} from '../hub.js';
 import {Decoration, Motd} from '../motd.interfaces.js';
 import {Compiler} from './compiler.js';
 import {EditorState} from './editor.interfaces.js';
+import {Executor} from './executor.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 
@@ -1491,24 +1492,24 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }
 
+    // A link can carry the source without its language. Take the language from the compiler of the first
+    // compiler or executor pane that opens on this editor.
+    private async takeLanguageFromPane(pane: Compiler | Executor | undefined): Promise<void> {
+        if (!this.waitingForLanguage || !pane?.originalCompilerId) return;
+        const result = await this.hub.compilerService.processFromLangAndCompiler(null, pane.originalCompilerId);
+        if (result?.compiler && this.waitingForLanguage) {
+            this.changeLanguage(result.compiler.lang);
+        }
+    }
+
     async onCompilerOpen(compilerId: number, editorId: number, treeId: number | boolean): Promise<void> {
         if (editorId === this.id) {
             // On any compiler open, rebroadcast our state in case they need to know it.
-            if (this.waitingForLanguage) {
-                const glCompiler = _.find(
-                    this.container.layoutManager.root.getComponentsByName('compiler'),
-                    c => c.id === compilerId,
-                );
-                if (glCompiler) {
-                    const result = await this.hub.compilerService.processFromLangAndCompiler(
-                        null,
-                        glCompiler.originalCompilerId,
-                    );
-                    if (result?.compiler) {
-                        this.changeLanguage(result.compiler.lang);
-                    }
-                }
-            }
+            const glCompiler: Compiler | undefined = _.find(
+                this.container.layoutManager.root.getComponentsByName('compiler'),
+                c => c.id === compilerId,
+            );
+            await this.takeLanguageFromPane(glCompiler);
 
             if (typeof treeId === 'number' && treeId > 0) {
                 if (!this.treeCompilers[treeId]) {
@@ -1543,8 +1544,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    onExecutorOpen(executorId: number, editorId: boolean | number): void {
+    async onExecutorOpen(executorId: number, editorId: boolean | number): Promise<void> {
         if (editorId === this.id) {
+            const glExecutor: Executor | undefined = _.find(
+                this.container.layoutManager.root.getComponentsByName('executor'),
+                e => e.id === executorId,
+            );
+            await this.takeLanguageFromPane(glExecutor);
             this.maybeEmitChange(true);
             this.ourExecutors[executorId] = true;
         }
@@ -2031,7 +2037,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     this.maybeEmitChange(true);
                 }
             }
-            this.waitingForLanguage = false;
+            // The constructor sets the initial language through here: keep waiting for a pane to name the real one.
+            if (!firstTime) this.waitingForLanguage = false;
         }
     }
 
