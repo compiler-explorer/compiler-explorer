@@ -31,7 +31,7 @@
     "@orchidjs/sifter": "^1.1.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/browser": "^11.10.0",
-    "@sentry/node": "^11.10.0",
+    "@sentry/node": "^11.12.0",
     "@types/semver": "^7.8.0",
     "big-integer": "^1.6.52",
     "bootstrap": "^5.3.8",
