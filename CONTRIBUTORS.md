@@ -182,3 +182,4 @@ From oldest to newest contributor, we would like to thank:
 - [Matt Black](https://github.com/mattsblack)
 - [Philip Craig](https://github.com/philipcraig)
 - [Amr Hesham](https://github.com/AmrDeveloper)
+- [Kevin O'Connor](https://github.com/kevinoconnor7)
