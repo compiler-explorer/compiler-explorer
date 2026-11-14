@@ -26,6 +26,7 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
+import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
 import type {CompilerState} from '../../panes/compiler.interfaces.js';
 import {Compiler} from '../../panes/compiler.js';
 import * as fetchJson from '../../services/fetch-json.js';
@@ -58,6 +59,25 @@ describe('Compiler output editor', () => {
                 readOnly: true,
             }),
         );
+    });
+});
+
+describe('Compiler effective filters', () => {
+    function effectiveFilters(compilerInfo: Partial<CompilerInfo>) {
+        const compiler = Object.create(Compiler.prototype) as Compiler;
+        Object.assign(compiler, {
+            compiler: {disabledFilters: [], ...compilerInfo},
+            filters: {get: () => ({binary: true, execute: true})},
+        });
+        return compiler.getEffectiveFilters();
+    }
+
+    it('drops execute for compilers that support binary but have execution turned off', () => {
+        expect(effectiveFilters({supportsBinary: true, supportsExecute: false})).toEqual({binary: true});
+    });
+
+    it('keeps execute for compilers that support execution', () => {
+        expect(effectiveFilters({supportsBinary: true, supportsExecute: true})).toEqual({binary: true, execute: true});
     });
 });
 

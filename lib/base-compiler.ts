@@ -3467,6 +3467,11 @@ export class BaseCompiler {
             delete filters.binary;
         }
 
+        // Likewise, don't execute on compilers that have execution turned off.
+        if (filters.execute && !this.compiler.supportsExecute) {
+            delete filters.execute;
+        }
+
         // For C/C++ turn off filters when compiling with -E
         // This is done for all compilers. Not every compiler handles -E the same but they all use
         // it for preprocessor output.
