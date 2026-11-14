@@ -552,7 +552,6 @@ export class MultifileService {
                         if (!this.fileExists(value, file)) {
                             file.filename = value;
 
-                            // The rename click opened the editor if it was closed
                             if (file.isOpen && file.editorId > 0) {
                                 editor = this.hub.getEditorById(file.editorId);
                                 if (editor) {

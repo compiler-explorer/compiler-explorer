@@ -433,12 +433,14 @@ export class Tree {
         });
 
         renameButton.on('click', async e => {
+            e.stopPropagation();
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.multifileService.renameFile(fileId);
             this.refresh();
         });
 
         deleteButton.on('click', e => {
+            e.stopPropagation();
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
@@ -459,10 +461,12 @@ export class Tree {
         });
 
         stageButton.on('click', async e => {
+            e.stopPropagation();
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.moveToInclude(fileId);
         });
         unstageButton.on('click', async e => {
+            e.stopPropagation();
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.moveToExclude(fileId);
         });
