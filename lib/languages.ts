@@ -932,6 +932,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: 'llvm-ir',
     },
+    roc: {
+        name: 'Roc',
+        monaco: 'no-highlight',
+        extensions: ['.roc'],
+        alias: [],
+        logoFilename: 'roc.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     ruby: {
         name: 'Ruby',
         monaco: 'rubyp',
