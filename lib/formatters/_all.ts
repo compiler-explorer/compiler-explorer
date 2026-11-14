@@ -27,5 +27,6 @@ export {Co2FmtFormatter} from './co2fmt.js';
 export {DartFormatFormatter} from './dartformat.js';
 export {GoFmtFormatter} from './gofmt.js';
 export {MojoFormatter} from './mojo.js';
+export {RocFmtFormatter} from './rocfmt.js';
 export {RustFmtFormatter} from './rustfmt.js';
 export {VFmtFormatter} from './vfmt.js';

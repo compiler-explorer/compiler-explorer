@@ -939,7 +939,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoFilename: 'roc.svg',
         logoFilenameDark: null,
-        formatter: null,
+        formatter: 'rocfmt',
         previewFilter: null,
         monacoDisassembly: null,
         digitSeparator: '_',

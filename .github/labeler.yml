@@ -408,6 +408,7 @@
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/roc.ts'
+          - 'lib/formatters/rocfmt.ts'
           - 'etc/config/roc.*.properties'
 
 'lang-ruby':
