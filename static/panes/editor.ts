@@ -2083,6 +2083,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('editorClose', this.id);
+        this.debouncedEmitChange.cancel();
         this.editor.dispose();
         this.hub.removeEditor(this.id);
     }
