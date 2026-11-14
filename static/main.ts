@@ -74,7 +74,7 @@ import {languagesService} from './services/languages.service.js';
 import {Settings, SiteSettings} from './settings.js';
 import {initialiseSharing} from './sharing.js';
 import {Themer} from './themes.js';
-import {deserialiseState, parseSavedLayoutState} from './url.js';
+import {deserialiseState, parseSavedLayoutState, removeEmptyLayoutItems} from './url.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {Alert} from './widgets/alert.js';
 import {HistoryWidget} from './widgets/history-widget.js';
@@ -405,6 +405,8 @@ function findConfig(
         );
     }
 
+    // Keeps links shared before compiler-explorer/golden-layout#22 loading: see removeEmptyLayoutItems.
+    removeEmptyLayoutItems(config);
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 

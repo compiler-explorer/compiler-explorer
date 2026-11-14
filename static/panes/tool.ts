@@ -290,9 +290,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.monacoEditorHasBeenAutoOpened = true; // just in case we get here in an unexpected way
         this.monacoEditorOpen = true;
         this.toggleStdin.addClass('active');
-        const insertPoint =
-            this.hub.findParentRowOrColumn(this.container.parent) || this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(this.createToolInputView());
+        this.hub.addToParentRowOrColumn(this.container, this.createToolInputView());
         this.onOptionsChange();
         this.eventHub.emit('setToolInput', this.compilerInfo.compilerId, this.toolId, this.monacoStdinField);
     }
