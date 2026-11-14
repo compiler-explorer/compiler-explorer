@@ -143,6 +143,18 @@ async function getCompilerName(compilerId: string, langId: string): Promise<stri
     return compilers[compilerId]?.name ?? '';
 }
 
+async function getLangDefaultLibs(langId: string): Promise<Lib[]> {
+    const languages = await languagesService.getLanguages();
+    const result: Lib[] = [];
+    for (const libPair of languages[langId]?.defaultLibs?.split(':') ?? []) {
+        const pairSplits = libPair.split('.');
+        if (pairSplits.length === 2) {
+            result.push({name: pairSplits[0], ver: pairSplits[1]});
+        }
+    }
+    return result;
+}
+
 function shortenMachineName(name: string): string {
     if (name === 'Advanced Micro Devices X86-64') {
         return 'amd64';
@@ -175,6 +187,7 @@ export class LibsWidget {
     public readonly stateLoaded: Promise<void>;
 
     private readonly availableLibs: AvailableLibs;
+    private langChangeGeneration = 0;
     private readonly filters: PopupAlertFilter[] = [
         (compilerId, langId) => {
             if (langId === 'rust' && ['beta', 'nightly'].includes(compilerId)) {
@@ -209,7 +222,10 @@ export class LibsWidget {
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.stateLoaded = this.updateAvailableLibs(possibleLibs, true).then(() => {
+        this.stateLoaded = this.loadLibs(langId, this.currentCompilerId, possibleLibs, true).then(defaultLibs => {
+            for (const lib of defaultLibs) {
+                this.markLibrary(lib.name, lib.ver, true);
+            }
             this.loadState(state);
             this.fullRefresh();
             this.updateButton();
@@ -661,53 +677,38 @@ export class LibsWidget {
         }
     }
 
-    async initLangDefaultLibs() {
-        const languages = await languagesService.getLanguages();
-        const lang = languages[this.currentLangId];
-        const defaultLibs = lang?.defaultLibs;
-        if (!defaultLibs) return;
-        for (const libPair of defaultLibs.split(':')) {
-            const pairSplits = libPair.split('.');
-            if (pairSplits.length === 2) {
-                const lib = pairSplits[0];
-                const ver = pairSplits[1];
-                this.markLibrary(lib, ver, true);
-            }
+    // Records the compiler's library list under its own key, and never touches the current lang/compiler: switches
+    // can overlap, and each must only ever see state that a previous switch applied in full.
+    private async loadLibs(
+        langId: string,
+        compilerKey: string,
+        possibleLibs: CompilerLibs,
+        withLangDefaults: boolean,
+    ): Promise<Lib[]> {
+        const libsByCompiler = (this.availableLibs[langId] ??= {});
+        if (!(compilerKey in libsByCompiler)) {
+            const libs = compilerKey === DEFAULT_COMPILER_KEY ? await libsService.getLibsForLang(langId) : possibleLibs;
+            libsByCompiler[compilerKey] ??= $.extend(true, {}, libs);
         }
-    }
-
-    async updateAvailableLibs(possibleLibs: CompilerLibs, isLangChanged: boolean) {
-        if (!(this.currentLangId in this.availableLibs)) {
-            this.availableLibs[this.currentLangId] = {};
-        }
-
-        if (!(this.currentCompilerId in this.availableLibs[this.currentLangId])) {
-            if (this.currentCompilerId === DEFAULT_COMPILER_KEY) {
-                const allLibs = await libsService.getLibsForLang(this.currentLangId);
-                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, allLibs);
-            } else {
-                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
-            }
-        }
-
-        if (isLangChanged) {
-            await this.initLangDefaultLibs();
-        }
+        return withLangDefaults ? await getLangDefaultLibs(langId) : [];
     }
 
     async setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
-        const libsInUse = this.listUsedLibs();
-
+        const generation = ++this.langChangeGeneration;
+        const compilerKey = toCompilerKey(compilerId);
         const isLangChanged = this.currentLangId !== langId;
+        const compilerName = compilerId ? (await getCompilerName(compilerId, langId)) || compilerId : '';
+        const defaultLibs = await this.loadLibs(langId, compilerKey, possibleLibs, isLangChanged);
+        // A later call has started meanwhile; it applies its own state, which applying ours now would undo.
+        if (generation !== this.langChangeGeneration) return;
 
+        const libsInUse = this.listUsedLibs();
         this.currentLangId = langId;
-
-        this.currentCompilerId = toCompilerKey(compilerId);
-        this.currentCompilerName = compilerId ? (await getCompilerName(compilerId, langId)) || compilerId : '';
-
-        // Clear the dom Root so it gets rebuilt with the new language libraries
-        await this.updateAvailableLibs(possibleLibs, isLangChanged);
-
+        this.currentCompilerId = compilerKey;
+        this.currentCompilerName = compilerName;
+        for (const lib of defaultLibs) {
+            this.markLibrary(lib.name, lib.ver, true);
+        }
         for (const libId in libsInUse) {
             this.markLibrary(libId, libsInUse[libId], true);
         }
