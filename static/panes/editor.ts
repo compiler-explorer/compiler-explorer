@@ -662,10 +662,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             });
 
             dragSource.on('click', () => {
-                const insertPoint =
-                    this.hub.findParentRowOrColumn(this.container.parent) ||
-                    this.container.layoutManager.root.contentItems[0];
-                insertPoint.addChild(dragConfig);
+                this.hub.addToParentRowOrColumn(this.container, dragConfig());
             });
         };
 
@@ -2083,6 +2080,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('editorClose', this.id);
+        this.debouncedEmitChange.cancel();
         this.editor.dispose();
         this.hub.removeEditor(this.id);
     }

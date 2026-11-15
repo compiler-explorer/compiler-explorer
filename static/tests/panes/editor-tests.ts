@@ -155,41 +155,80 @@ describe('vim indentation', () => {
     });
 });
 
+function registeredView(delayAfterChange = 0) {
+    const callbacks: Record<string, () => void> = {};
+    const container = {
+        on: vi.fn((event: string, cb: () => void) => {
+            callbacks[event] = cb;
+        }),
+        layoutManager: {on: vi.fn()},
+    };
+    let changeContent = () => {};
+    const editorInstance = {
+        render: vi.fn(),
+        getModel: () => ({
+            onDidChangeContent: (cb: () => void) => {
+                changeContent = cb;
+            },
+        }),
+        onMouseMove: vi.fn(),
+        onDidChangeCursorSelection: vi.fn(),
+        onDidFocusEditorText: vi.fn(),
+        onDidBlurEditorText: vi.fn(),
+        onDidChangeCursorPosition: vi.fn(),
+        dispose: vi.fn(),
+    };
+    const view = Object.create(Editor.prototype) as Editor;
+    Object.assign(view, {
+        container,
+        editor: editorInstance,
+        eventHub: {on: vi.fn(), emit: vi.fn(), unsubscribe: vi.fn()},
+        hub: {removeEditor: vi.fn()},
+        settings: {delayAfterChange},
+        resize: vi.fn(),
+        updateState: vi.fn(),
+        maybeEmitChange: vi.fn(),
+    });
+
+    view.registerCallbacks();
+
+    return {view, callbacks, container, editorInstance, changeContent: () => changeContent()};
+}
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 describe('Editor shown lifecycle', () => {
     it('forces editor render when container is shown', async () => {
-        const callbacks: Record<string, () => void> = {};
-        const container = {
-            on: vi.fn((event: string, cb: () => void) => {
-                callbacks[event] = cb;
-            }),
-            layoutManager: {on: vi.fn()},
-        };
-        const editorInstance = {
-            render: vi.fn(),
-            getModel: () => null,
-            onMouseMove: vi.fn(),
-            onDidChangeCursorSelection: vi.fn(),
-            onDidFocusEditorText: vi.fn(),
-            onDidBlurEditorText: vi.fn(),
-            onDidChangeCursorPosition: vi.fn(),
-        };
-        const view = Object.create(Editor.prototype) as Editor;
-        Object.assign(view, {
-            container,
-            editor: editorInstance,
-            eventHub: {on: vi.fn(), emit: vi.fn()},
-            settings: {delayAfterChange: 0},
-            resize: vi.fn(),
-        });
-
-        view.registerCallbacks();
+        const {view, callbacks, container, editorInstance} = registeredView();
 
         expect(container.on).toHaveBeenCalledWith('shown', expect.any(Function));
 
         callbacks.shown();
 
         expect(view.resize).toHaveBeenCalled();
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await sleep(10);
         expect(editorInstance.render).toHaveBeenCalledWith(true);
+    });
+});
+
+describe('Editor close', () => {
+    it('emits an edit once the change delay passes', async () => {
+        const {view, changeContent} = registeredView(5);
+
+        changeContent();
+        await sleep(30);
+
+        expect(view.maybeEmitChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('drops an edit still waiting on the change delay when the editor closes', async () => {
+        // emitting after close would run format-on-compile against a disposed Monaco editor, which has no actions
+        const {view, changeContent} = registeredView(5);
+
+        changeContent();
+        view.close();
+        await sleep(30);
+
+        expect(view.maybeEmitChange).not.toHaveBeenCalled();
     });
 });
