@@ -44,6 +44,10 @@ const DEFAULT_MONACO_CONFIG = {
     wrappingStrategy: 'advanced',
 };
 
+// Page translators (e.g. Safari's, which ignores the google notranslate meta tag) rewrite the line DOM Monaco assumes
+// it owns. Code shouldn't be translated anyway; the rest of the UI stays translatable.
+monaco.editor.onDidCreateEditor(editor => editor.getContainerDomNode().setAttribute('translate', 'no'));
+
 type EditorKinds = monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
 
 /** Pick construction options based on editor kind */

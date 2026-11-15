@@ -27,6 +27,7 @@
 
 import {
     compilerOutput,
+    openDiffView,
     setMonacoEditorContent,
     setupAndWaitForCompilation,
     sourceEditor,
@@ -125,6 +126,28 @@ describe('Vim mode', () => {
         setMonacoEditorContent('a\n      b\nc');
         cy.focused().type('ggj<<');
         sourceLine(2).should('equal', '    b');
+    });
+});
+
+describe('Page translation', () => {
+    beforeEach(visitPage);
+
+    it('is turned off for every editor, including diff editors, and nowhere else', () => {
+        setupAndWaitForCompilation();
+        openDiffView();
+        cy.window().should((win: Cypress.AUTWindow) => {
+            expect(win.monaco.editor.getDiffEditors()).to.have.length(1);
+            const editors = win.monaco.editor.getEditors();
+            expect(editors).to.have.length.at.least(4);
+            for (const editor of editors) expect(editor.getContainerDomNode().translate).to.equal(false);
+        });
+        sourceEditor()
+            .find('.view-line')
+            .first()
+            .should($line => expect($line[0].translate).to.equal(false));
+        cy.get('span.lm_title:visible')
+            .first()
+            .should($title => expect($title[0].translate).to.equal(true));
     });
 });
 
