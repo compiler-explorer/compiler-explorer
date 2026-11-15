@@ -298,6 +298,31 @@ describe('GO library support', () => {
         expect(goSumContent).toContain('github.com/google/uuid v1.6.0 h1:abc123=');
     });
 
+    it('Uses the compiler version as the go directive of the generated go.mod', async () => {
+        const newCompiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver: '1.26.0'}),
+            ce,
+        );
+        await (newCompiler as any).generateGoMod(tempDir, [], tempDir);
+
+        const goModContent = await fsp.readFile(path.join(tempDir, 'go.mod'), 'utf-8');
+        expect(goModContent).toBe('module example\n\ngo 1.26.0\n');
+    });
+
+    it('Falls back to go 1.21 for older or unparsable compiler versions', async () => {
+        for (const semver of ['1.18.0', 'tip', '']) {
+            const oldCompiler = new GolangCompiler(
+                makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver}),
+                ce,
+            );
+            await fsp.rm(path.join(tempDir, 'go.mod'), {force: true});
+            await (oldCompiler as any).generateGoMod(tempDir, [], tempDir);
+
+            const goModContent = await fsp.readFile(path.join(tempDir, 'go.mod'), 'utf-8');
+            expect(goModContent).toBe('module example\n\ngo 1.21\n');
+        }
+    });
+
     it('Appends to existing go.mod with require block', async () => {
         const existingGoMod = `module mymodule
 
