@@ -934,7 +934,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     roc: {
         name: 'Roc',
-        monaco: 'no-highlight',
+        monaco: 'coffeescript',
         extensions: ['.roc'],
         alias: [],
         logoFilename: 'roc.svg',
