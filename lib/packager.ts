@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {createReadStream, createWriteStream} from 'node:fs';
+import nodeFs, {createReadStream, createWriteStream, type Stats} from 'node:fs';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import type {Readable, Transform, Writable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import zlib from 'node:zlib';
@@ -31,6 +32,23 @@ import zlib from 'node:zlib';
 import tar from 'tar-fs';
 
 const DEFAULT_TIMEOUT_MS = 60_000;
+
+// tar-fs 3 takes an entry it can't stat (a dangling symlink, or a file removed while packing) for the end of the
+// directory walk and finishes the archive there, with no error. Report it instead of producing a short package.
+function failOnMissingEntries(root: string) {
+    return {
+        ...nodeFs,
+        stat(file: string, callback: (err: NodeJS.ErrnoException | null, stats?: Stats) => void) {
+            nodeFs.stat(file, (err, stats) => {
+                if (err?.code === 'ENOENT' && path.resolve(file) !== path.resolve(root)) {
+                    callback(new Error(err.message, {cause: err}));
+                } else {
+                    callback(err, stats);
+                }
+            });
+        },
+    };
+}
 
 export class Packager {
     constructor(private readonly timeoutMs: number = DEFAULT_TIMEOUT_MS) {}
@@ -50,10 +68,11 @@ export class Packager {
     }
 
     async tarGzFiles(cwd: string, destination: string): Promise<string> {
+        const packOptions = {dereference: true, fs: failOnMissingEntries(cwd)};
         try {
             await this.pipeWithTimeout(
                 `Packing ${cwd}`,
-                tar.pack(cwd, {dereference: true}) as unknown as Readable,
+                tar.pack(cwd, packOptions) as unknown as Readable,
                 zlib.createGzip({level: 3, memLevel: 9}),
                 createWriteStream(destination),
             );

@@ -88,6 +88,28 @@ describe('Packager', () => {
         5000,
     );
 
+    it.skipIf(process.platform === 'win32')(
+        'should fail rather than leave files out when a symlink is dangling',
+        async () => {
+            const dirPath = newTempDir();
+            await writeTestFile(path.join(dirPath, 'a.txt'));
+            await fs.symlink('missing', path.join(dirPath, 'b-dangling'));
+            await writeTestFile(path.join(dirPath, 'c.txt'));
+
+            const targzPath = path.join(newTempDir(), 'package.tgz');
+            await expect(new Packager().package(dirPath, targzPath)).rejects.toThrow(/ENOENT.*b-dangling/);
+            await vi.waitFor(() => expect(fs.stat(targzPath)).rejects.toThrow(/ENOENT/));
+        },
+        5000,
+    );
+
+    it('should still report a missing source directory as ENOENT', async () => {
+        const targzPath = path.join(newTempDir(), 'package.tgz');
+        await expect(new Packager().package(path.join(newTempDir(), 'missing'), targzPath)).rejects.toMatchObject({
+            code: 'ENOENT',
+        });
+    }, 5000);
+
     // A FIFO that has a holder but no data blocks the stream for real, in a filesystem call, with no error.
     describe.skipIf(process.platform === 'win32')('when a stream stalls', () => {
         async function withFifo(fifoPath: string, fn: () => Promise<void>) {
