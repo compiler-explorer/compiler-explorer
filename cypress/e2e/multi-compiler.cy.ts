@@ -150,3 +150,32 @@ int changed_default(int x) { return x * 100; }
             });
     });
 });
+
+describe('Adding panes while a pane is maximised', () => {
+    beforeEach(waitForEditors);
+
+    function maximisePane(titleMatch: string) {
+        findPane(titleMatch).closest('.lm_item.lm_stack').children('.lm_header').find('.lm_maximise').click();
+        cy.get('.lm_maximised').should('exist');
+    }
+
+    function stacksShouldAllBeInRootRow(count: number) {
+        cy.get('.lm_maximised').should('not.exist');
+        cy.get('.lm_root > .lm_stack').should('not.exist');
+        cy.get('.lm_root > .lm_row > .lm_stack').should('have.length', count);
+    }
+
+    it('should restore a maximised editor when adding a compiler from it', () => {
+        maximisePane('source');
+        addCompilerFromEditor();
+        allCompilerTabs().should('have.length', 2);
+        stacksShouldAllBeInRootRow(3);
+    });
+
+    it('should keep a pane cloned from a maximised last pane inside its row', () => {
+        maximisePane('Editor #');
+        addCompilerFromCompilerPane();
+        allCompilerTabs().should('have.length', 2);
+        stacksShouldAllBeInRootRow(3);
+    });
+});

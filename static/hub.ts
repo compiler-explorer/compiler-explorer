@@ -382,6 +382,11 @@ export class Hub {
         return this.findEditorInChildren(this.layout.root);
     }
 
+    public addToParentRowOrColumn(container: GoldenLayout.Container, elem: GoldenLayout.ItemConfigType): void {
+        const insertionPoint = this.findParentRowOrColumn(container.parent) || this.layout.root.contentItems[0];
+        insertionPoint.addChild(elem);
+    }
+
     public addInEditorStackIfPossible(elem: GoldenLayout.ItemConfig): void {
         const insertionPoint = this.findEditorParentRowOrColumn();
         // required not-true check because findEditorParentRowOrColumn returns
