@@ -1492,7 +1492,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     // A link can carry the source without its language. Take the language from the compiler of the first
     // compiler or executor pane that opens on this editor.
     private async takeLanguageFromPane(pane: Compiler | Executor | undefined): Promise<void> {
-        if (!this.waitingForLanguage || !pane?.originalCompilerId) return;
+        if (!pane?.originalCompilerId) return;
         const result = await this.hub.compilerService.processFromLangAndCompiler(null, pane.originalCompilerId);
         if (result?.compiler && this.waitingForLanguage) {
             this.changeLanguage(result.compiler.lang);
@@ -1502,11 +1502,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     async onCompilerOpen(compilerId: number, editorId: number, treeId: number | boolean): Promise<void> {
         if (editorId === this.id) {
             // On any compiler open, rebroadcast our state in case they need to know it.
-            const glCompiler: Compiler | undefined = _.find(
-                this.container.layoutManager.root.getComponentsByName('compiler'),
-                c => c.id === compilerId,
-            );
-            await this.takeLanguageFromPane(glCompiler);
+            if (this.waitingForLanguage) {
+                const glCompiler: Compiler | undefined = _.find(
+                    this.container.layoutManager.root.getComponentsByName('compiler'),
+                    c => c.id === compilerId,
+                );
+                await this.takeLanguageFromPane(glCompiler);
+            }
 
             if (typeof treeId === 'number' && treeId > 0) {
                 if (!this.treeCompilers[treeId]) {
@@ -1543,11 +1545,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     async onExecutorOpen(executorId: number, editorId: boolean | number): Promise<void> {
         if (editorId === this.id) {
-            const glExecutor: Executor | undefined = _.find(
-                this.container.layoutManager.root.getComponentsByName('executor'),
-                e => e.id === executorId,
-            );
-            await this.takeLanguageFromPane(glExecutor);
+            if (this.waitingForLanguage) {
+                const glExecutor: Executor | undefined = _.find(
+                    this.container.layoutManager.root.getComponentsByName('executor'),
+                    e => e.id === executorId,
+                );
+                await this.takeLanguageFromPane(glExecutor);
+            }
             this.maybeEmitChange(true);
             this.ourExecutors[executorId] = true;
         }

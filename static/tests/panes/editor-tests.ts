@@ -236,6 +236,26 @@ describe('Editor language from a link without one', () => {
 
         expect(view.changeLanguage).toHaveBeenCalledWith('c');
         expect(view.maybeEmitChange).toHaveBeenCalledWith(true);
+        expect(vi.mocked(view.changeLanguage).mock.invocationCallOrder[0]).toBeLessThan(
+            vi.mocked(view.maybeEmitChange).mock.invocationCallOrder[0],
+        );
+    });
+
+    it('emits straight away, without looking up the pane, when it already has a language', () => {
+        const getComponentsByName = vi.fn(() => []);
+        const view = Object.create(Editor.prototype) as Editor;
+        Object.assign(view, {
+            id: 1,
+            waitingForLanguage: false,
+            ourExecutors: {},
+            container: {layoutManager: {root: {getComponentsByName}}},
+            maybeEmitChange: vi.fn(),
+        });
+
+        void view.onExecutorOpen(2, 1);
+
+        expect(view.maybeEmitChange).toHaveBeenCalledWith(true);
+        expect(getComponentsByName).not.toHaveBeenCalled();
     });
 
     it('keeps waiting through the initial language the constructor sets', () => {
