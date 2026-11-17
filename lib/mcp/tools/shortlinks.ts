@@ -165,6 +165,7 @@ export function registerShortlinkTools(
         {
             title: 'Get Compiler Explorer short URL info',
             readOnlyHint: true,
+            destructiveHint: false,
             openWorldHint: false,
         },
         async ({id}) => {

@@ -72,8 +72,8 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     aarch64: [
         [
             'mov',
-            'Read active elements from the source predicate',
-            '<p>Read active elements from the source predicate',
+            'Move (register) copies the value in a source register',
+            '<p>Move (register) copies the value in a source register',
             'https://developer.arm.com/documentation/',
         ],
     ],

@@ -131,6 +131,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             // ephemeral sandbox whose effects don't escape the call. Hence readOnlyHint.
             title: 'Compile (and optionally execute) source code',
             readOnlyHint: true,
+            destructiveHint: false,
             openWorldHint: false,
         },
         async ({
