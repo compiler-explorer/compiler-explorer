@@ -278,22 +278,26 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     });
 }
 
+function abortWithEmbedDecodeError(): never {
+    document.write(
+        '<div style="padding: 10px; background: #fa564e; color: black;">' +
+            "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
+            'truncated, otherwise if you believe your URL is valid please let us know on ' +
+            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
+            'our github' +
+            '</a>.' +
+            '</div>',
+    );
+    throw new Error('Embed url decode error');
+}
+
 function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     // Old-style link?
     let params;
     try {
         params = unrisonify(embeddedUrl);
     } catch {
-        document.write(
-            '<div style="padding: 10px; background: #fa564e; color: black;">' +
-                "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
-                'truncated, otherwise if you believe your URL is valid please let us know on ' +
-                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
-                'our github' +
-                '</a>.' +
-                '</div>',
-        );
-        throw new Error('Embed url decode error');
+        abortWithEmbedDecodeError();
     }
     if (params?.source && params.compiler) {
         const filters: ParseFiltersAndOutputOptions = Object.fromEntries(
@@ -311,7 +315,11 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
             ],
         };
     }
-    return deserialiseState(embeddedUrl);
+    try {
+        return deserialiseState(embeddedUrl);
+    } catch {
+        abortWithEmbedDecodeError();
+    }
 }
 
 function fixBugsInConfig(config: Partial<GoldenLayout.Config & {activeItemIndex?: number}>): void {
