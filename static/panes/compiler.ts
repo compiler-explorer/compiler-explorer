@@ -875,7 +875,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.hub.addToParentRowOrColumn(this.container, createClangirView());
         });
 
-        const setupOptPipelineButton = (button, kind) => {
+        const setupOptPipelineButton = (button: JQuery<HTMLButtonElement>, kind: OptPipelineKind) => {
             createDragSource(this.container.layoutManager, button, () => createOptPipelineView(kind)).on(
                 'dragStart',
                 hidePaneAdder,
