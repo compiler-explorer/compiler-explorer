@@ -73,6 +73,7 @@ export class ClientStateNormalizer {
     }
 
     setFilterSettingsFromComponentState(compiler: ClientStateCompiler, componentState) {
+        if (!componentState.filters) return;
         compiler.filters.binary = componentState.filters.binary;
         compiler.filters.binaryObject = componentState.filters.binaryObject;
         compiler.filters.execute = componentState.filters.execute;
