@@ -73,6 +73,7 @@ export class ClientStateNormalizer {
     }
 
     setFilterSettingsFromComponentState(compiler: ClientStateCompiler, componentState) {
+        if (!componentState.filters) return;
         compiler.filters.binary = componentState.filters.binary;
         compiler.filters.binaryObject = componentState.filters.binaryObject;
         compiler.filters.execute = componentState.filters.execute;
@@ -212,8 +213,8 @@ export class ClientStateNormalizer {
                 return;
             }
         } else {
-            // Ofek: do we ever get here?
-
+            // Layouts saved by CE's UI always give compiler panes an id, but hand-written ones POSTed straight to
+            // /api/shortener may not, and can omit other state too (filters, options, libs).
             compiler = new ClientStateCompiler();
             if (componentState.source) {
                 const session = this.normalized.findOrCreateSession(componentState.source);

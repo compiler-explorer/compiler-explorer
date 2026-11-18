@@ -489,6 +489,8 @@ An example of one the easiest forms of a clientstate:
 }
 ```
 
+`compilers` and `executors` are optional; a session without either opens as just an editor.
+
 **Usage Examples:**
 
 ```bash
