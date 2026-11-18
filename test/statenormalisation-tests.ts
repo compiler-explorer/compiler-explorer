@@ -152,6 +152,15 @@ describe('ClientState parsing', () => {
         expect(state.sessions[0].executors.length).toEqual(1);
     });
 
+    it('Should work without a compilers key', () => {
+        const state = new ClientState({
+            sessions: [{id: 1, language: 'c++', source: 'int main() {}'}],
+        });
+
+        expect(state.sessions[0].compilers.length).toEqual(0);
+        expect(state.sessions[0].source).toEqual('int main() {}');
+    });
+
     it('Should not contain id-less compilers', () => {
         const jsonStr = fs.readFileSync('test/state/bug-2231.json', {encoding: 'utf8'});
         const state = new ClientState(JSON.parse(jsonStr));

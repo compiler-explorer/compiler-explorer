@@ -326,7 +326,7 @@ export class ClientStateSession {
             }
         }
 
-        for (const compilerdata of jsondata.compilers) {
+        for (const compilerdata of jsondata.compilers ?? []) {
             const compiler = new ClientStateCompiler(compilerdata);
             if (compiler.id) {
                 this.compilers.push(compiler);
