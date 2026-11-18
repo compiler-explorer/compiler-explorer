@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {serialiseState} from '../../shared/url-serialization.js';
+import lzstring from 'lz-string';
+
+import {risonify, serialiseState} from '../../shared/url-serialization.js';
 import {
     assertNoConsoleOutput,
     monacoEditorTextShouldContain,
@@ -110,4 +112,20 @@ describe('Embedded mode', () => {
         cy.location('pathname').should('equal', '/e');
         cy.location('hash').should('equal', `#${stateHash}`);
     });
+});
+
+describe('Embedded mode with a truncated URL', () => {
+    const truncatedRison = 'version:4,content:!((type:row';
+    const cases = {
+        'plain rison': truncatedRison,
+        'compressed rison': risonify({z: lzstring.compressToBase64(truncatedRison)}),
+    };
+
+    for (const [name, hash] of Object.entries(cases)) {
+        it(`explains the decode failure for ${name}`, () => {
+            cy.on('uncaught:exception', err => !err.message.includes('Embed url decode error'));
+            cy.visit(`/e#${hash}`);
+            cy.contains('An error was encountered while decoding the URL for this embed');
+        });
+    }
 });
