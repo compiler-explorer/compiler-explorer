@@ -511,6 +511,28 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
         ]);
     });
 
+    it('demangles type names in metadata strings', () => {
+        const result = {
+            asm: [
+                {text: '!30 = !{!"_ZTS5Outer", !31, i64 0, !34, i64 4}'},
+                {text: '!34 = !{!"_ZTS5Inner", !35, i64 0}'},
+                {text: '!40 = !{!"omnipotent char", !41, i64 0}'},
+            ],
+        };
+
+        const baseDemangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+        const demangler = new LLVMIRDemangler(baseDemangler);
+
+        return demangler
+            .process(result)
+            .then(output => {
+                expect(output.asm[0].text).toEqual('!30 = !{!"typeinfo name for Outer", !31, i64 0, !34, i64 4}');
+                expect(output.asm[1].text).toEqual('!34 = !{!"typeinfo name for Inner", !35, i64 0}');
+                expect(output.asm[2].text).toEqual('!40 = !{!"omnipotent char", !41, i64 0}');
+            })
+            .catch(catchCppfiltNonexistence);
+    });
+
     it('leaves labels named after inlined functions alone, keeping the IR CFG intact', () => {
         // clang trunk -O2 IR, keeping value names, for:
         //   void ext(int); void ext2(int);
