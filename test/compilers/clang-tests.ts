@@ -158,7 +158,8 @@ Args:
 describe('clang cross-compile libc++ include workaround', () => {
     const languages = {'c++': {id: 'c++'}};
     const exe = '/opt/compiler-explorer/clang-22.1.0/bin/clang++';
-    const configSiteInclude = '-I/opt/compiler-explorer/clang-22.1.0/include/x86_64-unknown-linux-gnu/c++/v1/';
+    const configSiteInclude =
+        '-I' + path.normalize('/opt/compiler-explorer/clang-22.1.0/include/x86_64-unknown-linux-gnu/c++/v1/');
     const makeCompiler = (compilerSupportsX86: boolean) => {
         const compiler = new ClangCompiler(
             {exe, remote: true, lang: 'c++', ldPath: []} as any,
