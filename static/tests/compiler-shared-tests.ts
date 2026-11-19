@@ -90,6 +90,28 @@ const gcc152 = {
     ],
 } as unknown as CompilerInfo;
 
+function makeRustc(id: string, editions: string[], defaultEdition?: string): CompilerInfo {
+    return {
+        id,
+        lang: 'rust',
+        possibleOverrides: [
+            {
+                type: 'options',
+                name: CompilerOverrideType.edition,
+                display_title: 'Edition',
+                description: '',
+                flags: ['--edition', '<value>'],
+                values: editions.map(edition => ({name: edition, value: edition})),
+                default: defaultEdition,
+            },
+        ],
+    } as unknown as CompilerInfo;
+}
+
+// rustc also lists the editions it only supports as unstable, so 1.84 offers 2024 but defaults to 2021.
+const rustc1840 = makeRustc('r1840', ['2015', '2018', '2021', '2024'], '2021');
+const rustc1300 = makeRustc('r1300', ['2015', '2018']);
+
 const urlOverrides = [
     {name: 'edition', value: '2021'},
     {name: 'arch', value: 'aarch64-unknown-linux-musl'},
@@ -224,5 +246,64 @@ describe('CompilerShared override restoration', () => {
         await stale;
 
         expect(shared.getOverrides()).toEqual([{name: 'stdver', value: 'c++17'}]);
+    });
+});
+
+describe('CompilerShared overrides when switching compiler', () => {
+    beforeEach(() => {
+        vi.mocked(compilersService.getCompilersForLang).mockReset();
+        vi.mocked(compilersService.getCompilersForLang).mockResolvedValue({
+            r1970: rustc1970,
+            r1840: rustc1840,
+            r1300: rustc1300,
+        });
+    });
+
+    // The compiler pane passes its current overrides along with the newly selected compiler.
+    async function switchCompiler(shared: CompilerShared, compiler: string) {
+        await shared.updateState({compiler, lang: 'rust', overrides: shared.getOverrides()} as any);
+    }
+
+    it('replaces the default of the previous compiler with the default of the new one', async () => {
+        const shared = new CompilerShared(makeDomRoot(), () => {});
+        await shared.updateState({compiler: 'r1970', lang: 'rust'} as any);
+
+        await switchCompiler(shared, 'r1840');
+        expect(shared.getOverrides()).toEqual([{name: 'edition', value: '2021'}]);
+
+        await switchCompiler(shared, 'r1970');
+        expect(shared.getOverrides()).toEqual([{name: 'edition', value: '2024'}]);
+    });
+
+    it('drops the default of the previous compiler when the new one has no default', async () => {
+        const shared = new CompilerShared(makeDomRoot(), () => {});
+        await shared.updateState({compiler: 'r1970', lang: 'rust'} as any);
+
+        await switchCompiler(shared, 'r1300');
+        expect(shared.getOverrides()).toEqual([]);
+    });
+
+    it('keeps a configured value that the new compiler accepts', async () => {
+        const shared = new CompilerShared(makeDomRoot(), () => {});
+        await shared.updateState({
+            compiler: 'r1970',
+            lang: 'rust',
+            overrides: [{name: 'edition', value: '2018'}],
+        } as any);
+
+        await switchCompiler(shared, 'r1840');
+        expect(shared.getOverrides()).toEqual([{name: 'edition', value: '2018'}]);
+    });
+
+    it('drops a configured value that the new compiler does not accept', async () => {
+        const shared = new CompilerShared(makeDomRoot(), () => {});
+        await shared.updateState({
+            compiler: 'r1970',
+            lang: 'rust',
+            overrides: [{name: 'edition', value: '2021'}],
+        } as any);
+
+        await switchCompiler(shared, 'r1300');
+        expect(shared.getOverrides()).toEqual([]);
     });
 });
