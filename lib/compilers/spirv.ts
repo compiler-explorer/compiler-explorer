@@ -134,11 +134,10 @@ export class SPIRVCompiler extends BaseCompiler {
         }
         execOptions.customCwd = path.dirname(inputFilename);
 
-        const newOptions = options;
-        newOptions.push('-emit-llvm-bc');
+        const newOptions = [...options, '-emit-llvm-bc'];
 
         const bitcode = await this.exec(compiler, newOptions, execOptions);
-        const result = this.transformToCompilationResult(bitcode, inputFilename);
+        const result = {...this.transformToCompilationResult(bitcode, inputFilename), compilationOptions: newOptions};
         if (bitcode.code !== 0 || !(await utils.fileExists(bitcodeFilename))) {
             return result;
         }
@@ -183,8 +182,7 @@ export class SPIRVCompiler extends BaseCompiler {
         const sourceDir = path.dirname(inputFilename);
         const outputFile = path.join(sourceDir, this.outputFilebase + '.bc');
 
-        const newOptions = options;
-        newOptions.concat('-S');
+        const newOptions = [...options];
 
         const index = newOptions.indexOf(outputFile);
         if (index !== -1) {
