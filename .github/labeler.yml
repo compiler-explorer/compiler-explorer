@@ -276,6 +276,12 @@
           - 'lib/compilers/kotlin.ts'
           - 'etc/config/kotlin.*.properties'
 
+'lang-lapila':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/lapila.ts'
+          - 'etc/config/lapila.*.properties'
+
 'lang-lean':
   - changed-files:
       - any-glob-to-any-file:
@@ -309,6 +315,12 @@
           - 'lib/compilers/gm2.ts'
           - 'etc/config/modula2.*.properties'
           - 'static/modes/modula2-mode.ts'
+
+'lang-mielia':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/mielia.ts'
+          - 'etc/config/mielia.*.properties'
 
 'lang-mojo':
   - changed-files:
@@ -398,11 +410,11 @@
           - 'lib/compilers/racket.ts'
           - 'etc/config/racket.*.properties'
 
-'lang-razorforge':
+'lang-revare':
   - changed-files:
       - any-glob-to-any-file:
-          - 'lib/compilers/razorforge.ts'
-          - 'etc/config/razorforge.*.properties'
+          - 'lib/compilers/revare.ts'
+          - 'etc/config/revare.*.properties'
 
 'lang-ruby':
   - changed-files:

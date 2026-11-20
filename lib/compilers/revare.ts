@@ -30,9 +30,9 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 
-export class RazorForgeCompiler extends BaseCompiler {
+export class RevareCompiler extends BaseCompiler {
     static get key() {
-        return 'razorforge';
+        return 'revare';
     }
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -43,12 +43,10 @@ export class RazorForgeCompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
     }
 
-    // RazorForge's CLI takes verbs and positional arguments only — all build
-    // configuration lives in razorforge.toml, not flags. The `codegen` verb runs
-    // semantic analysis and code generation ONLY, writing LLVM IR next to the
-    // source file (example.rf -> example.ll) without invoking opt/clang/lld or
-    // linking a native executable. (`build` would run the full opt->clang->link
-    // pipeline — heavier and unnecessary for the IR view.)
+    // Revare's command line takes verbs and positional arguments only. All build
+    // settings live in config.toml, not in flags. The `codegen` verb runs the
+    // build up to LLVM IR and writes it to the path it is given, without running
+    // opt, clang or the linker.
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [];
     }
@@ -63,11 +61,10 @@ export class RazorForgeCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        // `codegen <file>` defaults its output to <file>.ll (example.rf -> example.ll),
-        // which is exactly what getOutputFilename() below points CE at. RazorForge takes
-        // no build flags, and codegen's optional 2nd positional is the output path — so a
-        // stray user option would be misread as an output filename. Pass only the verb + file.
-        return ['codegen', this.filename(inputFilename)];
+        // `codegen <file> <out.ll>` writes the LLVM IR to the named path, which is what
+        // getOutputFilename() below points CE at. User options are not passed: a stray one
+        // would be read as a file name.
+        return ['codegen', this.filename(inputFilename), `${this.outputFilebase}.ll`];
     }
 
     // The primary output is the emitted LLVM IR itself.
