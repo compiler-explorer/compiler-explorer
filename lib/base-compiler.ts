@@ -2238,7 +2238,7 @@ export class BaseCompiler {
 
         this.applyOverridesToExecOptions(execOptions, overrides);
 
-        const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
+        const result = await this.buildExecutable(this.compiler.exe, compilerArguments, inputFilename, execOptions);
 
         return await this.afterBuild(key, dirPath, {
             ...result,
@@ -2575,7 +2575,7 @@ export class BaseCompiler {
         libraries: SelectedLibraryVersion[],
         files: FiledataPair[],
     ): CacheKey {
-        return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
+        return {compiler: {id: this.compiler.id}, source, options, backendOptions, filters, tools, libraries, files};
     }
 
     getBuildProjectCacheKey(buildSystem: BuildSystemDriver, key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
@@ -2586,7 +2586,7 @@ export class BaseCompiler {
             filters: key.filters,
             libraries: key.libraries,
 
-            compiler: this.compiler,
+            compiler: {id: this.compiler.id},
             files: files,
             api: buildSystem.id,
         };
@@ -2610,6 +2610,7 @@ export class BaseCompiler {
             defaultExecOptions: this.getDefaultExecOptions(),
             asmParser: this.asm,
             ...key,
+            compiler: this.compiler,
             ...result,
         } as any as CompilationInfo;
     }
@@ -2625,6 +2626,7 @@ export class BaseCompiler {
             asmParser: this.asm,
             outputFilename: outputFilename,
             ...key,
+            compiler: this.compiler,
             inputFilename: inputFilename,
             dirPath: dirPath,
         } as any as CompilationInfo;

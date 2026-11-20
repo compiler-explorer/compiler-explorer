@@ -313,7 +313,7 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type CompilationInfo = CacheKey &
+export type CompilationInfo = Omit<CacheKey, 'compiler'> &
     CompilationResult & {
         mtime: Date | null;
         compiler: CompilerInfo & Record<string, unknown>;
@@ -335,8 +335,10 @@ export type CompilationCacheKey = {
     options: ExecutionOptions;
 };
 
+export type CacheKeyCompiler = {id: string};
+
 export type SingleFileCacheKey = {
-    compiler: any;
+    compiler: CacheKeyCompiler;
     source: string;
     options: string[];
     backendOptions: any;
@@ -347,7 +349,7 @@ export type SingleFileCacheKey = {
 };
 
 export type CmakeCacheKey = Omit<SingleFileCacheKey, 'tools'> & {
-    compiler: CompilerInfo;
+    compiler: CacheKeyCompiler;
     files: FiledataPair[];
     api: string;
 };

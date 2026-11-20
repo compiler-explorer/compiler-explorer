@@ -23,9 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Pins down how the compilation cache key is built today, ahead of ce-router#17 (checking the cache in the router
- * before queueing). A router-side key only helps if it matches the worker's byte for byte, so these tests record the
- * current behaviour, quirks included, rather than what it ought to be.
+ * Pins down how the compilation cache key is built, ahead of ce-router#17 (checking the cache in the router before
+ * queueing). A router-side key only helps if it matches the worker's byte for byte, so these tests record the
+ * behaviour, quirks included. The key names the compiler by id only; anything else about the compiler that turns out
+ * to change the output is to be added back to it one field at a time.
  *
  * The cache stores a result under the HMAC-SHA256 of JSON.stringify(key), so the property order matters as much as the
  * values. expectKey() therefore checks the serialised form, not just deep equality.
@@ -46,7 +47,6 @@ import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompileHandler} from '../lib/handlers/compile.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
 import {BaseTool} from '../lib/tooling/base-tool.js';
-import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {BypassCache, CompilationInfo, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
@@ -56,19 +56,10 @@ const languages = {'c++': {id: 'c++'}} as const;
 
 const SOURCE = '#include <cstdio>\nint main() { std::puts("hi"); return 0; }\n';
 
-// Stands in for the CompilerInfo; see 'the compiler part of the key' for what a real one holds.
 const COMPILER_INFO = {id: 'g161', exe: '/dev/null', lang: 'c++' as const, options: '', supportsBinary: true};
 
-// The BaseCompiler constructor fills in defaults on the CompilerInfo it is given, and the key holds the result.
-const CONSTRUCTOR_DEFAULTS = {
-    supportsIntel: false,
-    optArg: '',
-    supportsOptOutput: false,
-    supportsVerboseAsm: false,
-    disabledFilters: [],
-    instructionSet: 'amd64',
-};
-const KEY_COMPILER_INFO = {...COMPILER_INFO, ...CONSTRUCTOR_DEFAULTS};
+// All the key holds of the compiler.
+const KEY_COMPILER = {id: 'g161'};
 
 // What the compiler pane sends with no extra panes open, in the order it sends it.
 const UI_COMPILER_OPTIONS = {
@@ -231,8 +222,8 @@ function expectKey(actual: unknown, expected: unknown) {
     expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
 }
 
-// The CompilerInfo a dev instance (production c++ config, --language c++ c rust) put into its cache keys, as logged by
-// logCompilationCacheAccesses. Its hash is in REAL_COMPILER_INFO_HASH.
+// The CompilerInfo a dev instance (production c++ config, --language c++ c rust) put into its cache keys when they still
+// held all of it, as logged by logCompilationCacheAccesses. Its hash is in REAL_COMPILER_INFO_HASH.
 function loadRealCompilerInfo(id: string): CompilerInfo {
     return JSON.parse(
         fs.readFileSync(path.join(__dirname, 'compilation-cache-key', `${id}.compiler-info.json`), 'utf8'),
@@ -313,52 +304,25 @@ describe('Compilation cache key', () => {
     // The compiler part of the key
     // ------------------------------------------------------------------------------------------------
     describe('the compiler part of the key', () => {
-        it('is the very CompilerInfo object the compiler holds', async () => {
-            const {compiler, env} = makeCompiler();
-            const cacheGet = vi.spyOn(env, 'cacheGet').mockResolvedValue(alwaysHit(null));
-            await compiler.compile(SOURCE, ['-O2'], {}, {} as any, BypassCache.None, [], {} as any, [], []);
-            expect((cacheGet.mock.calls[0][0] as any).compiler).toBe(compiler.getInfo());
+        it('holds only the compiler id', async () => {
+            const {key} = await recordCacheKeys(compilerPaneBody());
+            expectKey(key.compiler, {id: 'g161'});
         });
 
-        it('holds each configured tool as the serialised tool object, not just its id', async () => {
-            // In production this is most of the difference between the CompilerInfo hashed into the key and the one
-            // /api/compilers?fields=all returns: the API lists tool ids, the key carries the tool objects, with their
-            // exe paths, configured options and sandbox type. (g161's real CompilerInfo serialises to 14.5KB, 4.3KB of
-            // it tools; its other 76 fields match the API, in the same order. See the real-CompilerInfo tests below.)
-            const toolInfo = {
-                id: 'clangtidytrunk',
-                name: 'clang-tidy (trunk)',
-                type: 'independent',
-                exe: '/opt/compiler-explorer/clang-trunk/bin/clang-tidy',
-                exclude: ['cl19'],
-                options: ['--gcc-toolchain=/opt/compiler-explorer/gcc-snapshot'],
-                stdinHint: 'disabled',
-                compilerLanguage: 'c++',
-            } as unknown as ToolInfo;
-            const toolEnv = {ceProps: () => undefined, compilerProps: () => undefined} as unknown as ToolEnv;
-            const tools = {clangtidytrunk: new ClangTidyTool(toolInfo, toolEnv)} as any;
-
-            const {key} = await recordCacheKeys(compilerPaneBody(), {info: {tools}});
-            expectKey(key.compiler, {
-                ...COMPILER_INFO,
-                tools: {
-                    clangtidytrunk: {
-                        tool: toolInfo,
-                        env: {},
-                        addOptionsToToolArgs: false,
-                        id: 'clangtidytrunk',
-                        type: 'independent',
-                        sandboxType: 'none',
-                    },
-                },
-                ...CONSTRUCTOR_DEFAULTS,
-            });
-        });
-
-        it('changes with any field of the CompilerInfo', async () => {
+        it('does not change with anything else in the CompilerInfo', async () => {
             const base = await recordCacheKeys(compilerPaneBody());
             const otherVersion = await recordCacheKeys(compilerPaneBody(), {info: {version: 'gcc 16.1.1'}});
-            expect(otherVersion.hash).not.toEqual(base.hash);
+            const otherExe = await recordCacheKeys(compilerPaneBody(), {info: {exe: '/opt/other/g++'}});
+            expect(otherVersion.hash).toEqual(base.hash);
+            expect(otherExe.hash).toEqual(base.hash);
+        });
+
+        it('leaves the tools and the output parsers the full CompilerInfo, from the compiler rather than the key', async () => {
+            const {compiler} = makeCompiler();
+            const {key} = await recordCacheKeys(compilerPaneBody());
+            const info = compiler.getCompilationInfo(key, {code: 0, stdout: [], stderr: []} as any);
+            expect(info.compiler).toBe(compiler.getInfo());
+            expect(info.options).toEqual(['-O2']);
         });
     });
 
@@ -369,7 +333,7 @@ describe('Compilation cache key', () => {
         it('with no extra panes open', async () => {
             const {key} = await recordCacheKeys(compilerPaneBody());
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: KEY_BACKEND_OPTIONS,
@@ -383,7 +347,7 @@ describe('Compilation cache key', () => {
         it('with a library selected', async () => {
             const {key} = await recordCacheKeys(compilerPaneBody({libraries: [{id: 'boost', version: '190'}]}));
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: KEY_BACKEND_OPTIONS,
@@ -399,7 +363,7 @@ describe('Compilation cache key', () => {
                 compilerPaneBody({tools: [{id: 'clangtidytrunk', args: [], stdin: ''}]}),
             );
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: KEY_BACKEND_OPTIONS,
@@ -497,7 +461,7 @@ describe('Compilation cache key', () => {
             body.options.executeParameters = {args: ['x'], stdin: 'y'};
             const {key} = await recordCacheKeys(body);
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: KEY_BACKEND_OPTIONS,
@@ -531,7 +495,7 @@ describe('Compilation cache key', () => {
             const {key} = await recordCacheKeys(NOSCRIPT_FORM_BODY, {isJson: false});
             // Unticked boxes become false, and verboseDemangling, not being a default filter, is dropped.
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: {filterAnsi: true, skipAsm: false},
@@ -545,7 +509,7 @@ describe('Compilation cache key', () => {
         it('for the plain-text REST API', async () => {
             const {key} = await recordCacheKeys(SOURCE, {isJson: false, query: {options: '-O2'}});
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: {skipAsm: false, skipPopArgs: false, filterAnsi: false},
@@ -565,32 +529,32 @@ describe('Compilation cache key', () => {
             expect(BaseCache.hash(loadRealCompilerInfo(id) as any)).toBe(devHash);
         });
 
-        it('the key is the CompilerInfo object itself, all of it', async () => {
+        it('the key holds only the id of the real compiler', async () => {
             const {key} = await recordCacheKeys(compilerPaneBody(), {realCompilerId: 'g161'});
-            expectKey(key.compiler, loadRealCompilerInfo('g161'));
-            expect(BaseCache.hash(key.compiler)).toBe(REAL_COMPILER_INFO_HASH.g161);
+            expectKey(key.compiler, {id: 'g161'});
         });
 
-        it('carries settings the API does not show: tools are full objects, with exe paths and sandbox type', () => {
-            const info: any = loadRealCompilerInfo('g161');
-            expect(Object.keys(info.tools)).toContain('clangtidytrunk');
-            expect(info.tools.clangtidytrunk).toEqual({
-                tool: {
-                    id: 'clangtidytrunk',
-                    name: 'clang-tidy (trunk)',
-                    type: 'independent',
-                    exe: '/opt/compiler-explorer/clang-trunk/bin/clang-tidy',
-                    exclude: ['cl19', 'cl_new'],
-                    options: ['--gcc-toolchain=/opt/compiler-explorer/gcc-snapshot'],
-                    stdinHint: 'disabled',
-                    compilerLanguage: 'c++',
-                },
-                env: {},
-                addOptionsToToolArgs: false,
-                id: 'clangtidytrunk',
-                type: 'independent',
-                sandboxType: 'nsjail',
-            });
+        it('ignores what used to make keys differ between instances: $order, tools, fullVersion', async () => {
+            const base = await recordCacheKeys(compilerPaneBody(), {realCompilerId: 'g161'});
+            const {env, compiler} = makeCompiler({}, 'g161');
+            const info: any = compiler.getInfo();
+            info.$order = -21;
+            info.tools = Object.keys(info.tools);
+            info.fullVersion = `${info.fullVersion} (rebuilt)`;
+            const cacheGet = vi.spyOn(env, 'cacheGet').mockResolvedValue(alwaysHit(null));
+            const parsed = CompileHandler.parseRequestReusable(true, {}, compilerPaneBody(), compiler);
+            await compiler.compile(
+                parsed.source,
+                parsed.options,
+                parsed.backendOptions,
+                parsed.filters,
+                parsed.bypassCache,
+                parsed.tools,
+                parsed.executeParameters,
+                parsed.libraries,
+                [],
+            );
+            expect(BaseCache.hash(cacheGet.mock.calls[0][0] as any)).toEqual(base.hash);
         });
 
         const realScenarios: [string, string, any, {isJson?: boolean; query?: any}, string][] = [
@@ -599,49 +563,49 @@ describe('Compilation cache key', () => {
                 'g161',
                 compilerPaneBody(),
                 {},
-                'f311171eb9e040e3fe3ea6760c5de69634a3e25c09e86dac3facb2f0641245c6',
+                'd1475dc01d3c9464b477821ffea245539a292d0478dcbe3f1f8f517f805893d8',
             ],
             [
                 'compiler pane, "Execute the code" ticked',
                 'g161',
                 compilerPaneBody({filters: {execute: true}}),
                 {},
-                '14c9d1509ca7571cad9f4c618debf068b9d96c72a2462c62a6f75823601d708f',
+                'd3a59d576e0d50623784a97011c1fc4d315ac1b0c155edc2aa4e55f5e1c85ea9',
             ],
             [
                 'compiler pane, link to binary',
                 'g161',
                 compilerPaneBody({filters: {binary: true}}),
                 {},
-                '2f03201c3f4074adfa8f219533749ba55d9006de7d64c0511dc4b046040da36d',
+                'a43b06ea8fd13727d46cfe71cabbd02e8d3c0a0c13feafaff8d43912526539da',
             ],
             [
                 'compiler pane, -E',
                 'g161',
                 compilerPaneBody({userArguments: '-E'}),
                 {},
-                '5408347acddfe6f24fe46c601dc1acf49e1d02ab2afc19b0a58bd2ad29df663e',
+                '505cc8384f90f5f434bd628483613128381095980dd54cad06456e59477e7a87',
             ],
             [
                 'compiler pane, boost 1.90 selected',
                 'g161',
                 compilerPaneBody({libraries: [{id: 'boost', version: '190'}]}),
                 {},
-                '349533c11b9a213e8fc616b597f427e8e31cb7f049c1a4a7a08fe55159351978',
+                '058e8098a15485dad8295dd34e7c5ec9697e19952e16679465f5e5c4ae04c3a7',
             ],
             [
                 'compiler pane, -lfmt (not autodetected)',
                 'g161',
                 compilerPaneBody({userArguments: '-O2 -lfmt'}),
                 {},
-                '37021a805523adc75f33491d77edd3e4c1a7ad888d7684866cfa35340d6c6d2d',
+                '6c08a5184a8aa0cb337917011c2d99918bdbd7b0895022b29c5818937b8225f4',
             ],
             [
-                'compiler pane, clang-tidy added (as looked up)',
+                'compiler pane, clang-tidy added (looked up and stored under the same key)',
                 'g161',
                 compilerPaneBody({tools: [{id: 'clangtidytrunk', args: [], stdin: ''}]}),
                 {},
-                '3f18e6ba777600c8b4ddd63a2940c356f6e53f6b5b86833e79189b1f9ce7f16e',
+                '4ec44f8c605e15f34702a85d68aa4c1e5fe9a5d8b1da6586df02ff894cee111a',
             ],
             [
                 'compiler pane, GCC dump pane open',
@@ -672,56 +636,56 @@ describe('Compilation cache key', () => {
                     },
                 }),
                 {},
-                'db1c37fc412a4511ab1fdf9282ff6b3543580dd93ace57745503205ba281f8eb',
+                '5450e7c946202591105a091ccf7eb4952ab592ec574ba8625d93e6afa7d85a8b',
             ],
             [
                 'executor pane',
                 'g161',
                 executorPaneBody(),
                 {},
-                'e2c0e3d02682216ee297b63086d6dbfdfbd3ff9ffd51f68baeefe9d4714e3258',
+                '36284587a2736bf0b9fe81e86bddc755399875160d64b5880b5207ad3b455cdb',
             ],
             [
                 '/noscript/ form',
                 'g161',
                 NOSCRIPT_FORM_BODY,
                 {isJson: false},
-                'e7a818f790c59f098f980c652fc676e3f68125c4731dcb63c1579756b6d225f7',
+                '5d3dbc4c4e7bbf3743df2b82d0fe2a1b664eeaf7849273c15d66dd4fe4d87a57',
             ],
             [
                 'plain-text REST API',
                 'g161',
                 SOURCE,
                 {isJson: false, query: {options: '-O2'}},
-                '1fc9ccbf058af56f451e9ce91b51f60959b24d0721575988afccdc7947cc2673',
+                '084000d4592bdb053a2a4b1a82afa6c76379ea92c2ad745d14aed796186cd7b8',
             ],
             [
                 'compiler pane, no extra panes',
                 'clang2110',
                 compilerPaneBody(),
                 {},
-                'd90e1c4ce7e26024538bd8ee3f99910af1d77259c21e74ba4ea9c43c47ece1a0',
+                '72c523d77a096efcf60d1bf5aa849b3876d1c5df967c92a830e9bd3af03fbea0',
             ],
             [
                 'compiler pane, AST pane open',
                 'clang2110',
                 compilerPaneBody({compilerOptions: {produceAst: true}}),
                 {},
-                '3a889bb7c3817053048ccad95aba6d195348751522d600079feeb2ae2e5f696e',
+                '00f33696122179a820d7d167bcc78785ab5373f623bb506bacb62225442a89a4',
             ],
             [
                 'compiler pane, AST pane opened and closed again',
                 'clang2110',
                 compilerPaneBody({compilerOptions: {produceAst: false}}),
                 {},
-                'ee8a5e1adb80a05f1d222e4b7e03c19b3a3fb1f9826e00664920811c740db8fe',
+                '83cbfc662abcf3a98d092b6a7330d9d341ceecf9b39823a146fcd121a46134bb',
             ],
             [
                 'compiler pane, opt remarks pane open',
                 'clang2110',
                 compilerPaneBody({compilerOptions: {produceOptInfo: true}}),
                 {},
-                '01f8feafd4df201f634365e6b4ddc3861f78e9ef827fed8458f341c85d6c0234',
+                'b89026aaae5ba7ce2b95eefd72628012824535fe85114f891fe3a6cc791e8abe',
             ],
         ];
 
@@ -740,7 +704,7 @@ describe('Compilation cache key', () => {
                 realCompilerId: 'g161',
             });
             expect(BaseCache.hash(compileAndRun.gets[1] as any)).toBe(
-                '05ba130811c8ec7ea17a68838cec7340925226e386b1558246a5b1149a4c71b1',
+                '8df165d1b7ebbaa6c78bedadc850c0a0f3c00746fe75965885f7589e0a9ad0e8',
             );
 
             const executor = await recordCacheKeys(executorPaneBody(), {
@@ -749,7 +713,7 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
             expect(BaseCache.hash(executor.gets[1] as any)).toBe(
-                '68070f984694e4ae30222803d7ca0fdbdc7269ec100e6647649e8cd5dfc1e930',
+                '7de58a551f7bd3ca50eb543d81e91395826fac1d7ad97328f93db45ea710ea52',
             );
 
             const executorWithInput = await recordCacheKeys(executorPaneBody('a b', 'in'), {
@@ -758,17 +722,8 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
             expect(BaseCache.hash(executorWithInput.gets[1] as any)).toBe(
-                '5686363c90875c6b9cb4d9e4c2f29db57d1328b7d02599152d0371d1c7fb1ecf',
+                '68258d5ad9db4f119835ddbf6c4f0526c3521fa52b0cea5bbceec72d5e89500e',
             );
-        });
-
-        it('the key a clang-tidy compile was stored under, with the temp path in it', async () => {
-            const {key} = await recordCacheKeys(
-                compilerPaneBody({tools: [{id: 'clangtidytrunk', args: [], stdin: ''}]}),
-                {realCompilerId: 'g161'},
-            );
-            key.tools[0].args.push('/tmp/compiler-explorer-compilerP0VA1h/example.cpp');
-            expect(BaseCache.hash(key)).toBe('9fec0bc2f08c89df1f19afa5d8ba6888b71f2f44a12a0b7de7a05e079e9a49b8');
         });
     });
 
@@ -818,7 +773,7 @@ describe('Compilation cache key', () => {
         it('with "Execute the code" ticked in the compiler pane: execute is part of the compile key', async () => {
             const {key} = await recordCacheKeys(compilerPaneBody({filters: {execute: true}}));
             expectKey(key, {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: KEY_BACKEND_OPTIONS,
@@ -850,7 +805,7 @@ describe('Compilation cache key', () => {
 
             // {execute: true} merged over the defaults, so libraryCode is false where the compiler pane sends true.
             const executorKey = {
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: {executorRequest: true, skipAsm: true, overrides: []},
@@ -883,10 +838,9 @@ describe('Compilation cache key', () => {
     // Tools
     // ------------------------------------------------------------------------------------------------
     describe('with tools', () => {
-        it("stores under a key with the temp source path appended to the request's tool arguments", async () => {
-            // compile() passes key.tools[i].args straight to runTool. A tool that doesn't prepend its configured
-            // options (clang-tidy, clang-query, PVS-Studio, ...) pushes the temporary source path onto that array,
-            // so afterCompilation stores the result under a key naming a temp directory, which is never looked up.
+        it('leaves the tool arguments in the key as they were looked up', async () => {
+            // compile() passes key.tools[i].args straight to runTool, so a tool adding to that array would change the
+            // key between the lookup and the store, and the result would be stored where it is never found.
             const tool = new BaseTool(
                 {id: 'clangtidytrunk', exe: '/bin/true', options: []} as unknown as ToolInfo,
                 {
@@ -905,16 +859,12 @@ describe('Compilation cache key', () => {
             const {key} = await recordCacheKeys(
                 compilerPaneBody({tools: [{id: 'clangtidytrunk', args: [], stdin: ''}]}),
             );
-            expectKey(key.tools, [{id: 'clangtidytrunk', args: [], stdin: ''}]);
-
             await tool.runTool(
                 {compiler: {lang: 'c++'}} as unknown as CompilationInfo,
                 '/tmp/compiler-explorer-compilerP0VA1h/example.cpp',
                 key.tools[0].args,
             );
-            expectKey(key.tools, [
-                {id: 'clangtidytrunk', args: ['/tmp/compiler-explorer-compilerP0VA1h/example.cpp'], stdin: ''},
-            ]);
+            expectKey(key.tools, [{id: 'clangtidytrunk', args: [], stdin: ''}]);
         });
     });
 
@@ -969,7 +919,7 @@ describe('Compilation cache key', () => {
                 backendOptions: {...KEY_BACKEND_OPTIONS, cmakeArgs: '', customOutputFilename: ''},
                 filters: {...filtersWithoutExecute, binary: true, dontMaskFilenames: true},
                 libraries: [],
-                compiler: KEY_COMPILER_INFO,
+                compiler: KEY_COMPILER,
                 files: CMAKE_FILES,
                 api: 'cmake',
             });
@@ -987,7 +937,7 @@ describe('Compilation cache key', () => {
             [
                 'a compiler pane build',
                 cmakeBody(false),
-                '9cf2729ed4e102d4cce3b0ca5bc8d0b72d6092312f3e95d31dbb0f2b135d9e3c',
+                '67ebef00b3f72436f58de8b7f3fb6d5bde11f11bb808ff5bcd2d4966927190fb',
             ],
             [
                 'a build with CMake arguments',
@@ -996,7 +946,7 @@ describe('Compilation cache key', () => {
                     body.options.compilerOptions.cmakeArgs = '-DFOO=1';
                     return body;
                 })(),
-                'f75ea9450d9429725f6db4ae63c3cafc93496d466f69a534db3882ecbf21ca8c',
+                '5a373887668b81f20fa6e0badc63cfa9a8f81b4295e4138335943eb22c87280c',
             ],
             [
                 'an executor pane build',
@@ -1022,7 +972,7 @@ describe('Compilation cache key', () => {
                     lang: 'c++',
                     allowStoreCodeDebug: true,
                 },
-                '37e11449beaadaa4260ae65b6b705788d1e0a6ce271eb1d605e1830a2f1777d0',
+                'd2ead1220b3b2ad19d34ad8bf87593df54449d589f56b0aa9172191d7d385ab6',
             ],
         ])('with the real g161 CompilerInfo, %s matches the dev instance', async (_, body, devHash) => {
             const {hash} = await recordProjectBuild(body, 'g161');
