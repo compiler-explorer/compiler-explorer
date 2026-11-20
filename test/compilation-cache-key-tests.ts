@@ -241,6 +241,8 @@ function makeCompiler(info: Partial<CompilerInfo> = {}, realCompilerId?: string)
     // Swapped in after construction, so the key holds exactly what the dev instance's key held.
     if (realCompilerId) (compiler as any).compiler = loadRealCompilerInfo(realCompilerId);
     vi.spyOn(compiler as any, 'storeOversizedResult').mockResolvedValue(undefined);
+    // Only the keys are under test, and the real CompilerInfo names compilers that CI doesn't have.
+    vi.spyOn(compiler, 'exec').mockRejectedValue(new Error('a cache key test must not run the compiler'));
     return {env, compiler};
 }
 
@@ -690,12 +692,7 @@ describe('Compilation cache key', () => {
         ];
 
         it.each(realScenarios)('%s on %s', async (_, compilerId, body, route, devHash) => {
-            const {hash} = await recordCacheKeys(body, {
-                ...route,
-                realCompilerId: compilerId,
-                answer: () => null,
-                setup: noRunNeeded,
-            });
+            const {hash} = await recordCacheKeys(body, {...route, realCompilerId: compilerId});
             expect(hash).toBe(devHash);
         });
 
