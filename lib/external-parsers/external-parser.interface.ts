@@ -33,3 +33,15 @@ export interface IExternalParser {
     ): Promise<ParsedAsmResult>;
     parseAssembly(filepath: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult>;
 }
+
+export class MissingExternalParserError extends Error {
+    readonly compilerId: string;
+    readonly parserPath: string;
+
+    constructor(compilerId: string, parserPath: string) {
+        super(`External parser for compiler ${compilerId} does not exist: "${parserPath}"`);
+        this.name = 'MissingExternalParserError';
+        this.compilerId = compilerId;
+        this.parserPath = parserPath;
+    }
+}
