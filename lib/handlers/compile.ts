@@ -536,6 +536,18 @@ export class CompileHandler implements ICompileHandler {
         };
     }
 
+    private logCompileRequest(req: express.Request, compiler: BaseCompiler, buildSystem?: BuildSystemDriver) {
+        if (!this.compilerEnv.logCompilationCacheAccesses) return;
+        const {source, files, ...rest} = typeof req.body === 'object' ? req.body : {};
+        const fileSummary = Array.isArray(files) ? files.map((f: FiledataPair) => f.filename) : [];
+        logger.info(
+            `Compile request ${compiler.getInfo().id} build=${buildSystem?.id ?? 'none'} type=${req.get('content-type')}` +
+                ` query=${JSON.stringify(req.query)}` +
+                ` sourceLength=${(source ?? (typeof req.body === 'string' ? req.body : '')).length}` +
+                ` files=${JSON.stringify(fileSummary)} body=${JSON.stringify(rest)}`,
+        );
+    }
+
     parseRequest(req: express.Request, compiler: BaseCompiler, buildSystem?: BuildSystemDriver): ParsedRequest {
         const isJson = !!req.is('json');
         const query = req.query as CompileRequestQueryArgs;
@@ -636,6 +648,8 @@ export class CompileHandler implements ICompileHandler {
             return;
         }
 
+        this.logCompileRequest(req, compiler, buildSystem);
+
         try {
             if (req.body.files === undefined) throw new Error('Missing files property');
 
@@ -688,6 +702,8 @@ export class CompileHandler implements ICompileHandler {
             });
             return;
         }
+
+        this.logCompileRequest(req, compiler);
 
         let parsedRequest: ParsedRequest | undefined;
         try {
