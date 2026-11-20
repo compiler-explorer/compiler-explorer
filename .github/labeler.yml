@@ -404,6 +404,13 @@
           - 'lib/compilers/razorforge.ts'
           - 'etc/config/razorforge.*.properties'
 
+'lang-roc':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/roc.ts'
+          - 'lib/formatters/rocfmt.ts'
+          - 'etc/config/roc.*.properties'
+
 'lang-ruby':
   - changed-files:
       - any-glob-to-any-file:
