@@ -36,7 +36,7 @@ export class ClippyTool extends BaseTool {
         return 'clippy-tool';
     }
 
-    override getToolExe(compilationInfo: CompilationInfo): string {
+    override async getToolExe(compilationInfo: CompilationInfo): Promise<string> {
         return path.format({dir: path.dirname(compilationInfo.compiler.exe), base: 'clippy-driver'});
     }
 
