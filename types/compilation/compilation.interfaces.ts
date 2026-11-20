@@ -313,10 +313,25 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
+// The compiler settings a tool may read. Add a field here when a tool needs it.
+export type ToolCompilerInfo = Pick<
+    CompilerInfo,
+    | 'id'
+    | 'exe'
+    | 'options'
+    | 'lang'
+    | 'instructionSet'
+    | 'includePath'
+    | 'libPath'
+    | 'envVars'
+    | 'group'
+    | 'compilerType'
+>;
+
 export type CompilationInfo = Omit<CacheKey, 'compiler'> &
     CompilationResult & {
         mtime: Date | null;
-        compiler: CompilerInfo & Record<string, unknown>;
+        compiler: ToolCompilerInfo;
         args: string[];
         options: string[];
         outputFilename: string;
