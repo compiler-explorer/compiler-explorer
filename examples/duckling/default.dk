@@ -1,3 +1,9 @@
+template(s: str)
+namespace Expand {
+    expand s;
+}
+
 fun main() -> i64 = {
+    Expand["fun foo() = print(42);"].foo();
     return 0;
 }
