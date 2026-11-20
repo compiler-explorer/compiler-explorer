@@ -547,6 +547,526 @@ describe('AsmParser library code filtering of statically linked code in binary a
     });
 });
 
+describe('AsmParser hidden functions referenced from shown functions in binary asm', () => {
+    // Trimmed from gcc 15 `-static -g` output for a function dividing two complex doubles, built in /app. __divdc3
+    // comes from libgcc and has no line information; __libc_unused is never referenced, and __memset_sse2 is only
+    // referenced by __divdc3.
+    const objdump = [
+        '0000000000401845 <f>:',
+        'f():',
+        '/app/example.c:2',
+        '  401845:\tf3 0f 1e fa          \tendbr64',
+        '  40184d:\te8 1e 00 00 00       \tcall   401870 <__divdc3>',
+        '  401856:\tc3                   \tret',
+        '',
+        '0000000000401870 <__divdc3>:',
+        '__divdc3():',
+        '  401870:\tf3 0f 1e fa          \tendbr64',
+        '  40189b:\t0f 86 b7 00 00 00    \tjbe    401958 <__divdc3+0xe8>',
+        '  4018a0:\te8 00 00 00 00       \tcall   402000 <__memset_sse2>',
+        '  4018a5:\tc3                   \tret',
+        '',
+        '0000000000402000 <__memset_sse2>:',
+        '__memset_sse2():',
+        '  402000:\tc3                   \tret',
+        '',
+        '0000000000402010 <__libc_unused>:',
+        '__libc_unused():',
+        '  402010:\tc3                   \tret',
+    ].join('\n');
+    const hideFuncRe = '^(__.*|_(init|start|fini))$';
+    const parser = new AsmParser(((property: string, defaultValue?: unknown) =>
+        property === 'binaryHideFuncRe' ? hideFuncRe : defaultValue) as PropertyGetter);
+
+    function labels(asm: string, filters: Partial<ParseFiltersAndOutputOptions>) {
+        return parser
+            .processBinaryAsm(asm, filters)
+            .asm.map(line => line.text)
+            .filter(text => text.endsWith(':'));
+    }
+
+    it('should show a hidden function that a shown function calls', () => {
+        expect(labels(objdump, {})).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should link the call to the shown function', () => {
+        const result = parser.processBinaryAsm(objdump, {});
+        expect(result.labelDefinitions?.__divdc3).toBeDefined();
+        expect(result.asm.find(line => line.text.includes('call'))?.labels?.[0]?.name).toBe('__divdc3');
+    });
+
+    it('should not follow references from a function that was hidden', () => {
+        expect(labels(objdump, {})).not.toContain('__memset_sse2:');
+    });
+
+    it('should keep hiding a function that nothing shown refers to', () => {
+        expect(labels(objdump, {})).not.toContain('__libc_unused:');
+    });
+
+    it('should show a hidden function that is referenced before it is defined, or after', () => {
+        const calledFirst = objdump.replace('call   401870 <__divdc3>', 'call   402010 <__libc_unused>');
+        expect(labels(calledFirst, {})).toEqual(['f:', '__libc_unused:']);
+        const calledLater = [
+            '0000000000401000 <__helper>:',
+            '  401000:\tc3                   \tret',
+            '',
+            '0000000000401010 <main>:',
+            '  401010:\te8 eb ff ff ff       \tcall   401000 <__helper>',
+        ].join('\n');
+        expect(labels(calledLater, {})).toEqual(['__helper:', 'main:']);
+    });
+
+    it('should hide every `__` function when nothing shown refers to it', () => {
+        const hiddenOnly = objdump.split('\n').slice(7).join('\n');
+        expect(labels(hiddenOnly, {})).toEqual([]);
+    });
+
+    it('should remove the referenced function again as library code when it has no line information', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(['f:', ' endbr64', ' call   401870 <__divdc3>', ' ret']);
+        expect(Object.keys(result.labelDefinitions ?? {})).toEqual(['f']);
+    });
+
+    it("should keep the referenced function as library code when it has the program's line information", () => {
+        const withLines = objdump.replace('__divdc3():\n', '__divdc3():\n/app/divdc3.c:7\n');
+        expect(labels(withLines, {libraryCode: true})).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should not count a reference in a data comment', () => {
+        const asm = [
+            '0000000000401000 <main>:',
+            '  401000:\t48 8b 05 d9 2f 00 00 \tmov    0x2fd9(%rip),%rax        # 404fe0 <__gmon_start__>',
+            '',
+            '0000000000404fe0 <__gmon_start__>:',
+            '  404fe0:\tc3                   \tret',
+        ].join('\n');
+        expect(labels(asm, {})).toEqual(['main:']);
+    });
+
+    // aarch64-linux-gnu-objdump style: `#` is the immediate prefix there, not a comment
+    it('should find an aarch64 tbz target, where # is an immediate and not a comment', () => {
+        const asm = [
+            '00000000004005a0 <main>:',
+            '  4005a0:\t36000040 \ttbz\tw0, #0, 4005a8 <__hidden>',
+            '  4005a4:\td65f03c0 \tret',
+            '',
+            '00000000004005a8 <__hidden>:',
+            '  4005a8:\td65f03c0 \tret',
+        ].join('\n');
+        expect(labels(asm, {})).toEqual(['main:', '__hidden:']);
+    });
+
+    it('should find targets after aarch64 immediates, with a cmp before them', () => {
+        const asm = [
+            '00000000004005a0 <main>:',
+            '  4005a0:\t71000c1f \tcmp\tw0, #3',
+            '  4005a4:\tb7f80041 \ttbnz\tx1, #63, 4005ac <__other>',
+            '  4005a8:\td65f03c0 \tret',
+            '',
+            '00000000004005ac <__other>:',
+            '  4005ac:\td65f03c0 \tret',
+        ].join('\n');
+        expect(labels(asm, {})).toEqual(['main:', '__other:']);
+    });
+
+    it('should find a reference followed by trailing whitespace', () => {
+        const asm = objdump.replace('call   401870 <__divdc3>', 'call   401870 <__divdc3>  ');
+        expect(labels(asm, {})).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should link a call that is followed by trailing whitespace', () => {
+        const asm = objdump.replace('call   401870 <__divdc3>', 'call   401870 <__divdc3>  ');
+        const call = parser.processBinaryAsm(asm, {}).asm.find(line => line.text.includes('call'));
+        expect(call?.labels?.map(label => label.name)).toEqual(['__divdc3']);
+    });
+
+    describe('with demangled names', () => {
+        const iterator = '__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int> > >::operator++()';
+        const demangled = [
+            '0000000000401000 <main>:',
+            `  401000:\te8 fb 00 00 00       \tcall   401100 <${iterator}>`,
+            '  401005:\tc3                   \tret',
+            '',
+            `0000000000401100 <${iterator}>:`,
+            '  401100:\tc3                   \tret',
+        ].join('\n');
+
+        it('should show and link a hidden function whose name contains > and +', () => {
+            const result = parser.processBinaryAsm(demangled, {});
+            expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+                'main:',
+                `${iterator}:`,
+            ]);
+            const call = result.asm.find(line => line.text.includes('call'));
+            expect(call?.labels?.map(label => label.name)).toEqual([iterator]);
+            const range = call?.labels?.[0].range;
+            expect(call?.text.slice((range?.startCol ?? 0) - 1, (range?.endCol ?? 0) - 1)).toBe(iterator);
+        });
+
+        it('should strip a +0x offset after a name containing >', () => {
+            const asm = demangled.replace(`call   401100 <${iterator}>`, `jmp    401100 <${iterator}+0x4>`);
+            const call = parser.processBinaryAsm(asm, {}).asm.find(line => line.text.includes('jmp'));
+            expect(call?.labels?.map(label => label.name)).toEqual([iterator]);
+        });
+    });
+
+    it('should link a +0x offset to the base name', () => {
+        const result = parser.processBinaryAsm(objdump.replace('<__divdc3>', '<__divdc3+0x8>'), {});
+        const call = result.asm.find(line => line.text.includes('call'));
+        expect(call?.labels?.map(label => label.name)).toEqual(['__divdc3']);
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['f:', '__divdc3:']);
+    });
+
+    it('should not link or follow an x86 data comment', () => {
+        const asm = [
+            '0000000000401000 <main>:',
+            '  401000:\t48 8b 05 d9 2f 00 00 \tmov    0x2fd9(%rip),%rax        # 404fe0 <__gmon_start__>',
+            '',
+            '0000000000404fe0 <__gmon_start__>:',
+            '  404fe0:\tc3                   \tret',
+        ].join('\n');
+        const mov = parser.processBinaryAsm(asm, {}).asm.find(line => line.text.includes('mov'));
+        expect(mov?.labels).toEqual([]);
+    });
+
+    it('should find the target of a branch whose address follows a register operand', () => {
+        const asm = [
+            '0000000000010000 <main>:',
+            '/app/a.c:1',
+            '   10000:\t00000097          \tauipc\tra,0x0',
+            '   10004:\t0040006f          \tjal\tra,10100 <__h>',
+            '   10008:\tfe051ce3          \tbnez\ta0,10200 <__g+0x4>',
+            '',
+            '0000000000010100 <__h>:',
+            '/usr/l.c:2',
+            '   10100:\t8082              \tret',
+            '',
+            '0000000000010200 <__g>:',
+            '/usr/l.c:2',
+            '   10200:\t8082              \tret',
+        ].join('\n');
+        const result = parser.processBinaryAsm(asm, {});
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['main:', '__h:', '__g:']);
+        const jal = result.asm.find(line => line.text.includes('jal'));
+        expect(jal?.labels).toEqual([{name: '__h', range: {startCol: 16, endCol: 19}}]);
+        expect(jal?.text.slice(15, 18)).toBe('__h');
+    });
+
+    it('should keep the PLT hidden when a shown stub jumps to it', () => {
+        const pltParser = new AsmParser(((property: string, defaultValue?: unknown) =>
+            property === 'binaryHideFuncRe' ? '^(__.*|\\.plt.*)$' : defaultValue) as PropertyGetter);
+        const asm = [
+            '0000000000402020 <.plt>:',
+            '  402020:\tff 35 e2 2f 00 00    \tpush   0x2fe2(%rip)',
+            '',
+            '0000000000402030 <puts@plt>:',
+            '  402030:\te9 eb ff ff ff       \tjmp    402020 <.plt>',
+        ].join('\n');
+        const text = pltParser.processBinaryAsm(asm, {}).asm.map(line => line.text);
+        expect(text.filter(line => line.endsWith(':'))).toEqual(['puts@plt:']);
+    });
+
+    it('should keep PLT stubs hidden when the hide pattern covers them, as Go does', () => {
+        const goParser = new AsmParser(((property: string, defaultValue?: unknown) =>
+            property === 'binaryHideFuncRe' ? '^(_.*|.*@plt)$' : defaultValue) as PropertyGetter);
+        const asm = [
+            '0000000000401000 <main.main>:',
+            '  401000:\te8 2b 10 00 00       \tcall   402030 <write@plt>',
+            '',
+            '0000000000402030 <write@plt>:',
+            '  402030:\tff 25 e2 2f 00 00    \tjmp    *0x2fe2(%rip)',
+        ].join('\n');
+        const text = goParser.processBinaryAsm(asm, {}).asm.map(line => line.text);
+        expect(text.filter(line => line.endsWith(':'))).toEqual(['main.main:']);
+    });
+
+    describe('with the line limit', () => {
+        const limitedParser = (maxLinesOfAsm: number) =>
+            new AsmParser(((property: string, defaultValue?: unknown) => {
+                if (property === 'binaryHideFuncRe') return hideFuncRe;
+                if (property === 'maxLinesOfAsm') return maxLinesOfAsm;
+                return defaultValue;
+            }) as PropertyGetter);
+        const truncationMarker = '[truncated; too many lines]';
+        const nop = (address: number) => `  ${(0x401000 + address).toString(16)}:\t90                   \tnop`;
+        const nops = (count: number) => Array.from({length: count}, (_, i) => nop(i));
+        const texts = (parserToUse: AsmParser, asm: string[]) =>
+            parserToUse.processBinaryAsm(asm.join('\n'), {}).asm.map(line => line.text);
+
+        it('should not let a hidden function defined before its caller push the call out of the output', () => {
+            const asm = (withBig: boolean) => [
+                ...(withBig ? ['0000000000400000 <__big>:', ...nops(99)] : []),
+                '0000000000401000 <main>:',
+                ...nops(4985),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__big>',
+                '0000000000406000 <after>:',
+                nop(0),
+                nop(1),
+            ];
+            const result = limitedParser(5000).processBinaryAsm(asm(true).join('\n'), {});
+            const plain = limitedParser(5000).processBinaryAsm(asm(false).join('\n'), {});
+            expect(result.asm.map(line => line.text)).toEqual(plain.asm.map(line => line.text));
+            expect(result.asm.map(line => line.text)).not.toContain(truncationMarker);
+            expect(result.asm.map(line => line.text)).toContain(' call   400000 <__big>');
+            expect(result.asm.find(line => line.text.includes('call'))?.labels).toEqual([]);
+        });
+
+        it('should not show a hidden function whose caller was truncated away', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(9),
+                '0000000000401000 <f>:',
+                ...nops(6000),
+                '0000000000410000 <main>:',
+                '  410000:\te8 00 00 00 00       \tcall   400000 <__h>',
+            ];
+            const text = texts(limitedParser(5000), asm);
+            expect(text).toHaveLength(5001);
+            expect(text[0]).toBe('f:');
+            expect(text.at(-1)).toBe(truncationMarker);
+            expect(text).not.toContain('__h:');
+        });
+
+        it('should show a hidden function that fits alongside the shown code', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(9),
+                '0000000000401000 <main>:',
+                ...nops(4),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__h>',
+            ];
+            const result = limitedParser(16).processBinaryAsm(asm.join('\n'), {});
+            const text = result.asm.map(line => line.text);
+            expect(text).toHaveLength(16);
+            expect(text[0]).toBe('__h:');
+            expect(result.labelDefinitions).toEqual({__h: 1, main: 11});
+        });
+
+        it('should remove shown hidden functions, last first, before truncating shown code', () => {
+            const asm = [
+                '0000000000400000 <__a>:',
+                ...nops(4),
+                '0000000000400100 <__b>:',
+                ...nops(9),
+                '0000000000400200 <__c>:',
+                ...nops(4),
+                '0000000000401000 <main>:',
+                ...nops(4),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__a>',
+                '  405005:\te8 00 00 00 00       \tcall   400100 <__b>',
+                '  40500a:\te8 00 00 00 00       \tcall   400200 <__c>',
+            ];
+            // 8 shown lines, __a is 5, __b is 10 and __c is 5: __c then __b have to go for __a to fit
+            const text = texts(limitedParser(14), asm);
+            expect(text.filter(line => line.endsWith(':'))).toEqual(['__a:', 'main:']);
+            expect(text).not.toContain(truncationMarker);
+        });
+
+        it('should show a hidden function called early even when the shown code is over the limit', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(3),
+                '0000000000401000 <main>:',
+                '  401000:\te8 00 00 00 00       \tcall   400000 <__h>',
+                ...nops(40),
+            ];
+            const result = limitedParser(20).processBinaryAsm(asm.join('\n'), {});
+            const text = result.asm.map(line => line.text);
+            expect(text).toHaveLength(21);
+            expect(text[0]).toBe('__h:');
+            expect(text[4]).toBe('main:');
+            expect(text[5]).toBe(' call   400000 <__h>');
+            expect(text.at(-1)).toBe(truncationMarker);
+            expect(result.labelDefinitions).toEqual({__h: 1, main: 5});
+            expect(result.asm[5].labels).toEqual([{name: '__h', range: {startCol: 17, endCol: 20}}]);
+        });
+
+        it('should not show a hidden function that would straddle the cut', () => {
+            const asm = [
+                '0000000000400000 <__s>:',
+                ...nops(2),
+                '0000000000400100 <__big>:',
+                ...nops(17),
+                '0000000000401000 <main>:',
+                '  401000:\te8 00 00 00 00       \tcall   400000 <__s>',
+                '  401005:\te8 00 00 00 00       \tcall   400100 <__big>',
+                ...nops(30),
+            ];
+            const text = texts(limitedParser(20), asm);
+            expect(text.filter(line => line.endsWith(':'))).toEqual(['__s:', 'main:']);
+            expect(text).toHaveLength(21);
+            expect(text.at(-1)).toBe(truncationMarker);
+        });
+
+        it('should not show a hidden function whose only caller is cut by the limit', () => {
+            const asm = [
+                '0000000000400000 <__h>:',
+                ...nops(4),
+                '0000000000401000 <main>:',
+                ...nops(25),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__h>',
+            ];
+            const text = texts(limitedParser(20), asm);
+            expect(text).toHaveLength(21);
+            expect(text[0]).toBe('main:');
+            expect(text.at(-1)).toBe(truncationMarker);
+        });
+
+        describe('holding hidden functions', () => {
+            // Mirrors the "hidden functions and the line limit" cases of the C++ parser, which must agree
+            const call = (address: number, target: string) =>
+                `  ${address.toString(16)}:\te8 00 00 00 00       \tcall   402000 <${target}>`;
+            const defaultLimit = () => limitedParser(5000);
+
+            it('should skip every later hidden function once the cap is reached, however small', () => {
+                // __b is never called but still counts towards the cap, so __c is skipped rather than held
+                const asm = [
+                    '0000000000401000 <__a>:',
+                    ...nops(3000),
+                    '0000000000402000 <__b>:',
+                    ...nops(3000),
+                    '0000000000403000 <__c>:',
+                    ...nops(10),
+                    '0000000000404000 <main>:',
+                    nop(0),
+                    call(0x404001, '__a'),
+                    call(0x404006, '__c'),
+                ];
+                const result = defaultLimit().processBinaryAsm(asm.join('\n'), {});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['__a:', 'main:']);
+            });
+
+            it('should hold hidden functions that stay under the cap, referenced or not', () => {
+                const asm = [
+                    '0000000000401000 <__a>:',
+                    ...nops(1000),
+                    '0000000000402000 <__b>:',
+                    ...nops(1000),
+                    '0000000000403000 <__c>:',
+                    ...nops(10),
+                    '0000000000404000 <main>:',
+                    nop(0),
+                    call(0x404001, '__a'),
+                    call(0x404006, '__c'),
+                ];
+                const result = defaultLimit().processBinaryAsm(asm.join('\n'), {});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+                    '__a:',
+                    '__c:',
+                    'main:',
+                ]);
+            });
+
+            it('should not show the rest of a dropped hidden function after a local label', () => {
+                const asm = [
+                    '0000000000401000 <__a>:',
+                    ...nops(3000),
+                    '0000000000402000 <__b>:',
+                    ...nops(2500),
+                    '0000000000403000 <.L1>:',
+                    ...nops(10),
+                    '0000000000404000 <main>:',
+                    nop(0),
+                    call(0x404001, '__b'),
+                ];
+                expect(texts(defaultLimit(), asm)).toEqual(['main:', ' nop', ' call   402000 <__b>']);
+            });
+
+            it('should not let a PLT stub use up the cap, since nothing can promote it', () => {
+                const asm = [
+                    '0000000000401000 <main>:',
+                    nop(0),
+                    call(0x401001, '__h'),
+                    '0000000000402000 <.plt>:',
+                    ...nops(5100),
+                    '0000000000410000 <__h>:',
+                    nop(1),
+                    nop(2),
+                    nop(3),
+                ];
+                const pltParser = new AsmParser(((property: string, defaultValue?: unknown) =>
+                    property === 'binaryHideFuncRe' ? '^(__.*|\\.plt.*)$' : defaultValue) as PropertyGetter);
+                const result = pltParser.processBinaryAsm(asm.join('\n'), {});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['main:', '__h:']);
+            });
+
+            it('should keep a hidden function whole when a local label inside it is followed by library code', () => {
+                const asm = [
+                    '0000000000401000 <main>:',
+                    '/app/a.c:1',
+                    call(0x401000, '__h1'),
+                    nop(0),
+                    '0000000000402000 <__h1>:',
+                    '/app/a.c:2',
+                    nop(1),
+                    '/usr/l.c:3',
+                    nop(2),
+                    '0000000000402009 <.Lpcrel_hi2>:',
+                    '/usr/l.c:4',
+                    nop(3),
+                    nop(4),
+                    '0000000000403000 <s1>:',
+                    '/app/a.c:5',
+                    nop(5),
+                ];
+                expect(
+                    defaultLimit()
+                        .processBinaryAsm(asm.join('\n'), {libraryCode: true})
+                        .asm.map(line => line.text),
+                ).toEqual([
+                    'main:',
+                    ' call   402000 <__h1>',
+                    ' nop',
+                    '__h1:',
+                    ' nop',
+                    ' nop',
+                    '.Lpcrel_hi2:',
+                    ' nop',
+                    ' nop',
+                    's1:',
+                    ' nop',
+                ]);
+            });
+
+            it('should keep a hidden function without user code out when library code is filtered', () => {
+                const asm = [
+                    '0000000000400000 <f>:',
+                    '/app/example.c:2',
+                    nop(0),
+                    '0000000000402000 <__lib>:',
+                    nop(1),
+                    '0000000000402010 <.L1>:',
+                    nop(2),
+                    '0000000000404000 <g>:',
+                    '/app/example.c:3',
+                    nop(3),
+                    call(0x404001, '__lib'),
+                ];
+                const result = defaultLimit().processBinaryAsm(asm.join('\n'), {libraryCode: true});
+                expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['f:', 'g:']);
+            });
+        });
+
+        it('should only truncate shown code when it alone exceeds the limit', () => {
+            const asm = [
+                '0000000000400000 <__a>:',
+                ...nops(4),
+                '0000000000401000 <main>:',
+                ...nops(9),
+                '  405000:\te8 00 00 00 00       \tcall   400000 <__a>',
+            ];
+            const text = texts(limitedParser(5), asm);
+            expect(text).toEqual(['main:', ...nops(4).map(() => ' nop'), truncationMarker]);
+        });
+    });
+
+    it('should not hide anything when there is no hide pattern', () => {
+        expect(new AsmParser().processBinaryAsm(objdump, {}).asm.filter(line => line.text.endsWith(':'))).toHaveLength(
+            4,
+        );
+    });
+});
+
 describe('AsmParser directive filtering', () => {
     const parser = new AsmParser();
     // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
