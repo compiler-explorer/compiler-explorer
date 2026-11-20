@@ -55,7 +55,7 @@
     "lru-cache": "^11.5.3",
     "lz-string": "^1.5.0",
     "marked": "^18.1.3",
-    "monaco-editor": "^0.55.1",
+    "monaco-editor": "^0.57.0",
     "monaco-vim": "^0.4.4",
     "morgan": "^1.12.1",
     "node-targz": "^0.2.0",
