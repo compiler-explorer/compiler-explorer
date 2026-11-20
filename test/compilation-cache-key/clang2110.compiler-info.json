@@ -1,0 +1,926 @@
+{
+    "id": "clang2110",
+    "exe": "/opt/compiler-explorer/clang-21.1.0/bin/clang++",
+    "name": "x86-64 clang 21.1.0",
+    "alias": [],
+    "options": "--gcc-toolchain=/opt/compiler-explorer/gcc-15.2.0 -fcolor-diagnostics -fno-crash-diagnostics",
+    "compilerType": "clang",
+    "compilerCategories": [
+        "clang"
+    ],
+    "debugPatched": true,
+    "demangler": "/opt/compiler-explorer/clang-21.1.0/bin/llvm-cxxfilt",
+    "demanglerType": "cpp",
+    "demanglerArgs": [],
+    "nvdisasm": "",
+    "tileirdisasm": "",
+    "ptxas": "",
+    "objdumper": "/opt/compiler-explorer/gcc-14.2.0/bin/objdump",
+    "objdumperType": "default",
+    "objdumperArgs": [],
+    "llvmDisassembler": "/opt/compiler-explorer/clang-19.1.0/bin/llvm-dis",
+    "llvmObjdumper": "",
+    "intelAsm": "-mllvm --x86-asm-syntax=intel",
+    "supportsAsmDocs": true,
+    "instructionSet": "amd64",
+    "needsMulti": false,
+    "adarts": "",
+    "supportsDemangle": true,
+    "supportsBinary": true,
+    "supportsBinaryObject": true,
+    "emulated": false,
+    "interpreted": false,
+    "supportsExecute": true,
+    "executionWrapper": "",
+    "executionWrapperArgs": [],
+    "supportsLibraryCodeFilter": true,
+    "postProcess": [],
+    "lang": "c++",
+    "group": "clang",
+    "groupName": "Clang x86-64",
+    "includeFlag": "-isystem",
+    "includePath": "",
+    "linkFlag": "-l",
+    "rpathFlag": "-Wl,-rpath,",
+    "libpathFlag": "-L",
+    "libPath": [],
+    "ldPath": [
+        "/opt/compiler-explorer/clang-21.1.0/lib",
+        "/opt/compiler-explorer/clang-21.1.0/lib/x86_64-unknown-linux-gnu"
+    ],
+    "extraPath": [],
+    "envVars": [],
+    "notification": "",
+    "isSemVer": true,
+    "semver": "21.1.0",
+    "isNightly": false,
+    "releaseTrack": "stable",
+    "libsArr": [],
+    "tools": {
+        "PVS-Studio": {
+            "tool": {
+                "id": "PVS-Studio",
+                "name": "PVS-Studio",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/pvs-studio-latest/bin/pvs-studio-analyzer",
+                "exclude": [
+                    "cl19",
+                    "cl19_2015_u3",
+                    "cl_new",
+                    "icc",
+                    "rvclang",
+                    "wasmclang",
+                    "cross",
+                    "ellcc",
+                    "zapcc",
+                    "djggp",
+                    "armclang32",
+                    "armclang64"
+                ],
+                "includeKey": "supportsPVS-Studio",
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "PVS-Studio",
+            "type": "postcompilation",
+            "sandboxType": "nsjail",
+            "plogConverterPath": "/opt/compiler-explorer/pvs-studio-latest/bin/plog-converter"
+        },
+        "clangformattrunk": {
+            "tool": {
+                "id": "clangformattrunk",
+                "name": "clang-format",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/clang-format",
+                "exclude": [],
+                "options": [],
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "clangformattrunk",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "clangquerytrunk": {
+            "tool": {
+                "id": "clangquerytrunk",
+                "name": "clang-query (trunk)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/clang-query",
+                "exclude": [],
+                "options": [],
+                "stdinHint": "Query commands",
+                "monacoStdin": true,
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "clangquerytrunk",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "clangtidytrunk": {
+            "tool": {
+                "id": "clangtidytrunk",
+                "name": "clang-tidy (trunk)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/clang-tidy",
+                "exclude": [
+                    "cl19",
+                    "cl_new"
+                ],
+                "options": [
+                    "--gcc-toolchain=/opt/compiler-explorer/gcc-snapshot"
+                ],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "clangtidytrunk",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "iwyu": {
+            "tool": {
+                "id": "iwyu",
+                "name": "include-what-you-use (0.12)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/iwyu/0.12/bin/include-what-you-use",
+                "exclude": [],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "iwyu",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "iwyu022": {
+            "tool": {
+                "id": "iwyu022",
+                "name": "include-what-you-use (0.22)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/iwyu/0.22/bin/include-what-you-use",
+                "exclude": [],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "iwyu022",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "ldd": {
+            "tool": {
+                "id": "ldd",
+                "name": "ldd",
+                "type": "postcompilation",
+                "exe": "/usr/bin/ldd",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "ldd",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "llvm-covtrunk": {
+            "tool": {
+                "id": "llvm-covtrunk",
+                "name": "llvm-cov (clang-only)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/llvm-cov",
+                "exclude": [],
+                "includeKey": "supportsLlvmCov",
+                "options": [],
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "llvm-covtrunk",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "llvm-mcatrunk": {
+            "tool": {
+                "id": "llvm-mcatrunk",
+                "name": "llvm-mca (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/llvm-mca",
+                "exclude": [
+                    "avr",
+                    "rv32",
+                    "armv7",
+                    "mips",
+                    "msp",
+                    "ppc",
+                    "cl19",
+                    "cl_new",
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "llvm-mcatrunk",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "readelf": {
+            "tool": {
+                "id": "readelf",
+                "name": "readelf (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/gcc-snapshot/bin/readelf",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "readelf",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "nm": {
+            "tool": {
+                "id": "nm",
+                "name": "nm (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/gcc-snapshot/bin/nm",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "nm",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "strings": {
+            "tool": {
+                "id": "strings",
+                "name": "strings",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/gcc-snapshot/bin/strings",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "strings",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "llvmdwarfdumptrunk": {
+            "tool": {
+                "id": "llvmdwarfdumptrunk",
+                "name": "llvm-dwarfdump (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/llvm-dwarfdump",
+                "exclude": [
+                    "cl19",
+                    "cl_new"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "llvmdwarfdumptrunk",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        }
+    },
+    "unwiseOptions": [
+        "-march=native"
+    ],
+    "hidden": false,
+    "skipExeCheck": false,
+    "buildenvsetup": {
+        "id": "ceconan"
+    },
+    "externalparser": {
+        "id": "CEAsmParser",
+        "exe": "/usr/local/bin/asm-parser",
+        "args": ""
+    },
+    "license": {
+        "link": "https://github.com/llvm/llvm-project/blob/main/LICENSE.TXT",
+        "name": "LLVM Apache 2",
+        "preamble": "The LLVM Project is under the Apache License v2.0 with LLVM Exceptions",
+        "invasive": false
+    },
+    "possibleOverrides": [
+        {
+            "type": "options",
+            "name": "arch",
+            "display_title": "Target architecture",
+            "description": "Change the target architecture of the compiler. Be aware that the architecture might not be fully supported by the compiler even though the option is available. The compiler might also require additional arguments to be fully functional.",
+            "flags": [
+                "--target=<value>"
+            ],
+            "values": [
+                {
+                    "name": "aarch64",
+                    "value": "aarch64"
+                },
+                {
+                    "name": "aarch64_32",
+                    "value": "aarch64_32"
+                },
+                {
+                    "name": "aarch64_be",
+                    "value": "aarch64_be"
+                },
+                {
+                    "name": "amdgcn",
+                    "value": "amdgcn"
+                },
+                {
+                    "name": "arm",
+                    "value": "arm"
+                },
+                {
+                    "name": "arm64",
+                    "value": "arm64"
+                },
+                {
+                    "name": "arm64_32",
+                    "value": "arm64_32"
+                },
+                {
+                    "name": "armeb",
+                    "value": "armeb"
+                },
+                {
+                    "name": "avr",
+                    "value": "avr"
+                },
+                {
+                    "name": "bpf",
+                    "value": "bpf"
+                },
+                {
+                    "name": "bpfeb",
+                    "value": "bpfeb"
+                },
+                {
+                    "name": "bpfel",
+                    "value": "bpfel"
+                },
+                {
+                    "name": "hexagon",
+                    "value": "hexagon"
+                },
+                {
+                    "name": "lanai",
+                    "value": "lanai"
+                },
+                {
+                    "name": "loongarch32",
+                    "value": "loongarch32"
+                },
+                {
+                    "name": "loongarch64",
+                    "value": "loongarch64"
+                },
+                {
+                    "name": "m68k",
+                    "value": "m68k"
+                },
+                {
+                    "name": "mips",
+                    "value": "mips"
+                },
+                {
+                    "name": "mips64",
+                    "value": "mips64"
+                },
+                {
+                    "name": "mips64el",
+                    "value": "mips64el"
+                },
+                {
+                    "name": "mipsel",
+                    "value": "mipsel"
+                },
+                {
+                    "name": "msp430",
+                    "value": "msp430"
+                },
+                {
+                    "name": "nvptx",
+                    "value": "nvptx"
+                },
+                {
+                    "name": "nvptx64",
+                    "value": "nvptx64"
+                },
+                {
+                    "name": "ppc32",
+                    "value": "ppc32"
+                },
+                {
+                    "name": "ppc32le",
+                    "value": "ppc32le"
+                },
+                {
+                    "name": "ppc64",
+                    "value": "ppc64"
+                },
+                {
+                    "name": "ppc64le",
+                    "value": "ppc64le"
+                },
+                {
+                    "name": "r600",
+                    "value": "r600"
+                },
+                {
+                    "name": "riscv32",
+                    "value": "riscv32"
+                },
+                {
+                    "name": "riscv64",
+                    "value": "riscv64"
+                },
+                {
+                    "name": "sparc",
+                    "value": "sparc"
+                },
+                {
+                    "name": "sparcel",
+                    "value": "sparcel"
+                },
+                {
+                    "name": "sparcv9",
+                    "value": "sparcv9"
+                },
+                {
+                    "name": "spirv",
+                    "value": "spirv"
+                },
+                {
+                    "name": "spirv32",
+                    "value": "spirv32"
+                },
+                {
+                    "name": "spirv64",
+                    "value": "spirv64"
+                },
+                {
+                    "name": "systemz",
+                    "value": "systemz"
+                },
+                {
+                    "name": "thumb",
+                    "value": "thumb"
+                },
+                {
+                    "name": "thumbeb",
+                    "value": "thumbeb"
+                },
+                {
+                    "name": "ve",
+                    "value": "ve"
+                },
+                {
+                    "name": "wasm32",
+                    "value": "wasm32"
+                },
+                {
+                    "name": "wasm64",
+                    "value": "wasm64"
+                },
+                {
+                    "name": "x86",
+                    "value": "x86"
+                },
+                {
+                    "name": "x86-64",
+                    "value": "x86-64"
+                },
+                {
+                    "name": "xcore",
+                    "value": "xcore"
+                }
+            ]
+        },
+        {
+            "type": "options",
+            "name": "toolchain",
+            "display_title": "Toolchain",
+            "description": "Change the default GCC toolchain for this compiler. This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.",
+            "flags": [
+                "--gcc-toolchain=<value>"
+            ],
+            "values": [
+                {
+                    "name": "x86-64 gcc 3.4.6",
+                    "value": "/opt/compiler-explorer/gcc-renovated-3.4.6"
+                },
+                {
+                    "name": "x86-64 gcc 8.3",
+                    "value": "/opt/compiler-explorer/gcc-8.3.0"
+                },
+                {
+                    "name": "x86-64 gcc 9.5",
+                    "value": "/opt/compiler-explorer/gcc-9.5.0"
+                },
+                {
+                    "name": "x86-64 gcc 10.2",
+                    "value": "/opt/compiler-explorer/gcc-10.2.0"
+                },
+                {
+                    "name": "x86-64 gcc 11.1",
+                    "value": "/opt/compiler-explorer/gcc-11.1.0"
+                },
+                {
+                    "name": "x86-64 gcc 11.4",
+                    "value": "/opt/compiler-explorer/gcc-11.4.0"
+                },
+                {
+                    "name": "x86-64 gcc 12.1",
+                    "value": "/opt/compiler-explorer/gcc-12.1.0"
+                },
+                {
+                    "name": "x86-64 gcc 12.4",
+                    "value": "/opt/compiler-explorer/gcc-12.4.0"
+                },
+                {
+                    "name": "x86-64 gcc 13.1",
+                    "value": "/opt/compiler-explorer/gcc-13.1.0"
+                },
+                {
+                    "name": "x86-64 gcc 13.2",
+                    "value": "/opt/compiler-explorer/gcc-13.2.0"
+                },
+                {
+                    "name": "x86-64 gcc 13.4",
+                    "value": "/opt/compiler-explorer/gcc-13.4.0"
+                },
+                {
+                    "name": "x86-64 gcc 14.1",
+                    "value": "/opt/compiler-explorer/gcc-14.1.0"
+                },
+                {
+                    "name": "x86-64 gcc 14.2",
+                    "value": "/opt/compiler-explorer/gcc-14.2.0"
+                },
+                {
+                    "name": "x86-64 gcc 15.1",
+                    "value": "/opt/compiler-explorer/gcc-15.1.0"
+                },
+                {
+                    "name": "x86-64 gcc 15.2",
+                    "value": "/opt/compiler-explorer/gcc-15.2.0"
+                },
+                {
+                    "name": "x86-64 gcc 16.1",
+                    "value": "/opt/compiler-explorer/gcc-16.1.0"
+                },
+                {
+                    "name": "x86-64 gcc (trunk)",
+                    "value": "/opt/compiler-explorer/gcc-snapshot"
+                },
+                {
+                    "name": "x86-64 gcc (P3850 contracts)",
+                    "value": "/opt/compiler-explorer/gcc-notadragon-contracts-p3850"
+                },
+                {
+                    "name": "power gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/powerpc/gcc-14.1.0/powerpc-unknown-linux-gnu"
+                },
+                {
+                    "name": "power64 gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/powerpc64/gcc-14.1.0/powerpc64-unknown-linux-gnu"
+                },
+                {
+                    "name": "power64le gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/powerpc64le/gcc-14.1.0/powerpc64le-unknown-linux-gnu"
+                },
+                {
+                    "name": "mips gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/mips/gcc-14.1.0/mips-unknown-linux-gnu"
+                },
+                {
+                    "name": "mipsel gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/mipsel/gcc-14.1.0/mipsel-multilib-linux-gnu"
+                },
+                {
+                    "name": "mips64 gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/mips64/gcc-14.1.0/mips64-unknown-linux-gnu"
+                },
+                {
+                    "name": "mips64 (el) gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/mips64el/gcc-14.1.0/mips64el-multilib-linux-uclibc"
+                },
+                {
+                    "name": "ARM GCC 8.2.0",
+                    "value": "/opt/compiler-explorer/arm/gcc-8.2.0/arm-unknown-linux-gnueabi"
+                },
+                {
+                    "name": "ARM GCC 14.1.0",
+                    "value": "/opt/compiler-explorer/arm/gcc-14.1.0/arm-unknown-linux-gnueabihf"
+                },
+                {
+                    "name": "ARM GCC 14.1.0 (unknown-eabi)",
+                    "value": "/opt/compiler-explorer/arm/gcc-arm-unknown-14.1.0/arm-unknown-eabi"
+                },
+                {
+                    "name": "ARM64 gcc 8.5",
+                    "value": "/opt/compiler-explorer/arm64/gcc-8.5.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "ARM64 gcc 9.5",
+                    "value": "/opt/compiler-explorer/arm64/gcc-9.5.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "ARM64 gcc 12.1",
+                    "value": "/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "ARM64 gcc 13.2.0",
+                    "value": "/opt/compiler-explorer/arm64/gcc-13.2.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "ARM64 gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/arm64/gcc-14.1.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "ARM64 gcc 14.2.0",
+                    "value": "/opt/compiler-explorer/arm64/gcc-14.2.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "ARM64 gcc 15.1.0",
+                    "value": "/opt/compiler-explorer/arm64/gcc-15.1.0/aarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "AVR gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/avr/gcc-14.1.0/avr"
+                },
+                {
+                    "name": "RISC-V (32-bits) gcc 8.2.0",
+                    "value": "/opt/compiler-explorer/riscv32/gcc-8.2.0/riscv32-unknown-elf"
+                },
+                {
+                    "name": "RISC-V (32-bits) gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/riscv32/gcc-14.1.0/riscv32-unknown-linux-gnu"
+                },
+                {
+                    "name": "RISC-V (64-bits) gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/riscv64/gcc-14.1.0/riscv64-unknown-linux-gnu"
+                },
+                {
+                    "name": "Raspbian Buster",
+                    "value": "/opt/compiler-explorer/arm/raspbian10-8.3.0"
+                },
+                {
+                    "name": "s390x gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/s390x/gcc-14.1.0/s390x-ibm-linux-gnu"
+                },
+                {
+                    "name": "sh gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/sh/gcc-14.1.0/sh-unknown-elf"
+                },
+                {
+                    "name": "loongarch64 gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/loongarch64/gcc-14.1.0/loongarch64-unknown-linux-gnu"
+                },
+                {
+                    "name": "TI C6x gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/c6x/gcc-14.1.0/tic6x-elf"
+                },
+                {
+                    "name": "SPARC gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/sparc/gcc-14.1.0/sparc-unknown-linux-gnu"
+                },
+                {
+                    "name": "SPARC64 gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/sparc64/gcc-14.1.0/sparc64-multilib-linux-gnu"
+                },
+                {
+                    "name": "SPARC LEON gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/sparc-leon/gcc-14.1.0/sparc-leon-linux-uclibc"
+                },
+                {
+                    "name": "M68K gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/m68k/gcc-14.1.0/m68k-unknown-elf"
+                },
+                {
+                    "name": "MSP430 gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/msp430/gcc-14.1.0/msp430-unknown-elf"
+                },
+                {
+                    "name": "BPF gcc 14.1.0",
+                    "value": "/opt/compiler-explorer/bpf/gcc-14.1.0/bpf-unknown-none"
+                },
+                {
+                    "name": "M68K clang (trunk)",
+                    "value": "/opt/compiler-explorer/clang-trunk"
+                }
+            ]
+        },
+        {
+            "type": "options",
+            "name": "stdver",
+            "display_title": "Std version",
+            "description": "Change the C/C++ standard version of the compiler.",
+            "flags": [
+                "-std=<value>"
+            ],
+            "values": [
+                {
+                    "name": "c++03: ISO C++ 1998 with amendments",
+                    "value": "c++03"
+                },
+                {
+                    "name": "c++11: ISO C++ 2011 with amendments",
+                    "value": "c++11"
+                },
+                {
+                    "name": "c++14: ISO C++ 2014 with amendments",
+                    "value": "c++14"
+                },
+                {
+                    "name": "c++17: ISO C++ 2017 with amendments",
+                    "value": "c++17"
+                },
+                {
+                    "name": "c++20: ISO C++ 2020 DIS",
+                    "value": "c++20"
+                },
+                {
+                    "name": "c++23: ISO C++ 2023 DIS",
+                    "value": "c++23"
+                },
+                {
+                    "name": "c++26: Working draft for C++2c",
+                    "value": "c++26"
+                },
+                {
+                    "name": "c++2c: Working draft for C++2c",
+                    "value": "c++2c"
+                },
+                {
+                    "name": "c++98: ISO C++ 1998 with amendments",
+                    "value": "c++98"
+                },
+                {
+                    "name": "gnu++03: ISO C++ 1998 with amendments and GNU extensions",
+                    "value": "gnu++03"
+                },
+                {
+                    "name": "gnu++11: ISO C++ 2011 with amendments and GNU extensions",
+                    "value": "gnu++11"
+                },
+                {
+                    "name": "gnu++14: ISO C++ 2014 with amendments and GNU extensions",
+                    "value": "gnu++14"
+                },
+                {
+                    "name": "gnu++17: ISO C++ 2017 with amendments and GNU extensions",
+                    "value": "gnu++17"
+                },
+                {
+                    "name": "gnu++20: ISO C++ 2020 DIS with GNU extensions",
+                    "value": "gnu++20"
+                },
+                {
+                    "name": "gnu++23: ISO C++ 2023 DIS with GNU extensions",
+                    "value": "gnu++23"
+                },
+                {
+                    "name": "gnu++26: Working draft for C++2c with GNU extensions",
+                    "value": "gnu++26"
+                },
+                {
+                    "name": "gnu++2c: Working draft for C++2c with GNU extensions",
+                    "value": "gnu++2c"
+                },
+                {
+                    "name": "gnu++98: ISO C++ 1998 with amendments and GNU extensions",
+                    "value": "gnu++98"
+                }
+            ]
+        }
+    ],
+    "possibleRuntimeTools": [
+        {
+            "name": "heaptrack",
+            "description": "Heaptrack gets loaded into your code and collects the heap allocations, we'll display them in a flamegraph.",
+            "possibleOptions": [
+                {
+                    "name": "graph",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                },
+                {
+                    "name": "summary",
+                    "possibleValues": [
+                        "stderr"
+                    ]
+                },
+                {
+                    "name": "details",
+                    "possibleValues": [
+                        "stderr"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "libsegfault",
+            "description": "libSegFault will display tracing information in case of segfaults.",
+            "possibleOptions": [
+                {
+                    "name": "enable",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                },
+                {
+                    "name": "registers",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                },
+                {
+                    "name": "memory",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                }
+            ]
+        }
+    ],
+    "$order": -4,
+    "supportsIntel": true,
+    "optArg": "-fsave-optimization-record",
+    "supportsOptOutput": true,
+    "supportsVerboseAsm": true,
+    "disabledFilters": [],
+    "supportsDeviceAsmView": true,
+    "version": "clang version 21.1.0 (https://github.com/llvm/llvm-project.git 3623fe661ae35c6c80ac221f14d85be76aa870f1)",
+    "fullVersion": "clang version 21.1.0 (https://github.com/llvm/llvm-project.git 3623fe661ae35c6c80ac221f14d85be76aa870f1)\nTarget: x86_64-unknown-linux-gnu\nThread model: posix\nInstalledDir: /opt/compiler-explorer/clang-21.1.0/bin\n",
+    "supportsCfg": true,
+    "supportsPpView": true,
+    "supportsAstView": true,
+    "stackUsageArg": "-fstack-usage",
+    "supportsStackUsageOutput": true,
+    "supportsIrView": true,
+    "irArg": [
+        "-Xclang",
+        "-emit-llvm",
+        "-fsyntax-only"
+    ],
+    "minIrArgs": [
+        "-emit-llvm"
+    ],
+    "optPipeline": {
+        "arg": [
+            "-mllvm",
+            "--print-before-all",
+            "-mllvm",
+            "--print-after-all"
+        ],
+        "moduleScopeArg": [
+            "-mllvm",
+            "-print-module-scope"
+        ],
+        "noDiscardValueNamesArg": [
+            "-fno-discard-value-names"
+        ]
+    },
+    "supportsTargetIs": true
+}

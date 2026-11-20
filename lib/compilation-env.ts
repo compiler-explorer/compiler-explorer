@@ -62,6 +62,7 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
     readonly logCompilationCacheAccesses: boolean;
+    private readonly loggedCompilerInfoHashes = new Set<string>();
     private cachingInProgress: Record<string, boolean>;
     private findCompilerFunc?: FindCompiler;
 
@@ -145,7 +146,12 @@ export class CompilationEnvironment {
         const parts: Record<string, unknown> = {};
         for (const [name, value] of Object.entries(object as Record<string, unknown>)) {
             if (name === 'compiler' && value && typeof value === 'object') {
-                parts.compiler = `${(value as any).id} ${BaseCache.hash(value as any)}`;
+                const compilerHash = BaseCache.hash(value as any);
+                parts.compiler = `${(value as any).id} ${compilerHash}`;
+                if (!this.loggedCompilerInfoHashes.has(compilerHash)) {
+                    this.loggedCompilerInfoHashes.add(compilerHash);
+                    logger.info(`Compilation cache key compiler ${compilerHash} ${JSON.stringify(value)}`);
+                }
             } else if (name === 'source' || name === 'files') {
                 parts[name] = BaseCache.hash(JSON.stringify(value ?? null));
             } else {
