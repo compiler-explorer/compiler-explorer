@@ -65,7 +65,7 @@ export class PTXAsmParser extends AsmParser {
 
         this.externFuncStart = /^\s*\.extern\s+\.func/;
         this.openParen = /^\s*\(\s*$/;
-        this.closeParen = /^\s*\)\s*$/;
+        this.closeParen = /^\s*(\(\s*)?\)\s*$/;
         this.semicolon = /^\s*;\s*$/;
 
         this.ptxDataDeclaration =

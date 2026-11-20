@@ -62,6 +62,7 @@ export class ClangCompiler extends BaseCompiler {
     protected offloadBundlerPath?: string;
     protected llvmDisassemblerPath?: string;
     protected msvcDemanglerPath?: string;
+    protected readonly ptxDeviceParser = new PTXAsmParser();
 
     static get key() {
         return 'clang';
@@ -348,6 +349,8 @@ export class ClangCompiler extends BaseCompiler {
 
         // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
         if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
+
+        if (deviceName.includes('nvptx')) return this.ptxDeviceParser.process(deviceAsm, filters);
 
         const processed = await this.asm.process(deviceAsm, filters);
         // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the
