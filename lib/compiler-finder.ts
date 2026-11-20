@@ -44,7 +44,7 @@ import {ClientOptionsHandler} from './options-handler.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, getRawProperties} from './properties.js';
 import {backfillReleaseTrack, resolveReleaseTrack} from './release-track.js';
-import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
+import {getPossibleCCompilersFromCompilerInfo, getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 
 const sleep = promisify(setTimeout);
 
@@ -592,6 +592,7 @@ export class CompilerFinder {
 
         const toolchains = await getPossibleGccToolchainsFromCompilerInfo(compilerList);
         this.compileHandler.setPossibleToolchains(toolchains);
+        this.compileHandler.setPossibleCCompilers(getPossibleCCompilersFromCompilerInfo(compilerList));
 
         const compilers = await this.compileHandler.setCompilers(compilerList, this.optionsHandler.get());
         if (!compilers) {

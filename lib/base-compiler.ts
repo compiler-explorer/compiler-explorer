@@ -135,6 +135,7 @@ import {
     clang_style_sysroot_flag,
     getSpecificTargetBasedOnToolchainPath,
     getSysrootByToolchainPath,
+    getTargetFromCompilerCommand,
     getToolchainFlagFromOptions,
     getToolchainPath,
     getToolchainPathWithOptionsArr,
@@ -180,6 +181,9 @@ export const c_default_target_description =
 export const c_default_toolchain_description =
     'Change the default GCC toolchain for this compiler. ' +
     'This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.';
+
+export const c_default_c_compiler_description =
+    'Change the C compiler that builds the binary from the C this compiler emits.';
 
 export const c_value_placeholder = '<value>';
 
@@ -1210,6 +1214,33 @@ export class BaseCompiler {
         }
 
         return undefined;
+    }
+
+    // For languages that compile to C: the C compilers of this installation, each value a full command line. A
+    // cross compiler only suits a compiler whose objdumper reads any architecture.
+    protected addCCompilerOverride(allowCrossCompilers: boolean) {
+        const values = this.env
+            .getPossibleCCompilers()
+            .filter(option => allowCrossCompilers || getTargetFromCompilerCommand(option.value) === undefined);
+        if (values.length === 0) return;
+        this.compiler.possibleOverrides?.push({
+            type: 'options',
+            name: CompilerOverrideType.c_compiler,
+            display_title: 'C compiler',
+            description: c_default_c_compiler_description,
+            flags: [],
+            values,
+        });
+    }
+
+    // only a command this compiler offered: the value becomes a command line
+    getOverriddenCCompiler(overrides: ConfiguredOverrides): string | undefined {
+        const possible = this.compiler.possibleOverrides?.find(ov => ov.name === CompilerOverrideType.c_compiler);
+        const override = overrides.find(ov => ov.name === CompilerOverrideType.c_compiler);
+        if (!possible || possible.type !== 'options' || !override || override.name === CompilerOverrideType.env) {
+            return undefined;
+        }
+        return possible.values.some(option => option.value === override.value) ? override.value : undefined;
     }
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {

@@ -59,6 +59,7 @@ export class CompilationEnvironment {
     multiarch: string | null;
     baseEnv: Record<string, string>;
     possibleToolchains?: CompilerOverrideOptions;
+    possibleCCompilers?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
     private cachingInProgress: Record<string, boolean>;
@@ -133,6 +134,14 @@ export class CompilationEnvironment {
 
     getPossibleToolchains(): CompilerOverrideOptions {
         return this.possibleToolchains || [];
+    }
+
+    setPossibleCCompilers(cCompilers: CompilerOverrideOptions) {
+        this.possibleCCompilers = cCompilers;
+    }
+
+    getPossibleCCompilers(): CompilerOverrideOptions {
+        return this.possibleCCompilers || [];
     }
 
     async cacheGet(object: CacheableValue) {
