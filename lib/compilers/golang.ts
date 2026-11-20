@@ -397,7 +397,7 @@ export class GolangCompiler extends BaseCompiler {
 
             if (func) {
                 args = this.replaceJump(func, funcCollisions[func], ins, args, usedLabels);
-                res.push(`\t${ins}${args}`);
+                res.push(`${ins === 'TEXT' ? '' : '\t'}${ins}${args}`);
             }
             return res;
         });

@@ -1,7 +1,7 @@
 Closures_pc0:
 	.file 1 "labels.go"
 	.loc 1 5 0
-	TEXT	"".Closures(SB), $24-0
+TEXT	"".Closures(SB), $24-0
 	MOVQ	(TLS), CX
 	CMPQ	SP, 16(CX)
 	JLS	Closures_pc75
@@ -42,7 +42,7 @@ Closures_pc75:
 	JMP	Closures_pc0
 Closures_func1_1_pc0:
 	.loc 1 21 0
-	TEXT	"".Closures_func1_1(SB), $16-0
+TEXT	"".Closures_func1_1(SB), $16-0
 	MOVQ	(TLS), CX
 	CMPQ	SP, 16(CX)
 	JLS	Closures_func1_1_pc74
@@ -81,7 +81,7 @@ Closures_func1_1_pc74:
 	JMP	Closures_func1_1_pc0
 αβ_pc0:
 	.loc 1 27 0
-	TEXT	"".αβ(SB), $16-0
+TEXT	"".αβ(SB), $16-0
 	MOVQ	(TLS), CX
 	CMPQ	SP, 16(CX)
 	JLS	αβ_pc74
@@ -120,7 +120,7 @@ Closures_func1_1_pc74:
 	JMP	αβ_pc0
 Closures_func1_1_pc0_1:
 	.loc 1 8 0
-	TEXT	"".Closures.func1.1(SB), $16-0
+TEXT	"".Closures.func1.1(SB), $16-0
 	MOVQ	(TLS), CX
 	CMPQ	SP, 16(CX)
 	JLS	Closures_func1_1_pc74_1
@@ -159,7 +159,7 @@ Closures_func1_1_pc74_1:
 	JMP	Closures_func1_1_pc0_1
 Closures_func1_pc0:
 	.loc 1 7 0
-	TEXT	"".Closures.func1(SB), $16-0
+TEXT	"".Closures.func1(SB), $16-0
 	MOVQ	(TLS), CX
 	CMPQ	SP, 16(CX)
 	JLS	Closures_func1_pc83
