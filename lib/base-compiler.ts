@@ -2464,7 +2464,7 @@ export class BaseCompiler {
             return this.handleInterpreting(key, executeParameters);
         }
 
-        const executablePackageHash = this.env.getExecutableHash(key);
+        const executablePackageHash = this.env.getExecutableHash(this.cacheKeyFor(key));
 
         const buildResult = await this.getOrBuildExecutable(key, bypassCache, executablePackageHash);
         if (buildResult.code !== 0) {
@@ -2548,7 +2548,7 @@ export class BaseCompiler {
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
         // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
-        const execKey = JSON.stringify({key, executeParameters});
+        const execKey = JSON.stringify({key: this.cacheKeyFor(key), executeParameters});
         if (!bypassExecutionCache(bypassCache)) {
             const cacheResult = await this.env.cacheGet(execKey as any);
             if (cacheResult) {
@@ -2564,6 +2564,14 @@ export class BaseCompiler {
             await this.env.cachePut(execKey, result, undefined);
         }
         return result;
+    }
+
+    // compile() caches a compilation under the request as it arrived, but the CacheKey it hands on (to execution,
+    // tools, afterCompilation) is the request adapted to this compiler. This finds the former from the latter.
+    private readonly cacheKeys = new WeakMap<object, CacheKey>();
+
+    protected cacheKeyFor<T>(key: T): T | CacheKey {
+        return (typeof key === 'object' && key !== null && this.cacheKeys.get(key)) || key;
     }
 
     getCacheKey(
@@ -3110,7 +3118,7 @@ export class BaseCompiler {
         // Read before the cache key is built: making one deletes `execute` from these very filters, which are the
         // request's own object rather than a copy of it.
         const doExecute = parsedRequest.filters.execute;
-        this.fixBackendOptionsBeforeCacheKey(parsedRequest.backendOptions);
+        this.fixBackendOptionsForCompiler(parsedRequest.backendOptions);
         const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
         const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
@@ -3463,7 +3471,7 @@ export class BaseCompiler {
         return fullResult;
     }
 
-    fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         // Don't run binary for unsupported compilers, even if we're asked.
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
@@ -3487,9 +3495,10 @@ export class BaseCompiler {
         }
     }
 
-    fixBackendOptionsBeforeCacheKey(backendOptions: Record<string, any>) {
-        // A compiler whose output is the same on either background shares one cache entry between light and dark
-        // themes, and one that varies treats a request that doesn't say like one asking for a light background.
+    fixBackendOptionsForCompiler(backendOptions: Record<string, any>) {
+        // A compiler whose output is the same on either background isn't told which one it is (for a project build that
+        // also lets both themes share a cache entry), and one that varies treats a request that doesn't say like one
+        // asking for a light background.
         if (this.compiler.supportsDarkBackgroundColours) {
             backendOptions.darkBackgroundColours = backendOptions.darkBackgroundColours === true;
         } else {
@@ -3514,14 +3523,22 @@ export class BaseCompiler {
         // Request parsing has already rejected a bad filename; reaching here with one is a bug.
         assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
 
+        // The cache key is the request as it arrived, so that anything able to see the request (ce-router included)
+        // can compute it without knowing how this compiler adapts it below. It is a copy, so nothing done to the
+        // request from here on can change the key it is stored under.
+        const cacheKey = structuredClone(
+            this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files),
+        );
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
             options = libsAndOptions.options;
         }
 
-        this.fixFiltersBeforeCacheKey(filters, options, files);
-        this.fixBackendOptionsBeforeCacheKey(backendOptions);
+        filters = {...this.getDefaultFilters(), ...filters};
+        this.fixFiltersForCompiler(filters, options, files);
+        this.fixBackendOptionsForCompiler(backendOptions);
 
         const executeOptions: ExecutableExecutionOptions = {
             args: executeParameters.args || [],
@@ -3532,6 +3549,7 @@ export class BaseCompiler {
         };
 
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
+        this.cacheKeys.set(key, cacheKey);
 
         const doExecute = filters.execute;
         filters = Object.assign({}, filters);
@@ -3539,10 +3557,7 @@ export class BaseCompiler {
 
         if (!bypassCompilationCache(bypassCache)) {
             const cacheRetrieveTimeStart = process.hrtime.bigint();
-            // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
-            // problem) Because key contains a CompilerInfo which contains a function member it can't be assigned to a
-            // CacheableValue.
-            const result = await this.env.cacheGet(key as any);
+            const result = await this.env.cacheGet(cacheKey);
             if (result) {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
@@ -3727,7 +3742,7 @@ export class BaseCompiler {
         this.cleanupResult(result);
 
         if (result.okToCache && !delayCaching) {
-            await this.env.cachePut(key, result, undefined);
+            await this.env.cachePut(this.cacheKeyFor(key), result, undefined);
         }
 
         if (doExecute && result.code === 0) {
@@ -3756,6 +3771,7 @@ export class BaseCompiler {
         cacheHoldsThisPayload: boolean,
     ): Promise<void> {
         if (!this.isCompilationWorker) return;
+        key = this.cacheKeyFor(key);
         const resultString = JSON.stringify(result);
         if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
         if (cacheHoldsThisPayload) {

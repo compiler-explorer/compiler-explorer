@@ -44,17 +44,19 @@ of what tools depend on. Don't cast around it.
 
 ## Never read compiler settings from a cache key
 
-The compilation cache key (`CacheKey`, built by `getCacheKey` / `getBuildProjectCacheKey` in
-`lib/base-compiler.ts`) identifies a compilation for the cache. Its `compiler` is `{id}` and nothing else, and
-anything added to it changes every cached entry. Compiler settings come from `this.compiler` in compiler code and
-from `compilationInfo.compiler` in tool code, never from `key.compiler`.
+`compile()` caches a compilation under a copy of the request as it arrived, with the compiler named only by
+`{id}`, so that anything that can see the request (ce-router included) can compute the key. Everything that adapts
+the request to a compiler (default filters, `-E`, binary support, library detection, the background colour) is done
+to the request afterwards, and that adapted request is the `CacheKey` handed on to compilation, execution and tools.
+Keep it that way: don't make the key depend on the compiler beyond its id. Compiler settings come from
+`this.compiler` in compiler code and from `compilationInfo.compiler` in tool code, never from `key.compiler`.
 
 ## Never modify what you were given
 
-`args`, `compilationInfo.options`, `.libraries` and `.filters` are the request's own objects, and the cache key
-holds the very same ones. Pushing onto them changes the key after it was looked up, so the result is stored where
-it is never found again (this is how clang-tidy compiles stopped hitting the cache). Copy first, then add:
-`args = [...(args ?? []), extra]`.
+`args`, `compilationInfo.options`, `.libraries` and `.filters` belong to the compilation and are shared with
+whatever else uses it. The cache key is a separate copy, so changing them no longer moves the key (it once did, which
+is how clang-tidy compiles stopped hitting the cache), but other tools and the result still see the change. Copy
+first, then add: `args = [...(args ?? []), extra]`.
 
 ## Checking a change
 

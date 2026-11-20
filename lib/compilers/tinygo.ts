@@ -75,11 +75,11 @@ export class TinyGoCompiler extends BaseCompiler {
         return options;
     }
 
-    override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    override fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         // TinyGo is LLVM-based and always produces a binary — force binary mode
         // to avoid the base compiler adding -S (which TinyGo doesn't understand).
         filters.binary = true;
-        super.fixFiltersBeforeCacheKey(filters, options, files);
+        super.fixFiltersForCompiler(filters, options, files);
     }
 
     override isCfgCompiler() {

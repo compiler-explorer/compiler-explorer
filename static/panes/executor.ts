@@ -308,7 +308,11 @@ export class Executor extends Pane<ExecutorState> {
                 executorRequest: true,
                 skipAsm: true,
                 overrides: this.compilerShared.getOverrides(),
-                darkBackgroundColours: this.darkBackgroundColours,
+                // Only for a compiler whose output depends on it, so the request (and the cache key) for any other compiler
+                // is the same whatever the theme.
+                darkBackgroundColours: this.compiler?.supportsDarkBackgroundColours
+                    ? this.darkBackgroundColours
+                    : undefined,
             },
             filters: {execute: true},
             tools: [],

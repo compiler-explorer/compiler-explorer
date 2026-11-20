@@ -53,7 +53,12 @@ import {unwrapString} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildSystemDriver} from '../build-systems/index.js';
 import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
-import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
+import {
+    parseExecutionParameters,
+    parseTools,
+    parseUserArguments,
+    withDefaultFilters,
+} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
 import {logger} from '../logger.js';
@@ -473,7 +478,7 @@ export class CompileHandler implements ICompileHandler {
                 buildSystem?.getBuildPath('.'),
             );
             if (filenameError) throw new Error(filenameError);
-            filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
+            filters = {...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
         } else if (body?.compiler) {
@@ -658,7 +663,7 @@ export class CompileHandler implements ICompileHandler {
             const parsedRequest = this.parseRequest(req, compiler, buildSystem);
             this.compilerEnv.statsNoter.noteCompilation(
                 compiler.getInfo().id,
-                parsedRequest,
+                withDefaultFilters(parsedRequest, compiler),
                 req.body.files as FiledataPair[],
                 buildSystem.id,
             );
@@ -735,7 +740,7 @@ export class CompileHandler implements ICompileHandler {
         this.compileCounter.inc({language: compiler.lang.id});
         this.compilerEnv.statsNoter.noteCompilation(
             compiler.getInfo().id,
-            parsedRequest,
+            withDefaultFilters(parsedRequest, compiler),
             files as FiledataPair[],
             KnownBuildMethod.Compile,
         );

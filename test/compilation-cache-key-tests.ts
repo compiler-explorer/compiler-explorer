@@ -23,10 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Pins down how the compilation cache key is built, ahead of ce-router#17 (checking the cache in the router before
- * queueing). A router-side key only helps if it matches the worker's byte for byte, so these tests record the
- * behaviour, quirks included. The key names the compiler by id only; anything else about the compiler that turns out
- * to change the output is to be added back to it one field at a time.
+ * Pins down how the compilation cache key is built, for ce-router#17 (checking the cache in the router before
+ * queueing). A router-side key only helps if it matches the worker's byte for byte. The key is the request as it
+ * arrived plus the compiler's id, so it can be computed without knowing anything about the compiler: whatever compile()
+ * does to adapt the request to a compiler (default filters, -E, binary support, library detection, the background
+ * colour) happens to a copy, after the key is built.
  *
  * The cache stores a result under the HMAC-SHA256 of JSON.stringify(key), so the property order matters as much as the
  * values. expectKey() therefore checks the serialised form, not just deep equality.
@@ -61,24 +62,9 @@ const COMPILER_INFO = {id: 'g161', exe: '/dev/null', lang: 'c++' as const, optio
 // All the key holds of the compiler.
 const KEY_COMPILER = {id: 'g161'};
 
-// What the compiler pane sends with no extra panes open, in the order it sends it.
+// What the compiler pane sends with no extra panes open, in the order it sends it. darkBackgroundColours is only sent
+// for compilers with supportsDarkBackgroundColours, which none of these have.
 const UI_COMPILER_OPTIONS = {
-    producePp: null,
-    produceGccDump: {libraryFunctions: false},
-    produceOptInfo: false,
-    produceCfg: false,
-    produceIr: null,
-    produceClangir: null,
-    produceOptPipeline: null,
-    produceDevice: false,
-    produceLeanC: null,
-    produceYul: null,
-    overrides: [],
-    darkBackgroundColours: true,
-};
-
-// The same, as it ends up in the key: darkBackgroundColours goes for a compiler that doesn't colour by background.
-const KEY_BACKEND_OPTIONS = {
     producePp: null,
     produceGccDump: {libraryFunctions: false},
     produceOptInfo: false,
@@ -107,8 +93,9 @@ const UI_FILTERS = {
     debugCalls: false,
 };
 
-// The same, as they end up in the key: in the order of getDefaultFilters(), with optOutput added.
-const KEY_FILTERS = {
+// BaseCompiler.getDefaultFilters(), in its order. The routes that don't send JSON (/noscript/, the plain-text API)
+// still build their filters from these.
+const DEFAULT_FILTERS = {
     binary: false,
     execute: false,
     demangle: true,
@@ -117,7 +104,7 @@ const KEY_FILTERS = {
     directives: true,
     labels: true,
     optOutput: false,
-    libraryCode: true,
+    libraryCode: false,
     trim: false,
     binaryObject: false,
     debugCalls: false,
@@ -190,7 +177,7 @@ function executorPaneBody(args = '', stdin = '') {
         options: {
             userArguments: '-O2',
             executeParameters: {args, stdin, runtimeTools: []},
-            compilerOptions: {executorRequest: true, skipAsm: true, overrides: [], darkBackgroundColours: true},
+            compilerOptions: {executorRequest: true, skipAsm: true, overrides: []},
             filters: {execute: true},
             tools: [],
             libraries: [],
@@ -251,6 +238,8 @@ const alwaysHit: CacheAnswer = () => ({code: 0, stdout: [], stderr: [], asm: []}
 
 interface Recorded {
     key: any;
+    // The request as compile() adapted it to the compiler: the CacheKey it hands on to compilation and execution.
+    adapted: any;
     hash: string;
     gets: unknown[];
     puts: unknown[];
@@ -274,6 +263,7 @@ async function recordCacheKeys(
     const answer = opts.answer ?? alwaysHit;
     const cacheGet = vi.spyOn(env, 'cacheGet').mockImplementation(async key => answer(key));
     const cachePut = vi.spyOn(env, 'cachePut').mockResolvedValue(undefined as any);
+    const built = vi.spyOn(compiler, 'getCacheKey');
     opts.setup?.(compiler, env);
     const parsed = CompileHandler.parseRequestReusable(opts.isJson ?? true, opts.query ?? {}, body, compiler);
     await compiler.compile(
@@ -290,6 +280,7 @@ async function recordCacheKeys(
     const key = cacheGet.mock.calls[0][0] as any;
     return {
         key,
+        adapted: built.mock.results[1]?.value,
         hash: BaseCache.hash(key),
         gets: cacheGet.mock.calls.map(call => call[0]),
         puts: cachePut.mock.calls.map(call => call[0]),
@@ -338,8 +329,8 @@ describe('Compilation cache key', () => {
                 compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
-                backendOptions: KEY_BACKEND_OPTIONS,
-                filters: KEY_FILTERS,
+                backendOptions: UI_COMPILER_OPTIONS,
+                filters: UI_FILTERS,
                 tools: [],
                 libraries: [],
                 files: [],
@@ -352,8 +343,8 @@ describe('Compilation cache key', () => {
                 compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
-                backendOptions: KEY_BACKEND_OPTIONS,
-                filters: KEY_FILTERS,
+                backendOptions: UI_COMPILER_OPTIONS,
+                filters: UI_FILTERS,
                 tools: [],
                 libraries: [{id: 'boost', version: '190'}],
                 files: [],
@@ -368,8 +359,8 @@ describe('Compilation cache key', () => {
                 compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
-                backendOptions: KEY_BACKEND_OPTIONS,
-                filters: KEY_FILTERS,
+                backendOptions: UI_COMPILER_OPTIONS,
+                filters: UI_FILTERS,
                 tools: [{id: 'clangtidytrunk', args: [], stdin: ''}],
                 libraries: [],
                 files: [],
@@ -396,7 +387,7 @@ describe('Compilation cache key', () => {
 
         it('with the opt remarks pane open', async () => {
             const {key} = await recordCacheKeys(compilerPaneBody({compilerOptions: {produceOptInfo: true}}));
-            expectKey(key.backendOptions, {...KEY_BACKEND_OPTIONS, produceOptInfo: true});
+            expectKey(key.backendOptions, {...UI_COMPILER_OPTIONS, produceOptInfo: true});
         });
 
         it('with the GCC dump pane open', async () => {
@@ -425,7 +416,7 @@ describe('Compilation cache key', () => {
             const {key} = await recordCacheKeys(compilerPaneBody({compilerOptions: {produceGccDump: gccDump}}), {
                 info: {supportsGccDump: false},
             });
-            expectKey(key.backendOptions, {...KEY_BACKEND_OPTIONS, produceGccDump: gccDump});
+            expectKey(key.backendOptions, {...UI_COMPILER_OPTIONS, produceGccDump: gccDump});
         });
 
         it('tells a pane that was opened and closed again from one that never was', async () => {
@@ -439,19 +430,14 @@ describe('Compilation cache key', () => {
             expect(closed.hash).not.toEqual(neverOpened.hash);
         });
 
-        it('does not depend on the order the frontend sends filters in', async () => {
+        it('keeps the order the frontend sends filters and compilerOptions in', async () => {
             const body = compilerPaneBody();
             body.options.filters = Object.fromEntries(Object.entries(UI_FILTERS).reverse()) as typeof UI_FILTERS;
-            const {key} = await recordCacheKeys(body);
-            expectKey(key.filters, KEY_FILTERS);
-        });
-
-        it('does depend on the order the frontend sends compilerOptions in', async () => {
-            const body = compilerPaneBody();
             body.options.compilerOptions = Object.fromEntries(Object.entries(UI_COMPILER_OPTIONS).reverse());
             const reversed = await recordCacheKeys(body);
 
-            expect(Object.keys(reversed.key.backendOptions)).toEqual(Object.keys(KEY_BACKEND_OPTIONS).reverse());
+            expect(Object.keys(reversed.key.filters)).toEqual(Object.keys(UI_FILTERS).reverse());
+            expect(Object.keys(reversed.key.backendOptions)).toEqual(Object.keys(UI_COMPILER_OPTIONS).reverse());
             expect(reversed.hash).not.toEqual((await recordCacheKeys(compilerPaneBody())).hash);
         });
 
@@ -466,8 +452,8 @@ describe('Compilation cache key', () => {
                 compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
-                backendOptions: KEY_BACKEND_OPTIONS,
-                filters: KEY_FILTERS,
+                backendOptions: UI_COMPILER_OPTIONS,
+                filters: UI_FILTERS,
                 tools: [],
                 libraries: [],
                 files: [],
@@ -501,7 +487,7 @@ describe('Compilation cache key', () => {
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: {filterAnsi: true, skipAsm: false},
-                filters: KEY_FILTERS,
+                filters: {...DEFAULT_FILTERS, libraryCode: true},
                 tools: [],
                 libraries: [],
                 files: [],
@@ -515,7 +501,7 @@ describe('Compilation cache key', () => {
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: {skipAsm: false, skipPopArgs: false, filterAnsi: false},
-                filters: {...KEY_FILTERS, libraryCode: false},
+                filters: DEFAULT_FILTERS,
                 tools: [],
                 libraries: [],
                 files: [],
@@ -565,49 +551,49 @@ describe('Compilation cache key', () => {
                 'g161',
                 compilerPaneBody(),
                 {},
-                'd1475dc01d3c9464b477821ffea245539a292d0478dcbe3f1f8f517f805893d8',
+                '702296f4d606f556cf9fcad5485a25df9aa27b75e1a56f153dfd90ee7abdf5ec',
             ],
             [
                 'compiler pane, "Execute the code" ticked',
                 'g161',
                 compilerPaneBody({filters: {execute: true}}),
                 {},
-                'd3a59d576e0d50623784a97011c1fc4d315ac1b0c155edc2aa4e55f5e1c85ea9',
+                'ab2d0f1c3aec29b8e4450fdc2976815b66f3897a92bc222b5c627670b502e400',
             ],
             [
                 'compiler pane, link to binary',
                 'g161',
                 compilerPaneBody({filters: {binary: true}}),
                 {},
-                'a43b06ea8fd13727d46cfe71cabbd02e8d3c0a0c13feafaff8d43912526539da',
+                '64a51f778dd49bef7f35d096877551a725529f26c0a9ea4e05abf246947985c7',
             ],
             [
                 'compiler pane, -E',
                 'g161',
                 compilerPaneBody({userArguments: '-E'}),
                 {},
-                '505cc8384f90f5f434bd628483613128381095980dd54cad06456e59477e7a87',
+                '9f9451b2793b0b1298d3e44f386dbef5f88268998e45ee9f4d4c16d432bfa28d',
             ],
             [
                 'compiler pane, boost 1.90 selected',
                 'g161',
                 compilerPaneBody({libraries: [{id: 'boost', version: '190'}]}),
                 {},
-                '058e8098a15485dad8295dd34e7c5ec9697e19952e16679465f5e5c4ae04c3a7',
+                'f23189ff996613bb559fcf45fbb0a062c6a09a31781a3aa8bca73d84d215dfb2',
             ],
             [
                 'compiler pane, -lfmt (not autodetected)',
                 'g161',
                 compilerPaneBody({userArguments: '-O2 -lfmt'}),
                 {},
-                '6c08a5184a8aa0cb337917011c2d99918bdbd7b0895022b29c5818937b8225f4',
+                '82859c56709b75a3070ec095cc7ea5d240191d9191e93e1784c39ed90fb74433',
             ],
             [
                 'compiler pane, clang-tidy added (looked up and stored under the same key)',
                 'g161',
                 compilerPaneBody({tools: [{id: 'clangtidytrunk', args: [], stdin: ''}]}),
                 {},
-                '4ec44f8c605e15f34702a85d68aa4c1e5fe9a5d8b1da6586df02ff894cee111a',
+                '6773b48257a8c278e99307f880f41045412ffcd88719aa74f968988dfadd3910',
             ],
             [
                 'compiler pane, GCC dump pane open',
@@ -638,14 +624,14 @@ describe('Compilation cache key', () => {
                     },
                 }),
                 {},
-                '5450e7c946202591105a091ccf7eb4952ab592ec574ba8625d93e6afa7d85a8b',
+                '37d74eaefe6a682655bca8658a8b46cbba5d3cbcd304a19de47bf8cfa68f7008',
             ],
             [
                 'executor pane',
                 'g161',
                 executorPaneBody(),
                 {},
-                '36284587a2736bf0b9fe81e86bddc755399875160d64b5880b5207ad3b455cdb',
+                '9510d0c4620e4d6eca5aa288cfff25fb15e659eba88550a786dd1b5917323a19',
             ],
             [
                 '/noscript/ form',
@@ -666,28 +652,28 @@ describe('Compilation cache key', () => {
                 'clang2110',
                 compilerPaneBody(),
                 {},
-                '72c523d77a096efcf60d1bf5aa849b3876d1c5df967c92a830e9bd3af03fbea0',
+                '646e25d7753dc67c4bd20e76658a6d1fd771699dbe95bd7e6782cb4b16314728',
             ],
             [
                 'compiler pane, AST pane open',
                 'clang2110',
                 compilerPaneBody({compilerOptions: {produceAst: true}}),
                 {},
-                '00f33696122179a820d7d167bcc78785ab5373f623bb506bacb62225442a89a4',
+                'a41eb74f79c1791aba4ebad240a792e5204d40aa1a754d7ced8bb90b026edf42',
             ],
             [
                 'compiler pane, AST pane opened and closed again',
                 'clang2110',
                 compilerPaneBody({compilerOptions: {produceAst: false}}),
                 {},
-                '83cbfc662abcf3a98d092b6a7330d9d341ceecf9b39823a146fcd121a46134bb',
+                'a0fc73ad295d80fdba0e05cb587e4ce49fb08dd2632ce1b6b175fbcb671d2563',
             ],
             [
                 'compiler pane, opt remarks pane open',
                 'clang2110',
                 compilerPaneBody({compilerOptions: {produceOptInfo: true}}),
                 {},
-                'b89026aaae5ba7ce2b95eefd72628012824535fe85114f891fe3a6cc791e8abe',
+                'e40c651051814b85bffd0cfa42389be1ed007d5a82521350caebd6c499ef8574',
             ],
         ];
 
@@ -701,7 +687,7 @@ describe('Compilation cache key', () => {
                 realCompilerId: 'g161',
             });
             expect(BaseCache.hash(compileAndRun.gets[1] as any)).toBe(
-                '8df165d1b7ebbaa6c78bedadc850c0a0f3c00746fe75965885f7589e0a9ad0e8',
+                'b6ee46ac796649313e4d1841e031d6708625c9e0f432a9e6599fd22a7480fba1',
             );
 
             const executor = await recordCacheKeys(executorPaneBody(), {
@@ -710,7 +696,7 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
             expect(BaseCache.hash(executor.gets[1] as any)).toBe(
-                '7de58a551f7bd3ca50eb543d81e91395826fac1d7ad97328f93db45ea710ea52',
+                '72da24c6b5705a4f4a6f11a107981d2e87ca7899a5a9306ffad9f572d179b34a',
             );
 
             const executorWithInput = await recordCacheKeys(executorPaneBody('a b', 'in'), {
@@ -719,7 +705,7 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
             expect(BaseCache.hash(executorWithInput.gets[1] as any)).toBe(
-                '68258d5ad9db4f119835ddbf6c4f0526c3521fa52b0cea5bbceec72d5e89500e',
+                '94568f51679a2f675f09303526353835e0f77d896f8994db092c55657c276a10',
             );
         });
     });
@@ -727,39 +713,71 @@ describe('Compilation cache key', () => {
     // ------------------------------------------------------------------------------------------------
     // Changes compile() makes before it builds the key
     // ------------------------------------------------------------------------------------------------
-    describe('normalisation before the key is built', () => {
-        it('turns every filter off for -E on C++', async () => {
-            const {key} = await recordCacheKeys(compilerPaneBody({userArguments: '-E'}));
-            expect(key.options).toEqual(['-E']);
-            expectKey(key.filters, {
-                binary: false,
-                execute: false,
-                demangle: false,
-                intel: false,
-                commentOnly: false,
-                directives: false,
-                labels: false,
-                optOutput: false,
-                libraryCode: false,
-                trim: false,
-                binaryObject: false,
-                debugCalls: false,
+    describe('adapting the request to the compiler, which happens after the key is built', () => {
+        it('fills in the default filters, but only in what is compiled', async () => {
+            const {key, adapted} = await recordCacheKeys(compilerPaneBody());
+            expectKey(key.filters, UI_FILTERS);
+            expect(adapted.filters).toMatchObject({optOutput: false});
+        });
+
+        it("doesn't let a compiler's own default filters reach the key", async () => {
+            const base = await recordCacheKeys(compilerPaneBody());
+            const ownDefaults = await recordCacheKeys(compilerPaneBody(), {
+                setup: compiler =>
+                    vi.spyOn(compiler, 'getDefaultFilters').mockReturnValue({...DEFAULT_FILTERS, optOutput: true}),
             });
+            expect(ownDefaults.hash).toEqual(base.hash);
+            expect(ownDefaults.adapted.filters.optOutput).toBe(true);
+        });
+
+        it('turns every filter off for -E on C++', async () => {
+            const {key, adapted} = await recordCacheKeys(compilerPaneBody({userArguments: '-E'}));
+            expect(key.options).toEqual(['-E']);
+            expectKey(key.filters, UI_FILTERS);
+            expect(Object.values(adapted.filters).every(value => value === false)).toBe(true);
         });
 
         it('drops binary for a compiler that cannot produce one', async () => {
-            const {key} = await recordCacheKeys(compilerPaneBody({filters: {binary: true}}), {
+            const {key, adapted} = await recordCacheKeys(compilerPaneBody({filters: {binary: true}}), {
                 info: {supportsBinary: false},
             });
-            const {binary, ...withoutBinary} = KEY_FILTERS;
-            expect(binary).toBe(false);
-            expectKey(key.filters, withoutBinary);
+            expect(key.filters.binary).toBe(true);
+            expect(adapted.filters).not.toHaveProperty('binary');
         });
 
         it('stops masking filenames when there are extra files', async () => {
-            const {key} = await recordCacheKeys(compilerPaneBody(), {files: [{filename: 'other.h', contents: ''}]});
-            expectKey(key.filters, {...KEY_FILTERS, dontMaskFilenames: true});
+            const {key, adapted} = await recordCacheKeys(compilerPaneBody(), {
+                files: [{filename: 'other.h', contents: ''}],
+            });
+            expectKey(key.filters, UI_FILTERS);
             expectKey(key.files, [{filename: 'other.h', contents: ''}]);
+            expect(adapted.filters.dontMaskFilenames).toBe(true);
+        });
+
+        it('moves libraries it detects from -l options, without changing the key', async () => {
+            const {key, adapted} = await recordCacheKeys(compilerPaneBody({userArguments: '-O2 -lfmt'}), {
+                setup: compiler =>
+                    vi.spyOn(compiler, 'tryAutodetectLibraries').mockImplementation(libsAndOptions => {
+                        libsAndOptions.options = ['-O2'];
+                        libsAndOptions.libraries = [{id: 'fmt', version: '10'}];
+                        return true;
+                    }),
+            });
+            expectKey(key.options, ['-O2', '-lfmt']);
+            expectKey(key.libraries, []);
+            expectKey(adapted.options, ['-O2']);
+            expectKey(adapted.libraries, [{id: 'fmt', version: '10'}]);
+        });
+
+        it('keeps the background colour the request sent, and tells only a compiler that colours for it', async () => {
+            const dark = () => compilerPaneBody({compilerOptions: {darkBackgroundColours: true}});
+            const ignoring = await recordCacheKeys(dark());
+            const colouring = await recordCacheKeys(dark(), {info: {supportsDarkBackgroundColours: true}});
+
+            expect(ignoring.key.backendOptions.darkBackgroundColours).toBe(true);
+            expect(ignoring.hash).toEqual(colouring.hash);
+            expect(ignoring.adapted.backendOptions).not.toHaveProperty('darkBackgroundColours');
+            expect(colouring.adapted.backendOptions.darkBackgroundColours).toBe(true);
         });
     });
 
@@ -773,8 +791,8 @@ describe('Compilation cache key', () => {
                 compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
-                backendOptions: KEY_BACKEND_OPTIONS,
-                filters: {...KEY_FILTERS, execute: true},
+                backendOptions: UI_COMPILER_OPTIONS,
+                filters: {...UI_FILTERS, execute: true},
                 tools: [],
                 libraries: [],
                 files: [],
@@ -800,13 +818,12 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
 
-            // {execute: true} merged over the defaults, so libraryCode is false where the compiler pane sends true.
             const executorKey = {
                 compiler: KEY_COMPILER,
                 source: SOURCE,
                 options: ['-O2'],
                 backendOptions: {executorRequest: true, skipAsm: true, overrides: []},
-                filters: {...KEY_FILTERS, execute: true, libraryCode: false},
+                filters: {execute: true},
                 tools: [],
                 libraries: [],
                 files: [],
@@ -908,13 +925,15 @@ describe('Compilation cache key', () => {
 
         it('keys on the CMakeLists.txt, the files and the build system, with execute removed', async () => {
             const {key} = await recordProjectBuild(cmakeBody(true));
-            const {execute, ...filtersWithoutExecute} = KEY_FILTERS;
+            const {execute, ...filtersWithoutExecute} = UI_FILTERS;
             expect(execute).toBe(false);
+            // A project build still fills in the default filters before its key is built: they follow the request's
+            // own, and it always disassembles a binary.
             expectKey(key, {
                 source: CMAKELISTS,
                 options: ['-O2'],
-                backendOptions: {...KEY_BACKEND_OPTIONS, cmakeArgs: '', customOutputFilename: ''},
-                filters: {...filtersWithoutExecute, binary: true, dontMaskFilenames: true},
+                backendOptions: {...UI_COMPILER_OPTIONS, cmakeArgs: '', customOutputFilename: ''},
+                filters: {...filtersWithoutExecute, binary: true, optOutput: false, dontMaskFilenames: true},
                 libraries: [],
                 compiler: KEY_COMPILER,
                 files: CMAKE_FILES,
@@ -934,7 +953,7 @@ describe('Compilation cache key', () => {
             [
                 'a compiler pane build',
                 cmakeBody(false),
-                '67ebef00b3f72436f58de8b7f3fb6d5bde11f11bb808ff5bcd2d4966927190fb',
+                '455bee88297e87c02f9333c0686666060fb95ed8ce267bbefc5214f73538fd31',
             ],
             [
                 'a build with CMake arguments',
@@ -943,7 +962,7 @@ describe('Compilation cache key', () => {
                     body.options.compilerOptions.cmakeArgs = '-DFOO=1';
                     return body;
                 })(),
-                '5a373887668b81f20fa6e0badc63cfa9a8f81b4295e4138335943eb22c87280c',
+                'c2bdfbc721cfd7a75b87a0556e73f815d439ca54cac7ced062cdcc62decb73d3',
             ],
             [
                 'an executor pane build',
@@ -958,7 +977,6 @@ describe('Compilation cache key', () => {
                             executorRequest: true,
                             skipAsm: true,
                             overrides: [],
-                            darkBackgroundColours: true,
                             cmakeArgs: '',
                             customOutputFilename: '',
                         },
