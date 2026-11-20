@@ -407,9 +407,10 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 className += ' firstMachinePass';
                 isFirstMachinePass = false;
             }
+            const changeLabel = pass.irChanged ? ' (changed)' : '';
             newPasses.push({
                 name: pass.name,
-                div: `<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}</div>`,
+                div: `<div data-i="${i}" class="pass ${className}">${escapeHTML(pass.name)}${changeLabel}</div>`,
             });
         }
         this.filterPasses(newPasses);
