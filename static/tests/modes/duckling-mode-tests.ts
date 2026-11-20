@@ -23,6 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+import {getEnterAction} from 'monaco-editor/esm/vs/editor/common/languages/enterAction.js';
+import {ILanguageConfigurationService} from 'monaco-editor/esm/vs/editor/common/languages/languageConfigurationRegistry.js';
+import {ILanguageFeaturesService} from 'monaco-editor/esm/vs/editor/common/services/languageFeatures.js';
+import {StandaloneServices} from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js';
 import {describe, expect, it} from 'vitest';
 
 import '../../modes/duckling-mode.js';
@@ -208,5 +212,57 @@ describe('Duckling strings', () => {
             ['after', 'entity.name.function'],
             ['()', 'delimiter.parenthesis'],
         ]);
+    });
+});
+
+describe('Duckling indentation', () => {
+    it.each([
+        {name: 'spaces', insertSpaces: true, tabSize: 2},
+        {name: 'tabs', insertSpaces: false, tabSize: 4},
+    ])('formats blocks and grouped expressions with $name', async ({insertSpaces, tabSize}) => {
+        const indent = insertSpaces ? ' '.repeat(tabSize) : '\t';
+        const source = [
+            'fun main() -> i64 = { # block',
+            '    # a comment ending with {',
+            '    let text = "{";',
+            '    let values = [',
+            '        call(',
+            '            1,',
+            '        ),',
+            '    ];',
+            '    return 0;',
+            '}',
+        ]
+            .join('\n')
+            .replace(/^ +/gm, whitespace => indent.repeat(whitespace.length / 4));
+        const unformatted = source.replace(/^[ \t]+/gm, '');
+        const model = monaco.editor.createModel(unformatted, 'duckling');
+        model.updateOptions({tabSize, indentSize: tabSize, insertSpaces});
+        const configuration = StandaloneServices.get(ILanguageConfigurationService);
+        const tokenSource = new monaco.CancellationTokenSource();
+        try {
+            const column = model.getLineMaxColumn(1);
+            expect(
+                getEnterAction(
+                    monaco.editor.EditorAutoIndentStrategy.Advanced,
+                    model,
+                    new monaco.Range(1, column, 1, column),
+                    configuration,
+                )?.indentAction,
+            ).toBe(monaco.languages.IndentAction.Indent);
+            const [formatter] =
+                StandaloneServices.get(ILanguageFeaturesService).documentFormattingEditProvider.ordered(model);
+            expect(formatter).toBeDefined();
+            const format = () =>
+                formatter.provideDocumentFormattingEdits(model, {tabSize, insertSpaces}, tokenSource.token);
+            const edits = await format();
+            expect(model.getValue()).toBe(unformatted);
+            model.applyEdits(edits ?? []);
+            expect(model.getValue()).toBe(source);
+            expect(await format()).toEqual([]);
+        } finally {
+            tokenSource.dispose();
+            model.dispose();
+        }
     });
 });
