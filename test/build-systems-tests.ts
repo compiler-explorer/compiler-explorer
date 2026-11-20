@@ -485,7 +485,6 @@ describe('Cargo build system', () => {
         const compiler = makeRustCompiler(env, {libPath: ['/opt/rust/lib']});
         const request = makeParsedRequest();
         const cacheKey = compiler.getBuildProjectCacheKey(cargoBuildSystem, request, []);
-
         const build = await (compiler as any).prepareProjectBuild(
             cargoBuildSystem,
             request,

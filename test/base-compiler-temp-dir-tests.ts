@@ -29,12 +29,13 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
+import {LocalExecutionEnvironment} from '../lib/execution/base-execution-env.js';
 import * as utils from '../lib/utils.js';
 import {BypassCache, CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult} from '../types/execution/execution.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
-const languages = {'c++': {id: 'c++'}};
+const languages = {'c++': {id: 'c++'}, javascript: {id: 'javascript'}};
 
 const executedFine: BasicExecutionResult = {
     code: 0,
@@ -62,7 +63,8 @@ function trackTempDirs(compiler: BaseCompiler): string[] {
     return made;
 }
 
-// The sweep that would otherwise reclaim these directories only runs when the compilation queue is idle.
+// Each flow here makes a temporary directory, and is expected to have removed it by the time it answers: the sweep
+// that would otherwise reclaim it only runs when the queue is idle.
 describe('Per-request temp directory cleanup', () => {
     let ce: CompilationEnvironment;
     let compiler: BaseCompiler;
@@ -84,12 +86,67 @@ describe('Per-request temp directory cleanup', () => {
 
     afterEach(() => vi.restoreAllMocks());
 
-    describe('handleInterpreting()', () => {
-        const run = () => {
-            const key = compiler.getCacheKey('print(1)', [], {}, {}, [], [], []);
-            return compiler.handleInterpreting(key, {args: [], stdin: '', ldPath: [], env: {}});
-        };
+    describe('compile()', () => {
+        const compileSource = () => compiler.compile('int main() {}', [], {}, {}, BypassCache.None, [], {}, [], []);
 
+        it('removes the directory when writing the source fails', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler as any, 'writeAllFiles').mockRejectedValue(new Error('disk full'));
+
+            const result = await compileSource();
+
+            expect(result.code).toBe(-1);
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('removes the directory when compilation throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'doCompilation').mockRejectedValue(new Error('compiler fell over'));
+
+            await expect(compileSource()).rejects.toThrow('compiler fell over');
+
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('lets the other views finish with the source before removing the directory when one throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            compiler.compiler.supportsAstView = true;
+            vi.spyOn(compiler, 'runCompiler').mockRejectedValue(new Error('compiler fell over'));
+            let sourceWasThere: boolean | undefined;
+            vi.spyOn(compiler, 'generateAST').mockImplementation(async inputFilename => {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                sourceWasThere = await utils.fileExists(inputFilename);
+                return [];
+            });
+
+            await expect(
+                compiler.compile('int main() {}', [], {produceAst: true}, {}, BypassCache.None, [], {}, [], []),
+            ).rejects.toThrow('compiler fell over');
+
+            expect(sourceWasThere).toBe(true);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('removes the directory after a successful compilation', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'doCompilation').mockImplementation(async (_input, dirPath) => [
+                compiledResult(dirPath),
+                [],
+                [],
+            ]);
+
+            const result = await compileSource();
+
+            expect(result.code).toBe(0);
+            expect(result.dirPath).toBeUndefined();
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+    });
+
+    describe('handleInterpreting()', () => {
         it('removes the directory it ran the source from', async () => {
             const dirs = trackTempDirs(compiler);
             let ranFrom: string | undefined;
@@ -99,7 +156,8 @@ describe('Per-request temp directory cleanup', () => {
                 return executedFine;
             });
 
-            const result = await run();
+            const key = compiler.getCacheKey('print(1)', [], {}, {}, [], [], []);
+            const result = await compiler.handleInterpreting(key, {args: [], stdin: '', ldPath: [], env: {}});
 
             expect(result.didExecute).toBe(true);
             expect(ranFrom).toBe(dirs[0]);
@@ -110,8 +168,136 @@ describe('Per-request temp directory cleanup', () => {
             const dirs = trackTempDirs(compiler);
             vi.spyOn(compiler, 'runExecutable').mockRejectedValue(new Error('no interpreter'));
 
-            await expect(run()).rejects.toThrow('no interpreter');
+            const key = compiler.getCacheKey('print(1)', [], {}, {}, [], [], []);
+            await expect(compiler.handleInterpreting(key, {args: [], stdin: '', ldPath: [], env: {}})).rejects.toThrow(
+                'no interpreter',
+            );
 
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+    });
+
+    describe('getOrBuildExecutable()', () => {
+        const executeParameters = () => ({args: [], stdin: '', ldPath: [], env: {}});
+        const key = () => compiler.getCacheKey('int main() {}', [], {}, {}, [], [], []);
+
+        it('hands back the directory of a failed build so the caller can remove it', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'buildExecutableInFolder').mockResolvedValue({
+                code: 1,
+                okToCache: false,
+                stdout: [],
+                stderr: [{text: 'nope'}],
+                timedOut: false,
+                downloads: [],
+                executableFilename: '',
+                compilationOptions: [],
+            });
+
+            const buildResult = await compiler.getOrBuildExecutable(key(), BypassCache.Compilation, 'hash');
+
+            expect(buildResult.code).toBe(1);
+            expect(buildResult.dirPath).toBe(dirs[0]);
+            expect(await utils.dirExists(dirs[0])).toBe(true);
+        });
+
+        it('removes the directory when the build throws past the user error handler', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'buildExecutableInFolder').mockImplementation(async (_key, dirPath) => ({
+                code: 0,
+                okToCache: true,
+                stdout: [],
+                stderr: [],
+                timedOut: false,
+                downloads: [],
+                executableFilename: `${dirPath}/output.s`,
+                compilationOptions: [],
+            }));
+            vi.spyOn(compiler, 'storePackageWithExecutable').mockRejectedValue(new Error('no cache'));
+
+            await expect(compiler.getOrBuildExecutable(key(), BypassCache.Compilation, 'hash')).rejects.toThrow(
+                'no cache',
+            );
+
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('leaves a failed build for compile() to remove once it has reported it', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'buildExecutableInFolder').mockResolvedValue({
+                code: 1,
+                okToCache: false,
+                stdout: [],
+                stderr: [{text: 'nope'}],
+                timedOut: false,
+                downloads: [],
+                executableFilename: '',
+                compilationOptions: [],
+            });
+
+            const result = await compiler.compile(
+                'int main() {}',
+                [],
+                {executorRequest: true},
+                {},
+                BypassCache.Compilation,
+                [],
+                executeParameters(),
+                [],
+                [],
+            );
+
+            expect(result.didExecute).toBe(false);
+            expect(result.buildResult?.dirPath).toBeUndefined();
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        it('removes the build directory when running the executable throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'buildExecutableInFolder').mockImplementation(async (_key, dirPath) => ({
+                code: 0,
+                okToCache: true,
+                stdout: [],
+                stderr: [],
+                timedOut: false,
+                downloads: [],
+                executableFilename: `${dirPath}/output.s`,
+                compilationOptions: [],
+            }));
+            vi.spyOn(compiler, 'storePackageWithExecutable').mockResolvedValue();
+            vi.spyOn(utils, 'fileExists').mockResolvedValue(true);
+            vi.spyOn(compiler, 'runExecutable').mockRejectedValue(new Error('sandbox missing'));
+
+            await expect(compiler.doExecution(key(), executeParameters(), BypassCache.Compilation)).rejects.toThrow(
+                'sandbox missing',
+            );
+
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
+
+        // Java, Kotlin and Cerberus run the built executable themselves from handleInterpreting, through this.
+        it('removes the build directory when what withBuiltExecutable runs throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'buildExecutableInFolder').mockResolvedValue({
+                code: 0,
+                okToCache: true,
+                stdout: [],
+                stderr: [],
+                timedOut: false,
+                downloads: [],
+                executableFilename: '',
+                compilationOptions: [],
+            });
+            vi.spyOn(compiler, 'storePackageWithExecutable').mockResolvedValue();
+
+            await expect(
+                (compiler as any).withBuiltExecutable(key(), BypassCache.Compilation, 'hash', async () => {
+                    throw new Error('no main class');
+                }),
+            ).rejects.toThrow('no main class');
+
+            expect(dirs).toHaveLength(1);
             expect(await utils.dirExists(dirs[0])).toBe(false);
         });
     });
@@ -142,11 +328,14 @@ describe('Per-request temp directory cleanup', () => {
             const dirs = trackTempDirs(compiler);
             vi.spyOn(compiler as any, 'runProjectBuild').mockImplementation(async (build: any) => {
                 expect(await utils.dirExists(build.dirPath)).toBe(true);
-                return builtOk(build.dirPath);
-            });
-            vi.spyOn(compiler, 'afterCmakeCompilation').mockImplementation(async fullResult => {
-                expect(await utils.dirExists(dirs[0])).toBe(true);
-                return fullResult;
+                return {
+                    code: 0,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
+                    buildsteps: [],
+                    result: compiledResult(build.dirPath),
+                };
             });
 
             const result = await compiler.cmake(files, parsedRequest(), BypassCache.Compilation);
@@ -194,6 +383,54 @@ describe('Per-request temp directory cleanup', () => {
             expect(await utils.dirExists(dirs[0])).toBe(true);
             await fs.rm(dirs[0], {recursive: true, force: true});
         });
+    });
+
+    describe('execCompilerCached()', () => {
+        it('releases and removes the scratch directory when the compiler throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            (compiler as any).mtime = new Date();
+            vi.spyOn(compiler, 'exec').mockRejectedValue(new Error('cannot spawn'));
+
+            await expect(
+                compiler.execCompilerCached('fake-compiler', ['--version'], {
+                    ...compiler.getDefaultExecOptions(),
+                    createAndUseTempDir: true,
+                }),
+            ).rejects.toThrow('cannot spawn');
+
+            expect(dirs).toHaveLength(1);
+            await vi.waitFor(async () => expect(await utils.dirExists(dirs[0])).toBe(false));
+        });
+    });
+});
+
+describe('LocalExecutionEnvironment cleanup', () => {
+    let ce: CompilationEnvironment;
+
+    beforeEach(() => {
+        ce = makeCompilationEnvironment({languages, doCache: false});
+    });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('removes what it downloaded', async () => {
+        const env = new LocalExecutionEnvironment(ce);
+        let downloadedTo: string | undefined;
+        vi.spyOn(env as any, 'loadPackageWithExecutable').mockImplementation(async (_hash, dirPath) => {
+            downloadedTo = dirPath as string;
+            return {code: 0, executableFilename: 'a.out'};
+        });
+
+        await env.downloadExecutablePackage('hash');
+        expect(await utils.dirExists(downloadedTo!)).toBe(true);
+
+        await env.cleanup();
+        expect(await utils.dirExists(downloadedTo!)).toBe(false);
+    });
+
+    it('is harmless before anything was downloaded', async () => {
+        const env = new LocalExecutionEnvironment(ce);
+        await expect(env.cleanup()).resolves.toBeUndefined();
     });
 });
 

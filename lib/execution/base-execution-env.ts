@@ -54,7 +54,7 @@ import {ExecutablePackageCacheMiss, IExecutionEnvironment} from './execution-env
 
 export class LocalExecutionEnvironment implements IExecutionEnvironment {
     protected packager: Packager;
-    protected dirPath: string;
+    protected dirPath: string | undefined;
     protected buildResult: BuildResult | undefined;
     protected environment: CompilationEnvironment;
     protected timeoutMs: number;
@@ -77,7 +77,6 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         this.sandboxType = execProps('sandboxType', 'none');
 
         this.packager = new Packager();
-        this.dirPath = 'not initialized';
     }
 
     protected async executableGet(hash: string, destinationFolder: string) {
@@ -131,6 +130,11 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         this.buildResult = await this.loadPackageWithExecutable(hash, this.dirPath);
     }
 
+    async cleanup(): Promise<void> {
+        if (!this.dirPath) return;
+        await fs.rm(this.dirPath, {recursive: true, force: true}).catch(() => {});
+    }
+
     protected getDefaultExecOptions(params: ExecutionParams): ExecutionOptionsWithEnv {
         const env: Record<string, string> = {};
         env.PATH = '';
@@ -171,7 +175,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
 
     async execute(params: ExecutionParams): Promise<BasicExecutionResult> {
         assert(this.buildResult);
-        assert(this.dirPath !== 'not initialized');
+        assert(this.dirPath);
 
         const execExecutableOptions: ExecutableExecutionOptions = {
             args: typeof params.args === 'string' ? splitArguments(params.args) : params.args || [],

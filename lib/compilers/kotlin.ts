@@ -142,40 +142,46 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
             options: ['-include-runtime', '-d', 'example.jar'],
         };
         const executablePackageHash = this.env.getExecutableHash(key);
-        const compileResult = await this.getOrBuildExecutable(alteredKey, BypassCache.None, executablePackageHash);
-        assert(compileResult.dirPath !== undefined);
-        if (compileResult.code !== 0) {
-            return {
-                stdout: compileResult.stdout,
-                stderr: compileResult.stderr,
-                code: compileResult.code,
-                didExecute: false,
-                buildResult: compileResult,
-                timedOut: false,
-            };
-        }
+        return await this.withBuiltExecutable(
+            alteredKey,
+            BypassCache.None,
+            executablePackageHash,
+            async compileResult => {
+                assert(compileResult.dirPath !== undefined);
+                if (compileResult.code !== 0) {
+                    return {
+                        stdout: compileResult.stdout,
+                        stderr: compileResult.stderr,
+                        code: compileResult.code,
+                        didExecute: false,
+                        buildResult: compileResult,
+                        timedOut: false,
+                    };
+                }
 
-        executeParameters.args = [
-            '-Xss136K', // Reduce thread stack size
-            '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-            '-XX:-UseDynamicNumberOfCompilerThreads',
-            '-XX:-UseDynamicNumberOfGCThreads',
-            '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
-            '-cp',
-            compileResult.dirPath,
-            '-jar',
-            'example.jar',
-            // -jar <jar> has to be the last java parameter, otherwise it will use
-            // our java parameters as program parameters
-            ...executeParameters.args,
-        ];
+                executeParameters.args = [
+                    '-Xss136K', // Reduce thread stack size
+                    '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
+                    '-XX:-UseDynamicNumberOfCompilerThreads',
+                    '-XX:-UseDynamicNumberOfGCThreads',
+                    '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
+                    '-cp',
+                    compileResult.dirPath,
+                    '-jar',
+                    'example.jar',
+                    // -jar <jar> has to be the last java parameter, otherwise it will use
+                    // our java parameters as program parameters
+                    ...executeParameters.args,
+                ];
 
-        const result = await this.runExecutable(this.javaRuntime, executeParameters, compileResult.dirPath);
-        return {
-            ...result,
-            didExecute: true,
-            buildResult: compileResult,
-        };
+                const result = await this.runExecutable(this.javaRuntime, executeParameters, compileResult.dirPath);
+                return {
+                    ...result,
+                    didExecute: true,
+                    buildResult: compileResult,
+                };
+            },
+        );
     }
 
     override getArgumentParserClass() {
