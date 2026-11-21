@@ -144,6 +144,23 @@ describe('API handling', () => {
                 }),
             );
     });
+    it('should accept fields given as repeated query parameters', async () => {
+        await request(app)
+            .get('/api/compilers?fields=id&fields=name')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(
+                200,
+                compilers.map(c => ({id: c.id, name: c.name})),
+            );
+    });
+    it('should fall back to the default fields when fields is empty', async () => {
+        await request(app)
+            .get('/api/compilers?fields=')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200, compilers);
+    });
     it('should respond to JSON compilers requests with c++ filter', async () => {
         await request(app)
             .get('/api/compilers/c++')
@@ -418,6 +435,16 @@ describe('API libraries field filtering', () => {
     it('filters top-level fields when fields is provided', async () => {
         const res = await request(app)
             .get('/api/libraries/c++?fields=id,name')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toEqual([{id: 'boost', name: 'Boost'}]);
+    });
+
+    it('filters on fields given as repeated query parameters', async () => {
+        const res = await request(app)
+            .get('/api/libraries/c++?fields=id&fields=name')
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200);
