@@ -350,7 +350,10 @@ export class ClangCompiler extends BaseCompiler {
         // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
         if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
 
-        if (deviceName.includes('nvptx')) return this.ptxDeviceParser.process(deviceAsm, filters);
+        if (deviceName.includes('nvptx')) {
+            // OpenMP device names (openmp-nvptx64-nvidia-cuda) don't name the instruction set.
+            return {...(await this.ptxDeviceParser.process(deviceAsm, filters)), instructionSet: 'ptx' as const};
+        }
 
         const processed = await this.asm.process(deviceAsm, filters);
         // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the

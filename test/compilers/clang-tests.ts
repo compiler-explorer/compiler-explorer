@@ -208,6 +208,7 @@ describe('clang openmp nvptx device code', () => {
             'ret;',
             '}',
         ]);
+        expect(result.instructionSet).toEqual('ptx');
     });
 });
 
