@@ -2464,7 +2464,7 @@ export class BaseCompiler {
             return this.handleInterpreting(key, executeParameters);
         }
 
-        const executablePackageHash = this.env.getExecutableHash(this.cacheKeyFor(key));
+        const executablePackageHash = this.env.getExecutableHash(key);
 
         const buildResult = await this.getOrBuildExecutable(key, bypassCache, executablePackageHash);
         if (buildResult.code !== 0) {
@@ -2548,7 +2548,7 @@ export class BaseCompiler {
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
         // stringify now so shallow copying isn't a problem, I think the executeParameters get modified
-        const execKey = JSON.stringify({key: this.cacheKeyFor(key), executeParameters});
+        const execKey = JSON.stringify({key, executeParameters});
         if (!bypassExecutionCache(bypassCache)) {
             const cacheResult = await this.env.cacheGet(execKey as any);
             if (cacheResult) {
@@ -2564,14 +2564,6 @@ export class BaseCompiler {
             await this.env.cachePut(execKey, result, undefined);
         }
         return result;
-    }
-
-    // compile() caches a compilation under the request as it arrived, but the CacheKey it hands on (to execution,
-    // tools, afterCompilation) is the request adapted to this compiler. This finds the former from the latter.
-    private readonly cacheKeys = new WeakMap<object, CacheKey>();
-
-    protected cacheKeyFor<T>(key: T): T | CacheKey {
-        return (typeof key === 'object' && key !== null && this.cacheKeys.get(key)) || key;
     }
 
     getCacheKey(
@@ -3526,7 +3518,7 @@ export class BaseCompiler {
         // The cache key is the request as it arrived, so that anything able to see the request (ce-router included)
         // can compute it without knowing how this compiler adapts it below. It is a copy, so nothing done to the
         // request from here on can change the key it is stored under.
-        const cacheKey = structuredClone(
+        const compilationCacheKey = structuredClone(
             this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files),
         );
 
@@ -3548,8 +3540,7 @@ export class BaseCompiler {
             runtimeTools: executeParameters.runtimeTools || [],
         };
 
-        const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
-        this.cacheKeys.set(key, cacheKey);
+        const adaptedRequest = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
 
         const doExecute = filters.execute;
         filters = Object.assign({}, filters);
@@ -3557,7 +3548,7 @@ export class BaseCompiler {
 
         if (!bypassCompilationCache(bypassCache)) {
             const cacheRetrieveTimeStart = process.hrtime.bigint();
-            const result = await this.env.cacheGet(cacheKey);
+            const result = await this.env.cacheGet(compilationCacheKey);
             if (result) {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
@@ -3568,7 +3559,7 @@ export class BaseCompiler {
                         async () => {
                             const start = performance.now();
                             executionQueueTimeHistogram.observe((start - queueTime) / 1000);
-                            const res = await this.handleExecution(key, executeOptions, bypassCache);
+                            const res = await this.handleExecution(adaptedRequest, executeOptions, bypassCache);
                             executionTimeHistogram.observe((performance.now() - start) / 1000);
                             return res;
                         },
@@ -3579,7 +3570,7 @@ export class BaseCompiler {
                         await this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
-                await this.storeOversizedResult(result, key as any, !result.execResult);
+                await this.storeOversizedResult(result, compilationCacheKey, !result.execResult);
                 return result;
             }
         }
@@ -3592,7 +3583,7 @@ export class BaseCompiler {
                     source = this.preProcess(source, filters);
 
                     if (backendOptions.executorRequest) {
-                        const execResult = await this.handleExecution(key, executeOptions, bypassCache);
+                        const execResult = await this.handleExecution(adaptedRequest, executeOptions, bypassCache);
                         if (execResult?.buildResult) {
                             await this.doTempfolderCleanup(execResult.buildResult);
                         }
@@ -3600,7 +3591,7 @@ export class BaseCompiler {
                         // put an oversized one where a reader can fetch it. The compilation cache
                         // holds the build under this key, not what running it printed, so the
                         // result needs a copy of its own.
-                        await this.storeOversizedResult(execResult, key as any, false);
+                        await this.storeOversizedResult(execResult, compilationCacheKey, false);
                         return execResult;
                     }
 
@@ -3617,7 +3608,7 @@ export class BaseCompiler {
                     const [result, optOutput, stackUsageOutput] = await this.doCompilation(
                         inputFilename,
                         dirPath,
-                        key,
+                        adaptedRequest,
                         options,
                         filters,
                         backendOptions,
@@ -3628,7 +3619,8 @@ export class BaseCompiler {
                     return await this.afterCompilation(
                         result,
                         doExecute!,
-                        key,
+                        adaptedRequest,
+                        compilationCacheKey,
                         executeOptions,
                         tools,
                         backendOptions,
@@ -3649,7 +3641,8 @@ export class BaseCompiler {
     async afterCompilation(
         result /*: CompilationResult*/,
         doExecute: boolean,
-        key: CacheKey,
+        adaptedRequest: CacheKey,
+        compilationCacheKey: CacheKey,
         executeOptions: ExecutableExecutionOptions,
         tools: ActiveTool[],
         backendOptions: Record<string, any>,
@@ -3663,7 +3656,7 @@ export class BaseCompiler {
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
-            doExecute && result.code === 0 ? this.handleExecution(key, executeOptions, bypassCache) : null;
+            doExecute && result.code === 0 ? this.handleExecution(adaptedRequest, executeOptions, bypassCache) : null;
 
         if (result.optPath) {
             delete result.optPath;
@@ -3675,7 +3668,7 @@ export class BaseCompiler {
             result.stackUsageOutput = stackUsageOutput;
         }
 
-        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+        const compilationInfo = this.getCompilationInfo(adaptedRequest, result, customBuildPath);
 
         result.tools = _.union(
             result.tools || [],
@@ -3742,7 +3735,7 @@ export class BaseCompiler {
         this.cleanupResult(result);
 
         if (result.okToCache && !delayCaching) {
-            await this.env.cachePut(this.cacheKeyFor(key), result, undefined);
+            await this.env.cachePut(compilationCacheKey, result, undefined);
         }
 
         if (doExecute && result.code === 0) {
@@ -3755,7 +3748,8 @@ export class BaseCompiler {
 
         // The cmake flow finishes the result off itself, so it stores it there rather than here.
         // What was cached above is this result without the execResult attached since.
-        if (!delayCaching) await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult);
+        if (!delayCaching)
+            await this.storeOversizedResult(result, compilationCacheKey, !!result.okToCache && !result.execResult);
 
         return result;
     }
@@ -3771,7 +3765,6 @@ export class BaseCompiler {
         cacheHoldsThisPayload: boolean,
     ): Promise<void> {
         if (!this.isCompilationWorker) return;
-        key = this.cacheKeyFor(key);
         const resultString = JSON.stringify(result);
         if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
         if (cacheHoldsThisPayload) {
@@ -3800,6 +3793,7 @@ export class BaseCompiler {
         const processedResult = await this.afterCompilation(
             fullResult.result,
             doExecute,
+            key,
             key,
             executeOptions,
             tools,

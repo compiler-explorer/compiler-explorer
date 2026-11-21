@@ -894,6 +894,15 @@ describe('Clang demangling for Windows MSVC targets', () => {
     it('uses the target from the actual compilation arguments in afterCompilation', async () => {
         const execSpy = mockDemanglerExec();
         vi.spyOn(ce, 'cachePut').mockResolvedValue();
+        const key = {
+            compiler: {id: 'clang'},
+            source: '',
+            options: ['-O2'],
+            backendOptions: {},
+            tools: [],
+            libraries: [],
+            files: [],
+        };
         const result = await compiler.afterCompilation(
             {
                 code: 0,
@@ -907,15 +916,8 @@ describe('Clang demangling for Windows MSVC targets', () => {
                 compilationOptions: ['-O2', '--target=x86_64-pc-windows-msvc', 'example.cpp'],
             } as CompilationResult,
             false,
-            {
-                compiler: {id: 'clang'},
-                source: '',
-                options: ['-O2'],
-                backendOptions: {},
-                tools: [],
-                libraries: [],
-                files: [],
-            },
+            key,
+            key,
             {} as any,
             [],
             {skipPopArgs: true},

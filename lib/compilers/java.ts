@@ -175,7 +175,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         key: CacheKey,
         executeParameters: ExecutableExecutionOptions,
     ): Promise<CompilationResult> {
-        const executionPackageHash = this.env.getExecutableHash(this.cacheKeyFor(key));
+        const executionPackageHash = this.env.getExecutableHash(key);
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
         if (compileResult.code === 0) {
             const extraXXFlags: string[] = [];

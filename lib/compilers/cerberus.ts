@@ -90,7 +90,7 @@ export class CerberusCompiler extends BaseCompiler {
     }
 
     override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
-        const executionPackageHash = this.env.getExecutableHash(this.cacheKeyFor(key));
+        const executionPackageHash = this.env.getExecutableHash(key);
         const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
         assert(compileResult.dirPath !== undefined);
         if (compileResult.code === 0) {

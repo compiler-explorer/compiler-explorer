@@ -141,7 +141,7 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
             ...key,
             options: ['-include-runtime', '-d', 'example.jar'],
         };
-        const executablePackageHash = this.env.getExecutableHash(this.cacheKeyFor(key));
+        const executablePackageHash = this.env.getExecutableHash(key);
         const compileResult = await this.getOrBuildExecutable(alteredKey, BypassCache.None, executablePackageHash);
         assert(compileResult.dirPath !== undefined);
         if (compileResult.code !== 0) {

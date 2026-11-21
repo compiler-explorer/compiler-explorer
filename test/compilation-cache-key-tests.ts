@@ -687,7 +687,7 @@ describe('Compilation cache key', () => {
                 realCompilerId: 'g161',
             });
             expect(BaseCache.hash(compileAndRun.gets[1] as any)).toBe(
-                'b6ee46ac796649313e4d1841e031d6708625c9e0f432a9e6599fd22a7480fba1',
+                '8df165d1b7ebbaa6c78bedadc850c0a0f3c00746fe75965885f7589e0a9ad0e8',
             );
 
             const executor = await recordCacheKeys(executorPaneBody(), {
@@ -696,7 +696,7 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
             expect(BaseCache.hash(executor.gets[1] as any)).toBe(
-                '72da24c6b5705a4f4a6f11a107981d2e87ca7899a5a9306ffad9f572d179b34a',
+                '7de58a551f7bd3ca50eb543d81e91395826fac1d7ad97328f93db45ea710ea52',
             );
 
             const executorWithInput = await recordCacheKeys(executorPaneBody('a b', 'in'), {
@@ -705,7 +705,7 @@ describe('Compilation cache key', () => {
                 setup: noRunNeeded,
             });
             expect(BaseCache.hash(executorWithInput.gets[1] as any)).toBe(
-                '94568f51679a2f675f09303526353835e0f77d896f8994db092c55657c276a10',
+                '68258d5ad9db4f119835ddbf6c4f0526c3521fa52b0cea5bbceec72d5e89500e',
             );
         });
     });
@@ -799,21 +799,21 @@ describe('Compilation cache key', () => {
             });
         });
 
-        it('the run is looked up under a JSON string of the compile key and the execution parameters', async () => {
+        it('the run is looked up under a JSON string of the adapted request and the execution parameters', async () => {
             const body = compilerPaneBody({filters: {execute: true}});
             body.options.executeParameters = {args: ['a', 'b'] as any, stdin: 'in'};
-            const {key, gets} = await recordCacheKeys(body);
+            const {adapted, gets} = await recordCacheKeys(body);
 
             expect(gets).toHaveLength(2);
             expect(typeof gets[1]).toBe('string');
             expectKey(JSON.parse(gets[1] as string), {
-                key: JSON.parse(JSON.stringify(key)),
+                key: JSON.parse(JSON.stringify(adapted)),
                 executeParameters: {args: ['a', 'b'], stdin: 'in', ldPath: [], env: {}, runtimeTools: []},
             });
         });
 
         it('for the executor pane: a compile key of its own, looked up but never stored', async () => {
-            const {key, gets, puts} = await recordCacheKeys(executorPaneBody('a b', 'in'), {
+            const {key, adapted, gets, puts} = await recordCacheKeys(executorPaneBody('a b', 'in'), {
                 answer: () => null,
                 setup: noRunNeeded,
             });
@@ -830,7 +830,7 @@ describe('Compilation cache key', () => {
             };
             expectKey(key, executorKey);
             expectKey(JSON.parse(gets[1] as string), {
-                key: executorKey,
+                key: JSON.parse(JSON.stringify(adapted)),
                 executeParameters: {args: ['a', 'b'], stdin: 'in', ldPath: [], env: {}, runtimeTools: []},
             });
             expect(puts).toEqual([gets[1]]);
