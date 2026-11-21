@@ -1515,10 +1515,10 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
-        return this.processIRResult(output, newOptions, irOptions, produceCfg, filters);
+        return this.buildIrPaneResult(output, newOptions, irOptions, produceCfg, filters);
     }
 
-    protected async processIRResult(
+    private async buildIrPaneResult(
         output: CompilationResult,
         options: string[],
         irOptions: LLVMIrBackendOptions,
@@ -2795,7 +2795,7 @@ export class BaseCompiler {
         ]);
 
         const irResult = irFromMainCompilation
-            ? await this.processIRResult(
+            ? await this.buildIrPaneResult(
                   asmResult,
                   options,
                   backendOptions.produceIr,
