@@ -146,7 +146,7 @@ Tool windows include separate binary tools that run over the result of compilati
 example, we can run the UNIX command `strings` over the compilation result to show all the strings in the binary. To add
 a tool, use the "Add tool..." button on the assembly view.
 
-Compiler Explorer supports integrating with some sister sites: CPP Insights, and Quick-Bench. We also emit a number of
+Compiler Explorer supports integrating with some sister sites: CPP Insights and ABI Explorer. We also emit a number of
 other metrics about the compilation, accessible from the bottom of the assembly window:
 
 ![Some other stuff](images/brief_overview.png)
