@@ -174,7 +174,7 @@ describe('LLVM IR compilation', () => {
         }
     }
 
-    const ce = makeCompilationEnvironment({languages});
+    const ce = makeCompilationEnvironment({languages, props: {cacheConfig: 'InMemory(10)'}});
     const assembly = 'main:\n\tret\n';
     const ir = '; a comment\ndefine i32 @main() {\nentry:\n  ret i32 0\n}\n';
     const irOptions = makeFakeLlvmIrBackendOptions({filterComments: true});
@@ -189,6 +189,7 @@ describe('LLVM IR compilation', () => {
         const compiler = new Compiler(
             makeFakeCompilerInfo({
                 exe: 'fake-compiler',
+                options: '',
                 lang: 'c++',
                 ldPath: [],
                 libPath: [],
@@ -206,7 +207,7 @@ describe('LLVM IR compilation', () => {
             if (Compiler === MainInvocationIrCompiler || options.includes('-emit-llvm')) {
                 await fs.promises.writeFile(compiler.getIrOutputFilename(inputFilename), ir);
             }
-            return {code: 0, stdout: [], stderr: [], timedOut: false, inputFilename};
+            return {code: 0, stdout: [], stderr: [], timedOut: false, okToCache: true, inputFilename, dirPath};
         });
         return {compiler, runCompiler};
     }
@@ -277,6 +278,36 @@ describe('LLVM IR compilation', () => {
             code: 1,
             asm: [{text: 'Failed to process LLVM IR: Error: Unreadable IR'}],
         });
+    });
+
+    it('returns parsed assembly after an IR failure and caches the successful retry', async () => {
+        const {compiler} = makeCompiler(BaseCompiler);
+        const cachePut = vi.spyOn(ce, 'cachePut');
+        vi.spyOn(compiler, 'processIrOutput').mockRejectedValueOnce(new Error('Unreadable IR'));
+
+        const compile = () =>
+            compiler.compile(
+                'int main() {}',
+                ['-O2'],
+                {produceIr: irOptions},
+                makeFakeParseFiltersAndOutputOptions({}),
+                BypassCache.None,
+                [],
+                {},
+                [],
+                [],
+            );
+        const failed = await compile();
+
+        expect(failed.asm).toContainEqual(expect.objectContaining({text: expect.stringMatching(/^\s*ret$/)}));
+        expect(failed.irOutput?.code).toBe(1);
+        expect(cachePut).not.toHaveBeenCalled();
+
+        const retried = await compile();
+
+        expect(retried.irOutput?.code).toBe(0);
+        expect(cachePut).toHaveBeenCalledOnce();
+        expect((await compile()).retreivedFromCache).toBe(true);
     });
 });
 

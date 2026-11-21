@@ -3758,6 +3758,9 @@ export class BaseCompiler {
 
         this.cleanupResult(result);
 
+        // Assembly processing also uses okToCache, so only clear it after that work is done.
+        if (result.irOutput?.code) result.okToCache = false;
+
         if (result.okToCache && !delayCaching) {
             await this.env.cachePut(key, result, undefined);
         }
