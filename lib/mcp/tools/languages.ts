@@ -33,6 +33,7 @@ export function registerLanguagesTool(server: McpServer, apiHandler: ApiHandler)
         {
             title: 'List languages',
             readOnlyHint: true,
+            destructiveHint: false,
             openWorldHint: false,
         },
         async () => {

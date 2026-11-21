@@ -108,8 +108,10 @@ are flattened to the basic compile inputs. Read-only.
 
 ## Notes for tool authors
 
-- All tools carry MCP `annotations` (`title`, `readOnlyHint`/`destructiveHint`,
-  `openWorldHint: false`); see `lib/mcp/tools/*.ts`.
+- All tools carry MCP `annotations` (`title`, `readOnlyHint`, `destructiveHint: false`,
+  `openWorldHint: false`); see `lib/mcp/tools/*.ts`. Set `destructiveHint` explicitly
+  even on read-only tools: the spec default is `true`, and some clients and app
+  directories read each hint on its own.
 - The server uses `StreamableHTTPServerTransport` in stateless mode
   (`sessionIdGenerator: undefined`). Each POST is a complete request/response cycle.
 - Tool implementations live in `lib/mcp/tools/` and are wired up in

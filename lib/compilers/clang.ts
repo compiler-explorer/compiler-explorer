@@ -25,8 +25,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import {splitArguments} from '../../shared/common-utils.js';
 import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
@@ -211,21 +209,18 @@ export class ClangCompiler extends BaseCompiler {
     // compiling `#include <string>` with flag `-stdlib=libc++` succeeds: https://godbolt.org/z/7dKrad7Wc
 
     override filterUserOptions(userOptions: string[]): string[] {
-        if (
-            this.lang.id === 'c++' &&
-            !this.buildenvsetup?.compilerSupportsX86 && // cross-compilation
-            _.any(userOptions, option => {
-                return option === '-stdlib=libc++';
-            })
-        ) {
+        const isCrossCompile = !this.buildenvsetup?.compilerSupportsX86;
+        // clang accepts -stdlib=libc++, --stdlib=libc++ and `--stdlib libc++`
+        const usesLibCxx = userOptions.some(
+            (option, i) =>
+                option === '-stdlib=libc++' ||
+                option === '--stdlib=libc++' ||
+                (option === '--stdlib' && userOptions[i + 1] === 'libc++'),
+        );
+        if (this.lang.id === 'c++' && isCrossCompile && usesLibCxx) {
             const addedIncludePath =
                 '-I' + path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/');
-            if (
-                !_.any(userOptions, option => {
-                    return option === addedIncludePath;
-                })
-            )
-                userOptions = userOptions.concat(addedIncludePath);
+            if (!userOptions.includes(addedIncludePath)) userOptions = userOptions.concat(addedIncludePath);
         }
         return userOptions;
     }

@@ -132,10 +132,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         };
         createDragSource(this.container.layoutManager, this.cfgButton, () => createCfgView());
         this.cfgButton.on('click', () => {
-            const insertPoint =
-                this.hub.findParentRowOrColumn(this.container.parent) ||
-                this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createCfgView());
+            this.hub.addToParentRowOrColumn(this.container, createCfgView());
         });
 
         this.toggleWrapButton = new Toggles(this.domRoot.find('.wrap'), state as unknown as Record<string, boolean>);

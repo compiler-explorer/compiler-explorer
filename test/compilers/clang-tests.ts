@@ -155,6 +155,44 @@ Args:
     });
 });
 
+describe('clang cross-compile libc++ include workaround', () => {
+    const languages = {'c++': {id: 'c++'}};
+    const exe = '/opt/compiler-explorer/clang-22.1.0/bin/clang++';
+    const configSiteInclude =
+        '-I' + path.normalize('/opt/compiler-explorer/clang-22.1.0/include/x86_64-unknown-linux-gnu/c++/v1/');
+    const makeCompiler = (compilerSupportsX86: boolean) => {
+        const compiler = new ClangCompiler(
+            {exe, remote: true, lang: 'c++', ldPath: []} as any,
+            makeCompilationEnvironment({languages}),
+        );
+        (compiler as any).buildenvsetup = {compilerSupportsX86};
+        return compiler;
+    };
+
+    it.each([[['-stdlib=libc++']], [['--stdlib=libc++']], [['--stdlib', 'libc++']]])(
+        'adds the x86_64 __config_site include for %j when cross-compiling',
+        options => {
+            expect(makeCompiler(false).filterUserOptions(options)).toEqual([...options, configSiteInclude]);
+        },
+    );
+
+    it('does not add the include twice', () => {
+        const options = ['-stdlib=libc++', configSiteInclude];
+        expect(makeCompiler(false).filterUserOptions(options)).toEqual(options);
+    });
+
+    it('leaves native x86 compiles alone', () => {
+        expect(makeCompiler(true).filterUserOptions(['-stdlib=libc++'])).toEqual(['-stdlib=libc++']);
+    });
+
+    it('leaves libstdc++ cross-compiles alone', () => {
+        expect(makeCompiler(false).filterUserOptions(['-stdlib=libstdc++', '-O2'])).toEqual([
+            '-stdlib=libstdc++',
+            '-O2',
+        ]);
+    });
+});
+
 describe('clang-cuda cmake tests', () => {
     const languages = {cuda: {id: 'cuda'}};
     const makeCompiler = (options: string) =>
