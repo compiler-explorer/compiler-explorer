@@ -20,15 +20,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/base.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {FortranCompiler} from '../lib/compilers/fortran.js';
 import {ClientOptionsType, OptionsHandlerLibrary} from '../lib/options-handler.js';
+import {BypassCache} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {makeCompilationEnvironment} from './utils.js';
+import {makeCompilationEnvironment, makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
 const languages = {
     'c++': {
@@ -430,5 +431,85 @@ describe('Library directories (glibc sysroot)', () => {
         );
         expect(executionLdPaths).not.toContain(glibcRoot + '/lib');
         expect(executionLdPaths).toContain('/opt/compiler-explorer/libs/fmt/1.0/lib');
+    });
+});
+
+describe('Caching a compilation whose libraries did not resolve', () => {
+    let ce: CompilationEnvironment;
+    let compiler: BaseCompiler;
+
+    const info: Partial<CompilerInfo> = {
+        exe: '/dev/null',
+        lang: 'c++',
+        ldPath: [],
+        libPath: [],
+        libsArr: ['fmt.10'],
+    };
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+        compiler = new BaseCompiler(info as CompilerInfo, ce);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': {
+                    fmt: {
+                        id: 'fmt',
+                        name: '{fmt}',
+                        versions: {
+                            10: {
+                                version: '1.0',
+                                liblink: ['fmtd'],
+                                libpath: [],
+                                path: ['/opt/compiler-explorer/libs/fmt/1.0/include'],
+                                packagedheaders: false,
+                            },
+                        },
+                    } as unknown as OptionsHandlerLibrary,
+                },
+            },
+        } as unknown as ClientOptionsType);
+    });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    // Drives compile() far enough that it decides whether to cache, without running the compiler: exec() fails, which
+    // CE reports as an ordinary compilation error, and afterCompilation() then makes the caching decision.
+    function compileWith(libraries: {id: string; version: string}[]) {
+        const put = vi.spyOn(ce, 'cachePut').mockResolvedValue();
+        vi.spyOn(ce, 'cacheGet').mockResolvedValue(null);
+        vi.spyOn(compiler, 'exec').mockResolvedValue({
+            code: 1,
+            okToCache: true,
+            filenameTransform: (x: string) => x,
+            stdout: '',
+            stderr: 'fatal error: fmt/core.h: No such file or directory',
+            execTime: 1,
+            timedOut: false,
+        } as any);
+        return compiler
+            .compile(
+                '#include <fmt/core.h>\nint main(){}',
+                [],
+                {},
+                makeFakeParseFiltersAndOutputOptions({}),
+                BypassCache.None,
+                [],
+                {args: [], stdin: ''} as any,
+                libraries,
+                [],
+            )
+            .then(result => ({result, put}));
+    }
+
+    it('caches a compilation that resolved every library it was asked for', async () => {
+        const {result, put} = await compileWith([{id: 'fmt', version: '10'}]);
+        expect(result.okToCache).toBe(true);
+        expect(put).toHaveBeenCalledOnce();
+    });
+
+    it('does not cache a compilation that left a requested library version out', async () => {
+        const {result, put} = await compileWith([{id: 'fmt', version: 'trunk'}]);
+        expect(result.okToCache).toBe(false);
+        expect(put).not.toHaveBeenCalled();
     });
 });
