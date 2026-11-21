@@ -101,3 +101,14 @@ export function parseFilters(
         ...requestFilters,
     };
 }
+
+/**
+ * A parsed request keeps the filters it was sent, which is what it is cached under; this fills in the compiler's
+ * defaults for anything that wants the full set, such as the compilation statistics.
+ */
+export function withDefaultFilters<T extends {filters: ParseFiltersAndOutputOptions}>(
+    request: T,
+    compiler: BaseCompiler,
+): T {
+    return {...request, filters: parseFilters(compiler, request.filters as Record<string, boolean>)};
+}
