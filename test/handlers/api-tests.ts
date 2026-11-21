@@ -432,6 +432,17 @@ describe('API libraries field filtering', () => {
         });
     });
 
+    it('treats an empty fields param like an omitted one', async () => {
+        const omitted = await request(app).get('/api/libraries/c++').set('Accept', 'application/json').expect(200);
+        const empty = await request(app)
+            .get('/api/libraries/c++?fields=')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(empty.body).toEqual(omitted.body);
+    });
+
     it('filters top-level fields when fields is provided', async () => {
         const res = await request(app)
             .get('/api/libraries/c++?fields=id,name')
