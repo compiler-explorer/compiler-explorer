@@ -29,7 +29,6 @@ import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
-import {BaseCache} from '../lib/cache/base.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
@@ -895,6 +894,15 @@ describe('Clang demangling for Windows MSVC targets', () => {
     it('uses the target from the actual compilation arguments in afterCompilation', async () => {
         const execSpy = mockDemanglerExec();
         vi.spyOn(ce, 'cachePut').mockResolvedValue();
+        const key = {
+            compiler: {id: 'clang'},
+            source: '',
+            options: ['-O2'],
+            backendOptions: {},
+            tools: [],
+            libraries: [],
+            files: [],
+        };
         const result = await compiler.afterCompilation(
             {
                 code: 0,
@@ -908,7 +916,8 @@ describe('Clang demangling for Windows MSVC targets', () => {
                 compilationOptions: ['-O2', '--target=x86_64-pc-windows-msvc', 'example.cpp'],
             } as CompilationResult,
             false,
-            {compiler: {}, source: '', options: ['-O2'], backendOptions: {}, tools: [], libraries: [], files: []},
+            key,
+            key,
             {} as any,
             [],
             {skipPopArgs: true},
@@ -1086,41 +1095,24 @@ describe('An executor request whose result is too large to send', () => {
     });
 });
 
-describe('Dark background colours in the compilation cache key', () => {
-    afterEach(() => vi.restoreAllMocks());
-
-    async function cacheKeyHash(supportsDarkBackgroundColours: boolean, backendOptions: Record<string, any>) {
-        const env = makeCompilationEnvironment({languages});
+describe('Dark background colours given to the compiler', () => {
+    function adapted(supportsDarkBackgroundColours: boolean, backendOptions: Record<string, any>) {
         const compiler = new BaseCompiler(
             makeFakeCompilerInfo({exe: '/dev/null', lang: 'c++', options: '', supportsDarkBackgroundColours}),
-            env,
+            makeCompilationEnvironment({languages}),
         );
-        const cacheGet = vi.spyOn(env, 'cacheGet').mockResolvedValue({code: 0, stdout: [], stderr: []});
-        vi.spyOn(compiler as any, 'storeOversizedResult').mockResolvedValue(undefined);
-
-        await compiler.compile(
-            'int main() {}',
-            [],
-            backendOptions,
-            makeFakeParseFiltersAndOutputOptions({}),
-            BypassCache.None,
-            [],
-            {args: [], stdin: ''} as any,
-            [],
-            [],
-        );
-        return BaseCache.hash(cacheGet.mock.calls[0][0] as any);
+        compiler.fixBackendOptionsForCompiler(backendOptions);
+        return backendOptions;
     }
 
-    it('shares one entry between light and dark themes for a compiler that ignores the background', async () => {
-        const unspecified = await cacheKeyHash(false, {});
-        expect(await cacheKeyHash(false, {darkBackgroundColours: false})).toEqual(unspecified);
-        expect(await cacheKeyHash(false, {darkBackgroundColours: true})).toEqual(unspecified);
+    it("aren't passed on to a compiler that ignores the background", () => {
+        expect(adapted(false, {darkBackgroundColours: true})).toEqual({});
+        expect(adapted(false, {})).toEqual({});
     });
 
-    it('keeps an entry per background for a compiler that colours for it, defaulting to light', async () => {
-        const unspecified = await cacheKeyHash(true, {});
-        expect(await cacheKeyHash(true, {darkBackgroundColours: false})).toEqual(unspecified);
-        expect(await cacheKeyHash(true, {darkBackgroundColours: true})).not.toEqual(unspecified);
+    it('are passed on to a compiler that colours for it, defaulting to light', () => {
+        expect(adapted(true, {darkBackgroundColours: true})).toEqual({darkBackgroundColours: true});
+        expect(adapted(true, {darkBackgroundColours: false})).toEqual({darkBackgroundColours: false});
+        expect(adapted(true, {})).toEqual({darkBackgroundColours: false});
     });
 });

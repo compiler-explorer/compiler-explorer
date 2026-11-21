@@ -50,7 +50,8 @@ export class LLVMMcaTool extends BaseTool {
 
     override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
         const isets = new InstructionSets();
-        let target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
+        const instructionSet = compilationInfo.compiler.instructionSet;
+        let target = instructionSet ? isets.getInstructionSetTarget(instructionSet) : null;
         const prependArgs: string[] = [];
 
         // Check if compiler target is overridden with --target=<foo> or -target <foo>.

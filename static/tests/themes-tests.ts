@@ -97,13 +97,13 @@ describe.each([
         expect(sentDarkBackgroundColours()).toEqual([true, false]);
     });
 
-    it('waits for the next compilation to send the background to a compiler that ignores it', () => {
+    it('neither recompiles for nor sends the background to a compiler that ignores it', () => {
         const {pane, sentDarkBackgroundColours} = makePane(false);
 
         pane.onThemeChange(themes.dark);
         expect(sentDarkBackgroundColours()).toEqual([]);
 
         pane.compile();
-        expect(sentDarkBackgroundColours()).toEqual([true]);
+        expect(sentDarkBackgroundColours()).toEqual([undefined]);
     });
 });
