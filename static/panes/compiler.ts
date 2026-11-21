@@ -1361,7 +1361,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceClojureMacroExp: this.clojureMacroExpViewOpen,
                 produceYul: this.yulViewOpen ? this.yulOptions : null,
                 overrides: this.getCurrentState().overrides,
-                darkBackgroundColours: this.darkBackgroundColours,
+                // Only for a compiler whose output depends on it, so the request (and the cache key) for any other compiler
+                // is the same whatever the theme.
+                darkBackgroundColours: this.compiler?.supportsDarkBackgroundColours
+                    ? this.darkBackgroundColours
+                    : undefined,
             },
             filters: this.getEffectiveFilters(),
             tools: this.getActiveTools(newTools),

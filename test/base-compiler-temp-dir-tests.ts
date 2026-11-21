@@ -200,11 +200,13 @@ describe('Per-request temp directory cleanup', () => {
 describe('ClangCompiler.afterCompilation', () => {
     afterEach(() => vi.restoreAllMocks());
 
-    const afterCompilation = (clang: ClangCompiler, result: CompilationResult, delayCaching: boolean) =>
-        clang.afterCompilation(
+    const afterCompilation = (clang: ClangCompiler, result: CompilationResult, delayCaching: boolean) => {
+        const key = clang.getCacheKey('int main() {}', [], {}, {}, [], [], []);
+        return clang.afterCompilation(
             result,
             false,
-            clang.getCacheKey('int main() {}', [], {}, {}, [], [], []),
+            key,
+            key,
             {args: [], stdin: '', ldPath: [], env: {}},
             [],
             {skipAsm: true},
@@ -216,6 +218,7 @@ describe('ClangCompiler.afterCompilation', () => {
             undefined,
             delayCaching,
         );
+    };
 
     let clang: ClangCompiler;
     let dir: string;

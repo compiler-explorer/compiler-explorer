@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Popover} from 'bootstrap';
+import {Popover, Tooltip} from 'bootstrap';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {getPopoverInstance, setHtmlPopoverContent} from '../bootstrap-utils.js';
+import {flashTooltip, getPopoverInstance, setHtmlPopoverContent} from '../bootstrap-utils.js';
 
 describe('setHtmlPopoverContent', () => {
     let trigger: HTMLElement;
@@ -90,5 +90,60 @@ describe('setHtmlPopoverContent', () => {
         popover?.hide();
         setHtmlPopoverContent(trigger, {body: 'after'});
         expect(() => vi.advanceTimersByTime(1000)).not.toThrow();
+    });
+});
+
+describe('flashTooltip', () => {
+    let target: HTMLElement;
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        target = document.createElement('div');
+        document.body.append(target);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        Tooltip.getInstance(target)?.dispose();
+        target.remove();
+    });
+
+    function tipText(): string | null | undefined {
+        return document.querySelector('.tooltip')?.querySelector('.tooltip-inner')?.textContent;
+    }
+
+    it('shows the message and hides it after the given time', () => {
+        flashTooltip(target, 'copied', 1500);
+        expect(tipText()).toBe('copied');
+        vi.advanceTimersByTime(1499);
+        expect(tipText()).toBe('copied');
+        vi.advanceTimersByTime(100);
+        expect(document.querySelector('.tooltip')).toBeNull();
+    });
+
+    it('replaces a message that is still showing', () => {
+        flashTooltip(target, 'first');
+        flashTooltip(target, 'second');
+        expect(tipText()).toBe('second');
+        expect(document.querySelectorAll('.tooltip')).toHaveLength(1);
+    });
+
+    it('restarts the countdown for a later message', () => {
+        flashTooltip(target, 'first', 1500);
+        vi.advanceTimersByTime(1000);
+        flashTooltip(target, 'second', 1500);
+        vi.advanceTimersByTime(1000);
+        expect(tipText()).toBe('second');
+    });
+
+    it('survives a new message while the previous one is fading out', () => {
+        flashTooltip(target, 'first', 1500);
+        vi.advanceTimersByTime(1501);
+        flashTooltip(target, 'second', 1500);
+        expect(() => vi.advanceTimersByTime(2000)).not.toThrow();
+    });
+
+    it('does nothing when the element does not exist', () => {
+        expect(() => flashTooltip('#does-not-exist', 'x')).not.toThrow();
     });
 });

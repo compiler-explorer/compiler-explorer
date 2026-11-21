@@ -29,7 +29,7 @@ import {BuildSystems} from '../../shared/build-systems.js';
 import {isString, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
-import {assert, unwrap, unwrapString} from '../assert.js';
+import {unwrap, unwrapString} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
@@ -45,6 +45,16 @@ import {CompileHandler} from './compile.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.status(405).send('Method Not Allowed');
+}
+
+/** `?fields=a,b` and `?fields=a&fields=b` both give `['a', 'b']`; no usable field names give undefined. */
+function parseFieldsParam(param: unknown): string[] | undefined {
+    const values = Array.isArray(param) ? param : [param];
+    const fields = values
+        .filter(isString)
+        .flatMap(value => value.split(','))
+        .filter(field => field !== '');
+    return fields.length > 0 ? fields : undefined;
 }
 
 /** The full, legacy shape returned by {@link ApiHandler.getLibrariesAsArray} when no `fields` filter is applied. */
@@ -214,7 +224,8 @@ export class ApiHandler {
         // The plain-text table can't honour `fields`, so a request that asks for specific fields is always a JSON client,
         // even when the Accept header was lost or rewritten on the way here.
         if (req.accepts(['text', 'json']) === 'json' || req.query.fields !== undefined) {
-            if (req.query.fields === 'all') {
+            const fields = parseFieldsParam(req.query.fields);
+            if (_.isEqual(fields, ['all'])) {
                 res.send(list);
             } else {
                 const defaultfields = [
@@ -227,14 +238,7 @@ export class ApiHandler {
                     'monaco',
                     'instructionSet',
                 ];
-                if (req.query.fields) {
-                    assert(isString(req.query.fields));
-                    const filteredList = this.filterCompilerProperties(list, req.query.fields.split(','));
-                    res.send(filteredList);
-                } else {
-                    const filteredList = this.filterCompilerProperties(list, defaultfields);
-                    res.send(filteredList);
-                }
+                res.send(this.filterCompilerProperties(list, fields ?? defaultfields));
             }
             return;
         }
@@ -342,8 +346,7 @@ export class ApiHandler {
     handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
-                const fieldsParam = req.query.fields;
-                const fields = isString(fieldsParam) ? fieldsParam.split(',') : undefined;
+                const fields = parseFieldsParam(req.query.fields);
                 res.send(this.getLibrariesAsArray(req.params.language as LanguageKey, fields));
             } else {
                 next({

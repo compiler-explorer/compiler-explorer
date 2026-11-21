@@ -207,8 +207,7 @@ export class BaseTool implements ITool {
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
-        args = args || [];
-        if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
+        args = this.addOptionsToToolArgs ? this.tool.options.concat(args ?? []) : [...(args ?? [])];
         if (inputFilepath && !dontAppendInputFilepath) args.push(inputFilepath);
 
         const toolExe = this.getToolExe(compilationInfo);

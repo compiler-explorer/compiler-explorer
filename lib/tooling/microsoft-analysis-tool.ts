@@ -49,8 +49,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
-        args = args || [];
-        if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
+        args = this.addOptionsToToolArgs ? this.tool.options.concat(args ?? []) : [...(args ?? [])];
         if (inputFilepath) args.push(inputFilepath);
 
         const exeDir = path.dirname(compilationInfo.compiler.exe);

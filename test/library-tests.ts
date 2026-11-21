@@ -174,7 +174,7 @@ describe('Library directories (c++)', () => {
         const qtpaths = (compiler as BaseCompiler).getSharedLibraryPathsAsLdLibraryPathsForExecution(
             {
                 libraries: [{id: 'qt', version: '660'}],
-                compiler: undefined,
+                compiler: {id: compiler.getInfo().id},
                 source: '',
                 options: [],
                 backendOptions: undefined,
@@ -419,7 +419,7 @@ describe('Library directories (glibc sysroot)', () => {
         const executionLdPaths = compiler.getSharedLibraryPathsAsLdLibraryPathsForExecution(
             {
                 libraries,
-                compiler: undefined,
+                compiler: {id: compiler.getInfo().id},
                 source: '',
                 options: [],
                 backendOptions: undefined,

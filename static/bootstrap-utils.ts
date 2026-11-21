@@ -40,7 +40,7 @@ import $ from 'jquery';
 
 import 'bootstrap';
 
-import {Dropdown, Modal, Popover, Toast} from 'bootstrap';
+import {Dropdown, Modal, Popover, Toast, Tooltip} from 'bootstrap';
 
 // Golden Layout clips each pane's content to the pane, so dropdown menus inside a pane are positioned
 // with `position: fixed` to let them extend past the pane's edges.
@@ -340,6 +340,42 @@ export function setHtmlPopoverContent(
         template: HTML_POPOVER_TEMPLATE,
         customClass: () => htmlPopoverContents.get(element)?.className ?? '',
     });
+}
+
+const flashTooltipHideTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+
+/**
+ * Briefly show a message in a tooltip below an element, replacing any message already showing there.
+ *
+ * The tooltip is not animated: Bootstrap runs an animated tooltip's hide callback after the fade, and if the tooltip has
+ * been disposed by then (to show the next message) the callback throws (https://github.com/twbs/bootstrap/issues/37474).
+ * Reusing the tooltip instead does not work either, since showing a manual tooltip that is already visible hides it.
+ *
+ * @param elementOrSelector Element or selector to attach the tooltip to
+ * @param message Text to show
+ * @param durationMs How long the tooltip stays up
+ */
+export function flashTooltip(
+    elementOrSelector: string | HTMLElement | JQuery,
+    message: string,
+    durationMs = 1500,
+): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
+
+    clearTimeout(flashTooltipHideTimers.get(element));
+    Tooltip.getInstance(element)?.dispose();
+    const tooltip = new Tooltip(element, {
+        placement: 'bottom',
+        trigger: 'manual',
+        title: message,
+        animation: false,
+    });
+    tooltip.show();
+    flashTooltipHideTimers.set(
+        element,
+        setTimeout(() => tooltip.hide(), durationMs),
+    );
 }
 
 /**
