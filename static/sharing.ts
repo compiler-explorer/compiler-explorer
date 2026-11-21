@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Modal, Tooltip} from 'bootstrap';
+import {Modal} from 'bootstrap';
 import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
@@ -412,29 +412,10 @@ export class Sharing extends SharingBase {
 
     // TODO we can consider using bootstrap's "Toast" support in future.
     private displayTooltip(where: JQuery, message: string): void {
-        // First dispose any existing tooltip
-        const tooltipEl = where[0];
-        if (!tooltipEl) return;
-
-        const existingTooltip = Tooltip.getInstance(tooltipEl);
-        if (existingTooltip) {
-            existingTooltip.dispose();
-        }
-
-        // Create and show new tooltip
         try {
-            const tooltip = new Tooltip(tooltipEl, {
-                placement: 'bottom',
-                trigger: 'manual',
-                title: message,
-            });
-
-            tooltip.show();
-
-            // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
-            setTimeout(() => tooltip.hide(), 1500);
+            BootstrapUtils.flashTooltip(where, message);
         } catch (e) {
-            // If element doesn't exist, just silently fail
+            // Bootstrap refuses to show a tooltip on a hidden element
             console.warn('Could not show tooltip:', e);
         }
     }
