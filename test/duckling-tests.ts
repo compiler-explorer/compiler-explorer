@@ -29,6 +29,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {DucklingCompiler} from '../lib/compilers/duckling.js';
 import {getCompilerTypeByKey} from '../lib/compilers/index.js';
+import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
@@ -39,7 +40,12 @@ const environment = makeCompilationEnvironment({languages});
 
 function makeCompiler() {
     return new DucklingCompiler(
-        makeFakeCompilerInfo({lang: 'duckling' as LanguageKey, exe: '/duckling/bin/duckc'}),
+        makeFakeCompilerInfo({
+            id: 'duckling',
+            lang: 'duckling' as LanguageKey,
+            exe: '/duckling/bin/duckc',
+            libsArr: [],
+        }),
         environment,
     );
 }
@@ -68,6 +74,63 @@ describe('Duckling compiler', () => {
         expect(getCompilerTypeByKey('duckling')).toBe(DucklingCompiler);
     });
 
+    it('keeps help-derived suggestions through initialisation and discovery-cache restoration', async () => {
+        const compiler = makeCompiler();
+        const clientOptions = {libs: {}} as ClientOptionsType;
+        vi.spyOn(compiler, 'getVersion').mockResolvedValue({code: 0, stdout: 'Duckling compiler', stderr: ''});
+        const help = [
+            'Usage: duckc [GLOBAL OPTIONS] compile_module <module> [OPTIONS]',
+            '',
+            'Global options:',
+            '  -h, --help               Print help and exit.',
+            '',
+            'Command options:',
+            '  -O, --llvm-opt <level>   Set optimization level.',
+            '                           Possible values are: 0, 1, 2, 3, s, z.',
+            '                           See https://llvm.org/doxygen/classllvm_1_1OptimizationLevel.html',
+            '  --print-ir <categories>  Print selected intermediate representations to stdout.',
+            '                           Possible values are: hir, mir, lir, dbc.',
+            '  --artifact-location <path>',
+            '                           Path to compilation artifacts.',
+            '',
+        ].join('\n');
+        const execCompilerCached = vi.spyOn(compiler, 'execCompilerCached').mockResolvedValue(makeExecResult(0, help));
+
+        await expect(compiler.initialise(new Date(), clientOptions)).resolves.toBe(compiler);
+
+        const suggestions = compiler.possibleArguments.getPopularArguments();
+        expect(suggestions).toEqual({
+            '-O 2': {
+                description:
+                    'Set optimization level. Possible values are: 0, 1, 2, 3, s, z. -O is short for --llvm-opt.',
+                timesused: 0,
+            },
+            '--print-ir hir': {
+                description:
+                    'Print intermediate representations to Compiler Output. Values: hir, mir, lir (comma-separated).',
+                timesused: 0,
+            },
+        });
+        expect(execCompilerCached).toHaveBeenCalledExactlyOnceWith('/duckling/bin/duckc', ['compile_module', '--help']);
+
+        const cachedCompiler = makeCompiler();
+        cachedCompiler.compiler.cachedPossibleArguments = compiler.possibleArguments.possibleArguments;
+        const cachedExec = vi.spyOn(cachedCompiler, 'execCompilerCached');
+        await cachedCompiler.initialise(new Date(), clientOptions, true);
+
+        expect(cachedCompiler.possibleArguments.getPopularArguments()).toEqual(suggestions);
+        expect(cachedExec).not.toHaveBeenCalled();
+    });
+
+    it('remains available without suggestions when help fails', async () => {
+        const compiler = makeCompiler();
+        vi.spyOn(compiler, 'getVersion').mockResolvedValue({code: 0, stdout: 'Duckling compiler', stderr: ''});
+        vi.spyOn(compiler, 'execCompilerCached').mockResolvedValue(makeExecResult(1, '', 'Help is unavailable.'));
+
+        await expect(compiler.initialise(new Date(), {libs: {}} as ClientOptionsType)).resolves.toBe(compiler);
+        expect(compiler.possibleArguments.getPopularArguments()).toEqual({});
+    });
+
     it('puts the module path after the subcommand and preserves user options', () => {
         const compiler = makeCompiler();
         const inputFilename = '/tmp/example.dk';
@@ -75,8 +138,27 @@ describe('Duckling compiler', () => {
 
         expect(options).toEqual(['compile_module', '--no-incremental', '--dump-ir', 'asm']);
         expect(
-            (compiler as any).orderArguments(options, inputFilename, [], [], [], [], ['--llvm-opt', '2'], []),
-        ).toEqual(['compile_module', inputFilename, '--no-incremental', '--dump-ir', 'asm', '--llvm-opt', '2']);
+            (compiler as any).orderArguments(
+                options,
+                inputFilename,
+                [],
+                [],
+                [],
+                [],
+                ['-O', '2', '--print-ir', 'hir,mir'],
+                [],
+            ),
+        ).toEqual([
+            'compile_module',
+            inputFilename,
+            '--no-incremental',
+            '--dump-ir',
+            'asm',
+            '-O',
+            '2',
+            '--print-ir',
+            'hir,mir',
+        ]);
     });
 
     it('prepares Duckling artifacts and copies this module assembly to the CE output path', async () => {
