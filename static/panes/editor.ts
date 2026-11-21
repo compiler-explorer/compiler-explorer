@@ -147,7 +147,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private addExecutorButton: JQuery<HTMLElement>;
     private conformanceViewerButton: JQuery<HTMLElement>;
     private cppInsightsButton: JQuery<HTMLElement>;
-    private quickBenchButton: JQuery<HTMLElement>;
     private abiExplorerButton: JQuery<HTMLElement>;
     private abiExplorerCompilers = new Map<string, CompilerInfo>();
     private abiExplorerUpdate = 0;
@@ -684,11 +683,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.updateOpenInCppInsights();
             });
 
-            this.quickBenchButton = this.domRoot.find('.open-in-quickbench');
-            this.quickBenchButton.on('mousedown', () => {
-                this.updateOpenInQuickBench();
-            });
-
             this.abiExplorerButton = this.domRoot.find('.open-in-abiexplorer');
             // Hover and focus come before the click with time to spare, so the compiler lookups behind the
             // link are done by the time mousedown, the last event before it is followed, needs them.
@@ -751,10 +745,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (options.thirdPartyIntegrationEnabled) {
             if (this.currentLanguage?.id === 'c++') {
                 this.cppInsightsButton.show();
-                this.quickBenchButton.show();
             } else {
                 this.cppInsightsButton.hide();
-                this.quickBenchButton.hide();
             }
             if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
                 this.abiExplorerButton.show();
@@ -772,13 +764,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 return String.fromCharCode(Number.parseInt(v, 16));
             }),
         ).toString('base64');
-    }
-
-    asciiEncodeJsonText(json: string): string {
-        return json.replace(/[\u007F-\uFFFF]/g, chr => {
-            // json unicode escapes must always be 4 characters long, so pad with leading zeros
-            return '\\u' + ('0000' + chr.charCodeAt(0).toString(16)).substring(-4);
-        });
     }
 
     getCompilerStates(): any[] {
@@ -853,98 +838,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             const link = 'https://cppinsights.io/lnk?code=' + codeData + '&std=' + cppStd + '&rev=1.0';
 
             this.cppInsightsButton.attr('href', link);
-        }
-    }
-
-    cleanupSemVer(semver: string): string | null {
-        if (semver) {
-            const semverStr = semver.toString();
-            if (semverStr !== '' && !semverStr.includes('(')) {
-                const vercomps = semverStr.split('.');
-                return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
-            }
-        }
-
-        return null;
-    }
-
-    async updateOpenInQuickBench(): Promise<void> {
-        if (options.thirdPartyIntegrationEnabled) {
-            type QuickBenchState = {
-                text?: string;
-                compiler?: string;
-                optim?: string;
-                cppVersion?: string;
-                lib?: string;
-            };
-
-            const quickBenchState: QuickBenchState = {
-                text: this.getSource(),
-            };
-
-            const compilers = this.getCompilerStates();
-
-            for (const compiler of compilers) {
-                let knownCompiler = false;
-
-                const compilerExtInfo = unwrap(
-                    await this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler),
-                );
-                const semver = this.cleanupSemVer(compilerExtInfo.semver);
-                let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
-                if (semver && groupOrName) {
-                    groupOrName = groupOrName.toLowerCase();
-                    if (groupOrName.includes('gcc')) {
-                        quickBenchState.compiler = 'gcc-' + semver;
-                        knownCompiler = true;
-                    } else if (groupOrName.includes('clang')) {
-                        quickBenchState.compiler = 'clang-' + semver;
-                        knownCompiler = true;
-                    }
-                }
-
-                if (knownCompiler) {
-                    const match = compiler.options.match(/-(O([0-3sg]|fast))/);
-                    if (match !== null) {
-                        if (match[2] === 'fast') {
-                            quickBenchState.optim = 'F';
-                        } else {
-                            quickBenchState.optim = match[2].toUpperCase();
-                        }
-                    }
-
-                    if (
-                        compiler.options.indexOf('-std=c++11') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++11') !== -1
-                    ) {
-                        quickBenchState.cppVersion = '11';
-                    } else if (
-                        compiler.options.indexOf('-std=c++14') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++14') !== -1
-                    ) {
-                        quickBenchState.cppVersion = '14';
-                    } else if (
-                        compiler.options.indexOf('-std=c++17') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++17') !== -1
-                    ) {
-                        quickBenchState.cppVersion = '17';
-                    } else if (
-                        compiler.options.indexOf('-std=c++2a') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++2a') !== -1
-                    ) {
-                        quickBenchState.cppVersion = '20';
-                    }
-
-                    if (compiler.options.indexOf('-stdlib=libc++') !== -1) {
-                        quickBenchState.lib = 'llvm';
-                    }
-                }
-            }
-
-            const link =
-                'https://quick-bench.com/#' +
-                Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
-            this.quickBenchButton.attr('href', link);
         }
     }
 
