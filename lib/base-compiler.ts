@@ -1560,6 +1560,21 @@ export class BaseCompiler {
         return result;
     }
 
+    private async runIrPaneTask(
+        run: () => Promise<NonNullable<CompilationResult['irOutput']>>,
+        compilationOptions?: string[],
+    ): Promise<NonNullable<CompilationResult['irOutput']>> {
+        try {
+            return await run();
+        } catch (error) {
+            return {
+                code: 1,
+                compilationOptions,
+                asm: [{text: `Failed to process LLVM IR: ${String(error)}`}],
+            };
+        }
+    }
+
     async processIrOutput(
         output: CompilationResult,
         irOptions: LLVMIrBackendOptions,
@@ -2739,7 +2754,9 @@ export class BaseCompiler {
         const makePp = backendOptions.producePp && this.compiler.supportsPpView;
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
-        const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
+        const irOptions = backendOptions.produceIr;
+        const produceIrCfg = backendOptions.produceCfg?.ir;
+        const makeIr = irOptions && this.compiler.supportsIrView;
         const irFromMainCompilation = makeIr && this.shouldGenerateIRFromMainCompilation();
         const makeClangir = backendOptions.produceClangir && this.compiler.supportsClangirView;
         const makeClojureMacroExp = backendOptions.produceClojureMacroExp && this.compiler.supportsClojureMacroExpView;
@@ -2770,13 +2787,7 @@ export class BaseCompiler {
             makeAst ? this.generateAST(inputFilename, options) : undefined,
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : undefined,
             makeIr && !irFromMainCompilation
-                ? this.generateIR(
-                      inputFilename,
-                      options,
-                      backendOptions.produceIr,
-                      backendOptions.produceCfg?.ir,
-                      filters,
-                  )
+                ? this.runIrPaneTask(() => this.generateIR(inputFilename, options, irOptions, produceIrCfg, filters))
                 : undefined,
             makeClangir ? this.generateClangir(inputFilename, options, backendOptions.produceClangir) : undefined,
             makeOptPipeline
@@ -2795,17 +2806,10 @@ export class BaseCompiler {
         ]);
 
         const irResult = irFromMainCompilation
-            ? await this.buildIrPaneResult(
-                  asmResult,
+            ? await this.runIrPaneTask(
+                  () => this.buildIrPaneResult(asmResult, options, irOptions, produceIrCfg, filters),
                   options,
-                  backendOptions.produceIr,
-                  backendOptions.produceCfg?.ir,
-                  filters,
-              ).catch(error => ({
-                  code: 1,
-                  compilationOptions: options,
-                  asm: [{text: `Failed to process LLVM IR: ${String(error)}`}],
-              }))
+              )
             : separateIrResult;
 
         // GNAT, GCC and rustc can produce their extra output files along

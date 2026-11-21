@@ -167,7 +167,7 @@ describe('Basic compiler invariants', () => {
     });
 });
 
-describe('LLVM IR from the main compilation', () => {
+describe('LLVM IR compilation', () => {
     class MainInvocationIrCompiler extends BaseCompiler {
         protected override shouldGenerateIRFromMainCompilation(): boolean {
             return true;
@@ -178,6 +178,10 @@ describe('LLVM IR from the main compilation', () => {
     const assembly = 'main:\n\tret\n';
     const ir = '; a comment\ndefine i32 @main() {\nentry:\n  ret i32 0\n}\n';
     const irOptions = makeFakeLlvmIrBackendOptions({filterComments: true});
+    const compilationModes = [
+        {name: 'the default separate invocation', Compiler: BaseCompiler, invocations: 2},
+        {name: 'the opted-in main invocation', Compiler: MainInvocationIrCompiler, invocations: 1},
+    ];
 
     afterEach(() => vi.restoreAllMocks());
 
@@ -193,9 +197,9 @@ describe('LLVM IR from the main compilation', () => {
             }),
             ce,
         );
-        const dirPath = newTempDir();
-        const inputFilename = path.join(dirPath, 'example.cpp');
-        const runCompiler = vi.spyOn(compiler, 'runCompiler').mockImplementation(async (_exe, options) => {
+        const runCompiler = vi.spyOn(compiler, 'runCompiler');
+        runCompiler.mockImplementation(async (_exe, options, inputFilename) => {
+            const dirPath = path.dirname(inputFilename);
             if (!options.includes('-emit-llvm')) {
                 await fs.promises.writeFile(compiler.getOutputFilename(dirPath, compiler.outputFilebase), assembly);
             }
@@ -204,61 +208,75 @@ describe('LLVM IR from the main compilation', () => {
             }
             return {code: 0, stdout: [], stderr: [], timedOut: false, inputFilename};
         });
-        const compile = (produceIr = true) => {
-            const backendOptions = produceIr ? {produceIr: irOptions, produceCfg: {ir: true}} : {};
-            const key = compiler.getCacheKey('', ['-O2'], backendOptions, {}, [], [], []);
-            return compiler.doCompilation(inputFilename, dirPath, key, key.options, {}, backendOptions, [], []);
-        };
-        return {compiler, runCompiler, compile};
+        return {compiler, runCompiler};
     }
 
-    it.each([
-        {name: 'the default separate invocation', Compiler: BaseCompiler, invocations: 2},
-        {name: 'the opted-in main invocation', Compiler: MainInvocationIrCompiler, invocations: 1},
-    ])('preserves assembly and processes filtered IR and its CFG with $name', async ({Compiler, invocations}) => {
-        const {runCompiler, compile} = makeCompiler(Compiler);
+    function doCompilation(compiler: BaseCompiler, dirPath: string, produceIr = true) {
+        const inputFilename = path.join(dirPath, 'example.cpp');
+        const backendOptions = produceIr ? {produceIr: irOptions, produceCfg: {ir: true}} : {};
+        const key = compiler.getCacheKey('', ['-O2'], backendOptions, {}, [], [], []);
+        return compiler.doCompilation(inputFilename, dirPath, key, key.options, {}, backendOptions, [], []);
+    }
 
-        const [result] = await compile();
+    it.each(compilationModes)(
+        'returns assembly, filtered IR, and a CFG with $name',
+        async ({Compiler, invocations}) => {
+            const {compiler, runCompiler} = makeCompiler(Compiler);
 
-        expect(runCompiler).toHaveBeenCalledTimes(invocations);
-        expect(result.code).toBe(0);
-        expect(result.asm).toBe(assembly);
-        const irText = result.irOutput.asm.map(line => line.text).join('\n');
-        expect(irText).toContain('ret i32 0');
-        expect(irText).not.toContain('; a comment');
-        expect(Object.keys(result.irOutput.cfg)).toHaveLength(1);
-    });
+            const [result] = await doCompilation(compiler, newTempDir());
+
+            expect(runCompiler).toHaveBeenCalledTimes(invocations);
+            expect(result.code).toBe(0);
+            expect(result.asm).toBe(assembly);
+            const irText = result.irOutput.asm.map(line => line.text).join('\n');
+            expect(irText).toContain('ret i32 0');
+            expect(irText).not.toContain('; a comment');
+            expect(Object.keys(result.irOutput.cfg)).toHaveLength(1);
+        },
+    );
 
     it('stops reading IR when the pane is closed, even if its artifact still exists', async () => {
-        const {compiler, runCompiler, compile} = makeCompiler(MainInvocationIrCompiler);
+        const {compiler, runCompiler} = makeCompiler(MainInvocationIrCompiler);
+        const dirPath = newTempDir();
         const readIr = vi.spyOn(compiler, 'processIrOutput');
-        await compile();
+        await doCompilation(compiler, dirPath);
         readIr.mockClear();
         runCompiler.mockClear();
 
-        const [result] = await compile(false);
+        const [result] = await doCompilation(compiler, dirPath, false);
 
         expect(runCompiler).toHaveBeenCalledOnce();
         expect(readIr).not.toHaveBeenCalled();
         expect(result.irOutput).toBeUndefined();
     });
 
-    it.each(['compiler', 'IR reader'])('handles a failed %s without another invocation', async failure => {
-        const {compiler, runCompiler, compile} = makeCompiler(MainInvocationIrCompiler);
+    it('reports a failed main compilation and skips reading its IR', async () => {
+        const {compiler, runCompiler} = makeCompiler(MainInvocationIrCompiler);
         const readIr = vi.spyOn(compiler, 'processIrOutput');
-        if (failure === 'compiler') {
-            runCompiler.mockResolvedValueOnce({code: 1, stdout: [], stderr: [], timedOut: false});
-        } else {
-            readIr.mockRejectedValueOnce(new Error('Unreadable IR'));
-        }
+        runCompiler.mockResolvedValueOnce({code: 1, stdout: [], stderr: [], timedOut: false});
 
-        const [result] = await compile();
+        const [result] = await doCompilation(compiler, newTempDir());
 
         expect(runCompiler).toHaveBeenCalledOnce();
-        expect(result.code).toBe(failure === 'compiler' ? 1 : 0);
-        expect(result.asm).toBe(failure === 'compiler' ? '<Compilation failed>' : assembly);
+        expect(result.code).toBe(1);
+        expect(result.asm).toBe('<Compilation failed>');
         expect(result.irOutput.code).toBe(1);
-        expect(readIr).toHaveBeenCalledTimes(failure === 'compiler' ? 0 : 1);
+        expect(readIr).not.toHaveBeenCalled();
+    });
+
+    it.each(compilationModes)('returns assembly on IR read failure with $name', async ({Compiler, invocations}) => {
+        const {compiler, runCompiler} = makeCompiler(Compiler);
+        vi.spyOn(compiler, 'processIrOutput').mockRejectedValueOnce(new Error('Unreadable IR'));
+
+        const [result] = await doCompilation(compiler, newTempDir());
+
+        expect(runCompiler).toHaveBeenCalledTimes(invocations);
+        expect(result.code).toBe(0);
+        expect(result.asm).toBe(assembly);
+        expect(result.irOutput).toMatchObject({
+            code: 1,
+            asm: [{text: 'Failed to process LLVM IR: Error: Unreadable IR'}],
+        });
     });
 });
 
