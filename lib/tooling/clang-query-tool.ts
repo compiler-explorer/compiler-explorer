@@ -68,8 +68,7 @@ export class ClangQueryTool extends BaseTool {
 
         await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));
         await fs.writeFile(path.join(dir, query_commands_file), stdin);
-        args.push('-f', query_commands_file);
-        const toolResult = await super.runTool(compilationInfo, sourcefile, args);
+        const toolResult = await super.runTool(compilationInfo, sourcefile, [...args, '-f', query_commands_file]);
 
         if (toolResult.stdout.length > 0) {
             const lastLine = toolResult.stdout.length - 1;

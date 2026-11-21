@@ -228,7 +228,8 @@ export class ClangCompiler extends BaseCompiler {
     override async afterCompilation(
         result: CompilationResult,
         doExecute: boolean,
-        key: CacheKey,
+        adaptedRequest: CacheKey,
+        compilationCacheKey: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         tools: ActiveTool[],
         backendOptions: Record<string, any>,
@@ -240,7 +241,7 @@ export class ClangCompiler extends BaseCompiler {
         customBuildPath?: string,
         delayCaching?: boolean,
     ) {
-        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+        const compilationInfo = this.getCompilationInfo(adaptedRequest, result, customBuildPath);
 
         const dirPath = path.dirname(compilationInfo.outputFilename);
         const filename = path.basename(compilationInfo.outputFilename);
@@ -249,7 +250,8 @@ export class ClangCompiler extends BaseCompiler {
         return super.afterCompilation(
             result,
             doExecute,
-            key,
+            adaptedRequest,
+            compilationCacheKey,
             executeParameters,
             tools,
             backendOptions,

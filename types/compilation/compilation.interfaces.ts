@@ -136,8 +136,8 @@ export type CompilationRequestOptions = {
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
-        // Whether output is shown on a dark background, so colours made for one suit it better. Ignored by compilers
-        // without `supportsDarkBackgroundColours`.
+        // Whether output is shown on a dark background, so colours made for one suit it better. Only sent to compilers
+        // with `supportsDarkBackgroundColours`, and ignored by any other.
         darkBackgroundColours?: boolean;
     };
     executeParameters: UnparsedExecutionParams;
@@ -313,10 +313,25 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type CompilationInfo = CacheKey &
+// The compiler settings a tool may read. Add a field here when a tool needs it.
+export type ToolCompilerInfo = Pick<
+    CompilerInfo,
+    | 'id'
+    | 'exe'
+    | 'options'
+    | 'lang'
+    | 'instructionSet'
+    | 'includePath'
+    | 'libPath'
+    | 'envVars'
+    | 'group'
+    | 'compilerType'
+>;
+
+export type CompilationInfo = Omit<CacheKey, 'compiler'> &
     CompilationResult & {
         mtime: Date | null;
-        compiler: CompilerInfo & Record<string, unknown>;
+        compiler: ToolCompilerInfo;
         args: string[];
         options: string[];
         outputFilename: string;
@@ -335,8 +350,10 @@ export type CompilationCacheKey = {
     options: ExecutionOptions;
 };
 
+export type CacheKeyCompiler = {id: string};
+
 export type SingleFileCacheKey = {
-    compiler: any;
+    compiler: CacheKeyCompiler;
     source: string;
     options: string[];
     backendOptions: any;
@@ -347,7 +364,7 @@ export type SingleFileCacheKey = {
 };
 
 export type CmakeCacheKey = Omit<SingleFileCacheKey, 'tools'> & {
-    compiler: CompilerInfo;
+    compiler: CacheKeyCompiler;
     files: FiledataPair[];
     api: string;
 };

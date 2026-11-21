@@ -49,7 +49,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
     }
 
-    override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    override fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         filters.binary = false;
     }
 

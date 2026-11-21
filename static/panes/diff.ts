@@ -32,6 +32,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {ToolResult} from '../../types/tool.interfaces.js';
 import {Hub} from '../hub.js';
+import {disposeDiffEditor} from '../monaco-config.js';
 import {replaceOptions} from '../tom-select-utils.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -826,6 +827,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     close() {
         this.eventHub.unsubscribe();
-        this.editor.dispose();
+        disposeDiffEditor(this.editor);
     }
 }

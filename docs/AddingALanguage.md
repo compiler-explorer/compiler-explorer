@@ -58,6 +58,10 @@ If you want to add a new language to the site, you should follow these steps:
     - set `execOptions.customCwd` parameter if the working directory needs to be somewhere else
     - set `execOptions.env` parameter if the compiler requires special environment variables
     - manipulate `options`, but make sure the user can still add their own arguments in CE
+  - Compilations are cached under the request as it arrived plus the compiler's id, and ce-router computes the same key
+    without knowing anything about your class. So adapt the request in the hooks that run after the key is built:
+    `getDefaultFilters()`, `fixFiltersForCompiler()`, `fixBackendOptionsForCompiler()`, `optionsForFilter()`. Don't
+    override `compile()` to change its arguments before calling `super.compile()`, and don't override `getCacheKey()`.
 
 - Add your `LanguageCompiler` to `lib/compilers/_all.ts`, in alphabetical order
 
