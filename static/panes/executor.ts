@@ -127,6 +127,7 @@ export class Executor extends Pane<ExecutorState> {
     private libsWidget?: LibsWidget;
     private readonly infoByLang: Record<string, LangInfo | undefined>;
     private compiler: CompilerInfo | null;
+    originalCompilerId: string;
     private compilerShared: ICompilerShared;
     private artifactHandler: ArtifactHandler;
 
@@ -138,6 +139,7 @@ export class Executor extends Pane<ExecutorState> {
             this.sourceEditorId = state.source || 1;
         }
         this.id = state.id || this.hub.nextExecutorId();
+        this.originalCompilerId = state.compiler;
 
         this.contentRoot = this.domRoot.find('.content');
         this.infoByLang = {};

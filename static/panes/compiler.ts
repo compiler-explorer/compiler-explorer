@@ -155,6 +155,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private readonly id: number;
     private sourceTreeId: number | null;
     private sourceEditorId: number | null;
+    originalCompilerId: string;
     private readonly infoByLang: Record<string, {compiler: string; options: string}>;
     private deferCompiles: boolean;
     private needsCompile: boolean;
@@ -411,6 +412,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.flagsViewOpen = state.flagsViewOpen || false;
         this.wantOptInfo = state.wantOptInfo;
         this.selection = state.selection;
+        this.originalCompilerId = state.compiler;
     }
 
     override getInitialHTML() {
