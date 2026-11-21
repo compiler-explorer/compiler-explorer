@@ -37,12 +37,6 @@ export class FlangCompiler extends FortranCompiler {
         return FlangParser;
     }
 
-    override couldSupportASTDump(_version: string) {
-        // The AST view runs `-Xclang -ast-dump`, which Flang does not support. Vendor builds such as AOCC mention
-        // "CLANG" in their version string, which the base check would otherwise take for Clang.
-        return false;
-    }
-
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = ['-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {

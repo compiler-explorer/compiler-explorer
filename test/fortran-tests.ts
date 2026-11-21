@@ -26,6 +26,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {FlangCompiler} from '../lib/compilers/flang.js';
+import {FlangFC1Compiler} from '../lib/compilers/flang-fc1.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
@@ -50,8 +51,11 @@ describe('Fortran', () => {
         ce = makeCompilationEnvironment({languages});
     });
 
-    it('Flang should not offer the Clang AST view, even when the version string mentions Clang', () => {
-        const compiler = new FlangCompiler(makeFakeCompilerInfo(info), ce);
+    it.each([
+        ['flang', FlangCompiler],
+        ['flang-fc1', FlangFC1Compiler],
+    ])('%s should not offer the Clang AST view, even when the version string mentions Clang', (_key, compilerClass) => {
+        const compiler = new compilerClass(makeFakeCompilerInfo(info), ce);
         expect(compiler.couldSupportASTDump('flang version 20.1.8')).toEqual(false);
         expect(
             compiler.couldSupportASTDump(

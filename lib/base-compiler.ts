@@ -3949,9 +3949,10 @@ export class BaseCompiler {
     }
 
     couldSupportASTDump(version: string) {
-        // The AST view runs `-Xclang -ast-dump`. Compilers that take LLVM IR as input (clang with `-x ir`, for
-        // instance) say "clang" in their version string, but clang cannot apply AST actions to an LLVM IR file.
-        if (this.compiler.lang === 'llvm') return false;
+        // The AST view runs `-Xclang -ast-dump`, which only clang's C-family frontends support. Some compilers for
+        // other languages still say "clang" in their version string: clang taking LLVM IR (`-x ir`) cannot apply
+        // AST actions to an IR file, and Flang-based Fortran compilers such as AOCC have no such option.
+        if (this.compiler.lang === 'llvm' || this.compiler.lang === 'fortran') return false;
 
         const versionRegex = /version (\d+.\d+)/;
         const versionMatch = versionRegex.exec(version);
