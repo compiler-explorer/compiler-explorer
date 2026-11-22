@@ -163,6 +163,12 @@ export class ClientStateExecutor {
             this.runtimeTools = jsondata.runtimeTools;
         }
 
+        if (jsondata.overrides === undefined) {
+            this.overrides = [];
+        } else {
+            this.overrides = jsondata.overrides;
+        }
+
         this.compiler = new ClientStateCompiler(jsondata.compiler);
     }
 }
@@ -320,7 +326,7 @@ export class ClientStateSession {
             }
         }
 
-        for (const compilerdata of jsondata.compilers) {
+        for (const compilerdata of jsondata.compilers ?? []) {
             const compiler = new ClientStateCompiler(compilerdata);
             if (compiler.id) {
                 this.compilers.push(compiler);

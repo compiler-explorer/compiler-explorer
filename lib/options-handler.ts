@@ -61,6 +61,8 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    sysroot?: string;
+    dynamicLinker?: string;
     $order?: number;
 };
 export type OptionsHandlerLibrary = {
@@ -109,6 +111,7 @@ export type ClientOptionsType = {
     localStoragePrefix: PropertyValue;
     cvCompilerCountMax: number;
     defaultFontScale: number;
+    formatStyles: string[];
     doCache: boolean;
     thirdPartyIntegrationEnabled: boolean;
     statusTrackingEnabled: boolean;
@@ -213,6 +216,9 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),
+            formatStyles: _.compact(
+                ceProps('formatter.clangformat.styles', 'Google:LLVM:Mozilla:Chromium:WebKit:Microsoft:GNU').split(':'),
+            ),
             doCache: defArgs.doCache,
             thirdPartyIntegrationEnabled: ceProps('thirdPartyIntegrationEnabled', true),
             compilerVersionsUrl: ceProps<string | undefined>('compilerVersionsUrl', undefined),
@@ -248,7 +254,11 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                     const Tool = getToolTypeByKey(className);
 
                     const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
-                    if (fs.existsSync(toolPath)) {
+                    const skipExeCheck = this.compilerProps<boolean>(lang, toolBaseName + '.skipExeCheck', false);
+                    if (skipExeCheck || fs.existsSync(toolPath)) {
+                        const argChoices = splitIntoArray(
+                            this.compilerProps<string>(lang, toolBaseName + '.argChoices'),
+                        ).filter(Boolean);
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,
@@ -259,6 +269,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 includeKey: this.compilerProps<string>(lang, toolBaseName + '.includeKey'),
                                 options: splitArguments(this.compilerProps<string>(lang, toolBaseName + '.options')),
                                 args: this.compilerProps<string>(lang, toolBaseName + '.args'),
+                                argChoices: argChoices.length > 0 ? argChoices : undefined,
                                 languageId: this.compilerProps<string>(
                                     lang,
                                     toolBaseName + '.languageId',
@@ -361,10 +372,19 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 versionObject.lookupname = libraries[lang][lib].lookupname;
                             }
 
+                            const sysroot = this.compilerProps<string>(lang, libVersionName + '.sysroot');
+                            if (sysroot !== undefined) {
+                                versionObject.sysroot = sysroot;
+                            }
+
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else if (version !== 'autodetect' && !versionObject.packagedheaders) {
+                            } else if (
+                                version !== 'autodetect' &&
+                                !versionObject.packagedheaders &&
+                                !versionObject.sysroot
+                            ) {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 
@@ -389,6 +409,11 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 libVersionName + '.skipcmakepackage',
                                 libraries[lang][lib].skipcmakepackage,
                             );
+
+                            const dynamicLinker = this.compilerProps<string>(lang, libVersionName + '.dynamicLinker');
+                            if (dynamicLinker !== undefined) {
+                                versionObject.dynamicLinker = dynamicLinker;
+                            }
 
                             libraries[lang][lib].versions[version] = versionObject;
                         }

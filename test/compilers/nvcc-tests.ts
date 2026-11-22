@@ -22,9 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import * as fs from 'node:fs/promises';
+import os from 'node:os';
+import Path from 'node:path';
 
-import {NvccCompiler} from '../../lib/compilers/index.js';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+
+import {NvccCompiler, NvccWin32Compiler} from '../../lib/compilers/index.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 describe('nvcc tests', () => {
@@ -127,5 +131,160 @@ main:
         const result = removeBlob(asm);
         expect(result).toContain('#APP');
         expect(result).toContain('nop');
+    });
+
+    describe('PTX device output', () => {
+        const ptx = '.version 9.0\n.target sm_52\n.address_size 64\n\n.visible .entry _Z6kernelv()\n{\n\tret;\n}\n';
+        let dirPath: string;
+
+        beforeEach(async () => {
+            dirPath = await fs.mkdtemp(Path.join(os.tmpdir(), 'ce-nvcc-ptx-'));
+            await fs.writeFile(Path.join(dirPath, 'example.ptx'), ptx);
+        });
+
+        afterEach(async () => {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        });
+
+        async function extractPtx(maxAsmSize: number) {
+            const compiler = new NvccCompiler(
+                info as any,
+                makeCompilationEnvironment({languages, props: {'max-asm-size': maxAsmSize}}),
+            );
+            const result = await compiler.extractDeviceCode(
+                {dirPath, devices: {}} as any,
+                {...compiler.getDefaultFilters(), commentOnly: false, demangle: false},
+                {} as any,
+            );
+            return result.devices?.PTX.asm;
+        }
+
+        it('parses PTX within max-asm-size', async () => {
+            expect(await extractPtx(1024)).toEqual(
+                expect.arrayContaining([expect.objectContaining({text: expect.stringContaining('ret;')})]),
+            );
+        });
+
+        it('does not read PTX larger than max-asm-size', async () => {
+            const asm = await extractPtx(32);
+            expect(asm).toEqual([
+                expect.objectContaining({
+                    text: `<No output: generated PTX was too large (${ptx.length} > 32 bytes)>`,
+                }),
+            ]);
+        });
+    });
+
+    it('disassembles CUDA Tile bytecode into a Tile IR device output', async () => {
+        const dirPath = await fs.mkdtemp(Path.join(os.tmpdir(), 'ce-nvcc-tileir-'));
+        const tileBytecode = Path.join(dirPath, 'example.tilebc');
+        await fs.writeFile(tileBytecode, 'tile bytecode');
+
+        try {
+            const tileNvcc = new NvccCompiler(
+                {...info, tileirdisasm: '/opt/cuda/bin/tileirdisasm'} as any,
+                makeCompilationEnvironment({languages}),
+            );
+            const exec = vi.spyOn(tileNvcc as any, 'exec').mockResolvedValue({
+                code: 0,
+                execTime: 1,
+                stdout: 'entry @tile_kernel(%arg0: tile<ptr<f32>>) {\n  return\n}\n',
+            });
+
+            const result = await tileNvcc.extractDeviceCode(
+                {dirPath, devices: {}} as any,
+                {...tileNvcc.getDefaultFilters(), commentOnly: false, demangle: false},
+                {} as any,
+            );
+
+            expect(exec).toHaveBeenCalledWith(
+                '/opt/cuda/bin/tileirdisasm',
+                [tileBytecode],
+                expect.objectContaining({customCwd: dirPath}),
+            );
+            expect(result.devices?.['Tile IR'].asm).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({text: expect.stringContaining('entry @tile_kernel')}),
+                ]),
+            );
+        } finally {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        }
+    });
+});
+
+describe('NvccWin32Compiler tests', () => {
+    const languages = {cuda: {id: 'cuda'}};
+    const info = {exe: 'nvcc.exe', remote: true, lang: 'cuda', ldPath: []};
+    let platformDescriptor: PropertyDescriptor;
+    let compiler: NvccWin32Compiler;
+
+    beforeEach(() => {
+        platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform')!;
+        Object.defineProperty(process, 'platform', {configurable: true, value: 'win32'});
+        compiler = new NvccWin32Compiler(info as any, makeCompilationEnvironment({languages}));
+    });
+
+    afterEach(() => {
+        Object.defineProperty(process, 'platform', platformDescriptor);
+        vi.restoreAllMocks();
+    });
+
+    it('rejects construction on non-Windows platforms', () => {
+        Object.defineProperty(process, 'platform', {configurable: true, value: 'linux'});
+
+        expect(() => new NvccWin32Compiler(info as any, makeCompilationEnvironment({languages}))).toThrow(
+            'NvccWin32Compiler can only be used on Windows',
+        );
+    });
+
+    it('generates options for assembly output', () => {
+        expect(
+            (compiler as any).optionsForFilter({binary: false, binaryObject: false, execute: false}, 'output.s'),
+        ).toEqual([
+            '-o',
+            'output.obj',
+            '-g',
+            '-lineinfo',
+            '--keep-device-functions',
+            '-c',
+            '-keep',
+            '-keep-dir',
+            '.',
+            '-Xcompiler',
+            '/nologo,/FA,/c,/Faoutput.s,/Fooutput.obj,/Zi,/Fdoutput.pdb',
+        ]);
+    });
+
+    it('generates options for binary-object output and normalises Windows paths', () => {
+        expect(
+            (compiler as any).optionsForFilter({binary: false, binaryObject: true, execute: false}, 'output.obj'),
+        ).toEqual([
+            '-o',
+            'output.obj',
+            '-g',
+            '-lineinfo',
+            '--keep-device-functions',
+            '-c',
+            '-keep',
+            '-keep-dir',
+            '.',
+            '-Xcompiler',
+            '/nologo,/c,/Fooutput.obj,/Zi',
+        ]);
+    });
+
+    it('generates options for executable output', () => {
+        expect(
+            (compiler as any).optionsForFilter({binary: true, binaryObject: false, execute: true}, 'output.exe'),
+        ).toEqual([
+            '-o',
+            'output.exe',
+            '-g',
+            '-lineinfo',
+            '--keep-device-functions',
+            '-Xcompiler',
+            '/nologo,/Feoutput.exe,/Zi',
+        ]);
     });
 });

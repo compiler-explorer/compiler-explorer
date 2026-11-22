@@ -52,7 +52,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         return _.union(toolchainPrefix, await super.getCMakePrefixPaths(libraries, dirPath));
     }
 
-    override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    override fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         filters.binary = false;
     }
 

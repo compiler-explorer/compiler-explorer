@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'node:child_process';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -48,6 +49,7 @@ function exportTempDir(tmpDir: string) {
  */
 export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
     if (tmpDir) {
+        fs.mkdirSync(tmpDir, {recursive: true});
         exportTempDir(tmpDir);
         if (path.resolve(os.tmpdir()) !== path.resolve(tmpDir)) {
             throw new Error(`Unable to set the temporary dir to ${tmpDir} - stuck at ${os.tmpdir()}`);

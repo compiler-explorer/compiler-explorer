@@ -73,6 +73,7 @@ export class ClientStateNormalizer {
     }
 
     setFilterSettingsFromComponentState(compiler: ClientStateCompiler, componentState) {
+        if (!componentState.filters) return;
         compiler.filters.binary = componentState.filters.binary;
         compiler.filters.binaryObject = componentState.filters.binaryObject;
         compiler.filters.execute = componentState.filters.execute;
@@ -212,8 +213,8 @@ export class ClientStateNormalizer {
                 return;
             }
         } else {
-            // Ofek: do we ever get here?
-
+            // Layouts saved by CE's UI always give compiler panes an id, but hand-written ones POSTed straight to
+            // /api/shortener may not, and can omit other state too (filters, options, libs).
             compiler = new ClientStateCompiler();
             if (componentState.source) {
                 const session = this.normalized.findOrCreateSession(componentState.source);
@@ -614,6 +615,13 @@ class GoldenLayoutComponents {
         };
     }
 
+    // Executor overrides can be stored on the executor itself or on its compiler (which is where
+    // normalizing a layout puts them), so accept both when building the layout back.
+    getExecutorOverrides(executor: ClientStateExecutor) {
+        if (executor.overrides.length > 0) return executor.overrides;
+        return executor.compiler.overrides;
+    }
+
     createExecutorComponent(session: ClientStateSession, executor: ClientStateExecutor, customSessionId?: number) {
         return {
             type: 'component',
@@ -631,7 +639,7 @@ class GoldenLayoutComponents {
                 argsPanelShown: executor.argumentsVisible,
                 stdinPanelShown: executor.stdinVisible,
                 wrap: executor.wrap,
-                overrides: executor.overrides,
+                overrides: this.getExecutorOverrides(executor),
                 runtimeTools: executor.runtimeTools,
             },
             isClosable: true,
@@ -657,7 +665,7 @@ class GoldenLayoutComponents {
                 argsPanelShown: executor.argumentsVisible,
                 stdinPanelShown: executor.stdinVisible,
                 wrap: executor.wrap,
-                overrides: executor.overrides,
+                overrides: this.getExecutorOverrides(executor),
                 runtimeTools: executor.runtimeTools,
             },
             isClosable: true,

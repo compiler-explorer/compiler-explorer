@@ -44,6 +44,13 @@ export type ExpandedShortLink = {
     created?: Date;
 };
 
+export class ShortLinkNotFoundError extends Error {
+    constructor(id: string) {
+        super(`ID ${id} not present in links table`);
+        this.name = 'ShortLinkNotFoundError';
+    }
+}
+
 export type StoredObject = {
     prefix: string;
     uniqueSubHash: string;

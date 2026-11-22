@@ -34,6 +34,8 @@ export type LibraryVersion = {
     options: string[];
     packagedheaders?: boolean;
     skipcmakepackage?: boolean;
+    sysroot?: string;
+    dynamicLinker?: string;
 };
 
 export type Library = {

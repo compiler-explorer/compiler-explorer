@@ -41,6 +41,7 @@ export enum DiffType {
     YulOutput = 14,
     LeanCOutput = 15,
     Source = 16,
+    ToolOutput = 17,
 }
 
 export type DiffState = {

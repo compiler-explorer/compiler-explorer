@@ -154,7 +154,10 @@ describe('determineAssemblySyntax', () => {
         ['intel', false, true],
         ['att', true, false],
         ['intel', true, true],
-    ])('returns %s when supportsIntel is %s and intel asm syntax filter is %s', (expected, supportsIntel, intelFilterEnabled) => {
-        expect(determineAssemblySyntax(supportsIntel, intelFilterEnabled)).toBe(expected);
-    });
+    ])(
+        'returns %s when supportsIntel is %s and intel asm syntax filter is %s',
+        (expected, supportsIntel, intelFilterEnabled) => {
+            expect(determineAssemblySyntax(supportsIntel, intelFilterEnabled)).toBe(expected);
+        },
+    );
 });

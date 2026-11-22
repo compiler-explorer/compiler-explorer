@@ -22,13 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
 import express, {Express} from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
+import type {BaseCompiler} from '../../lib/base-compiler.js';
+import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
 import {ActiveTool, BypassCache, LegacyCompatibleActiveTool} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 SetTestMode();
@@ -61,6 +66,52 @@ describe('Compiler tests', () => {
 
     it('throws for unknown compilers', async () => {
         await request(app).post('/NOT_A_COMPILER/compile').expect(404);
+    });
+
+    it('creates remote compilers with an unknown local class', async () => {
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('Unexpected process exit');
+        });
+        try {
+            const compilers = await compileHandler.setCompilers(
+                [
+                    {
+                        id: 'remote-newer-type',
+                        lang: 'c++',
+                        compilerType: 'not-registered',
+                        exe: '/dev/null',
+                        version: 'remote 1.0',
+                        remote: {
+                            target: 'http://remote.invalid',
+                            path: '/api/compiler/remote-newer-type/compile',
+                            cmakePath: '/api/compiler/remote-newer-type/cmake',
+                        },
+                    },
+                ],
+                null,
+            );
+            expect(exit).not.toHaveBeenCalled();
+            expect(compilers.map(compiler => [compiler.id, compiler.compilerType])).toEqual([
+                ['remote-newer-type', 'not-registered'],
+            ]);
+        } finally {
+            exit.mockRestore();
+        }
+    });
+
+    it('still exits for local compilers with an unknown class', async () => {
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('process.exit');
+        });
+        try {
+            await compileHandler.setCompilers(
+                [{id: 'local-unknown', lang: 'a', compilerType: 'not-registered', exe: 'missing'}],
+                null,
+            );
+            expect(exit).toHaveBeenCalledWith(1);
+        } finally {
+            exit.mockRestore();
+        }
     });
 
     describe('Noscript API', () => {
@@ -225,6 +276,37 @@ describe('Compiler tests', () => {
                 });
         }
 
+        it('rejects an output filename that escapes the compilation directory as a bad request', async () => {
+            for (const customOutputFilename of ['../../escape', '../out.s', '../ce-compilation-dir/x', 5]) {
+                await makeFakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
+        it('lets a CMake output filename reach the project root, which is one level above the build', async () => {
+            await setFakeResult();
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename: '../out.s'}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual('../out.s');
+
+            for (const customOutputFilename of ['../../escape', '../../ce-compilation-dir/x']) {
+                await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
+        it('lets a CMake project inspect a library it linked from the project root', async () => {
+            await setFakeResult();
+            const customOutputFilename = '../fmt/lib/libfmtd.a';
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual(customOutputFilename);
+        });
+
         it('handles JSON output', async () => {
             await setFakeResult({
                 code: 0,
@@ -248,6 +330,19 @@ describe('Compiler tests', () => {
                     stderr: [{text: 'Something from stderr'}],
                     stdout: [{text: 'Something from stdout'}],
                 });
+        });
+
+        it('responds with an error when the result cannot be serialised', async () => {
+            await setFakeResult({
+                code: 0,
+                toJSON() {
+                    throw new RangeError('Invalid string length');
+                },
+            });
+            const res = await makeFakeJson('I am a program').expect(200);
+            const body = JSON.parse(res.text);
+            expect(body.code).toEqual(-1);
+            expect(body.stderr[0].text).toContain('RangeError: Invalid string length');
         });
 
         it('parses options and filters', async () => {
@@ -389,7 +484,8 @@ describe('Compiler tests', () => {
 
         it('error on empty request body', async () => {
             await setFakeResult();
-            await request(app).post('/fake-for-test/compile').set('Accept', 'application/json').expect(500);
+            const res = await request(app).post('/fake-for-test/compile').set('Accept', 'application/json').expect(400);
+            expect(res.body).toEqual({error: true, message: 'No source found in request'});
         });
 
         it('handles filters set directly', async () => {
@@ -481,6 +577,42 @@ describe('Compiler tests', () => {
             await setFakeCompilers();
             const res = await makeFakeJson('a', 'b');
             expect(res.body.asm).toEqual([{text: 'LANG B but A'}]);
+        });
+    });
+
+    describe('Compiler executable discovery', () => {
+        afterEach(() => vi.restoreAllMocks());
+
+        function makeCompiler(skipExeCheck: boolean): PreliminaryCompilerInfo {
+            return {
+                id: 'remote-only',
+                lang: 'a',
+                exe: '/remote-only/compiler',
+                compilerType: 'fake-for-test',
+                skipExeCheck,
+            } as unknown as PreliminaryCompilerInfo;
+        }
+
+        it('initialises a compiler that skips the exe check without statting it', async () => {
+            const stat = vi.spyOn(fs, 'stat');
+            const initialise = vi.spyOn(FakeCompiler.prototype, 'initialise').mockResolvedValue({} as BaseCompiler);
+
+            const compiler = await compileHandler.create(makeCompiler(true));
+
+            expect(compiler).not.toBeNull();
+            expect(stat).not.toHaveBeenCalled();
+            expect(initialise).toHaveBeenCalledWith(expect.any(Date), null, false);
+        });
+
+        it('still rejects a missing local compiler exe', async () => {
+            const stat = vi.spyOn(fs, 'stat').mockRejectedValue(new Error('ENOENT'));
+            const initialise = vi.spyOn(FakeCompiler.prototype, 'initialise');
+
+            const compiler = await compileHandler.create(makeCompiler(false));
+
+            expect(compiler).toBeNull();
+            expect(stat).toHaveBeenCalledWith('/remote-only/compiler');
+            expect(initialise).not.toHaveBeenCalled();
         });
     });
 });

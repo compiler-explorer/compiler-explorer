@@ -274,6 +274,7 @@ export class CompilerFinder {
             demanglerType: props('demanglerType', ''),
             demanglerArgs: splitArrayPropsOrEmpty('demanglerArgs', '|'),
             nvdisasm: props('nvdisasm', ''),
+            tileirdisasm: props('tileirdisasm', ''),
             ptxas: props('ptxas', ''),
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
@@ -327,6 +328,7 @@ export class CompilerFinder {
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
             unwiseOptions: splitArrayPropsOrEmpty('unwiseOptions', '|'),
             hidden: props('hidden', false),
+            skipExeCheck: props('skipExeCheck', false),
             buildenvsetup: {
                 id: props('buildenvsetup', ''),
                 // NB: This props function can't be serialized to JSON. For prediscovered compilers,

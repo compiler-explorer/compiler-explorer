@@ -74,7 +74,7 @@ import {languagesService} from './services/languages.service.js';
 import {Settings, SiteSettings} from './settings.js';
 import {initialiseSharing} from './sharing.js';
 import {Themer} from './themes.js';
-import {deserialiseState} from './url.js';
+import {deserialiseState, parseSavedLayoutState, removeEmptyLayoutItems} from './url.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {Alert} from './widgets/alert.js';
 import {HistoryWidget} from './widgets/history-widget.js';
@@ -125,8 +125,26 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
     return [themer, currentSettings];
 }
 
+// A sandboxed iframe without allow-same-origin throws on any use of document.cookie. Treat that like a browser with
+// cookies turned off, which reads nothing back and ignores writes, as local.ts does for localStorage.
+function getCookie(key: string): string | undefined {
+    try {
+        return jsCookie.get(key);
+    } catch {
+        return undefined;
+    }
+}
+
+function setCookie(key: string, value: string, attributes: Cookies.CookieAttributes) {
+    try {
+        jsCookie.set(key, value, attributes);
+    } catch {
+        // See getCookie
+    }
+}
+
 function hasCookieConsented(options: CompilerExplorerOptions) {
-    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
+    return getCookie(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
 function isMobileViewer() {
@@ -150,7 +168,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                setCookie(options.policies.privacy.key, policyDocuments.privacy.hash, {
                     expires: 365,
                     sameSite: 'strict',
                 });
@@ -260,22 +278,26 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     });
 }
 
+function abortWithEmbedDecodeError(): never {
+    document.write(
+        '<div style="padding: 10px; background: #fa564e; color: black;">' +
+            "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
+            'truncated, otherwise if you believe your URL is valid please let us know on ' +
+            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
+            'our github' +
+            '</a>.' +
+            '</div>',
+    );
+    throw new Error('Embed url decode error');
+}
+
 function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     // Old-style link?
     let params;
     try {
         params = unrisonify(embeddedUrl);
     } catch {
-        document.write(
-            '<div style="padding: 10px; background: #fa564e; color: black;">' +
-                "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
-                'truncated, otherwise if you believe your URL is valid please let us know on ' +
-                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
-                'our github' +
-                '</a>.' +
-                '</div>',
-        );
-        throw new Error('Embed url decode error');
+        abortWithEmbedDecodeError();
     }
     if (params?.source && params.compiler) {
         const filters: ParseFiltersAndOutputOptions = Object.fromEntries(
@@ -293,7 +315,11 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
             ],
         };
     }
-    return deserialiseState(embeddedUrl);
+    try {
+        return deserialiseState(embeddedUrl);
+    } catch {
+        abortWithEmbedDecodeError();
+    }
 }
 
 function fixBugsInConfig(config: Partial<GoldenLayout.Config & {activeItemIndex?: number}>): void {
@@ -356,12 +382,17 @@ function findConfig(
             }
 
             if (config) {
-                // replace anything in the default config with that from the hash
-                config = _.extend(defaultConfig, config);
+                // replace anything in the default config with that from the hash. defaultConfig must stay
+                // untouched: it's what start() falls back to if this config fails to load.
+                config = _.extend({}, defaultConfig, config);
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
-                if (savedState) config = JSON.parse(savedState);
+                if (savedState) {
+                    config = parseSavedLayoutState(savedState);
+                    // Drop unusable state so we don't trip over it again on the next load
+                    if (!config) sessionThenLocalStorage.remove('gl');
+                }
             }
             if (!config?.content || config.content?.length === 0) {
                 config = defaultConfig;
@@ -369,6 +400,7 @@ function findConfig(
         }
     } else {
         config = _.extend(
+            {},
             defaultConfig,
             {
                 settings: {
@@ -381,6 +413,8 @@ function findConfig(
         );
     }
 
+    // Keeps links shared before compiler-explorer/golden-layout#22 loading: see removeEmptyLayoutItems.
+    removeEmptyLayoutItems(config);
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
@@ -401,11 +435,11 @@ function initializeResetLayoutLink() {
 
 function initPolicies(options: CompilerExplorerOptions) {
     if (options.policies.privacy.enabled) {
-        if (jsCookie.get(options.policies.privacy.key) == null) {
+        if (getCookie(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it',
             });
-        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+        } else if (policyDocuments.privacy.hash !== getCookie(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
             const ppolicyBellNotification = $('#policyBellNotification');
             const pprivacyBellNotification = $('#privacyBellNotification');
@@ -422,13 +456,13 @@ function initPolicies(options: CompilerExplorerOptions) {
         }
     }
     simpleCooks.setOnDoConsent(() => {
-        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
+        setCookie(options.policies.cookies.key, policyDocuments.cookies.hash, {
             expires: 365,
             sameSite: 'strict',
         });
     });
     simpleCooks.setOnDontConsent(() => {
-        jsCookie.set(options.policies.cookies.key, '', {
+        setCookie(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
     });
@@ -444,7 +478,7 @@ function initPolicies(options: CompilerExplorerOptions) {
         $(window).trigger('resize');
     });
     // '' means no consent. Hash match means consent of old. Null means new user!
-    const storedCookieConsent = jsCookie.get(options.policies.cookies.key);
+    const storedCookieConsent = getCookie(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
         if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();

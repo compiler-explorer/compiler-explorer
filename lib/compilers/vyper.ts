@@ -55,13 +55,16 @@ export class VyperCompiler extends BaseCompiler {
             return {asm: [{text: result.asm + '\n\n' + stderrOutput}]};
         }
 
+        // User options such as --help, --version or a different -f can change what (if anything) ends up in the
+        // output file, so fall back to showing it verbatim rather than assuming the opcodes/source_map layout.
         const [opcodesStr, sourceMapStr] = result.asm.split('\n');
-        const sourceMapObj = JSON.parse(sourceMapStr);
+        const pcPosMap = this.parsePcPosMap(sourceMapStr);
+        if (!opcodesStr || !pcPosMap) {
+            return {asm: [{text: result.asm}]};
+        }
 
         const segments: ParsedAsmResultLine[] = [];
         const opcodesArray = opcodesStr.split(' ');
-
-        const pcPosMap = sourceMapObj['pc_pos_map'];
 
         let pc = 0;
 
@@ -74,15 +77,15 @@ export class VyperCompiler extends BaseCompiler {
                 i++;
             }
 
-            const source: AsmResultSource | null =
-                pc in pcPosMap
-                    ? {
-                          file: null,
-                          line: pcPosMap[pc][0],
-                          column: pcPosMap[pc][1],
-                          mainsource: true,
-                      }
-                    : null;
+            const pos = pcPosMap[pc];
+            const source: AsmResultSource | null = Array.isArray(pos)
+                ? {
+                      file: null,
+                      line: pos[0],
+                      column: pos[1],
+                      mainsource: true,
+                  }
+                : null;
 
             const asmResultLine: ParsedAsmResultLine = {
                 text: disassembly,
@@ -105,5 +108,15 @@ export class VyperCompiler extends BaseCompiler {
         return {
             asm: segments,
         };
+    }
+
+    private parsePcPosMap(sourceMapStr: string | undefined): Record<string, unknown> | null {
+        if (!sourceMapStr) return null;
+        try {
+            const pcPosMap = JSON.parse(sourceMapStr)?.pc_pos_map;
+            return pcPosMap && typeof pcPosMap === 'object' ? pcPosMap : null;
+        } catch {
+            return null;
+        }
     }
 }

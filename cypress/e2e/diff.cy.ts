@@ -181,6 +181,19 @@ describe('Diff view', () => {
         openDiffView();
     });
 
+    it('should only offer diff types the selected compiler can produce', () => {
+        waitForEditors();
+        openDiffView();
+
+        findPane('Diff').find('select.difftype-picker.lhsdifftype + .ts-wrapper .ts-control').click();
+        cy.get('.ts-dropdown .option:visible').should($options => {
+            const optionTexts = $options.toArray().map(option => option.textContent?.trim());
+            expect(optionTexts).to.include('Assembly');
+            expect(optionTexts).not.to.include('GNAT Expanded Code');
+            expect(optionTexts).not.to.include('GNAT Tree Code');
+        });
+    });
+
     it('should update selected compiler labels when compiler options change', () => {
         waitForEditors();
 
@@ -207,6 +220,28 @@ describe('Diff view', () => {
         lhsPicker().should('not.contain.text', '-O2');
         diffTab().should('contain.text', '-O1');
         diffTab().should('not.contain.text', '-O2');
+    });
+
+    it('should keep the difftype dropdown open when a compile result arrives', () => {
+        waitForEditors();
+        openDiffView();
+
+        // Hold the next compile result back until the dropdown is open, so it reliably lands while open.
+        cy.intercept('POST', '**/api/compiler/**/compile', req => {
+            req.on('response', res => {
+                res.setDelay(1500);
+            });
+        }).as('compile');
+        compilerPane().find('input.options').clear().type('-O2');
+        findPane('Diff').find('select.diff-picker.lhs + .ts-wrapper .ts-control').should('contain.text', '-O2');
+
+        findPane('Diff').find('select.difftype-picker.lhsdifftype + .ts-wrapper .ts-control').click();
+        cy.get('.ts-dropdown .option:visible').should('have.length.greaterThan', 0);
+
+        cy.wait('@compile');
+        // The -O2 output has no frame pointer; once it shows, the diff pane has handled the result.
+        findPane('Diff').find('.view-lines').should('not.contain.text', 'rbp');
+        cy.get('.ts-dropdown .option:visible').should('have.length.greaterThan', 0);
     });
 
     it('should show renamed source panes in selected compiler labels', () => {

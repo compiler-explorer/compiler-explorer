@@ -34,6 +34,7 @@ import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {CacheableValue} from '../types/cache.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     ActiveTool,
@@ -321,16 +322,10 @@ export class BaseCompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    this.buildenvsetup.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(this.buildenvsetup.compilerArch);
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    temp.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(temp.compilerArch);
             }
         }
 
@@ -607,7 +602,7 @@ export class BaseCompiler {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
                 const isets = new InstructionSets();
-                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                return isets.getCompilerInstructionSetHint(archHint);
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
@@ -698,7 +693,7 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
+        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(objdumpInputFile))) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
@@ -1040,6 +1035,24 @@ export class BaseCompiler {
         });
     }
 
+    getSharedLibraryDynamicLinker(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || foundVersion.dynamicLinker === undefined) return [];
+            return [foundVersion.dynamicLinker];
+        });
+    }
+
+    // A library that brings its own dynamic linker (e.g. glibc) finds its libraries through that loader. Putting them
+    // on LD_LIBRARY_PATH would make the host-built compiler and tools load a foreign libc.
+    private withoutOwnDynamicLinker(libraries: SelectedLibraryVersion[]): SelectedLibraryVersion[] {
+        return libraries.filter(selectedLib => this.findLibVersion(selectedLib)?.dynamicLinker === undefined);
+    }
+
+    private usesLibrarySysroot(libraries: SelectedLibraryVersion[]): boolean {
+        return libraries.some(selectedLib => !!this.findLibVersion(selectedLib)?.sysroot);
+    }
+
     getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -1061,6 +1074,8 @@ export class BaseCompiler {
     ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
+        // TODO: make configurable
+        const dynamicLinkerFlag = '-Wl,--dynamic-linker=';
 
         let toolchainLibraryPaths: string[] = [];
         if (toolchainPath) {
@@ -1076,8 +1091,11 @@ export class BaseCompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
+            // --sysroot stops clang looking outside the sysroot for the GCC runtime (libgcc_s, libstdc++)
+            this.usesLibrarySysroot(libraries) ? toolchainLibraryPaths.map(path => libPathFlag + path) : [],
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
+            this.getSharedLibraryDynamicLinker(libraries, dirPath).map(path => dynamicLinkerFlag + path),
         );
     }
 
@@ -1089,7 +1107,7 @@ export class BaseCompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(libraries), dirPath),
         );
     }
 
@@ -1103,7 +1121,7 @@ export class BaseCompiler {
             this.compiler.ldPath,
             this.getExtraLdPaths(key),
             this.compiler.libPath,
-            this.getSharedLibraryPaths(key.libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(key.libraries), dirPath),
         );
     }
 
@@ -1125,6 +1143,9 @@ export class BaseCompiler {
 
     getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        // TODO: make configurable
+        const sysrootFlag = '--sysroot=';
+
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
@@ -1133,6 +1154,9 @@ export class BaseCompiler {
             if (foundVersion.packagedheaders) {
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
                 paths.push(includeFlag + includePath);
+            }
+            if (foundVersion.sysroot) {
+                paths.push(sysrootFlag + foundVersion.sysroot);
             }
             return paths;
         });
@@ -2036,6 +2060,7 @@ export class BaseCompiler {
         sourceBasename: string,
         keepLineno: boolean,
         isRtlDump: boolean,
+        keepLibraryFunctions = false,
     ): string {
         // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
         // preamble (text before the first function) as the first piece, so join('') is lossless.
@@ -2045,8 +2070,8 @@ export class BaseCompiler {
             !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
 
         const kept =
-            pieces.length <= 1
-                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+            pieces.length <= 1 || keepLibraryFunctions
+                ? pieces // no function markers (e.g. IPA summary dump), or library functions wanted: keep whole
                 : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
@@ -2192,6 +2217,7 @@ export class BaseCompiler {
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binaryObject = false;
@@ -2217,7 +2243,7 @@ export class BaseCompiler {
 
         this.applyOverridesToExecOptions(execOptions, overrides);
 
-        const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
+        const result = await this.buildExecutable(this.compiler.exe, compilerArguments, inputFilename, execOptions);
 
         return await this.afterBuild(key, dirPath, {
             ...result,
@@ -2313,11 +2339,13 @@ export class BaseCompiler {
                     inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
                 }
 
+                const executableFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+                this.assertInsideDir(dirPath, executableFilename);
                 return Object.assign({}, buildResults, {
                     code: 0,
                     inputFilename: inputFilename,
                     dirPath: dirPath,
-                    executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
+                    executableFilename,
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
@@ -2400,32 +2428,36 @@ export class BaseCompiler {
     async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
-        const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
+        try {
+            const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
 
-        // cant use this.writeAllFiles here because outputFilename is used as the file to execute
-        //  instead of inputFilename
+            // cant use this.writeAllFiles here because outputFilename is used as the file to execute
+            //  instead of inputFilename
 
-        await fs.writeFile(outputFilename, source);
-        if (key.files && key.files.length > 0) {
-            await this.writeMultipleFiles(key.files, dirPath);
+            await fs.writeFile(outputFilename, source);
+            if (key.files && key.files.length > 0) {
+                await this.writeMultipleFiles(key.files, dirPath);
+            }
+
+            this.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
+
+            const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
+            return {
+                ...result,
+                didExecute: true,
+                buildResult: {
+                    code: 0,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
+                    downloads: [],
+                    executableFilename: outputFilename,
+                    compilationOptions: [],
+                },
+            };
+        } finally {
+            await this.removeTempDir(dirPath);
         }
-
-        this.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
-
-        const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
-        return {
-            ...result,
-            didExecute: true,
-            buildResult: {
-                code: 0,
-                timedOut: false,
-                stdout: [],
-                stderr: [],
-                downloads: [],
-                executableFilename: outputFilename,
-                compilationOptions: [],
-            },
-        };
     }
 
     async doExecution(
@@ -2548,7 +2580,7 @@ export class BaseCompiler {
         libraries: SelectedLibraryVersion[],
         files: FiledataPair[],
     ): CacheKey {
-        return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
+        return {compiler: {id: this.compiler.id}, source, options, backendOptions, filters, tools, libraries, files};
     }
 
     getBuildProjectCacheKey(buildSystem: BuildSystemDriver, key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
@@ -2559,7 +2591,7 @@ export class BaseCompiler {
             filters: key.filters,
             libraries: key.libraries,
 
-            compiler: this.compiler,
+            compiler: {id: this.compiler.id},
             files: files,
             api: buildSystem.id,
         };
@@ -2583,6 +2615,7 @@ export class BaseCompiler {
             defaultExecOptions: this.getDefaultExecOptions(),
             asmParser: this.asm,
             ...key,
+            compiler: this.compiler,
             ...result,
         } as any as CompilationInfo;
     }
@@ -2598,6 +2631,7 @@ export class BaseCompiler {
             asmParser: this.asm,
             outputFilename: outputFilename,
             ...key,
+            compiler: this.compiler,
             inputFilename: inputFilename,
             dirPath: dirPath,
         } as any as CompilationInfo;
@@ -2670,6 +2704,7 @@ export class BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
@@ -2845,10 +2880,14 @@ export class BaseCompiler {
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, backendOptions.produceOptInfo);
     }
 
-    async doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
-        if (buildResult.dirPath && !this.delayCleanupTemp) {
-            await fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
+    async removeTempDir(dirPath: string) {
+        if (!this.delayCleanupTemp) {
+            await fs.rm(dirPath, {recursive: true, force: true}).catch(() => {});
         }
+    }
+
+    async doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
+        if (buildResult.dirPath) await this.removeTempDir(buildResult.dirPath);
         buildResult.dirPath = undefined;
     }
 
@@ -3026,6 +3065,21 @@ export class BaseCompiler {
         });
     }
 
+    /**
+     * Called before a project build's artifact is disassembled, for a compiler to pick up what the build left next to
+     * it, as the single-file path does in optionsForFilter.
+     */
+    async prepareArtifactDisassembly(
+        _artifactFilename: string,
+        _filters: ParseFiltersAndOutputOptions,
+    ): Promise<void> {}
+
+    /**
+     * Called once a project build has succeeded, for a compiler to put next to the artifact what running it needs, as
+     * the single-file path does in buildExecutableInFolder.
+     */
+    async prepareArtifactExecution(_artifactFilename: string): Promise<void> {}
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
@@ -3100,6 +3154,7 @@ export class BaseCompiler {
         // Read before the cache key is built: making one deletes `execute` from these very filters, which are the
         // request's own object rather than a copy of it.
         const doExecute = parsedRequest.filters.execute;
+        this.fixBackendOptionsForCompiler(parsedRequest.backendOptions);
         const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
         const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
@@ -3126,50 +3181,61 @@ export class BaseCompiler {
                 async () => {
                     compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
 
-                    const build = await this.prepareProjectBuild(
-                        buildSystem,
-                        parsedRequest,
-                        files,
-                        libsAndOptions,
-                        toolchainPath,
-                        cacheKey,
-                        executablePackageHash,
-                    );
-                    const {dirPath, outputFilename} = build;
-
-                    let fullResult: CompilationResult | undefined;
-                    if (packaged) {
-                        // Falls through to building it if the package turns out not to be usable.
-                        const cached: CompilationResult | false = await this.unpackExecutablePackage(
-                            packaged,
+                    const dirPath = await this.newTempDir();
+                    try {
+                        const build = await this.prepareProjectBuild(
+                            buildSystem,
+                            parsedRequest,
+                            files,
+                            libsAndOptions,
+                            toolchainPath,
                             cacheKey,
                             executablePackageHash,
                             dirPath,
                         );
-                        if (cached) {
-                            cached.retreivedFromCache = true;
-                            cached.s3Key = BaseCache.hash(cacheKey);
+                        const {outputFilename} = build;
 
-                            delete cached.inputFilename;
-                            delete cached.dirPath;
-                            cached.executableFilename = outputFilename;
-                            fullResult = cached;
+                        let fullResult: CompilationResult | undefined;
+                        if (packaged) {
+                            // Falls through to building it if the package turns out not to be usable.
+                            const cached: CompilationResult | false = await this.unpackExecutablePackage(
+                                packaged,
+                                cacheKey,
+                                executablePackageHash,
+                                dirPath,
+                            );
+                            if (cached) {
+                                cached.retreivedFromCache = true;
+
+                                delete cached.inputFilename;
+                                delete cached.dirPath;
+                                cached.executableFilename = outputFilename;
+                                fullResult = cached;
+                            }
                         }
+                        if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
+
+                        // Wanted by the cleanup at the end whether or not there is anything to run.
+                        if (fullResult.result) fullResult.result.dirPath = dirPath;
+                        if (doExecute) await this.executeProjectArtifact(build, fullResult);
+
+                        return await this.finishProjectBuild(
+                            build,
+                            fullResult,
+                            parsedRequest,
+                            libsAndOptions,
+                            bypassCache,
+                        );
+                    } finally {
+                        await this.removeTempDir(dirPath);
                     }
-                    if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
-
-                    // Wanted by the cleanup at the end whether or not there is anything to run.
-                    if (fullResult.result) fullResult.result.dirPath = dirPath;
-                    if (doExecute) await this.executeProjectArtifact(build, fullResult);
-
-                    return await this.finishProjectBuild(build, fullResult, parsedRequest, libsAndOptions, bypassCache);
                 },
                 {abandonIfStale: !packaged},
             ),
         );
     }
 
-    /** Where a project build happens and what it is building, worked out before any of it starts. */
+    /** What a project build in `dirPath` is building and how, worked out before any of it starts. */
     private async prepareProjectBuild(
         buildSystem: BuildSystemDriver,
         parsedRequest: ParsedRequest,
@@ -3178,9 +3244,8 @@ export class BaseCompiler {
         toolchainPath: string | undefined,
         cacheKey: CmakeCacheKey,
         executablePackageHash: string,
+        dirPath: string,
     ): Promise<ProjectBuild> {
-        const dirPath = await this.newTempDir();
-
         // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
             args: parsedRequest.executeParameters.args || [],
@@ -3302,6 +3367,8 @@ export class BaseCompiler {
             });
         }
 
+        // Ahead of packaging, so that what running it needs is in the package too
+        await this.prepareArtifactExecution(outputFilename);
         await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
 
         compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -3446,33 +3513,15 @@ export class BaseCompiler {
 
         if (fullResult.result) delete fullResult.result.dirPath;
 
-        // Cleanup temp directory after execution is complete
-        await this.doTempfolderCleanup(fullResult);
-        if (fullResult.result) {
-            await this.doTempfolderCleanup(fullResult.result);
-        }
-
         this.cleanupResult(fullResult);
-        fullResult.s3Key = BaseCache.hash(cacheKey);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(fullResult);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
-            }
-        }
+        // Never the cached copy: afterCmakeCompilation cached it before the path was stripped above, so
+        // it still names the temporary directories we mask here.
+        await this.storeOversizedResult(fullResult, cacheKey, false);
 
         return fullResult;
     }
 
-    fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         // Don't run binary for unsupported compilers, even if we're asked.
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
@@ -3496,6 +3545,17 @@ export class BaseCompiler {
         }
     }
 
+    fixBackendOptionsForCompiler(backendOptions: Record<string, any>) {
+        // A compiler whose output is the same on either background isn't told which one it is (for a project build that
+        // also lets both themes share a cache entry), and one that varies treats a request that doesn't say like one
+        // asking for a light background.
+        if (this.compiler.supportsDarkBackgroundColours) {
+            backendOptions.darkBackgroundColours = backendOptions.darkBackgroundColours === true;
+        } else {
+            delete backendOptions.darkBackgroundColours;
+        }
+    }
+
     async compile(
         source: string,
         options: string[],
@@ -3510,13 +3570,25 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
+        // Request parsing has already rejected a bad filename; reaching here with one is a bug.
+        assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
+
+        // The cache key is the request as it arrived, so that anything able to see the request (ce-router included)
+        // can compute it without knowing how this compiler adapts it below. It is a copy, so nothing done to the
+        // request from here on can change the key it is stored under.
+        const compilationCacheKey = structuredClone(
+            this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files),
+        );
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
             options = libsAndOptions.options;
         }
 
-        this.fixFiltersBeforeCacheKey(filters, options, files);
+        filters = {...this.getDefaultFilters(), ...filters};
+        this.fixFiltersForCompiler(filters, options, files);
+        this.fixBackendOptionsForCompiler(backendOptions);
 
         const executeOptions: ExecutableExecutionOptions = {
             args: executeParameters.args || [],
@@ -3526,7 +3598,7 @@ export class BaseCompiler {
             runtimeTools: executeParameters.runtimeTools || [],
         };
 
-        const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
+        const adaptedRequest = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
 
         const doExecute = filters.execute;
         filters = Object.assign({}, filters);
@@ -3534,22 +3606,18 @@ export class BaseCompiler {
 
         if (!bypassCompilationCache(bypassCache)) {
             const cacheRetrieveTimeStart = process.hrtime.bigint();
-            // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
-            // problem) Because key contains a CompilerInfo which contains a function member it can't be assigned to a
-            // CacheableValue.
-            const result = await this.env.cacheGet(key as any);
+            const result = await this.env.cacheGet(compilationCacheKey);
             if (result) {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
-                result.s3Key = BaseCache.hash(key);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
                         async () => {
                             const start = performance.now();
                             executionQueueTimeHistogram.observe((start - queueTime) / 1000);
-                            const res = await this.handleExecution(key, executeOptions, bypassCache);
+                            const res = await this.handleExecution(adaptedRequest, executeOptions, bypassCache);
                             executionTimeHistogram.observe((performance.now() - start) / 1000);
                             return res;
                         },
@@ -3560,6 +3628,7 @@ export class BaseCompiler {
                         await this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
+                await this.storeOversizedResult(result, compilationCacheKey, !result.execResult);
                 return result;
             }
         }
@@ -3572,10 +3641,15 @@ export class BaseCompiler {
                     source = this.preProcess(source, filters);
 
                     if (backendOptions.executorRequest) {
-                        const execResult = await this.handleExecution(key, executeOptions, bypassCache);
+                        const execResult = await this.handleExecution(adaptedRequest, executeOptions, bypassCache);
                         if (execResult?.buildResult) {
                             await this.doTempfolderCleanup(execResult.buildResult);
                         }
+                        // Returning from here skips afterCompilation, so this is the only chance to
+                        // put an oversized one where a reader can fetch it. The compilation cache
+                        // holds the build under this key, not what running it printed, so the
+                        // result needs a copy of its own.
+                        await this.storeOversizedResult(execResult, compilationCacheKey, false);
                         return execResult;
                     }
 
@@ -3592,7 +3666,7 @@ export class BaseCompiler {
                     const [result, optOutput, stackUsageOutput] = await this.doCompilation(
                         inputFilename,
                         dirPath,
-                        key,
+                        adaptedRequest,
                         options,
                         filters,
                         backendOptions,
@@ -3603,7 +3677,8 @@ export class BaseCompiler {
                     return await this.afterCompilation(
                         result,
                         doExecute!,
-                        key,
+                        adaptedRequest,
+                        compilationCacheKey,
                         executeOptions,
                         tools,
                         backendOptions,
@@ -3624,7 +3699,8 @@ export class BaseCompiler {
     async afterCompilation(
         result /*: CompilationResult*/,
         doExecute: boolean,
-        key: CacheKey,
+        adaptedRequest: CacheKey,
+        compilationCacheKey: CacheKey,
         executeOptions: ExecutableExecutionOptions,
         tools: ActiveTool[],
         backendOptions: Record<string, any>,
@@ -3638,7 +3714,7 @@ export class BaseCompiler {
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
-            doExecute && result.code === 0 ? this.handleExecution(key, executeOptions, bypassCache) : null;
+            doExecute && result.code === 0 ? this.handleExecution(adaptedRequest, executeOptions, bypassCache) : null;
 
         if (result.optPath) {
             delete result.optPath;
@@ -3650,7 +3726,7 @@ export class BaseCompiler {
             result.stackUsageOutput = stackUsageOutput;
         }
 
-        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+        const compilationInfo = this.getCompilationInfo(adaptedRequest, result, customBuildPath);
 
         result.tools = _.union(
             result.tools || [],
@@ -3681,7 +3757,9 @@ export class BaseCompiler {
                 }
             }
             // TODO rephrase this so we don't need to reassign
-            result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
+            result = filters.demangle
+                ? await this.postProcessAsm(result, filters, result.compilationOptions ?? options)
+                : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
@@ -3715,7 +3793,7 @@ export class BaseCompiler {
         this.cleanupResult(result);
 
         if (result.okToCache && !delayCaching) {
-            await this.env.cachePut(key, result, undefined);
+            await this.env.cachePut(compilationCacheKey, result, undefined);
         }
 
         if (doExecute && result.code === 0) {
@@ -3726,23 +3804,33 @@ export class BaseCompiler {
             }
         }
 
-        result.s3Key = BaseCache.hash(key);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(result);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                result.s3Key = `temp/${BaseCache.hash(key)}`;
-            }
-        }
+        // The cmake flow finishes the result off itself, so it stores it there rather than here.
+        // What was cached above is this result without the execResult attached since.
+        if (!delayCaching)
+            await this.storeOversizedResult(result, compilationCacheKey, !!result.okToCache && !result.execResult);
 
         return result;
+    }
+
+    // A result too big for the websocket is fetched from storage instead, so the worker reports
+    // where to find it. When the cache already holds this exact payload the reader is pointed at
+    // that; otherwise a copy goes under temp/, which is not a key cacheGet reads, so a result we
+    // were told not to cache can never come back as a cache hit. Callers say which case they are
+    // in, because the two flows cache at different points: see the call sites.
+    protected async storeOversizedResult(
+        result: CompilationResult,
+        key: CacheableValue,
+        cacheHoldsThisPayload: boolean,
+    ): Promise<void> {
+        if (!this.isCompilationWorker) return;
+        const resultString = JSON.stringify(result);
+        if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
+        if (cacheHoldsThisPayload) {
+            if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
+            return;
+        }
+        const s3Key = await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
+        if (s3Key) result.s3Key = s3Key;
     }
 
     async afterCmakeCompilation(
@@ -3763,6 +3851,7 @@ export class BaseCompiler {
         const processedResult = await this.afterCompilation(
             fullResult.result,
             doExecute,
+            key,
             key,
             executeOptions,
             tools,
@@ -3820,7 +3909,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions, options?: string[]): Promise<ParsedAsmResult> {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 
@@ -3930,6 +4019,11 @@ export class BaseCompiler {
     }
 
     couldSupportASTDump(version: string) {
+        // The AST view runs `-Xclang -ast-dump`, which only clang's C-family frontends support. Some compilers for
+        // other languages still say "clang" in their version string: clang taking LLVM IR (`-x ir`) cannot apply
+        // AST actions to an IR file, and Flang-based Fortran compilers such as AOCC have no such option.
+        if (this.compiler.lang === 'llvm' || this.compiler.lang === 'fortran') return false;
+
         const versionRegex = /version (\d+.\d+)/;
         const versionMatch = versionRegex.exec(version);
 
@@ -4014,7 +4108,13 @@ but nothing was dumped. Possible causes are:
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
                 const trimmed = raw
-                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                    ? this.trimGccDumpHeaderFunctions(
+                          raw,
+                          sourceBasename,
+                          keepLineno,
+                          pass.filename_suffix[0] === 'r',
+                          opts.libraryFunctions ?? false,
+                      )
                     : '';
                 // RTL dumps repeat the absolute path of the source, and of any other user file
                 // (multi-file compiles), on every insn location. Mask the temp dir as we do for
@@ -4210,6 +4310,11 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
+    /** Throws if `filename` is not inside `dirPath`. */
+    assertInsideDir(dirPath: string, filename: string) {
+        if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
+    }
+
     checkOptions(options: string[]) {
         const error = this.env.findBadOptions(options);
         if (error.length > 0) return `Bad options: ${error.join(', ')}`;
@@ -4222,7 +4327,9 @@ but nothing was dumped. Possible causes are:
         if (exeFilename.includes('icc')) {
             return ICCParser;
         }
-        if (exe.includes('clangir')) {
+        // ClangIR compilers share the trunk clang binary, so identify them by name (as
+        // ClangParser does for supportsClangirView), not by exe path.
+        if (this.compiler.name?.includes('clangir')) {
             return ClangirParser;
         }
         if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {

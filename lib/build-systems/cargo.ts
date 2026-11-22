@@ -190,7 +190,10 @@ export class CargoBuildSystem extends BaseBuildSystem {
             .map(artifact => ({
                 ...artifact,
                 executable: CargoBuildSystem.toHostPath(artifact.executable!, ctx.dirPath),
-            }));
+            }))
+            // A real build writes under the project root; a path outside it is one we would copy from the host,
+            // and the record's path is only cargo's stdout, which is not ours to trust with where to read.
+            .filter(artifact => utils.isPathInside(ctx.dirPath, artifact.executable as string));
         if (executables.length === 0) {
             // Not an error as such: cargo can succeed without building a binary, for a library-only crate or when an
             // argument like --help means it never builds at all.

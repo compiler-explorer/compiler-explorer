@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {FormatBase} from '../settings.js';
-
 export interface FormattingRequest {
     source: string;
     formatterId: string;
@@ -32,7 +30,7 @@ export interface FormattingRequest {
      * formatter doesn't have style presets, and that the backend should
      * ignore the "base" option.
      */
-    base: FormatBase | '__DefaultStyle';
+    base: string;
     tabWidth: number;
     useSpaces: boolean;
 }

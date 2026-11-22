@@ -72,13 +72,13 @@ export async function setupWebServer(
         pugRequireHandler = path => `${options.staticRoot}/${path}`;
     }
 
-    // Deliberately fatal (and outside the try above): a mistyped extraBodyClass should stop
-    // startup, not serve broken branding. If the manifest failed to load we're already limping
-    // on the fallback handler, so there's nothing to validate against and we don't try.
+    // Deliberately fatal (and outside the try above): a mistyped extraBodyClass, siteLogo or favicon
+    // should stop startup, not serve broken branding. If the manifest failed to load we're already
+    // limping on the fallback handler, so there's nothing to validate against and we don't try.
     if (appArgs.devMode) {
-        await validateBrandingAssetsOnDisk(getBrandingPublicDir(), options.extraBodyClass);
+        await validateBrandingAssetsOnDisk(getBrandingPublicDir(), options);
     } else if (staticManifest) {
-        validateBrandingAssetsInManifest(staticManifest, options.extraBodyClass);
+        validateBrandingAssetsInManifest(staticManifest, options);
     }
 
     const {renderConfig, renderGoldenLayout, embeddedHandler} = createRenderHandlers(

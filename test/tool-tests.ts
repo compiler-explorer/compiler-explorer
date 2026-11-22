@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {
     getToolchainFlagFromOptions,
@@ -34,9 +36,13 @@ import {
     replaceToolchainArg,
 } from '../lib/toolchain-utils.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
+import {BaseTool} from '../lib/tooling/base-tool.js';
 import {BrontoRefactorTool} from '../lib/tooling/bronto-refactor-tool.js';
+import {ClangFormatTool} from '../lib/tooling/clang-format-tool.js';
+import {ClangQueryTool} from '../lib/tooling/clang-query-tool.js';
 import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
+import {PvsStudioTool} from '../lib/tooling/pvs-studio-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
 
@@ -335,6 +341,178 @@ describe('BrontoRefactorTool', () => {
             column: 5,
             text: 'error: something went wrong',
             severity: 3,
+        });
+    });
+});
+
+describe('ClangQueryTool', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('Should write the tool options to compile_flags.txt for non-clang++ compilers', async () => {
+        const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'clang-query-'));
+        try {
+            const source = path.join(dir, 'example.c');
+            await fs.writeFile(source, 'int main() {}');
+            vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({stdout: [], stderr: []} as any);
+
+            const tool = new ClangQueryTool(
+                {id: 'clangquerytrunk', options: ['-xc', '-std=c11']} as unknown as ToolInfo,
+                {} as ToolEnv,
+            );
+            const compilationInfo = {
+                compiler: {exe: '/opt/compiler-explorer/gcc-14.1.0/bin/gcc'},
+                options: ['-O2', source],
+                libraries: [],
+            } as unknown as CompilationInfo;
+            await tool.runTool(compilationInfo, source, [], 'match functionDecl()');
+
+            const flags = (await fs.readFile(path.join(dir, 'compile_flags.txt'), 'utf8')).split('\n');
+            expect(flags).toEqual(['-O2', '-xc', '-std=c11']);
+        } finally {
+            await fs.rm(dir, {recursive: true, force: true});
+        }
+    });
+});
+
+describe('PvsStudioTool', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    async function analyzeArgs(userArgs: string[]): Promise<string[]> {
+        const tool = new PvsStudioTool(
+            {exe: '/opt/pvs/bin/pvs-studio-analyzer', compilerLanguage: 'c++'} as ToolInfo,
+            {
+                compilerProps: (_key: string, defaultValue: string) => defaultValue,
+            } as unknown as ToolEnv,
+        );
+        const runTool = vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({code: 1} as never);
+        const compilationInfo = {
+            code: 0,
+            compiler: {exe: '/opt/compiler-explorer/gcc-14/bin/g++', options: '', group: 'gcc', lang: 'c++'},
+            libraries: [],
+            options: [],
+        } as unknown as CompilationInfo;
+        await tool.runTool(compilationInfo, '/tmp/ce/example.cpp', userArgs);
+        return runTool.mock.calls[0][2] as string[];
+    }
+
+    it('should pass the user supplied arguments to the analyzer', async () => {
+        const args = await analyzeArgs(['--exclude-path', '/some/dir', '']);
+        expect(args.slice(0, 4)).toEqual(['analyze', '--exclude-path', '/some/dir', '--source-file']);
+        expect(args).not.toContain('');
+    });
+
+    it('should keep the options it controls after the user arguments', async () => {
+        const args = await analyzeArgs(['--dangling-option']);
+        expect(args).toContain('--dangling-option');
+        expect(args.indexOf('--dangling-option')).toBeLessThan(args.indexOf('--cl-params'));
+        expect(args.indexOf('--source-file')).toBeGreaterThan(args.indexOf('--dangling-option'));
+    });
+
+    it('should exclude the library directories from the analysis', async () => {
+        const args = await analyzeArgs([]);
+        const excluded = args.flatMap((arg, i) => (args[i - 1] === '-e' ? [arg] : []));
+        expect(excluded).toEqual(['/opt', '/usr', '/cefs']);
+    });
+
+    it('should look the selected libraries up in the supported libraries', async () => {
+        const tool = new PvsStudioTool(
+            {exe: '/opt/pvs/bin/pvs-studio-analyzer', compilerLanguage: 'c++'} as ToolInfo,
+            {compilerProps: (_key: string, defaultValue: string) => defaultValue} as unknown as ToolEnv,
+        );
+        vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({code: 1} as never);
+        const includes = vi.spyOn(BaseTool.prototype, 'getIncludeArguments');
+        const libraryOptions = vi.spyOn(BaseTool.prototype, 'getLibraryOptions');
+        const supportedLibraries = {fmt: {versions: {}}} as any;
+        const compilationInfo = {
+            code: 0,
+            compiler: {exe: '/opt/compiler-explorer/gcc-14/bin/g++', options: '', group: 'gcc', lang: 'c++'},
+            libraries: [{id: 'fmt', version: '10'}],
+            options: [],
+        } as unknown as CompilationInfo;
+
+        await tool.runTool(compilationInfo, '/tmp/ce/example.cpp', [], '', supportedLibraries);
+
+        expect(includes.mock.calls[0][1]).toBe(supportedLibraries);
+        expect(libraryOptions.mock.calls[0][1]).toBe(supportedLibraries);
+    });
+});
+
+// The args a tool is given are the request's own array, which the compilation cache key holds too: a tool that adds
+// to it changes the key the result is stored under.
+describe('Tools leave the arguments they are given alone', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    const execResult = {code: 0, stdout: '', stderr: '', filenameTransform: (f: string) => f} as any;
+
+    it.each([true, false])('BaseTool, adding its own options: %s', async addOptionsToToolArgs => {
+        const tool = new BaseTool(
+            {id: 'tool', exe: '/bin/true', options: ['--opt']} as unknown as ToolInfo,
+            {
+                ceProps: () => undefined,
+                compilerProps: () => undefined,
+            } as unknown as ToolEnv,
+        );
+        (tool as any).addOptionsToToolArgs = addOptionsToToolArgs;
+        const exec = vi.spyOn(tool, 'exec').mockResolvedValue(execResult);
+        const args = ['--user'];
+
+        await tool.runTool({compiler: {lang: 'c++'}} as unknown as CompilationInfo, '/tmp/ce/example.cpp', args);
+
+        expect(args).toEqual(['--user']);
+        expect(exec.mock.calls[0][1]).toContain('/tmp/ce/example.cpp');
+    });
+
+    async function withSourceDir(run: (source: string) => Promise<void>) {
+        const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'tool-args-'));
+        try {
+            const source = path.join(dir, 'example.cpp');
+            await fs.writeFile(source, 'int main() {}');
+            await run(source);
+        } finally {
+            await fs.rm(dir, {recursive: true, force: true});
+        }
+    }
+
+    function compilationInfoFor(source: string) {
+        return {
+            compiler: {exe: '/opt/compiler-explorer/clang-trunk/bin/clang++', lang: 'c++'},
+            options: ['-O2', source],
+            libraries: [],
+        } as unknown as CompilationInfo;
+    }
+
+    it('ClangQueryTool', async () => {
+        await withSourceDir(async source => {
+            const runTool = vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({stdout: [], stderr: []} as any);
+            const tool = new ClangQueryTool({id: 'clangquerytrunk', options: []} as unknown as ToolInfo, {} as ToolEnv);
+            const args = ['--user'];
+
+            await tool.runTool(compilationInfoFor(source), source, args, 'match functionDecl()');
+
+            expect(args).toEqual(['--user']);
+            expect(runTool.mock.calls[0][2]).toContain('-f');
+        });
+    });
+
+    it('ClangFormatTool', async () => {
+        await withSourceDir(async source => {
+            const runTool = vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({stdout: [], stderr: []} as any);
+            const tool = new ClangFormatTool(
+                {id: 'clangformattrunk', options: []} as unknown as ToolInfo,
+                {} as ToolEnv,
+            );
+            const args = ['--user'];
+
+            await tool.runTool(compilationInfoFor(source), source, args, 'BasedOnStyle: LLVM');
+
+            expect(args).toEqual(['--user']);
+            expect((runTool.mock.calls[0][2] as string[]).some(arg => arg.startsWith('-style=file:'))).toBe(true);
         });
     });
 });

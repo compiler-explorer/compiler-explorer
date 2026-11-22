@@ -37,7 +37,7 @@ import {
 import {logger} from '../logger.js';
 import {setupMcpEndpoint} from '../mcp/index.js';
 import {SentryCapture} from '../sentry.js';
-import {ExpandedShortLink} from '../storage/base.js';
+import {ExpandedShortLink, ShortLinkNotFoundError} from '../storage/base.js';
 import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
 import {ApiHandler} from './api.js';
@@ -103,7 +103,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.debug(`Exception thrown when expanding ${id}: `, err);
                 logger.warn('Exception value:', err);
-                SentryCapture(err, 'storedCodeHandler');
+                if (!(err instanceof ShortLinkNotFoundError)) SentryCapture(err, 'storedCodeHandler');
                 next({
                     statusCode: 404,
                     message: `ID "${id}/${sessionid}" could not be found`,
@@ -194,7 +194,7 @@ export class RouteAPI {
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}`);
                 logger.warn('Exception value:', err);
-                SentryCapture(err, 'storedStateHandlerResetLayout');
+                if (!(err instanceof ShortLinkNotFoundError)) SentryCapture(err, 'storedStateHandlerResetLayout');
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,

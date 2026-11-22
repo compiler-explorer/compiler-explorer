@@ -32,6 +32,7 @@ export class AsmRaw extends AsmRegex {
         const asmLines = asm.split('\n');
         const asmOpcodeRe = /^\s*([\da-f]+):\s*(([\da-f]{2} ?)+)\s*(.*)/;
         const labelRe = /^([\da-f]+)\s+<([^>]+)>:$/;
+        const relocationRe = /^\s*[\da-f]+:\s*(R_[\dA-Z_]+)\s*(.*)/;
         const source = null;
 
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
@@ -47,6 +48,12 @@ export class AsmRaw extends AsmRegex {
             match = line.match(this.labelDef);
             if (match) {
                 result.push({text: match[1] + ':', source: null});
+                continue;
+            }
+
+            match = line.match(relocationRe);
+            if (match) {
+                result.push({text: `   ${match[1]} ${match[2]}`, source: null});
                 continue;
             }
 
