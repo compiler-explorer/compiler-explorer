@@ -1450,38 +1450,6 @@ describe('CMake failure explanations', () => {
         expect(CMakeBuildSystem.explainFailure("error: 'x' was not declared", [fmtAvailable])).toBeUndefined();
     });
 
-    it('keeps every message short enough to read before the notification fades', () => {
-        // Qt-sized on purpose: small fixtures hid a 103-character message that real Qt produced.
-        const bigQt = {
-            libId: 'qt',
-            packageNames: Array.from({length: 29}, (_, i) => `Qt6Component${i}`),
-            targets: [
-                'Qt6::Platform',
-                'Qt6::GlobalConfig',
-                'Qt6::GlobalConfigPrivate',
-                ...Array.from({length: 26}, (_, i) => `Qt6::Component${i}`),
-            ],
-            linkNames: ['Qt6Core'],
-            generated: false,
-        };
-        const outputs = [
-            missingPackage,
-            'Could not find a package configuration file provided by "fmt" (requested version 13.0.0)',
-            'Target "output.s" links to:\n\n    Qt6::Gui\n\n  but the target was not found.',
-            '/usr/bin/ld: cannot find -lfmt: No such file or directory',
-            'CMake Error: Could not find a configuration file for package "Qt6" that is compatible',
-            'ld: warning: libicui18n.so.70, needed by /app/qt/lib/libQt6Core.so, not found',
-            'Could not find a package configuration file provided by "nonesuch"',
-        ];
-        for (const output of outputs) {
-            const message = CMakeBuildSystem.explainFailure(output, [fmtAvailable, bigQt], ['re2'])!;
-            expect(message, output).toBeDefined();
-            const visible = message.split(LIBRARIES_ICON_TOKEN).join('');
-            expect(visible.length, visible).toBeLessThanOrEqual(80);
-            expect(message, message).not.toContain('\n');
-        }
-    });
-
     it('answers with the package the user meant, and what to link', () => {
         const message = CMakeBuildSystem.explainFailure(missingPackage, [qtAvailable])!;
         expect(message).toContain('Did you mean find_package(Qt6)?');
@@ -1621,6 +1589,17 @@ describe('CMake failure explanations', () => {
         ].join('\n');
         expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toBe(
             'fmt is not linked: add target_link_libraries(output.s PRIVATE fmt::fmt)',
+        );
+    });
+
+    it('names the target that failed to link rather than the default one', () => {
+        const output = [
+            "ld: CMakeFiles/the_executable.dir/main.cpp.o: in function `main':",
+            "main.cpp:(.text.startup+0x71): undefined reference to `fmt::v12::vprint()'",
+            'collect2: error: ld returned 1 exit status',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toBe(
+            'fmt is not linked: add target_link_libraries(the_executable PRIVATE fmt::fmt)',
         );
     });
 

@@ -41,6 +41,15 @@ function matchKey(name: string): string {
     return name.toLowerCase().replaceAll(/[^a-z0-9]/g, '');
 }
 
+/**
+ * The target whose link step produced the error at `errorIndex`: ld names the object it was linking from, and CMake
+ * puts each target's objects under CMakeFiles/<target>.dir/. Falls back to the default example's target.
+ */
+function failingTarget(output: string, errorIndex: number): string {
+    const objectDirs = [...output.slice(0, errorIndex).matchAll(/CMakeFiles\/([^/\s]+)\.dir\//g)];
+    return objectDirs.at(-1)?.[1] ?? 'output.s';
+}
+
 /** The package the user most likely meant: an exact-ish match on what they typed. */
 function closestPackage(requested: string, available: CMakePackageDescription[]): string | undefined {
     const wanted = matchKey(requested);
@@ -259,11 +268,13 @@ export class CMakeBuildSystem extends BaseBuildSystem {
         // Qt's headers emit a reference to qt_version_tag, which only libQt6Core defines. Seeing it
         // undefined means the headers were used without the library ever being linked - typically a
         // find_package(Qt6) with no matching target_link_libraries.
-        if (/undefined\s+reference to .?qt_version_tag/.test(output)) {
+        const qtVersionTag = /undefined\s+reference to .?qt_version_tag/.exec(output);
+        if (qtVersionTag) {
             const qtTarget = available.flatMap(entry => entry.targets).find(target => /^Qt\d*::Core$/.test(target));
+            const target = failingTarget(output, qtVersionTag.index);
             // Give the line to write, not just the name: there is usually no target_link_libraries at
             // all yet, so naming the target alone leaves the user to guess the call and the target name.
-            return `Qt is not linked: add target_link_libraries(output.s PRIVATE ${qtTarget ?? 'Qt6::Core'})`;
+            return `Qt is not linked: add target_link_libraries(${target} PRIVATE ${qtTarget ?? 'Qt6::Core'})`;
         }
 
         // A mangled C++ symbol carries its namespace, and if that names a library the user selected then
@@ -282,7 +293,8 @@ export class CMakeBuildSystem extends BaseBuildSystem {
                 candidate => candidate.includes('::') && matchKey(candidate.split('::')[0]) === namespace,
             );
             if (owner && target) {
-                return `${owner.libId} is not linked: add target_link_libraries(output.s PRIVATE ${target})`;
+                const failing = failingTarget(output, undefinedSymbol.index);
+                return `${owner.libId} is not linked: add target_link_libraries(${failing} PRIVATE ${target})`;
             }
         }
 
