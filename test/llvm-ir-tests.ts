@@ -24,11 +24,15 @@
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {ClangCompiler, ClangHexagonCompiler} from '../lib/compilers/clang.js';
+import {DefaultCompiler} from '../lib/compilers/default.js';
 import {LLCCompiler} from '../lib/compilers/llc.js';
 import {OptCompiler} from '../lib/compilers/opt.js';
-import {makeCompilationEnvironment} from './utils.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
+    'c++': {id: 'c++'},
     llvm: {id: 'llvm'},
 };
 
@@ -115,5 +119,39 @@ describe('LLVM IR Compiler', () => {
                 'output.s',
             ),
         ).toEqual(['-o', 'output.s', '-S']);
+    });
+});
+
+describe('LLVM IR compilers and the Clang AST view', () => {
+    const clangVersion = 'clang version 21.1.0 (https://github.com/llvm/llvm-project.git)';
+
+    function createClangLikeCompiler(compiler, lang: LanguageKey) {
+        if (ce === undefined) {
+            ce = makeCompilationEnvironment({languages});
+        }
+
+        const info = makeFakeCompilerInfo({
+            exe: '/dev/null',
+            remote: {
+                target: 'foo',
+                path: 'bar',
+                cmakePath: 'cmake',
+                basePath: '/',
+            },
+            lang: lang,
+        });
+
+        return new compiler(info, ce);
+    }
+
+    it('should not offer the AST view for clang compiling LLVM IR', () => {
+        // irclang* compilers have no compilerType, irhexagonclang* use clang-hexagon
+        expect(createClangLikeCompiler(DefaultCompiler, 'llvm').couldSupportASTDump(clangVersion)).toEqual(false);
+        expect(createClangLikeCompiler(ClangHexagonCompiler, 'llvm').couldSupportASTDump(clangVersion)).toEqual(false);
+    });
+
+    it('should still offer the AST view for clang compiling C++', () => {
+        expect(createClangLikeCompiler(ClangCompiler, 'c++').couldSupportASTDump(clangVersion)).toEqual(true);
+        expect(createClangLikeCompiler(ClangHexagonCompiler, 'c++').couldSupportASTDump(clangVersion)).toEqual(true);
     });
 });
