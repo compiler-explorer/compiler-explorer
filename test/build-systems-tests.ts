@@ -407,8 +407,11 @@ describe('CMake build system', () => {
         };
 
         expect(compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}])).toEqual([
+            // REMARK: LLVMMOSCompiler normalizes the path
             path.normalize('/opt/compiler-explorer/llvm-mos'),
-            path.normalize('/opt/package'),
+
+            // REMARK: library paths are used as-is, because CMake supports both UNIX and Windows-style paths in CMAKE_PREFIX_PATH
+            '/opt/package',
         ]);
     });
 
