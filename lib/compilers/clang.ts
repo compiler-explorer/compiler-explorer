@@ -62,7 +62,7 @@ export class ClangCompiler extends BaseCompiler {
     protected offloadBundlerPath?: string;
     protected llvmDisassemblerPath?: string;
     protected msvcDemanglerPath?: string;
-    protected readonly ptxDeviceParser = new PTXAsmParser();
+    private ptxDeviceParserInstance?: PTXAsmParser;
 
     static get key() {
         return 'clang';
@@ -340,6 +340,13 @@ export class ClangCompiler extends BaseCompiler {
             return await fs.promises.readFile(llvmirFile, 'utf8');
         }
         return '<error: no llvm-dis found to disassemble bitcode>';
+    }
+
+    // Created on first use: most clang instances never see nvptx device code.
+    protected get ptxDeviceParser(): PTXAsmParser {
+        if (this.asm instanceof PTXAsmParser) return this.asm;
+        this.ptxDeviceParserInstance ??= new PTXAsmParser(this.compilerProps);
+        return this.ptxDeviceParserInstance;
     }
 
     async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {

@@ -182,7 +182,12 @@ describe('clang openmp nvptx device code', () => {
 .extern .func  (.param .b32 func_retval0) __kmpc_get_hardware_num_threads_in_block
 ()
 ;
-.visible .entry __omp_offloading_norm2_l49(
+.func __omp_outlined__1
+(
+        .param .b64 __omp_outlined__1_param_0
+)
+;
+.weak .entry __omp_offloading_norm2_l49(
         .param .u64 __omp_offloading_norm2_l49_param_0
 )
 {
@@ -193,18 +198,35 @@ describe('clang openmp nvptx device code', () => {
         mov.u32         %r1, %tid.x;
         ret;
 }
+.func __omp_outlined__1(
+        .param .b64 __omp_outlined__1_param_0
+)
+{
+        ret;
+}
 `;
 
     it('should parse nvptx device code as PTX', async () => {
         const filters = {directives: true, commentOnly: true, labels: true, libraryCode: true} as any;
         const result = await clang.processDeviceAssembly('openmp-nvptx64-nvidia-cuda', ptx, filters, {} as any);
         expect(result.asm.map(line => line.text.trim())).toEqual([
-            '.visible .entry __omp_offloading_norm2_l49(',
+            '.func __omp_outlined__1',
+            '(',
+            '.param .b64 __omp_outlined__1_param_0',
+            ')',
+            ';',
+            '.weak .entry __omp_offloading_norm2_l49(',
             '.param .u64 __omp_offloading_norm2_l49_param_0',
             ')',
             '{',
             'ld.param.u64    %rd1, [__omp_offloading_norm2_l49_param_0];',
             'mov.u32         %r1, %tid.x;',
+            'ret;',
+            '}',
+            '.func __omp_outlined__1(',
+            '.param .b64 __omp_outlined__1_param_0',
+            ')',
+            '{',
             'ret;',
             '}',
         ]);

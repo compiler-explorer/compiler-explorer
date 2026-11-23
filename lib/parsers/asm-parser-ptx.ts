@@ -35,6 +35,7 @@ export class PTXAsmParser extends AsmParser {
     protected externFuncDirective: RegExp;
     protected paramDirective: RegExp;
     protected visibleDirective: RegExp;
+    protected functionHeader: RegExp;
     protected override fileFind: RegExp;
     protected override sourceTag: RegExp;
     protected externFuncStart: RegExp;
@@ -59,6 +60,9 @@ export class PTXAsmParser extends AsmParser {
         this.externFuncDirective = /^\s*\.extern\s+\.func/;
         this.paramDirective = /^\s*\.param/;
         this.visibleDirective = /^\s*\.visible/;
+        // Kernel and function headers, whatever their linkage: clang emits OpenMP kernels as
+        // `.weak .entry` and internal functions as a bare `.func`.
+        this.functionHeader = /^\s*(\.(visible|weak|extern)\s+)*\.(entry|func)\b/;
 
         this.fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"/;
         this.sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+)\s+(\d+)/;
@@ -231,7 +235,7 @@ export class PTXAsmParser extends AsmParser {
             return inFunctionImplementation;
         }
 
-        if (this.visibleDirective.test(line)) {
+        if (this.visibleDirective.test(line) || this.functionHeader.test(line)) {
             return false;
         }
 
