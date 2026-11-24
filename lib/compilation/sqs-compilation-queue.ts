@@ -32,6 +32,7 @@ import {
     TEMP_STORAGE_TTL_DAYS,
     WEBSOCKET_SIZE_THRESHOLD,
 } from '../../types/compilation/compilation.interfaces.js';
+import {awsCredentials} from '../aws.js';
 import type {BuildSystemDriver} from '../build-systems/index.js';
 import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -186,8 +187,8 @@ export class SqsCompilationQueueBase {
             );
         }
 
-        this.sqs = new SQS({region: region});
-        this.s3 = new S3({region: region});
+        this.sqs = new SQS({region: region, credentials: awsCredentials()});
+        this.s3 = new S3({region: region, credentials: awsCredentials()});
     }
 }
 
