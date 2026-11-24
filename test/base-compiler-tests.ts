@@ -1116,3 +1116,42 @@ describe('Dark background colours given to the compiler', () => {
         expect(adapted(true, {})).toEqual({darkBackgroundColours: false});
     });
 });
+
+describe('LLVM IR demangling', () => {
+    it('keeps overlapping compilations apart', async () => {
+        const compiler = new BaseCompiler(
+            makeFakeCompilerInfo({lang: 'c++', exe: 'clang', options: '', demangler: 'c++filt'}),
+            makeCompilationEnvironment({languages}),
+        );
+        const demangled: Record<string, string> = {_Z7secretAi: 'secretA(int)', _Z7secretBi: 'secretB(int)'};
+        const pendingDemangles: (() => void)[] = [];
+        const execSpy = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, _args, options) => {
+            await new Promise<void>(resolve => pendingDemangles.push(resolve));
+            return {
+                code: 0,
+                okToCache: true,
+                filenameTransform: (f: string) => f,
+                stdout: (options.input ?? '')
+                    .split('\n')
+                    .map(symbol => demangled[symbol])
+                    .join('\n'),
+                stderr: '',
+                execTime: 0,
+                timedOut: false,
+                truncated: false,
+            };
+        });
+        const filters = makeFakeParseFiltersAndOutputOptions({demangle: true});
+        const irFor = (symbol: string) => `define i32 @${symbol}(i32 %x) {\n  ret i32 %x\n}`;
+
+        const compilationA = compiler.processAsm({asm: irFor('_Z7secretAi')}, filters, ['-emit-llvm']);
+        const compilationB = compiler.processAsm({asm: irFor('_Z7secretBi')}, filters, ['-emit-llvm']);
+        await vi.waitFor(() => expect(pendingDemangles).toHaveLength(2));
+        for (const release of pendingDemangles) release();
+        const [resultA, resultB] = await Promise.all([compilationA, compilationB]);
+
+        expect(resultA.asm.map(line => line.text)).toEqual(['define i32 @secretA(int)(i32 %x) {', '  ret i32 %x', '}']);
+        expect(resultB.asm.map(line => line.text)).toEqual(['define i32 @secretB(int)(i32 %x) {', '  ret i32 %x', '}']);
+        expect(execSpy.mock.calls.map(([, , options]) => options.input)).toEqual(['_Z7secretAi', '_Z7secretBi']);
+    });
+});
