@@ -719,6 +719,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: '_',
     },
+    metal: {
+        name: 'Metal Shading Language',
+        monaco: 'metal',
+        extensions: ['.metal'],
+        alias: ['msl'],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: 'clangformat',
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     modula2: {
         name: 'Modula-2',
         monaco: 'modula2',

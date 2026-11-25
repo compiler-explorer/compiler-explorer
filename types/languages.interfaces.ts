@@ -84,6 +84,7 @@ export type LanguageKey =
     | 'mach'
     | 'makefile'
     | 'maven'
+    | 'metal'
     | 'mlir'
     | 'modula2'
     | 'mojo'
