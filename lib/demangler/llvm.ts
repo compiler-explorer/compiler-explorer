@@ -36,6 +36,8 @@ export class LLVMIRDemangler {
     // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
     llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
     llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
+    // Metadata strings such as TBAA type names: !{!"_ZTS5Outer", !31, i64 0}
+    llvmMetadataStringRE = /!"(?<symbol>_Z[^"]*)"/g;
 
     symbolDemangler: BaseDemangler;
     result: ParsedAsmResult;
@@ -63,7 +65,11 @@ export class LLVMIRDemangler {
             const text = line.text;
             if (!text) continue;
 
-            const matches = [...text.matchAll(this.llvmSymbolRE), ...text.matchAll(this.llvmQuotedSymbolRE)];
+            const matches = [
+                ...text.matchAll(this.llvmSymbolRE),
+                ...text.matchAll(this.llvmQuotedSymbolRE),
+                ...text.matchAll(this.llvmMetadataStringRE),
+            ];
             for (const match of matches) {
                 labels.add(match.groups!.symbol);
             }

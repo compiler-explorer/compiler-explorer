@@ -133,6 +133,48 @@ main:
         expect(result).toContain('nop');
     });
 
+    describe('PTX device output', () => {
+        const ptx = '.version 9.0\n.target sm_52\n.address_size 64\n\n.visible .entry _Z6kernelv()\n{\n\tret;\n}\n';
+        let dirPath: string;
+
+        beforeEach(async () => {
+            dirPath = await fs.mkdtemp(Path.join(os.tmpdir(), 'ce-nvcc-ptx-'));
+            await fs.writeFile(Path.join(dirPath, 'example.ptx'), ptx);
+        });
+
+        afterEach(async () => {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        });
+
+        async function extractPtx(maxAsmSize: number) {
+            const compiler = new NvccCompiler(
+                info as any,
+                makeCompilationEnvironment({languages, props: {'max-asm-size': maxAsmSize}}),
+            );
+            const result = await compiler.extractDeviceCode(
+                {dirPath, devices: {}} as any,
+                {...compiler.getDefaultFilters(), commentOnly: false, demangle: false},
+                {} as any,
+            );
+            return result.devices?.PTX.asm;
+        }
+
+        it('parses PTX within max-asm-size', async () => {
+            expect(await extractPtx(1024)).toEqual(
+                expect.arrayContaining([expect.objectContaining({text: expect.stringContaining('ret;')})]),
+            );
+        });
+
+        it('does not read PTX larger than max-asm-size', async () => {
+            const asm = await extractPtx(32);
+            expect(asm).toEqual([
+                expect.objectContaining({
+                    text: `<No output: generated PTX was too large (${ptx.length} > 32 bytes)>`,
+                }),
+            ]);
+        });
+    });
+
     it('disassembles CUDA Tile bytecode into a Tile IR device output', async () => {
         const dirPath = await fs.mkdtemp(Path.join(os.tmpdir(), 'ce-nvcc-tileir-'));
         const tileBytecode = Path.join(dirPath, 'example.tilebc');

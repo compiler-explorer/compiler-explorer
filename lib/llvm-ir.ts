@@ -64,7 +64,7 @@ export class LlvmIrParser {
 
     constructor(
         compilerProps: PropertyGetter,
-        private readonly irDemangler: LLVMIRDemangler,
+        private readonly createIrDemangler: () => LLVMIRDemangler,
     ) {
         this.maxIrLines = 5000;
         if (compilerProps) {
@@ -280,8 +280,9 @@ export class LlvmIrParser {
             };
         }
 
-        if (options.demangle && this.irDemangler.canDemangle()) {
-            const demangled = await this.irDemangler.process({asm: result});
+        const irDemangler = options.demangle ? this.createIrDemangler() : undefined;
+        if (irDemangler?.canDemangle()) {
+            const demangled = await irDemangler.process({asm: result});
             return {
                 asm: demangled.asm,
                 languageId: 'llvm-ir',

@@ -40,7 +40,7 @@ import {
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
-import {extendConfig} from '../monaco-config.js';
+import {disposeDiffEditor, extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 import {replaceOptions} from '../tom-select-utils.js';
 import * as utils from '../utils.js';
@@ -545,6 +545,6 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         $(document).off('keydown', this.keydownCallback);
         this.eventHub.unsubscribe();
         this.eventHub.emit('optPipelineViewClosed', this.compilerInfo.compilerId);
-        this.editor.dispose();
+        disposeDiffEditor(this.editor);
     }
 }

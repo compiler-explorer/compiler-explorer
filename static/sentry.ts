@@ -28,7 +28,7 @@ import GoldenLayout from 'golden-layout';
 import {parse} from '../shared/stacktrace.js';
 import {serialiseState} from '../shared/url-serialization.js';
 import {options} from './options.js';
-import {isWorkerErrorNoise} from './sentry-filters.js';
+import {isWorkerErrorNoise, restoreRethrownFrames} from './sentry-filters.js';
 import {SiteSettings} from './settings.js';
 
 let layout: GoldenLayout;
@@ -55,25 +55,6 @@ export function setSentryLayout(l: GoldenLayout) {
         }
         return event;
     });
-}
-
-function isEventLike(value: unknown): value is Event {
-    return value instanceof Event || value?.constructor?.name === 'Event' || value?.constructor?.name === 'CustomEvent';
-}
-
-function formatEventRejection(evt: Event): string {
-    const targetName = evt.target?.constructor?.name ?? 'unknown';
-    let message = `Event rejection: type="${evt.type}", target="${targetName}"`;
-
-    if ('detail' in evt && evt.detail !== undefined) {
-        try {
-            message += `, detail=${JSON.stringify(evt.detail)}`;
-        } catch {
-            message += ', detail=[Unserializable]';
-        }
-    }
-
-    return message;
 }
 
 export function SetupSentry() {
@@ -134,28 +115,9 @@ export function SetupSentry() {
                 if (isWorkerErrorNoise(event)) {
                     return null;
                 }
+                restoreRethrownFrames(event);
                 return event;
             },
-        });
-        window.addEventListener('unhandledrejection', event => {
-            let reason = event.reason;
-
-            if (!(reason instanceof Error)) {
-                // Safari sometimes rejects promises with CustomEvent/Event objects.
-                // Extract useful properties instead of stringifying to empty object.
-                // See: https://github.com/compiler-explorer/compiler-explorer/issues/8172
-                // Related: https://github.com/getsentry/sentry-javascript/issues/2210
-                const errorMessage =
-                    typeof reason === 'string'
-                        ? reason
-                        : isEventLike(reason)
-                          ? formatEventRejection(reason)
-                          : `Non-Error rejection: ${JSON.stringify(reason)}`;
-
-                reason = Object.assign(new Error(errorMessage), {originalReason: event.reason});
-            }
-
-            SentryCapture(reason, 'Unhandled Promise Rejection');
         });
     }
 }

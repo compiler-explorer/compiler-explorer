@@ -91,4 +91,26 @@ describe('asm mode', () => {
         expect(rows[0].some(([, type]) => type.startsWith('string'))).toBe(false);
         expect(rows[1][0]).toEqual(['ret', 'keyword']);
     });
+
+    it('reads an ARM relocation operator after a # as an operand, not a comment', () => {
+        const rows = tokens(['\tldr\tx26, [x21, #:lo12:.LANCHOR0]', '\tmovw\tr3, #:lower16:.LC0'].join('\n'));
+        expect(rows[0].slice(-5)).toEqual([
+            ['#:', 'operator'],
+            ['lo12', 'type.identifier'],
+            [':', 'operator'],
+            ['.LANCHOR0', 'type.identifier'],
+            [']', 'delimiter.square'],
+        ]);
+        expect(rows[1].slice(-4)).toEqual([
+            ['#:', 'operator'],
+            ['lower16', 'type.identifier'],
+            [':', 'operator'],
+            ['.LC0', 'type.identifier'],
+        ]);
+    });
+
+    it('still reads a # at the end of a line as a comment', () => {
+        const rows = tokens('\tmov\tx0, 1 # set x0');
+        expect(rows[0].slice(-1)).toEqual([['# set x0', 'comment']]);
+    });
 });

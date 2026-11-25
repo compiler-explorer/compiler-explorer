@@ -26,7 +26,7 @@ import lzstring from 'lz-string';
 import _ from 'underscore';
 
 import * as urlSerialization from '../shared/url-serialization.js';
-import {GoldenLayoutConfig} from './components.interfaces.js';
+import {GoldenLayoutConfig, ItemConfig, isLayoutItem} from './components.interfaces.js';
 import * as Components from './components.js';
 
 const ITEM_TYPES = new Set(['row', 'column', 'stack', 'component']);
@@ -58,6 +58,21 @@ export function parseSavedLayoutState(savedState: string): GoldenLayoutConfig | 
     if (!isPlainObject(parsed) || !Array.isArray(parsed.content)) return null;
     if (!parsed.content.every(isValidItemConfig)) return null;
     return parsed as GoldenLayoutConfig;
+}
+
+/**
+ * Links shared before compiler-explorer/golden-layout#22 could contain empty panes, this workaround lets them load.
+ * Such old layouts could contain a row, column or stack with nothing in it (#6980). Such an item leaves a blank slice
+ * of the screen, and if its `content` is missing altogether, dragging a splitter next to it throws.
+ * This utility removes those items, and any left empty by their removal; golden-layout scales their siblings up to
+ * fill the space.
+ */
+export function removeEmptyLayoutItems(config: {content?: ItemConfig[]}): void {
+    if (!config.content) return;
+    for (const item of config.content) {
+        if (isLayoutItem(item)) removeEmptyLayoutItems(item);
+    }
+    config.content = config.content.filter(item => !isLayoutItem(item) || !_.isEmpty(item.content));
 }
 
 export function convertOldState(state: any): any {
