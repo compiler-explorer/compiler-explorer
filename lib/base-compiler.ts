@@ -288,8 +288,7 @@ export class BaseCompiler {
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIrDemanglerClass = this.demanglerClass ?? BaseDemangler;
-        const irDemangler = new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
-        this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
+        this.llvmIr = new LlvmIrParser(this.compilerProps, () => this.createLlvmIrDemangler());
         this.llvmPassDumpParser = new LlvmPassDumpParser();
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
@@ -897,6 +896,10 @@ export class BaseCompiler {
 
     protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
         return [...this.compiler.demanglerArgs];
+    }
+
+    protected createLlvmIrDemangler() {
+        return new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
     }
 
     findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
@@ -1669,8 +1672,7 @@ export class BaseCompiler {
 
             if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
-                // new this.demanglerClass(this.compiler.demangler, this);
-                const demangler = new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
+                const demangler = this.createLlvmIrDemangler();
                 // collect labels off the raw input
                 if (this.compiler.debugPatched) {
                     demangler.collect({asm: output.stdout});
