@@ -41,7 +41,7 @@ describe('llvm-ir parseMetaNode', () => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as () => LLVMIRDemangler);
     });
 
     it('should parse DILocation node', () => {
@@ -117,7 +117,7 @@ describe('llvm-ir getSourceLineNumber', () => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as () => LLVMIRDemangler);
     });
 
     const debugInfo = {
@@ -158,7 +158,7 @@ describe('llvm-ir getSourceColumn', () => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as () => LLVMIRDemangler);
     });
 
     const debugInfo = {
@@ -200,7 +200,7 @@ describe('llvm-ir getFileName', () => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as () => LLVMIRDemangler);
     });
     const debugInfo = {
         '!10': {filename: '/test.cpp', metaId: ''},
@@ -248,7 +248,7 @@ describe('llvm-ir processIr filters', () => {
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as () => LLVMIRDemangler);
     });
 
     const irWithDeclarations = [
@@ -346,7 +346,7 @@ describe('llvm-ir isLlvmIr', () => {
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as () => LLVMIRDemangler);
     });
 
     it('should detect IR with debug info', () => {
