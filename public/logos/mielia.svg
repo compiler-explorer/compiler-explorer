@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Mielia logo">
+  <rect x="12" y="82" width="96" height="22" rx="11" fill="#c46f0e"/>
+  <rect x="18" y="58" width="84" height="22" rx="11" fill="#e8962a"/>
+  <path transform="translate(0,6)" d="M24 56 C 30 46, 90 46, 96 56 L 96 60 C 96 64, 90 64, 90 60 L 90 58 C 84 60, 80 60, 76 60 L 76 74 C 76 80, 68 80, 68 74 L 68 61 C 60 62, 52 62, 46 61 L 46 66 C 46 71, 39 71, 39 66 L 39 60 C 32 60, 28 60, 24 60 Z" fill="#ffcc33"/>
+  <path d="M60 12 C 60 12, 72 28, 72 35 A 12 12 0 0 1 48 35 C 48 28, 60 12, 60 12 Z" fill="#ffcc33"/>
+  <circle cx="55" cy="36" r="3" fill="#ffffff" fill-opacity="0.7"/>
+</svg>

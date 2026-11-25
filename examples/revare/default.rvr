@@ -1,0 +1,16 @@
+import IO/Console
+
+### Returns a greeting for `n`, or fails when `n` is zero.
+routine get_text(n: S64) -> Text
+    when n
+        == 0 => throw DivisionByZeroError()
+        == 1 => return "hello"
+        else => return "world"
+
+### Shows what `get_text` gives back, with the failure received by `try`.
+routine start()
+    var m = try get_text(n: 0)
+    when m
+        is None => show("absent")
+        else as v => show(f"present: {v}")
+    return
