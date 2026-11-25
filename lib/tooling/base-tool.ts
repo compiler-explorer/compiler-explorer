@@ -184,7 +184,7 @@ export class BaseTool implements ITool {
         });
     }
 
-    protected getToolExe(compilationInfo: CompilationInfo): string {
+    protected async getToolExe(compilationInfo: CompilationInfo): Promise<string> {
         return this.tool.exe;
     }
 
@@ -210,7 +210,7 @@ export class BaseTool implements ITool {
         args = this.addOptionsToToolArgs ? this.tool.options.concat(args ?? []) : [...(args ?? [])];
         if (inputFilepath && !dontAppendInputFilepath) args.push(inputFilepath);
 
-        const toolExe = this.getToolExe(compilationInfo);
+        const toolExe = await this.getToolExe(compilationInfo);
         const exeDir = path.dirname(toolExe);
 
         try {
