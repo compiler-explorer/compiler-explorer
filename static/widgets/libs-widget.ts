@@ -25,16 +25,50 @@
 import $ from 'jquery';
 
 import {unwrapString} from '../../shared/assert.js';
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
-import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {compilersService} from '../services/compilers.service.js';
+import {languagesService} from '../services/languages.service.js';
+import {libsService} from '../services/libs.service.js';
 import {Alert} from './alert.js';
-import {Lib, WidgetState} from './libs-widget.interfaces.js';
+import {Lib, StateLib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
-const c_default_compiler_non_id = '_default_';
+
+/** The bucket libs land in when no compiler is selected yet. */
+export const DEFAULT_COMPILER_KEY = '_default_';
+
+/**
+ * The key `availableLibs` is bucketed by.
+ *
+ * Two call shapes reach this widget. The compiler and executor panes own one
+ * compiler each and pass the `CompilerInfo`. The conformance view tracks
+ * several at once and passes their ids joined with `|`, because the libraries
+ * it offers are the intersection across all of them. `setNewLangId` already
+ * took the string form while the constructor only read `.id`, so a widget
+ * built from a string keyed itself on `undefined` and then silently re-keyed
+ * the first time a compiler changed, orphaning every lib recorded until then.
+ */
+export function toCompilerKey(compiler: CompilerInfo | string | null | undefined): string {
+    const id = typeof compiler === 'string' ? compiler : compiler?.id;
+    return id === undefined || id === '' ? DEFAULT_COMPILER_KEY : id;
+}
+
+/** Saved libs come as `{name, ver}` today and as `{id, version}` from older links. */
+export function stateLibsToLibs(libs: StateLib[] | undefined): Lib[] {
+    const result: Lib[] = [];
+    for (const lib of libs ?? []) {
+        const name = lib.name ?? lib.id;
+        const ver = lib.ver ?? lib.version;
+        if (name && ver) {
+            result.push({name, ver});
+        }
+    }
+    return result;
+}
 
 export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
@@ -100,19 +134,25 @@ class LibraryAnnotations {
     }
 }
 
-function getCompilerName(compilerId: string): string {
-    if (compilerId === c_default_compiler_non_id) {
+async function getCompilerName(compilerId: string, langId: string): Promise<string> {
+    if (compilerId === DEFAULT_COMPILER_KEY) {
         return 'compiler';
     }
 
-    const compilerName = '';
-    for (const compiler of options.compilers) {
-        if (compiler.id === compilerId) {
-            return compiler.name;
+    const compilers = await compilersService.getCompilersForLang(langId);
+    return compilers[compilerId]?.name ?? '';
+}
+
+async function getLangDefaultLibs(langId: string): Promise<Lib[]> {
+    const languages = await languagesService.getLanguages();
+    const result: Lib[] = [];
+    for (const libPair of languages[langId]?.defaultLibs?.split(':') ?? []) {
+        const pairSplits = libPair.split('.');
+        if (pairSplits.length === 2) {
+            result.push({name: pairSplits[0], ver: pairSplits[1]});
         }
     }
-
-    return compilerName;
+    return result;
 }
 
 function shortenMachineName(name: string): string {
@@ -136,13 +176,18 @@ export class LibsWidget {
 
     private currentLangId: string;
     private currentCompilerId: string;
+    private currentCompilerName: string = '';
 
     private dropdownButton: JQuery;
     private searchResults: JQuery;
 
     private readonly onChangeCallback: () => void;
 
+    // Resolves once the saved state has been applied to the lazily-loaded library list.
+    public readonly stateLoaded: Promise<void>;
+
     private readonly availableLibs: AvailableLibs;
+    private langChangeGeneration = 0;
     private readonly filters: PopupAlertFilter[] = [
         (compilerId, langId) => {
             if (langId === 'rust' && ['beta', 'nightly'].includes(compilerId)) {
@@ -161,27 +206,30 @@ export class LibsWidget {
 
     constructor(
         langId: string,
-        compiler: any,
+        compiler: CompilerInfo | string | null | undefined,
         dropdownButton: JQuery,
         state: WidgetState,
         onChangeCallback: () => void,
         possibleLibs: CompilerLibs,
     ) {
         this.dropdownButton = dropdownButton;
-        if (compiler) {
-            this.currentCompilerId = compiler.id;
-        } else {
-            this.currentCompilerId = c_default_compiler_non_id;
+        this.currentCompilerId = toCompilerKey(compiler);
+        if (compiler && typeof compiler !== 'string') {
+            this.currentCompilerName = compiler.name ?? '';
         }
         this.currentLangId = langId;
         this.domRoot = $('#library-selection').clone(true);
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.updateAvailableLibs(possibleLibs, true);
-        this.loadState(state);
-
-        this.fullRefresh();
+        this.stateLoaded = this.loadLibs(langId, this.currentCompilerId, possibleLibs, true).then(defaultLibs => {
+            for (const lib of defaultLibs) {
+                this.markLibrary(lib.name, lib.ver, true);
+            }
+            this.loadState(state);
+            this.fullRefresh();
+            this.updateButton();
+        });
 
         const searchInput = this.domRoot.find('.lib-search-input');
 
@@ -234,12 +282,8 @@ export class LibsWidget {
             }
         }
 
-        for (const lib of state.libs ?? []) {
-            if (lib.name && lib.ver) {
-                this.markLibrary(lib.name, lib.ver, true);
-            } else if (lib.id && lib.version) {
-                this.markLibrary(lib.id, lib.version, true);
-            }
+        for (const lib of stateLibsToLibs(state.libs)) {
+            this.markLibrary(lib.name, lib.ver, true);
         }
     }
 
@@ -505,7 +549,7 @@ export class LibsWidget {
             '</div>';
         BootstrapUtils.initPopover(infoButton, {
             html: true,
-            title: 'Build info for ' + getCompilerName(this.currentCompilerId),
+            title: 'Build info for ' + (this.currentCompilerName || this.currentCompilerId),
             content: () => {
                 const nowts = Math.round(Date.now() / 1000);
                 const popupId = `build-info-content-${nowts}`;
@@ -633,57 +677,38 @@ export class LibsWidget {
         }
     }
 
-    initLangDefaultLibs() {
-        const defaultLibs = options.defaultLibs[this.currentLangId];
-        if (!defaultLibs) return;
-        for (const libPair of defaultLibs.split(':')) {
-            const pairSplits = libPair.split('.');
-            if (pairSplits.length === 2) {
-                const lib = pairSplits[0];
-                const ver = pairSplits[1];
-                this.markLibrary(lib, ver, true);
-            }
+    // Records the compiler's library list under its own key, and never touches the current lang/compiler: switches
+    // can overlap, and each must only ever see state that a previous switch applied in full.
+    private async loadLibs(
+        langId: string,
+        compilerKey: string,
+        possibleLibs: CompilerLibs,
+        withLangDefaults: boolean,
+    ): Promise<Lib[]> {
+        const libsByCompiler = (this.availableLibs[langId] ??= {});
+        if (!(compilerKey in libsByCompiler)) {
+            const libs = compilerKey === DEFAULT_COMPILER_KEY ? await libsService.getLibsForLang(langId) : possibleLibs;
+            libsByCompiler[compilerKey] ??= $.extend(true, {}, libs);
         }
+        return withLangDefaults ? await getLangDefaultLibs(langId) : [];
     }
 
-    updateAvailableLibs(possibleLibs: CompilerLibs, isLangChanged: boolean) {
-        if (!(this.currentLangId in this.availableLibs)) {
-            this.availableLibs[this.currentLangId] = {};
-        }
-
-        if (!(this.currentCompilerId in this.availableLibs[this.currentLangId])) {
-            if (this.currentCompilerId === '_default_') {
-                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
-                    true,
-                    {},
-                    options.libs[this.currentLangId],
-                );
-            } else {
-                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
-            }
-        }
-
-        if (isLangChanged) {
-            this.initLangDefaultLibs();
-        }
-    }
-
-    setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
-        const libsInUse = this.listUsedLibs();
-
+    async setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
+        const generation = ++this.langChangeGeneration;
+        const compilerKey = toCompilerKey(compilerId);
         const isLangChanged = this.currentLangId !== langId;
+        const compilerName = compilerId ? (await getCompilerName(compilerId, langId)) || compilerId : '';
+        const defaultLibs = await this.loadLibs(langId, compilerKey, possibleLibs, isLangChanged);
+        // A later call has started meanwhile; it applies its own state, which applying ours now would undo.
+        if (generation !== this.langChangeGeneration) return;
 
+        const libsInUse = this.listUsedLibs();
         this.currentLangId = langId;
-
-        if (compilerId) {
-            this.currentCompilerId = compilerId;
-        } else {
-            this.currentCompilerId = '_default_';
+        this.currentCompilerId = compilerKey;
+        this.currentCompilerName = compilerName;
+        for (const lib of defaultLibs) {
+            this.markLibrary(lib.name, lib.ver, true);
         }
-
-        // Clear the dom Root so it gets rebuilt with the new language libraries
-        this.updateAvailableLibs(possibleLibs, isLangChanged);
-
         for (const libId in libsInUse) {
             this.markLibrary(libId, libsInUse[libId], true);
         }

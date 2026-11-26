@@ -39,7 +39,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import {assert} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
@@ -104,67 +104,63 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     }
 
     async readdir(dirPath: string): Promise<string[]> {
-        // Separate method allows override to find classfiles
-        // that are not in root of dirPath
-        return fs.readdir(dirPath);
+        // Recursive because anything with a package puts its class files in a matching directory tree, which a build
+        // system does by default. For a flat directory this returns exactly what a shallow read would.
+        return fs.readdir(dirPath, {recursive: true});
+    }
+
+    // javap closes each class it disassembles with a `}` on a line of its own; anything nested is indented
+    splitJavapClasses(javapOut: string): string[] {
+        const classes: string[] = [];
+        let lines: string[] = [];
+        for (const line of utils.splitLines(javapOut)) {
+            lines.push(line);
+            if (line.trimEnd() === '}') {
+                classes.push(lines.join('\n') + '\n');
+                lines = [];
+            }
+        }
+        if (lines.some(line => line.trim())) classes.push(lines.join('\n') + '\n');
+        return classes;
     }
 
     override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await this.readdir(dirPath);
         logger.verbose('Class files: ', files);
-        const results = await Promise.all(
-            files
-                .filter(f => f.endsWith('.class'))
-                .map(async classFile => {
-                    const args = [
-                        ...this.compiler.objdumperArgs,
-                        // Prints out disassembled code, i.e., the instructions that comprise the Java bytecodes,
-                        // for each of the methods in the class.
-                        '-c',
-                        // Prints out line and local variable tables.
-                        '-l',
-                        // Private things
-                        '-p',
-                        // Final constants
-                        '-constants',
-                        // Verbose - ideally we'd enable this and then we get constant pools too. Needs work to parse.
-                        //'-v',
-                        classFile,
-                    ];
-                    const objResult = await this.exec(this.compiler.objdumper, args, {
-                        maxOutput: maxSize,
-                        customCwd: dirPath,
-                    });
-                    const oneResult: ParsedAsmResult = {
-                        asm: [
-                            {
-                                text: objResult.stdout,
-                            },
-                        ],
-                    };
-
-                    if (objResult.code === 0) {
-                        oneResult.objdumpTime = objResult.execTime;
-                    } else {
-                        oneResult.asm = [
-                            {
-                                text: `<No output: javap returned ${objResult.code}>`,
-                            },
-                        ];
-                    }
-                    return oneResult;
-                }),
-        );
-
-        const merged: ParsedAsmResult = {asm: []};
-        for (const result of results) {
-            const asmBackup = merged.asm;
-            Object.assign(merged, result);
-            merged.asm = [...asmBackup, ...result.asm];
+        const classFiles = files.filter(f => f.endsWith('.class'));
+        if (classFiles.length === 0) {
+            result.asm = [];
+            return result;
         }
 
-        result.asm = merged.asm;
+        // A single javap for all the classes: one JVM per class file can exhaust the host's memory
+        const args = [
+            ...this.compiler.objdumperArgs,
+            // Prints out disassembled code, i.e., the instructions that comprise the Java bytecodes,
+            // for each of the methods in the class.
+            '-c',
+            // Prints out line and local variable tables.
+            '-l',
+            // Private things
+            '-p',
+            // Final constants
+            '-constants',
+            // Verbose - ideally we'd enable this and then we get constant pools too. Needs work to parse.
+            //'-v',
+            ...classFiles,
+        ];
+        const objResult = await this.exec(this.compiler.objdumper, args, {
+            maxOutput: maxSize,
+            customCwd: dirPath,
+        });
+
+        result.asm = this.splitJavapClasses(objResult.stdout).map(text => ({text}));
+        if (objResult.code === 0) {
+            result.objdumpTime = objResult.execTime;
+        } else {
+            result.asm.push({text: `<No output: javap returned ${objResult.code}>`});
+        }
         return result;
     }
 
@@ -217,32 +213,18 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
 
     async getMainClassName(dirPath: string) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const files = await fs.readdir(dirPath);
-        const results = await Promise.all(
-            files
-                .filter(f => f.endsWith('.class'))
-                .map(async classFile => {
-                    const options = {
-                        maxOutput: maxSize,
-                        customCwd: dirPath,
-                    };
-                    const objResult = await this.exec(this.compiler.objdumper, [classFile], options);
-                    if (objResult.code !== 0) {
-                        return null;
-                    }
-
-                    if (this.mainRegex.test(objResult.stdout)) {
-                        return classFile;
-                    }
-                    return null;
-                }),
-        );
-
-        const candidates = results.filter(file => file !== null);
-        if (candidates.length > 0) {
+        const classFiles = (await fs.readdir(dirPath)).filter(f => f.endsWith('.class'));
+        if (classFiles.length > 0) {
+            const objResult = await this.exec(this.compiler.objdumper, classFiles, {
+                maxOutput: maxSize,
+                customCwd: dirPath,
+            });
             // In case of multiple candidates, we'll just take the first one.
-            const fileName = unwrap(candidates[0]);
-            return fileName.substring(0, fileName.lastIndexOf('.'));
+            for (const javapClass of this.splitJavapClasses(objResult.stdout)) {
+                if (!this.mainRegex.test(javapClass)) continue;
+                const className = javapClass.match(/^(?:[\w-]+ )*(?:class|interface) ([^\s<{]+)/m);
+                if (className) return className[1];
+            }
         }
         // We were unable to find a main method, let's error out assuming "Main"
         return 'Main';

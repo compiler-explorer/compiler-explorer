@@ -33,6 +33,7 @@
  * setBackendApi() to substitute a fake implementation.
  */
 
+import type {BuildSystemId} from '../../shared/build-systems.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {PossibleArguments} from '../../types/compiler-arguments.interfaces.js';
 import {
@@ -45,8 +46,12 @@ export interface BackendApi {
     /** POST /api/compiler/:id/compile */
     compile(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult>;
 
-    /** POST /api/compiler/:id/cmake */
-    compileCMake(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult>;
+    /** POST /api/compiler/:id/build/:buildSystem */
+    compileBuild(
+        compilerId: string,
+        buildSystem: BuildSystemId,
+        request: Record<string, unknown>,
+    ): Promise<CompilationResult>;
 
     /** POST /api/popularArguments/:id */
     popularArguments(compilerId: string, usedOptions: string): Promise<PossibleArguments>;
@@ -76,11 +81,29 @@ async function parseErrorBody(response: Response): Promise<string> {
     }
 }
 
+/**
+ * fetch(), but a request that never reaches the server (fetch rejects) becomes an Error flagged
+ * `isNetworkError`, which the compiler and executor panes show as a connectivity problem.
+ */
+async function fetchOrNetworkError(url: string, init: RequestInit): Promise<Response> {
+    try {
+        return await fetch(url, init);
+    } catch {
+        const error = new Error(
+            navigator.onLine
+                ? 'Could not reach Compiler Explorer. Check your internet connection and try again.'
+                : 'Could not reach Compiler Explorer: your browser appears to be offline.',
+        );
+        (error as Error & {isNetworkError: boolean}).isNetworkError = true;
+        throw error;
+    }
+}
+
 class HttpBackendApi implements BackendApi {
     constructor(private readonly baseUrl: string) {}
 
     private async postJson<T>(url: string, body: unknown): Promise<T> {
-        const response = await fetch(url, {
+        const response = await fetchOrNetworkError(url, {
             method: 'POST',
             headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
             body: JSON.stringify(body),
@@ -93,8 +116,15 @@ class HttpBackendApi implements BackendApi {
         return this.postJson(`${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/compile`, request);
     }
 
-    async compileCMake(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult> {
-        return this.postJson(`${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/cmake`, request);
+    async compileBuild(
+        compilerId: string,
+        buildSystem: BuildSystemId,
+        request: Record<string, unknown>,
+    ): Promise<CompilationResult> {
+        return this.postJson(
+            `${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/build/${buildSystem}`,
+            request,
+        );
     }
 
     async popularArguments(compilerId: string, usedOptions: string): Promise<PossibleArguments> {
@@ -107,7 +137,7 @@ class HttpBackendApi implements BackendApi {
     }
 
     async getAssemblyDocumentation(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse> {
-        const response = await fetch(`${this.baseUrl}api/asm/${req.instructionSet}/${req.opcode}`, {
+        const response = await fetchOrNetworkError(`${this.baseUrl}api/asm/${req.instructionSet}/${req.opcode}`, {
             credentials: 'omit',
             headers: {Accept: 'application/json'},
         });

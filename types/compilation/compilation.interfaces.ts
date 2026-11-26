@@ -41,6 +41,7 @@ import {CFGResult} from './cfg.interfaces.js';
 import {ClangirBackendOptions} from './clangir.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
+import type {LeanCOptions} from './lean-c.interfaces.js';
 import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
 import {YulBackendOptions} from './yul.interfaces.js';
 
@@ -92,6 +93,18 @@ export type GccDumpOptions = {
     rtlDump?: boolean;
     ipaDump?: boolean;
     dumpFlags?: GccDumpFlags;
+    libraryFunctions?: boolean;
+};
+
+export type GccDumpOutput = {
+    all: GccDumpViewSelectedPass[];
+    selectedPass: GccDumpViewSelectedPass | null;
+    currentPassOutput: string;
+    syntaxHighlight: boolean;
+    // Maps a pass's filename_suffix to its (header-trimmed) dump content. Populated when all
+    // passes are dumped and read at once (removeEmptyGccDump compilers). For libgccjit-based
+    // compilers this will be an empty object (they still recompile per pass selection).
+    passDumps: Record<string, string>;
 };
 
 export type CompilationRequestOptions = {
@@ -117,11 +130,15 @@ export type CompilationRequestOptions = {
         produceHaskellCore?: boolean;
         produceHaskellStg?: boolean;
         produceHaskellCmm?: boolean;
+        produceLeanC?: LeanCOptions | null;
         produceClojureMacroExp?: boolean;
         produceYul?: YulBackendOptions | null;
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
+        // Whether output is shown on a dark background, so colours made for one suit it better. Only sent to compilers
+        // with `supportsDarkBackgroundColours`, and ignored by any other.
+        darkBackgroundColours?: boolean;
     };
     executeParameters: UnparsedExecutionParams;
     filters: ParseFiltersAndOutputOptions;
@@ -177,6 +194,8 @@ export type CompilationResult = {
     didExecute?: boolean;
     validatorTool?: boolean;
     executableFilename?: string;
+    // Set while post-processing a project build, whose artifact is already the binary to disassemble.
+    objdumpInputFilename?: string;
     execResult?: CompilationResult;
     gnatDebugOutput?: ResultLine[];
     gnatDebugTreeOutput?: ResultLine[];
@@ -184,7 +203,7 @@ export type CompilationResult = {
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
-    gccDumpOutput?;
+    gccDumpOutput?: GccDumpOutput;
     languageId?: string;
     asmKeywordTypes?: string[];
     result?: CompilationResult; // cmake inner result
@@ -202,7 +221,7 @@ export type CompilationResult = {
     irOutput?: {
         asm: ParsedAsmResultLine[];
         cfg?: CFGResult;
-    };
+    } & Pick<CompilationResult, 'code' | 'compilationOptions'>;
     clangirOutput?: ResultLine[];
 
     optPipelineOutput?: OptPipelineOutput;
@@ -216,6 +235,8 @@ export type CompilationResult = {
     haskellCoreOutput?: ResultLine[];
     haskellStgOutput?: ResultLine[];
     haskellCmmOutput?: ResultLine[];
+    leanCOutput?: ResultLine[];
+    jvmBytecodeOutput?: ParsedAsmResultLine[];
 
     clojureMacroExpOutput?: ResultLine[];
 
@@ -244,6 +265,8 @@ export type CompilationResult = {
     popularArguments?: PossibleArguments;
 
     s3Key?: string; // Cache key hash for S3 storage reference
+
+    networkError?: boolean; // True when the result was produced by a network/transport failure (not a compiler error)
 };
 
 export type ExecutionOptions = {
@@ -263,6 +286,15 @@ export type ExecutionOptions = {
 
 export type ExecutionOptionsWithEnv = ExecutionOptions & {env: Record<string, string>};
 
+export type DemanglerExecutionOptions = ExecutionOptions & {
+    // List of symbols to demangle - don't scan the input.
+    overrideSymbols?: string[];
+    // Don't apply translations to the input - return it as-is.
+    skipTranslation?: boolean;
+    // Characters that can continue an identifier: a symbol directly followed by one is left untranslated.
+    identifierChar?: RegExp;
+};
+
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
@@ -281,10 +313,25 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type CompilationInfo = CacheKey &
+// The compiler settings a tool may read. Add a field here when a tool needs it.
+export type ToolCompilerInfo = Pick<
+    CompilerInfo,
+    | 'id'
+    | 'exe'
+    | 'options'
+    | 'lang'
+    | 'instructionSet'
+    | 'includePath'
+    | 'libPath'
+    | 'envVars'
+    | 'group'
+    | 'compilerType'
+>;
+
+export type CompilationInfo = Omit<CacheKey, 'compiler'> &
     CompilationResult & {
         mtime: Date | null;
-        compiler: CompilerInfo & Record<string, unknown>;
+        compiler: ToolCompilerInfo;
         args: string[];
         options: string[];
         outputFilename: string;
@@ -303,8 +350,10 @@ export type CompilationCacheKey = {
     options: ExecutionOptions;
 };
 
+export type CacheKeyCompiler = {id: string};
+
 export type SingleFileCacheKey = {
-    compiler: any;
+    compiler: CacheKeyCompiler;
     source: string;
     options: string[];
     backendOptions: any;
@@ -315,7 +364,7 @@ export type SingleFileCacheKey = {
 };
 
 export type CmakeCacheKey = Omit<SingleFileCacheKey, 'tools'> & {
-    compiler: CompilerInfo;
+    compiler: CacheKeyCompiler;
     files: FiledataPair[];
     api: string;
 };

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -33,7 +34,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmr
 import type {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeLlvmIrBackendOptions} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeLlvmIrBackendOptions, newTempDir} from './utils.js';
 
 const languages = {
     solidity: {id: 'solidity' as LanguageKey},
@@ -42,10 +43,16 @@ const languages = {
 
 describe('Resolc', () => {
     let env: CompilationEnvironment;
-    const expectedSolcExe = '/opt/compiler-explorer/solc-0.8.30/solc';
+    const compilerId = 'resolc';
+    const solcExe = '/opt/compiler-explorer/solc-x.y.z/solc';
 
     beforeAll(() => {
-        env = makeCompilationEnvironment({languages});
+        env = makeCompilationEnvironment({
+            languages,
+            props: {
+                [`compiler.${compilerId}.solcExe`]: solcExe,
+            },
+        });
     });
 
     function makeCompiler(compilerInfo: Partial<CompilerInfo>): ResolcCompiler {
@@ -80,13 +87,15 @@ describe('Resolc', () => {
             expect(ResolcCompiler.key).toEqual('resolc');
         });
 
-        it('should return Solc executable dependency path', () => {
-            expect(ResolcCompiler.solcExe).toEqual(expectedSolcExe);
+        it('should throw with no solc executable configured', () => {
+            const compilerInfoWithoutSolc = {id: 'resolc_without_solc', exe: 'resolc', lang: languages.solidity.id};
+            expect(() => makeCompiler(compilerInfoWithoutSolc)).toThrow();
         });
     });
 
     describe('From Solidity', () => {
         const compilerInfo = {
+            id: compilerId,
             exe: 'resolc',
             lang: languages.solidity.id,
         };
@@ -106,7 +115,7 @@ describe('Resolc', () => {
             expect(compiler.optionsForFilter({})).toEqual([
                 '-g',
                 '--solc',
-                expectedSolcExe,
+                solcExe,
                 '--overwrite',
                 '--debug-output-dir',
                 'artifacts',
@@ -119,6 +128,17 @@ describe('Resolc', () => {
             const inputFilename = path.normalize('test/resolc/example.sol');
             expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
         });
+
+        it.each(['interface I {}\ncontract Impl is I {}', 'interface A {}\ninterface B {}\ncontract Impl is A, B {}'])(
+            'should find an inherited contract after interfaces',
+            source => {
+                const compiler = makeCompiler(compilerInfo);
+                const dirPath = newTempDir();
+                fs.writeFileSync(path.join(dirPath, 'example.sol'), source);
+
+                expect(compiler.getOutputFilename(dirPath)).toMatch(/\.Impl\.pvmasm$/);
+            },
+        );
 
         describe('To RISC-V', () => {
             const filters: Partial<ParseFiltersAndOutputOptions> = {
@@ -275,6 +295,7 @@ describe('Resolc', () => {
 
     describe('From Yul', () => {
         const compilerInfo = {
+            id: compilerId,
             exe: 'resolc',
             lang: languages.yul.id,
         };
@@ -289,7 +310,7 @@ describe('Resolc', () => {
             expect(compiler.optionsForFilter({})).toEqual([
                 '-g',
                 '--solc',
-                expectedSolcExe,
+                solcExe,
                 '--overwrite',
                 '--debug-output-dir',
                 'artifacts',

@@ -26,6 +26,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {Readable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 import zlib from 'node:zlib';
 
 import tar from 'tar-stream';
@@ -64,6 +65,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected onlyonstaticliblink: any;
     protected extractAllToRoot: boolean;
     protected conan_os: string;
+    // Generous cap on the total declared size of extracted files; real library packages are
+    // tens to a few hundred MiB, so anything near this is a packaging error or a gzip bomb.
+    protected maxExtractedBytes = 2 * 1024 * 1024 * 1024;
 
     static get key() {
         return 'ceconan';
@@ -142,90 +146,104 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         downloadPath: string,
         packageUrl: string,
     ): Promise<BuildEnvDownloadInfo> {
-        return new Promise((resolve, reject) => {
-            const startTime = process.hrtime.bigint();
-            const extract = tar.extract();
-            const gunzip = zlib.createGunzip();
+        const protocol = new URL(packageUrl).protocol;
+        if (protocol !== 'http:' && protocol !== 'https:') {
+            throw new Error(`Unexpected protocol '${protocol}' for conan package URL`);
+        }
 
-            extract.on('entry', async (header, stream, next) => {
-                try {
-                    const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
+        const startTime = process.hrtime.bigint();
+        const extract = tar.extract();
+        const gunzip = zlib.createGunzip();
+        let extractedBytes = 0;
 
-                    const resolved = path.resolve(path.dirname(filepath));
-                    if (!resolved.startsWith(downloadPath)) {
-                        logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
-                        stream.resume();
-                        next();
-                        return;
-                    }
+        extract.on('entry', async (header, stream, next) => {
+            // Drained streams (skipped entries) have no other error listener; without this an
+            // entry-stream error would throw as an unhandled 'error' event.
+            stream.on('error', (error: any) => extract.destroy(error));
+            try {
+                const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
 
-                    if (!this.extractAllToRoot) {
-                        await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
-                    }
-
-                    const filestream = fs.createWriteStream(filepath);
-                    if (header.size === 0) {
-                        // See https://github.com/mafintosh/tar-stream/issues/145
-                        stream.resume();
-                        next();
-                    } else {
-                        stream
-                            .on('error', (error: any) => {
-                                logger.error(`Error in stream handling: ${error}`);
-                                reject(error);
-                            })
-                            .on('end', next)
-                            .pipe(filestream);
-                        stream.resume();
-                    }
-                } catch (error) {
-                    logger.error(`Error in entry handling: ${error}`);
-                    reject(error);
+                // Each library extracts under its own root; skip entries that would resolve outside
+                // it (and so could overwrite other libraries' files or the compilation's own).
+                const extractionRoot = path.resolve(
+                    this.extractAllToRoot ? downloadPath : path.join(downloadPath, libId),
+                );
+                const relative = path.relative(extractionRoot, path.resolve(path.dirname(filepath)));
+                if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                    logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                    stream.resume();
+                    next();
+                    return;
                 }
-            });
 
-            extract
-                .on('error', (error: any) => {
-                    logger.error(`Error in tar handling: ${error}`);
-                    reject(error);
-                })
-                .on('finish', () => {
-                    const endTime = process.hrtime.bigint();
-                    resolve({
-                        step: `Download of ${libId} ${version}`,
-                        packageUrl: packageUrl,
-                        time: utils.deltaTimeNanoToMili(startTime, endTime),
-                    });
-                });
+                extractedBytes += header.size ?? 0;
+                if (extractedBytes > this.maxExtractedBytes) {
+                    throw new Error(`Package ${libId}/${version} exceeds ${this.maxExtractedBytes} bytes extracted`);
+                }
 
-            gunzip
-                .on('error', error => {
-                    logger.error(`Error in gunzip handling: ${error}`);
-                    reject(error);
-                })
-                .pipe(extract);
+                if (header.type !== 'file') {
+                    // Only regular files are ever written; symlinks, hardlinks, directories etc
+                    // are drained and skipped. Draining also avoids a hang on malformed entries
+                    // (e.g. a directory with a non-zero size, whose stream tar-stream never ends).
+                    stream.resume();
+                    next();
+                    return;
+                }
 
-            const settings: RequestInit = {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            };
+                if (!this.extractAllToRoot) {
+                    await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
+                }
 
-            fetch(packageUrl, settings)
-                .then((res: Response) => {
-                    if (res.ok && res.body) {
-                        Readable.from(res.body).pipe(gunzip);
-                    } else {
-                        logger.error(`Error requesting package from conan: ${res.status} for ${packageUrl}`);
-                        reject(new Error(`Unable to request library from conan: ${res.status}`));
-                    }
-                })
-                .catch((error: any) => {
-                    logger.error(`Error in request handling: ${error}`);
-                    reject(error);
-                });
+                if (header.size === 0) {
+                    // tar-stream emits no data for zero-length entries (see
+                    // https://github.com/mafintosh/tar-stream/issues/145): create empty files
+                    // explicitly.
+                    await fs.promises.writeFile(filepath, '');
+                    stream.resume();
+                    next();
+                } else {
+                    await pipeline(stream, fs.createWriteStream(filepath));
+                    next();
+                }
+            } catch (error) {
+                logger.error(`Error extracting entry ${JSON.stringify(header.name)} of ${libId}/${version}:`, error);
+                // Propagate the failure through the extract stream so the outer pipeline rejects.
+                extract.destroy(error as Error);
+            }
         });
+
+        const settings: RequestInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+
+        const response = await fetch(packageUrl, settings);
+        if (!response.ok || !response.body) {
+            logger.error(`Error requesting package from conan: ${response.status} for ${packageUrl}`);
+            throw new Error(`Unable to request library from conan: ${response.status}`);
+        }
+
+        try {
+            // pipeline propagates errors from every stage (including a download severed
+            // mid-stream) and guarantees this settles; hand-rolled .pipe() chains do neither.
+            await pipeline(
+                Readable.fromWeb(response.body as import('node:stream/web').ReadableStream),
+                gunzip,
+                extract,
+            );
+        } catch (error) {
+            logger.error(`Error downloading/extracting package from conan (${packageUrl}):`, error);
+            throw error;
+        }
+
+        const endTime = process.hrtime.bigint();
+        return {
+            step: `Download of ${libId} ${version}`,
+            packageUrl: packageUrl,
+            time: utils.deltaTimeNanoToMili(startTime, endTime),
+        };
     }
 
     async getConanBuildProperties(key: CacheKey, buildType = 'Debug'): Promise<ConanBuildProperties> {

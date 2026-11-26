@@ -36,9 +36,10 @@ export type ToolInfo = {
     includeKey?: string;
     options: string[];
     args?: string;
+    argChoices?: string[];
     languageId?: LanguageKey;
     stdinHint?: string;
-    monacoStdin?: string;
+    monacoStdin?: boolean;
     icon?: string;
     darkIcon?: string;
     compilerLanguage: LanguageKey;

@@ -24,15 +24,24 @@
 
 import {
     assertNoConsoleOutput,
-    findPane,
     monacoEditorTextShouldContain,
     openGccDump,
     setupAndWaitForCompilation,
     visitPage,
 } from '../support/utils';
 
+// Anchor on the pane's own pass-picker rather than the GoldenLayout tab title: the title query
+// (`span.lm_title:visible`) proved flaky right after a TomSelect dropdown interaction, whereas the
+// `.gccdump-pass-picker` element is unique to this pane and always present in its content area.
 function gccDumpPane() {
-    return findPane('GCC Tree');
+    return cy.get('.gccdump-pass-picker', {timeout: 10000}).closest('.lm_content');
+}
+
+// The pass picker stays disabled until the compile triggered by opening the pane returns, and
+// TomSelect ignores clicks while disabled, so wait for it to be enabled before opening it.
+function openPassPicker() {
+    cy.get('.gccdump-pass-picker + .ts-wrapper', {timeout: 10000}).should('not.have.class', 'disabled');
+    cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
 }
 
 beforeEach(visitPage);
@@ -53,15 +62,62 @@ describe('GCC Tree/RTL dump', () => {
     it('should show a pass picker with available passes', () => {
         setupAndWaitForCompilation();
         openGccDump();
-        cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
+        openPassPicker();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
+    });
+
+    it('should show the ON/OFF state in every dump option tooltip', () => {
+        setupAndWaitForCompilation();
+        openGccDump();
+        // Each option button is looked up by its data-bind to format its tooltip, so a lookup that
+        // doesn't match the template leaves that button's tooltip unformatted.
+        gccDumpPane()
+            .find('.dump-filters .button-checkbox button')
+            .should('have.length.greaterThan', 0)
+            .each($button => {
+                expect($button.attr('title'), $button.attr('data-bind')).to.match(/^\[(ON|OFF)\] /);
+            });
     });
 
     it('should display tree dump content when a pass is selected', () => {
         setupAndWaitForCompilation();
         openGccDump();
-        cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
-        cy.get('.ts-dropdown .option:visible', {timeout: 10000}).first().click();
+        openPassPicker();
+        cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
+        // Pick a tree pass specifically: the first option is now an IPA summary (cgraph), whereas
+        // this test is about the GIMPLE/tree body, which is what shows the `square` function.
+        cy.contains('.ts-dropdown .option:visible', '(tree)').click();
         monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
+    });
+
+    it('should switch passes without triggering a recompile', () => {
+        // All pass dumps are shipped on the initial compile, so selecting a different pass is a
+        // client-side lookup. Count compile requests and assert switching passes adds none.
+        let compileCount = 0;
+        cy.intercept('POST', '**/api/compiler/**/compile', req => {
+            compileCount++;
+            req.continue();
+        }).as('compile');
+
+        setupAndWaitForCompilation();
+        openGccDump();
+
+        // Wait for the picker to populate from the initial compile, then pick a first pass.
+        openPassPicker();
+        cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 1);
+        cy.get('.ts-dropdown .option:visible').first().click();
+
+        // Once settled, switch to a different pass and assert no new compile fired. (Content is
+        // covered by the test above; here we only care that switching is a client-side lookup.)
+        cy.then(() => {
+            const before = compileCount;
+            cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control').click();
+            cy.get('.ts-dropdown .option:visible').eq(1).click();
+            // Give any (unwanted) recompile a chance to be issued before asserting.
+            cy.wait(1500);
+            cy.then(() => {
+                expect(compileCount, 'compile requests during pass switch').to.equal(before);
+            });
+        });
     });
 });

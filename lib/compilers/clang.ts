@@ -25,9 +25,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import _ from 'underscore';
-
+import {splitArguments} from '../../shared/common-utils.js';
 import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {
     ActiveTool,
     BuildResult,
@@ -37,13 +37,18 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {InstructionSet} from '../../types/instructionsets.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {LLVMWin32Demangler} from '../demangler/index.js';
+import type {ParsedRequest} from '../handlers/compile.js';
+import {getAmdGpuInstructionSet, getAmdGpuInstructionSetFromLabel} from '../instructionsets.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
@@ -56,6 +61,8 @@ export class ClangCompiler extends BaseCompiler {
     protected asanSymbolizerPath?: string;
     protected offloadBundlerPath?: string;
     protected llvmDisassemblerPath?: string;
+    protected msvcDemanglerPath?: string;
+    private ptxDeviceParserInstance?: PTXAsmParser;
 
     static get key() {
         return 'clang';
@@ -91,6 +98,42 @@ export class ClangCompiler extends BaseCompiler {
         } else {
             this.llvmDisassemblerPath = this.compilerProps<string | undefined>('llvmDisassembler');
         }
+
+        if (this.compiler.demangler) {
+            const msvcDemanglerPath = path.join(path.dirname(this.compiler.demangler), 'llvm-undname');
+            if (fs.existsSync(msvcDemanglerPath)) {
+                this.msvcDemanglerPath = msvcDemanglerPath;
+            }
+        }
+    }
+
+    // Unlike getTargetHintFromCompilerArgs, accepts every spelling the driver does and lets the last one win
+    protected getEffectiveTarget(options: string[]): string | undefined {
+        let target: string | undefined;
+        for (const [i, arg] of options.entries()) {
+            if (arg.startsWith('--target=')) target = arg.substring('--target='.length);
+            else if ((arg === '--target' || arg === '-target') && i + 1 < options.length) target = options[i + 1];
+        }
+        return target;
+    }
+
+    protected targetsMsvc(options: string[]): boolean {
+        const target = this.getEffectiveTarget(options);
+        return !!target && /-(windows|win32)(-msvc|$)/.test(target);
+    }
+
+    override async postProcessAsm(
+        result,
+        filters?: ParseFiltersAndOutputOptions,
+        options?: string[],
+    ): Promise<ParsedAsmResult> {
+        // Windows MSVC targets use Microsoft name mangling, which llvm-cxxfilt doesn't understand
+        if (this.msvcDemanglerPath && options && this.targetsMsvc(options)) {
+            if (!result.okToCache || !result.asm) return result;
+            const demangler = new LLVMWin32Demangler(this.msvcDemanglerPath, this, this.optionsForDemangler(filters));
+            return await demangler.process(result);
+        }
+        return await super.postProcessAsm(result, filters, options);
     }
 
     override isCfgCompiler() {
@@ -144,6 +187,20 @@ export class ClangCompiler extends BaseCompiler {
         return super.runExecutable(executable, executeParameters, homeDir);
     }
 
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // On RISC-V an explicit -march takes precedence over the ISA implied by -mcpu, so a configured default
+        // -march would otherwise silently discard the extensions of a CPU the user selected.
+        const isRiscv = this.compiler.instructionSet === 'riscv32' || this.compiler.instructionSet === 'riscv64';
+        if (isRiscv && userOptions.some(option => option.startsWith('-mcpu=') || option.startsWith('-march='))) {
+            options = options.filter(option => !option.startsWith('-march='));
+        }
+        return super.fixIncompatibleOptions(options, userOptions, overrides);
+    }
+
     // Clang cross-compile with -stdlib=libc++ is currently (up to at least 18.1.0) broken:
     // https://github.com/llvm/llvm-project/issues/57104
     //
@@ -153,21 +210,18 @@ export class ClangCompiler extends BaseCompiler {
     // compiling `#include <string>` with flag `-stdlib=libc++` succeeds: https://godbolt.org/z/7dKrad7Wc
 
     override filterUserOptions(userOptions: string[]): string[] {
-        if (
-            this.lang.id === 'c++' &&
-            !this.buildenvsetup?.compilerSupportsX86 && // cross-compilation
-            _.any(userOptions, option => {
-                return option === '-stdlib=libc++';
-            })
-        ) {
+        const isCrossCompile = !this.buildenvsetup?.compilerSupportsX86;
+        // clang accepts -stdlib=libc++, --stdlib=libc++ and `--stdlib libc++`
+        const usesLibCxx = userOptions.some(
+            (option, i) =>
+                option === '-stdlib=libc++' ||
+                option === '--stdlib=libc++' ||
+                (option === '--stdlib' && userOptions[i + 1] === 'libc++'),
+        );
+        if (this.lang.id === 'c++' && isCrossCompile && usesLibCxx) {
             const addedIncludePath =
                 '-I' + path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/');
-            if (
-                !_.any(userOptions, option => {
-                    return option === addedIncludePath;
-                })
-            )
-                userOptions = userOptions.concat(addedIncludePath);
+            if (!userOptions.includes(addedIncludePath)) userOptions = userOptions.concat(addedIncludePath);
         }
         return userOptions;
     }
@@ -175,7 +229,8 @@ export class ClangCompiler extends BaseCompiler {
     override async afterCompilation(
         result: CompilationResult,
         doExecute: boolean,
-        key: CacheKey,
+        adaptedRequest: CacheKey,
+        compilationCacheKey: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         tools: ActiveTool[],
         backendOptions: Record<string, any>,
@@ -185,8 +240,9 @@ export class ClangCompiler extends BaseCompiler {
         stackUsageOutput: StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
+        delayCaching?: boolean,
     ) {
-        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+        const compilationInfo = this.getCompilationInfo(adaptedRequest, result, customBuildPath);
 
         const dirPath = path.dirname(compilationInfo.outputFilename);
         const filename = path.basename(compilationInfo.outputFilename);
@@ -195,7 +251,8 @@ export class ClangCompiler extends BaseCompiler {
         return super.afterCompilation(
             result,
             doExecute,
-            key,
+            adaptedRequest,
+            compilationCacheKey,
             executeParameters,
             tools,
             backendOptions,
@@ -205,6 +262,7 @@ export class ClangCompiler extends BaseCompiler {
             stackUsageOutput,
             bypassCache,
             customBuildPath,
+            delayCaching,
         );
     }
 
@@ -286,15 +344,37 @@ export class ClangCompiler extends BaseCompiler {
         return '<error: no llvm-dis found to disassemble bitcode>';
     }
 
+    // Created on first use: most clang instances never see nvptx device code.
+    protected get ptxDeviceParser(): PTXAsmParser {
+        if (this.asm instanceof PTXAsmParser) return this.asm;
+        this.ptxDeviceParserInstance ??= new PTXAsmParser(this.compilerProps);
+        return this.ptxDeviceParserInstance;
+    }
+
     async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {
         if (deviceAsm.startsWith('BC')) {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
         }
 
-        return this.llvmIr.isLlvmIr(deviceAsm)
-            ? this.llvmIr.process(deviceAsm, filters)
-            : this.asm.process(deviceAsm, filters);
+        // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
+        if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
+
+        if (deviceName.includes('nvptx')) {
+            // OpenMP device names (openmp-nvptx64-nvidia-cuda) don't name the instruction set.
+            return {...(await this.ptxDeviceParser.process(deviceAsm, filters)), instructionSet: 'ptx' as const};
+        }
+
+        const processed = await this.asm.process(deviceAsm, filters);
+        // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the
+        // device view has nothing else to go on when picking documentation.
+        const instructionSet = getAmdGpuInstructionSetFromLabel(deviceName);
+        return instructionSet ? {...processed, instructionSet} : processed;
     }
+}
+
+function getCudaPath(args: string[]): string | undefined {
+    const arg = args.find(arg => arg.startsWith('--cuda-path='));
+    return arg ? arg.substring('--cuda-path='.length) : undefined;
 }
 
 export class ClangCudaCompiler extends ClangCompiler {
@@ -310,6 +390,15 @@ export class ClangCudaCompiler extends ClangCompiler {
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'ptx';
+    }
+
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
+        // CMake locates the toolkit through nvcc, so an nvcc compiler needs no help. Clang is told
+        // where it is with --cuda-path, which CMake reads neither from the flags nor from the
+        // compiler, and it refuses to enable the CUDA language for Clang without a toolkit.
+        const args = super.getExtraCMakeArgs(key);
+        const cudaPath = getCudaPath(key.options) ?? getCudaPath(splitArguments(this.compiler.options));
+        return cudaPath ? [...args, `-DCUDAToolkit_ROOT=${cudaPath}`] : args;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
@@ -332,6 +421,17 @@ export class ClangCudaCompiler extends ClangCompiler {
     }
 }
 
+function getAmdgpuInstructionSetFromOptions(options: string[]): InstructionSet | undefined {
+    // Backwards: orderArguments puts the group's --offload-arch before the user's, and
+    // clang honours the last one.
+    for (let i = options.length - 1; i >= 0; --i) {
+        if (options[i].startsWith('--offload-arch=')) {
+            return getAmdGpuInstructionSet(options[i].substring('--offload-arch='.length));
+        }
+    }
+    return undefined;
+}
+
 export class ClangHipCompiler extends ClangCompiler {
     static override get key() {
         return 'clang-hip';
@@ -345,6 +445,10 @@ export class ClangHipCompiler extends ClangCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', this.filename(outputFilename), '-g1', '--no-gpu-bundle-output', filters.binary ? '-c' : '-S'];
+    }
+
+    override getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
+        return getAmdgpuInstructionSetFromOptions(args) || super.getInstructionSetFromCompilerArgs(args);
     }
 }
 
@@ -435,5 +539,21 @@ export class Z80ClangCompiler extends ClangCompiler {
 
         this.compiler.supportsIntel = false;
         this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+    }
+}
+
+export class TIClangCompiler extends ClangCompiler {
+    static override get key() {
+        return 'ticlang';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+    }
+
+    override couldSupportASTDump(_version: string) {
+        return true;
     }
 }

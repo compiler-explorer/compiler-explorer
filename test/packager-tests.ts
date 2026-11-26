@@ -41,7 +41,7 @@ describe('Packager', () => {
         const dirPath = newTempDir();
         await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-        const targzPath = path.join(dirPath, 'package.tgz');
+        const targzPath = path.join(newTempDir(), 'package.tgz');
         await pack.package(dirPath, targzPath);
 
         await expect(fs.stat(targzPath)).resolves.toBeDefined();
@@ -53,7 +53,7 @@ describe('Packager', () => {
         const dirPath = newTempDir();
         await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-        const targzPath = path.join(dirPath, 'package.tgz');
+        const targzPath = path.join(newTempDir(), 'package.tgz');
         await pack.package(dirPath, targzPath);
 
         const unpackPath = newTempDir();
@@ -61,6 +61,6 @@ describe('Packager', () => {
         await pack2.unpack(targzPath, unpackPath);
 
         const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-        await expect(fs.stat(unpackedFilepath)).resolves.toBeDefined;
+        await expect(fs.stat(unpackedFilepath)).resolves.toBeDefined();
     }, 5000);
 });

@@ -1,0 +1,3 @@
+{"schema":1,"record":"diagnostic","severity":"error","code":"name.unresolved","message":"unresolved identifier `bogus`","origin":"resolve","primary":{"file":"src/example.mach","line":4,"column":9,"end_line":4,"end_column":14,"byte_start":66,"byte_end":71},"related":[],"notes":[],"help":[],"fixes":[]}
+{"schema":1,"record":"diagnostic","severity":"warning","code":"import.unused","message":"unused import `usize`","origin":"resolve","primary":{"file":"src/example.mach","line":1,"column":20,"end_line":1,"end_column":25,"byte_start":19,"byte_end":24},"related":[],"notes":[],"help":[],"fixes":[]}
+{"schema":1,"record":"summary","errors":1,"warnings":1,"notes":0,"outcome":"failure","exit_code":1}

@@ -26,18 +26,6 @@ html[data-theme='pink'] {
 
 a {
     //color: #45bbe0 !important;
-
-    &.navbar-brand {
-        img.logo {
-            &.inverse {
-                display: block !important;
-            }
-
-            &.normal {
-                display: none !important;
-            }
-        }
-    }
 }
 
 body {
@@ -710,6 +698,10 @@ textarea.form-control {
         //    background-color: #383838 !important;
         //}
     }
+}
+
+select.compiler-picker {
+    background-color: $base;
 }
 
 #compiler-picker-modal {

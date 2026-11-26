@@ -23,11 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express, {type NextFunction, type Request, type Response} from 'express';
+import pug from 'pug';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {createRenderHandlers} from '../../lib/app/rendering.js';
 import {PugRequireHandler, ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
-import {AppArguments} from '../../lib/app.interfaces.js';
+import {resolvePathFromAppRoot} from '../../lib/utils.js';
 
 // Mock dependencies
 vi.mock('../../lib/app/url-handlers.js', () => ({
@@ -75,31 +76,6 @@ describe('Rendering Module', () => {
         let mockPugRequireHandler: PugRequireHandler;
         let mockOptions: ServerOptions;
         let mockDependencies: ServerDependencies;
-        const mockAppArgs: AppArguments = {
-            rootDir: '/test/root',
-            env: ['test'],
-            port: 10240,
-            gitReleaseName: 'test-release',
-            releaseBuildNumber: '123',
-            wantedLanguages: ['c++'],
-            doCache: true,
-            fetchCompilersFromRemote: true,
-            ensureNoCompilerClash: false,
-            prediscovered: undefined,
-            discoveryOnly: undefined,
-            staticPath: undefined,
-            metricsPort: undefined,
-            useLocalProps: true,
-            propDebug: false,
-            tmpDir: undefined,
-            isWsl: false,
-            devMode: false,
-            loggingOptions: {
-                debug: false,
-                suppressConsoleLog: false,
-                paperTrailIdentifier: 'test',
-            },
-        };
 
         beforeEach(() => {
             mockPugRequireHandler = vi.fn((file: string) => `/static/${file}`);
@@ -134,12 +110,7 @@ describe('Rendering Module', () => {
         });
 
         it('should create renderConfig function that correctly merges options', () => {
-            const {renderConfig} = createRenderHandlers(
-                mockPugRequireHandler,
-                mockOptions,
-                mockDependencies,
-                mockAppArgs,
-            );
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
             const result = renderConfig({userOption: 'value'});
 
@@ -161,25 +132,37 @@ describe('Rendering Module', () => {
         });
 
         it('should set extraBodyClass to "embedded" when embedded is true', () => {
-            const {renderConfig} = createRenderHandlers(
-                mockPugRequireHandler,
-                mockOptions,
-                mockDependencies,
-                mockAppArgs,
-            );
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
             const result = renderConfig({embedded: true});
 
             expect(result).toHaveProperty('extraBodyClass', 'embedded');
         });
 
+        it('should use the extraBodyClass branding when no logo or favicon is configured', () => {
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+
+            const result = renderConfig({});
+
+            expect(result).toHaveProperty('faviconFilename', 'favicon-test-class.ico');
+            expect(result).toHaveProperty('logoOverlayFilename', 'site-logo-test-class.svg');
+            expect(result.siteLogo).toBeUndefined();
+        });
+
+        it('should pass a configured logo and favicon through to templates', () => {
+            mockOptions.extraBodyClass = '';
+            mockOptions.siteLogo = 'site-logo-acme.svg';
+            mockOptions.favicon = 'favicon-acme.ico';
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+
+            const result = renderConfig({});
+
+            expect(result).toHaveProperty('siteLogo', 'site-logo-acme.svg');
+            expect(result).toHaveProperty('faviconFilename', 'favicon-acme.ico');
+        });
+
         it('should filter URL options to only allow whitelisted properties', () => {
-            const {renderConfig} = createRenderHandlers(
-                mockPugRequireHandler,
-                mockOptions,
-                mockDependencies,
-                mockAppArgs,
-            );
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
             const urlOptions = {
                 readOnly: 'true',
@@ -207,12 +190,7 @@ describe('Rendering Module', () => {
         it('should generate slides for mobile viewer', () => {
             // Skip complex mock setup due to TypeScript issues
             // Just verify we can call it without error
-            const {renderConfig} = createRenderHandlers(
-                mockPugRequireHandler,
-                mockOptions,
-                mockDependencies,
-                mockAppArgs,
-            );
+            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
             // This test is simplified to avoid complex mocking issues
             expect(renderConfig).toBeDefined();
@@ -220,12 +198,7 @@ describe('Rendering Module', () => {
         });
 
         it('should create renderGoldenLayout function that renders correct template', () => {
-            const {renderGoldenLayout} = createRenderHandlers(
-                mockPugRequireHandler,
-                mockOptions,
-                mockDependencies,
-                mockAppArgs,
-            );
+            const {renderGoldenLayout} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
             const mockConfig = {};
             const mockMetadata = {};
@@ -270,12 +243,7 @@ describe('Rendering Module', () => {
         });
 
         it('should create embeddedHandler function that renders embed template', () => {
-            const {embeddedHandler} = createRenderHandlers(
-                mockPugRequireHandler,
-                mockOptions,
-                mockDependencies,
-                mockAppArgs,
-            );
+            const {embeddedHandler} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
 
             const mockReq = {
                 query: {foo: 'bar'},
@@ -296,6 +264,27 @@ describe('Rendering Module', () => {
             const renderCallArguments = (mockRes.render as any).mock.calls[0];
             const configObject = renderCallArguments[1];
             expect(configObject).toHaveProperty('embedded', true);
+        });
+    });
+
+    describe('logo template', () => {
+        const renderLogo = (locals: Record<string, unknown>) =>
+            pug.renderFile(resolvePathFromAppRoot('views', 'logo.pug'), {
+                httpRoot: '/',
+                staticRoot: '/static/',
+                ...locals,
+            });
+
+        it('inlines the themeable default logo', () => {
+            const html = renderLogo({});
+            expect(html).toContain('class="logo-pri"');
+            expect(html).not.toContain('<img');
+        });
+
+        it('links to a configured logo instead of inlining the default', () => {
+            const html = renderLogo({siteLogo: 'site-logo-acme.svg'});
+            expect(html).toContain('<img class="logo align-top" src="/static/site-logo-acme.svg"');
+            expect(html).not.toContain('logo-pri');
         });
     });
 });

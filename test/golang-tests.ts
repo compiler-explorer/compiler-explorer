@@ -57,6 +57,9 @@ async function testGoAsm(baseFilename: string) {
     const asmLines = utils.splitLines(fs.readFileSync(baseFilename + '.asm').toString());
 
     const result = {
+        code: 0,
+        timedOut: false,
+        stdout: [],
         stderr: asmLines.map(line => {
             return {
                 text: line,
@@ -64,10 +67,12 @@ async function testGoAsm(baseFilename: string) {
         }),
     };
 
-    const [output] = await compiler.postProcess(result);
+    const [output] = await compiler.postProcess(result, '/tmp/output.s', {});
     const expectedOutput = utils.splitLines(fs.readFileSync(baseFilename + '.output.asm').toString());
     expect(utils.splitLines(output.asm)).toEqual(expectedOutput);
     expect(output).toEqual({
+        code: 0,
+        timedOut: false,
         asm: expectedOutput.join('\n'),
         stdout: [],
         stderr: [],
@@ -169,6 +174,38 @@ describe('GO optionsForFilter', () => {
     });
 });
 
+describe('GO binary mode', () => {
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('Disassembles the built binary rather than reading asm from stderr', async () => {
+        const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
+        vi.spyOn(compiler, 'supportsObjdump').mockReturnValue(true);
+        const objdump = vi
+            .spyOn(compiler, 'objdump')
+            .mockImplementation(async (_outputFilename, result) => ({...result, asm: '<disassembly>'}));
+        const result = {
+            code: 0,
+            timedOut: false,
+            stdout: [],
+            stderr: [{text: './example.go:5:6: can inline Square'}],
+        };
+
+        const [output] = await compiler.postProcess(result, '/tmp/output.s', {binary: true});
+
+        expect(objdump).toHaveBeenCalledOnce();
+        expect(objdump.mock.calls[0][0]).toEqual('/tmp/output.s');
+        expect(output.asm).toEqual('<disassembly>');
+        expect(output.stdout.map(line => line.text)).toEqual(['<source>:5:6: can inline Square']);
+        expect(output.stderr).toEqual([]);
+    });
+});
+
 describe('GO library support', () => {
     let tempDir: string;
     let compiler: GolangCompiler;
@@ -259,6 +296,31 @@ describe('GO library support', () => {
 
         const goSumContent = await fsp.readFile(path.join(tempDir, 'go.sum'), 'utf-8');
         expect(goSumContent).toContain('github.com/google/uuid v1.6.0 h1:abc123=');
+    });
+
+    it('Uses the compiler version as the go directive of the generated go.mod', async () => {
+        const newCompiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver: '1.26.0'}),
+            ce,
+        );
+        await (newCompiler as any).generateGoMod(tempDir, [], tempDir);
+
+        const goModContent = await fsp.readFile(path.join(tempDir, 'go.mod'), 'utf-8');
+        expect(goModContent).toBe('module example\n\ngo 1.26.0\n');
+    });
+
+    it('Falls back to go 1.21 for older or unparsable compiler versions', async () => {
+        for (const semver of ['1.18.0', 'tip', '']) {
+            const oldCompiler = new GolangCompiler(
+                makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver}),
+                ce,
+            );
+            await fsp.rm(path.join(tempDir, 'go.mod'), {force: true});
+            await (oldCompiler as any).generateGoMod(tempDir, [], tempDir);
+
+            const goModContent = await fsp.readFile(path.join(tempDir, 'go.mod'), 'utf-8');
+            expect(goModContent).toBe('module example\n\ngo 1.21\n');
+        }
     });
 
     it('Appends to existing go.mod with require block', async () => {

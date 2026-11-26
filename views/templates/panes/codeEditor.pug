@@ -29,6 +29,9 @@ mixin newPaneButton(classId, text, title, label, icon)
         a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
           img(height="16" width="16" src=staticRoot + "quickbench.svg" alt="Quick-bench logo")
           span.hideable Quick-bench
+        a.btn.btn-sm.btn-light.open-in-abiexplorer(href="https://abiexplorer.org/" target="_blank" title="Open in ABI Explorer" aria-label="Open in ABI Explorer")
+          img(height="16" width="16" src=staticRoot + "abiexplorer.svg" alt="ABI Explorer logo")
+          span.hideable ABI Explorer
     .btn-group.btn-group-sm.mx-auto
       button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")
         span.fas.fa-smile

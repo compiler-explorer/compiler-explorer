@@ -1,0 +1,218 @@
+{
+    "asm": [
+        {
+            "text": "branch(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addi    sp,sp,-32",
+            "source": {
+                "file": null,
+                "line": 1,
+                "column": 19
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      ra,28(sp)",
+            "source": {
+                "file": null,
+                "line": 1,
+                "column": 19
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      s0,24(sp)",
+            "source": {
+                "file": null,
+                "line": 1,
+                "column": 19
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    s0,sp,32",
+            "source": {
+                "file": null,
+                "line": 1,
+                "column": 19
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      a0,-20(s0)",
+            "source": {
+                "file": null,
+                "line": 1,
+                "column": 19
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      a5,-20(s0)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 3
+            },
+            "labels": []
+        },
+        {
+            "text": "        bne     a5,zero,.L2",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 3
+            },
+            "labels": [
+                {
+                    "name": ".L2",
+                    "range": {
+                        "startCol": 25,
+                        "endCol": 28
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        li      a5,13",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 12
+            },
+            "labels": []
+        },
+        {
+            "text": "        j       .L3",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 12
+            },
+            "labels": [
+                {
+                    "name": ".L3",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 20
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".L2:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        li      a5,42",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 12
+            },
+            "labels": []
+        },
+        {
+            "text": ".L3:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        mv      a0,a5",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      ra,28(sp)",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      s0,24(sp)",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    sp,sp,32",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      ra",
+            "source": {
+                "file": null,
+                "line": 8,
+                "column": 1
+            },
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "branch(int):": {
+            "nodes": [
+                {
+                    "id": "branch(int):",
+                    "label": "branch(int):\n        addi    sp,sp,-32\n        sw      ra,28(sp)\n        sw      s0,24(sp)\n        addi    s0,sp,32\n        sw      a0,-20(s0)\n        lw      a5,-20(s0)\n        bne     a5,zero,.L2"
+                },
+                {
+                    "id": "branch(int):@8",
+                    "label": "branch(int):@8\n        li      a5,13\n        j       .L3"
+                },
+                {
+                    "id": ".L2:",
+                    "label": ".L2:\n        li      a5,42"
+                },
+                {
+                    "id": ".L3:",
+                    "label": ".L3:\n        mv      a0,a5\n        lw      ra,28(sp)\n        lw      s0,24(sp)\n        addi    sp,sp,32\n        jr      ra"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "branch(int):",
+                    "to": ".L2:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "branch(int):",
+                    "to": "branch(int):@8",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "branch(int):@8",
+                    "to": ".L3:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": ".L2:",
+                    "to": ".L3:",
+                    "arrows": "to",
+                    "color": "grey"
+                }
+            ]
+        }
+    }
+}

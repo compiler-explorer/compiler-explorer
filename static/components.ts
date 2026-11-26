@@ -24,10 +24,13 @@
 
 import GoldenLayout from 'golden-layout';
 
+import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {GccDumpOutput} from '../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {
     AnyComponentConfig,
     AST_VIEW_COMPONENT_NAME,
@@ -54,7 +57,9 @@ import {
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
     ItemConfig,
+    JVM_BYTECODE_VIEW_COMPONENT_NAME,
     LayoutItem,
+    LEAN_C_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
@@ -69,7 +74,6 @@ import {
     TREE_COMPONENT_NAME,
     YUL_VIEW_COMPONENT_NAME,
 } from './components.interfaces.js';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {SentryCapture} from './sentry.js';
 
 /** Get an empty compiler component. */
@@ -227,9 +231,9 @@ export function getTree(id?: number): ComponentConfig<typeof TREE_COMPONENT_NAME
     return {
         type: 'component',
         componentName: TREE_COMPONENT_NAME,
+        // Build system arguments are prefilled from its descriptor when one is picked, not hardcoded here.
         componentState: {
             id,
-            cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug',
         },
     };
 }
@@ -493,7 +497,7 @@ export function getGccDumpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput: GccDumpViewState,
+    gccDumpOutput: GccDumpOutput | undefined,
 ): ComponentConfig<typeof GCC_DUMP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
@@ -809,6 +813,60 @@ export function getYulViewWith(
             id,
             source,
             yulOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+export function getJvmBytecodeViewWith(
+    id: number,
+    source: string,
+    jvmBytecodeOutput: ParsedAsmResultLine[] | undefined,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof JVM_BYTECODE_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: JVM_BYTECODE_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            jvmBytecodeOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty Lean C view component. */
+export function getLeanCView(): ComponentConfig<typeof LEAN_C_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: LEAN_C_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a Lean C view with the given configuration. */
+export function getLeanCViewWith(
+    id: number,
+    source: string,
+    leanCOutput: ResultLine[] | undefined,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof LEAN_C_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: LEAN_C_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            leanCOutput,
             compilerName,
             editorid,
             treeid,
@@ -1261,6 +1319,7 @@ function validateComponentState(componentName: string, state: any): boolean {
         case HASKELL_CORE_VIEW_COMPONENT_NAME:
         case HASKELL_STG_VIEW_COMPONENT_NAME:
         case HASKELL_CMM_VIEW_COMPONENT_NAME:
+        case JVM_BYTECODE_VIEW_COMPONENT_NAME:
         case GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME:
         case GNAT_DEBUG_VIEW_COMPONENT_NAME:
         case RUST_MACRO_EXP_VIEW_COMPONENT_NAME:

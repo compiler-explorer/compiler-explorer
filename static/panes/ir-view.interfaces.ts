@@ -33,5 +33,7 @@ export interface IrState {
     'filter-instruction-metadata'?: boolean;
     'filter-attributes'?: boolean;
     'filter-comments'?: boolean;
+    'filter-declarations'?: boolean;
+    'filter-library-functions'?: boolean;
     'show-optimized'?: boolean;
 }

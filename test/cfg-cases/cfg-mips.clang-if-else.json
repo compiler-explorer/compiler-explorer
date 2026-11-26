@@ -1,0 +1,260 @@
+{
+    "asm": [
+        {
+            "text": "bar(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "$func_begin0 = $tmp0",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lui     $2, %hi(_gp_disp)",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $2, $2, %lo(_gp_disp)",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $sp, $sp, -24",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        sw      $ra, 20($sp)",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        slti    $1, $4, 6",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 24
+            },
+            "labels": []
+        },
+        {
+            "text": "        bnez    $1, $BB0_2",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 24
+            },
+            "labels": [
+                {
+                    "name": "$BB0_2",
+                    "range": {
+                        "startCol": 21,
+                        "endCol": 27
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        addu    $gp, $2, $25",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 24
+            },
+            "labels": []
+        },
+        {
+            "text": "        lw      $25, %call16(_Z3exti)($gp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 31
+            },
+            "labels": []
+        },
+        {
+            "text": "        jalr    $25",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 31
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 31
+            },
+            "labels": []
+        },
+        {
+            "text": "        b       $BB0_3",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 39
+            },
+            "labels": [
+                {
+                    "name": "$BB0_3",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 23
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        addiu   $2, $zero, 1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 39
+            },
+            "labels": []
+        },
+        {
+            "text": "$BB0_2:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      $25, %call16(_Z4ext2i)($gp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": "        jalr    $25",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $2, $zero, 0",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": "$BB0_3:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      $ra, 20($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $ra",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $sp, $sp, 24",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "bar(int):": {
+            "nodes": [
+                {
+                    "id": "bar(int):",
+                    "label": "bar(int):\n        lui     $2, %hi(_gp_disp)\n        addiu   $2, $2, %lo(_gp_disp)\n        addiu   $sp, $sp, -24\n        sw      $ra, 20($sp)\n        slti    $1, $4, 6\n        bnez    $1, $BB0_2\n        addu    $gp, $2, $25"
+                },
+                {
+                    "id": "bar(int):@8",
+                    "label": "bar(int):@8\n        lw      $25, %call16(_Z3exti)($gp)\n        jalr    $25\n        nop\n        b       $BB0_3\n        addiu   $2, $zero, 1"
+                },
+                {
+                    "id": "$BB0_2:",
+                    "label": "$BB0_2:\n        lw      $25, %call16(_Z4ext2i)($gp)\n        jalr    $25\n        nop\n        addiu   $2, $zero, 0"
+                },
+                {
+                    "id": "$BB0_3:",
+                    "label": "$BB0_3:\n        lw      $ra, 20($sp)\n        jr      $ra\n        addiu   $sp, $sp, 24"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "bar(int):",
+                    "to": "$BB0_2:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "bar(int):",
+                    "to": "bar(int):@8",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "bar(int):@8",
+                    "to": "$BB0_3:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "$BB0_2:",
+                    "to": "$BB0_3:",
+                    "arrows": "to",
+                    "color": "grey"
+                }
+            ]
+        }
+    }
+}
