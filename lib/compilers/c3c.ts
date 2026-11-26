@@ -38,13 +38,9 @@ import {asSafeVer} from '../utils.js';
 
 // c3c writes one file per module section into the `--asm-out`/`--llvm-out` directory, named after the
 // module with `::` replaced by `.`, never to the single path CE expects, so we join the user's files
-// ourselves. Driven by the declarations rather than by "any file that isn't the standard library",
-// because `module std::io;` is legal in user code and c3c then appends to the standard library's file.
+// ourselves. Driven by the declarations, so the compiler_rt and generic instantiation files c3c writes
+// alongside are never joined in.
 const MODULE_DECL_RE = /^[^\S\n]*module\s+([a-zA-Z_]\w*(?:\s*::\s*[a-zA-Z_]\w*)*)/gm;
-
-// Raw strings and the three comment forms, blanked before matching declarations so a commented-out or
-// quoted `module std::io;` doesn't have us serve up the standard library's assembly.
-const NON_CODE_RE = /`[^`]*`|<\*[\s\S]*?\*>|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g;
 
 // c3c replaces anything that isn't a word character when deriving a module name from a file name.
 const FILENAME_TO_MODULE_RE = /\W/g;
@@ -60,26 +56,94 @@ export class C3Compiler extends BaseCompiler {
         this.compiler.irArg = ['--emit-llvm'];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter() {
         const options = ['compile-only', '-g', '-l', 'pthread', '--no-obj', '--emit-asm'];
         if (Semver.gte(asSafeVer(this.compiler.semver), '0.6.8', true)) {
             options.push('--llvm-out', '.', '--asm-out', '.');
         }
-        // c3c defaults to --strip-unused=yes, tracing only from main, `@export` and `@nostrip`, so a lone
-        // uncalled function emits nothing at all: the common case on CE. User options are appended after
-        // these and c3c takes the last occurrence, so `--strip-unused=yes` still works.
+        // c3c strips unused code by default, tracing only from main, `@export` and `@nostrip`, so a lone
+        // uncalled function emits nothing at all: the common case on CE. Not stripping also re-emits the whole
+        // standard library, which is several times slower, so skip writing that out: the pair is then faster
+        // than c3c's default. 0.4 spells both as --no-*. User options come after these and c3c takes the last
+        // occurrence, so either can be overridden.
         if (Semver.gte(asSafeVer(this.compiler.semver), '0.5.0', true)) {
-            options.push('--strip-unused=no');
+            options.push('--strip-unused=no', '--emit-stdlib=no');
+        } else {
+            options.push('--no-strip-unused', '--no-emit-stdlib');
         }
         return options;
     }
 
-    override getIrOutputFilename(
+    // The IR run otherwise reuses the asm options wholesale, re-emitting the asm alongside the IR.
+    override async generateIR(
         inputFilename: string,
-        filters?: ParseFiltersAndOutputOptions,
-        irOptions?: LLVMIrBackendOptions,
-    ): string {
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const irRunOptions = options.filter(
+            (option, index) => option !== '--emit-asm' && option !== '--asm-out' && options[index - 1] !== '--asm-out',
+        );
+        return super.generateIR(inputFilename, irRunOptions, irOptions, produceCfg, filters);
+    }
+
+    override getIrOutputFilename(inputFilename: string): string {
         return this.filename(path.dirname(inputFilename) + '/output.ll');
+    }
+
+    // Blanks comments and string and character literals, keeping newlines so line anchors still match.
+    // Mirrors c3c's lexer: `/* */` nests, `<* *>` doc comments don't, and a raw string escapes ` as ``.
+    static blankNonCode(source: string): string {
+        const out = source.split('');
+        const blank = (from: number, to: number) => {
+            for (let i = from; i < to; i++) if (out[i] !== '\n') out[i] = ' ';
+        };
+        let i = 0;
+        while (i < source.length) {
+            const start = i;
+            const two = source.slice(i, i + 2);
+            if (two === '//') {
+                const end = source.indexOf('\n', i);
+                i = end < 0 ? source.length : end;
+            } else if (two === '/*') {
+                let depth = 1;
+                i += 2;
+                while (i < source.length && depth > 0) {
+                    const pair = source.slice(i, i + 2);
+                    if (pair === '/*') {
+                        depth++;
+                        i += 2;
+                    } else if (pair === '*/') {
+                        depth--;
+                        i += 2;
+                    } else {
+                        i++;
+                    }
+                }
+            } else if (two === '<*') {
+                const end = source.indexOf('*>', i + 2);
+                i = end < 0 ? source.length : end + 2;
+            } else if (source[i] === '`') {
+                i++;
+                while (i < source.length) {
+                    if (source[i] === '`' && source[i + 1] === '`') i += 2;
+                    else if (source[i++] === '`') break;
+                }
+            } else if (source[i] === '"' || source[i] === "'") {
+                const quote = source[i++];
+                // An unterminated literal is a compile error; stop at the line end so the rest is still read.
+                while (i < source.length && source[i] !== '\n') {
+                    if (source[i] === '\\') i += 2;
+                    else if (source[i++] === quote) break;
+                }
+            } else {
+                i++;
+                continue;
+            }
+            blank(start, i);
+        }
+        return out.join('');
     }
 
     // The module name c3c derives for a file that declares none.
@@ -95,8 +159,7 @@ export class C3Compiler extends BaseCompiler {
         } catch {
             return [C3Compiler.moduleNameForFile(inputFilename)];
         }
-        // Blank non-code, preserving newlines so MODULE_DECL_RE's line anchors still line up.
-        const code = source.replaceAll(NON_CODE_RE, match => match.replaceAll(/[^\n]/g, ' '));
+        const code = C3Compiler.blankNonCode(source);
         const names = [...code.matchAll(MODULE_DECL_RE)].map(match => match[1].replaceAll(/\s*::\s*/g, '.'));
         // A module may be declared in several sections, all appending to one file: join it in once.
         const unique = [...new Set(names)];
@@ -161,11 +224,7 @@ export class C3Compiler extends BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
     ) {
         if (output.inputFilename)
-            await this.joinModulesFor(
-                output.inputFilename,
-                '.ll',
-                this.getIrOutputFilename(output.inputFilename, filters, irOptions),
-            );
+            await this.joinModulesFor(output.inputFilename, '.ll', this.getIrOutputFilename(output.inputFilename));
         return super.processIrOutput(output, irOptions, filters);
     }
 }
