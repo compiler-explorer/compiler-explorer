@@ -80,3 +80,8 @@ declare module 'lodash.clonedeep' {
     const cloneDeep: <T>(value: T) => T;
     export = cloneDeep;
 }
+
+// Only used by monaco-config-tests, to check that context menus survive a diff editor being disposed.
+declare module 'monaco-editor/base/browser/ui/hover/hoverDelegateFactory.js' {
+    export function createInstantHoverDelegate(): {dispose(): void};
+}

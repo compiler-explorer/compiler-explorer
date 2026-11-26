@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
-import {createInstantHoverDelegate} from 'monaco-editor/esm/vs/base/browser/ui/hover/hoverDelegateFactory.js';
+import {createInstantHoverDelegate} from 'monaco-editor/base/browser/ui/hover/hoverDelegateFactory.js';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {disposeDiffEditor} from '../monaco-config.js';
