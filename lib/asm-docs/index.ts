@@ -29,3 +29,15 @@ export * from './_all.js';
 export {BaseAssemblyDocumentationProvider} from './base.js';
 
 export const getDocumentationProviderTypeByKey = makeKeyedTypeGetter('documentation provider', all);
+
+// Flatten the static `key` of each provider (some providers expose multiple keys, e.g.
+// the ARM provider supplies both 'arm32' and 'aarch64'). Sorted for stable output.
+export const availableAsmDocsKeys: readonly string[] = (() => {
+    const keys = new Set<string>();
+    for (const provider of Object.values(all)) {
+        const k = (provider as {key?: string | string[]}).key;
+        if (Array.isArray(k)) for (const one of k) keys.add(one);
+        else if (typeof k === 'string') keys.add(k);
+    }
+    return [...keys].sort();
+})();

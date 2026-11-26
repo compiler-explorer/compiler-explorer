@@ -38,8 +38,12 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import {DotNetPdbParser, type DotNetSourceMapping} from '../parsers/pdb-parser-dotnet.js';
 import * as utils from '../utils.js';
+
+type DotNetCompilationResult = CompilationResult & {dotnetSourceMapping?: DotNetSourceMapping};
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -151,7 +155,25 @@ class DotNetCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
     ) {
         const compilerInfo = await this.getCompilerInfo(this.lang.id);
-        return await this.buildToDll(compiler, compilerInfo, inputFilename, execOptions, true);
+        const compilerOptions = this.extractCompilerOptions(options);
+        return await this.buildToDll(compiler, compilerInfo, inputFilename, execOptions, compilerOptions, true);
+    }
+
+    extractCompilerOptions(options: string[]): string[] {
+        const compilerOptions: string[] = [];
+        while (options.length > 0) {
+            const currentOption = options.shift();
+            if (!currentOption) {
+                continue;
+            }
+            if (currentOption === '-compopt' || currentOption === '--compiler-options') {
+                const value = options.shift();
+                if (value) {
+                    compilerOptions.push(value);
+                }
+            }
+        }
+        return compilerOptions;
     }
 
     async buildToDll(
@@ -159,6 +181,7 @@ class DotNetCompiler extends BaseCompiler {
         compilerInfo: DotNetCompilerInfo,
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ): Promise<CompilationResult> {
         const programDir = path.dirname(inputFilename);
@@ -176,6 +199,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -187,6 +211,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -198,6 +223,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -208,6 +234,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -305,6 +332,7 @@ class DotNetCompiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const {refAssemblies, analyzers} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'csharp');
@@ -322,13 +350,14 @@ class DotNetCompiler extends BaseCompiler {
             '-warn:9',
             '-highentropyva+',
             '-nullable:enable',
-            '-debug-',
+            '-debug:portable',
             '-optimize+',
             '-warnaserror-',
             '-utf8output',
             '-deterministic+',
             `-langversion:${this.langVersion}`,
             '-warnaserror+:NU1605,SYSLIB0011',
+            ...compilerOptions,
         ];
         for (const analyzer of analyzers) {
             options.push(`-analyzer:${analyzer}`);
@@ -364,6 +393,7 @@ using System.Reflection;
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const {refAssemblies, analyzers} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'vb');
@@ -384,13 +414,14 @@ System.Diagnostics,System.Linq,System.Xml.Linq,System.Threading.Tasks`,
             '-errorreport:prompt',
             '-rootnamespace:CompilerExplorer',
             '-highentropyva+',
-            '-debug-',
+            '-debug:portable',
             '-optimize+',
             '-warnaserror-',
             '-utf8output',
             '-deterministic+',
             `-langversion:${this.langVersion}`,
             '-warnaserror+:NU1605,SYSLIB0011',
+            ...compilerOptions,
         ];
         for (const analyzer of analyzers) {
             options.push(`-analyzer:${analyzer}`);
@@ -434,6 +465,7 @@ Imports System.Reflection
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const {refAssemblies} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'fsharp');
@@ -449,11 +481,13 @@ Imports System.Reflection
             '--warnaserror:3239',
             '--fullpaths',
             '--flaterrors',
+            '--debug:portable',
             '--highentropyva+',
             '--targetprofile:netcore',
             '--nocopyfsharpcore',
             '--deterministic+',
             '--simpleresolution',
+            ...compilerOptions,
         ];
         for (const refAssembly of refAssemblies) {
             options.push(`-r:${refAssembly}`);
@@ -501,6 +535,7 @@ do()
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const assemblyInfo = `.assembly extern DisassemblyLoader { }
@@ -519,10 +554,12 @@ do()
             '-nologo',
             '-quiet',
             '-optimize',
+            '-debug:OPT',
             buildToBinary ? '-exe' : '-dll',
             assemblyInfoPath,
             `-include:${programDir}`,
             `-output:${outputFilename}`,
+            ...compilerOptions,
         ];
         return await super.runCompiler(ilasmPath, options, inputFilename, execOptions);
     }
@@ -543,11 +580,15 @@ do()
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, compilerInfo.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
-        const envVarFileContents = ['DOTNET_EnableWriteXorExecute=0'];
+        const envVarFileContents = [
+            'DOTNET_EnableWriteXorExecute=0',
+            ...Object.entries(execOptions.env).map(([key, value]) => `${key}=${value}`),
+        ];
         const isIlDasm = this.compiler.group === 'dotnetildasm';
         const isIlSpy = this.compiler.group === 'dotnetilspy';
         const isCoreRun = this.compiler.group === 'dotnetcoreclr';
         const toolOptions: string[] = [];
+        const compilerOptions = this.extractCompilerOptions([...options]);
 
         let overrideDiffable = false;
         let overrideDisasm = false;
@@ -571,6 +612,11 @@ do()
                 break;
             }
 
+            if (currentOption === '-compopt' || currentOption === '--compiler-options') {
+                options.shift(); // skip the value for this option, we don't need it
+                continue;
+            }
+
             if ((isCoreRun || isMono) && (currentOption === '-e' || currentOption === '--env')) {
                 const envVar = options.shift();
                 if (envVar) {
@@ -582,7 +628,7 @@ do()
                     if (normalizedName === 'DOTNET_JITDISASM') {
                         overrideDisasm = true;
                     }
-                    if (normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
+                    if (normalizedName === 'DOTNET_JITDISASMASSEMBLIES') {
                         overrideAssembly = true;
                     }
                     if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
@@ -614,7 +660,7 @@ do()
                             if (normalizedValue.startsWith('JITDISASM=')) {
                                 overrideDisasm = true;
                             }
-                            if (normalizedValue.startsWith('JITDISASMASSEMBILES=')) {
+                            if (normalizedValue.startsWith('JITDISASMASSEMBLIES=')) {
                                 overrideAssembly = true;
                             }
                             if (
@@ -672,17 +718,37 @@ do()
             }
         }
 
+        const mapDebugInfo = (isCoreRun && !isMono) || isCrossgen2 || isAot;
+
+        if (mapDebugInfo) {
+            if (needCodegenOptions) {
+                toolOptions.push('--codegenopt', 'JitDisasmWithDebugInfo=1');
+            }
+            envVarFileContents.push('DOTNET_JitDisasmWithDebugInfo=1');
+        }
+
         this.setCompilerExecOptions(execOptions, programDir);
 
-        const compilerResult = await this.buildToDll(
+        const compilerResult: DotNetCompilationResult = await this.buildToDll(
             compiler,
             compilerInfo,
             inputFilename,
             execOptions,
+            compilerOptions,
             filters.binary,
         );
         if (compilerResult.code !== 0) {
             return compilerResult;
+        }
+
+        if (mapDebugInfo) {
+            const pdbPath = utils.changeExtension(programDllPath, '.pdb');
+            if (await utils.fileExists(pdbPath)) {
+                compilerResult.dotnetSourceMapping = new DotNetPdbParser(
+                    await fs.readFile(programDllPath),
+                    await fs.readFile(pdbPath),
+                ).parse();
+            }
         }
 
         if (isIlDasm) {
@@ -757,6 +823,10 @@ do()
         return compilerResult;
     }
 
+    override async processAsm(result: DotNetCompilationResult, filters: ParseFiltersAndOutputOptions) {
+        return new DotNetAsmParser(result.dotnetSourceMapping).process(result.asm as string, filters);
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         return [];
     }
@@ -808,7 +878,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -838,7 +908,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ilspy ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ilspy ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -854,7 +924,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ildasm ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ildasm ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -902,7 +972,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// crossgen2 ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// crossgen2 ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -938,13 +1008,26 @@ do()
             '--directpinvoke:libSystem.IO.Compression.Native',
             '--directpinvoke:libSystem.Net.Security.Native',
             '--directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl',
+            '--feature:System.Reflection.Metadata.MetadataUpdater.IsSupported=false',
+            '--feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false',
+            '--feature:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false',
+            '--feature:System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting=false',
+            '--feature:System.Runtime.InteropServices.EnableCppCLIHostActivation=false',
+            '--feature:System.StartupHookProvider.IsSupported=false',
+            '--feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false',
+            '--feature:System.Diagnostics.Debugger.IsSupported=false',
+            '--runtimeknob:System.Reflection.Metadata.MetadataUpdater.IsSupported=false',
+            '--runtimeknob:System.Resources.ResourceManager.AllowCustomResourceTypes=false',
+            '--runtimeknob:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false',
+            '--runtimeknob:System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting=false',
+            '--runtimeknob:System.Runtime.InteropServices.EnableCppCLIHostActivation=false',
+            '--runtimeknob:System.StartupHookProvider.IsSupported=false',
+            '--runtimeknob:System.Linq.Expressions.CanEmitObjectArrayDelegate=false',
             '--resilient',
             '--singlewarn',
             '--scanreflection',
             '--nosinglewarnassembly:CompilerExplorer',
             '--generateunmanagedentrypoints:System.Private.CoreLib',
-            '--notrimwarn',
-            '--noaotwarn',
         ].concat(options);
 
         if (!buildToBinary) {
@@ -956,7 +1039,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ilc ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ilc ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -974,7 +1057,18 @@ do()
             executable = this.compiler.executionWrapper;
         }
 
+        const isCoreClr = this.compiler.group === 'dotnetcoreclr';
         const isMono = this.compiler.group === 'dotnetmono';
+
+        if (!isCoreClr && !isMono) {
+            return {
+                ...utils.getEmptyExecutionResult(),
+                stdout: [],
+                stderr: utils.parseOutput('Execution is only supported for CoreCLR and Mono compilers'),
+                code: -1,
+            };
+        }
+
         const compilerInfo = await this.getCompilerInfo(this.lang.id);
         const extraConfiguration: DotnetExtraConfiguration = {
             buildConfig: this.buildConfig,
@@ -1029,6 +1123,13 @@ export class DotNetIlDasmCompiler extends DotNetCompiler {
 export class DotNetIlSpyCompiler extends DotNetCompiler {
     static get key() {
         return 'dotnetilspy';
+    }
+
+    generatedCodeParser = new AsmParserCpp();
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
+        // the output is the decompiled C#, which the JIT disassembly parser would mangle
+        return this.generatedCodeParser.process(result.asm, filters);
     }
 }
 

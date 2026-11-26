@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BaseCompiler} from '../base-compiler.js';
+import {SymbolStore} from '../symbol-store.js';
 import {BaseDemangler} from './base.js';
 import {LLVMIRDemangler} from './llvm.js';
 
@@ -35,11 +36,16 @@ export class NVHPCDemangler extends BaseDemangler {
 
     constructor(demanglerExe: string, compiler: BaseCompiler, demanglerArguments: string[] = []) {
         super(demanglerExe, compiler, demanglerArguments);
-        this.llvmDemangler = new LLVMIRDemangler(demanglerExe, compiler);
+        this.llvmDemangler = new LLVMIRDemangler(this);
     }
 
     protected override collectLabels() {
         this.llvmDemangler.collect(this.result as any);
-        this.symbolstore = this.llvmDemangler.symbolstore;
+        if (!this.symbolstore) {
+            this.symbolstore = new SymbolStore();
+        }
+        for (const symbol of this.llvmDemangler.labels) {
+            this.symbolstore.add(symbol);
+        }
     }
 }

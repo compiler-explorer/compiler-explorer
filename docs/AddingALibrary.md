@@ -6,6 +6,61 @@ and then how to submit PRs to get it into the main CE site.
 Note that most libraries are Header-only. This is the easiest form of library to support. If the library needs to be
 built, there are some caveats, best practices and good to knows. Consult the bottom of this page for details.
 
+## CE Library Wizard (recommended)
+
+The easiest way to add a library to Compiler Explorer is to use the
+[CE Library Wizard](https://github.com/compiler-explorer/ce-library-wizard), a CLI tool that automates the entire
+process — including forking repos, updating configuration files, and creating pull requests. It supports C, C++, Rust,
+Fortran, and Go.
+
+*Note: the wizard currently only runs on Linux and requires Git, the
+[GitHub CLI](https://cli.github.com/), and CMake (for libraries that use CMake).*
+
+```bash
+git clone https://github.com/compiler-explorer/ce-library-wizard.git
+cd ce-library-wizard
+./run.sh
+```
+
+This launches an interactive mode that guides you through the process. You can also use command-line flags directly:
+
+```bash
+# C++ library (auto-detects type)
+./run.sh --lang=c++ --lib=https://github.com/fmtlib/fmt --ver=10.2.1
+
+# Header-only C++ library
+./run.sh --lang=c++ --lib=https://github.com/bobluppes/graaf --ver=v1.1.1 --type=header-only
+
+# Rust crate
+./run.sh --lang=rust --lib=serde --ver=1.0.195
+
+# C library
+./run.sh --lang=c --lib=https://github.com/libuv/libuv --ver=1.46.0
+
+# Fortran library (requires fpm.toml)
+./run.sh --lang=fortran --lib=https://github.com/jacobwilliams/json-fortran --ver=8.5.0
+
+# Go module
+./run.sh --lang=go --lib=github.com/google/uuid --ver=v1.6.0
+
+# Multiple versions at once
+./run.sh --lang=c++ --lib=https://github.com/nlohmann/json --ver=3.11.1,3.11.2,3.11.3
+
+# Bulk-add top 100 Rust crates
+./run.sh --top-rust-crates
+```
+
+Useful options include `--verify` to preview changes, `--dry-run` to skip committing, `--install-test` to validate
+installation (C/C++), `--build-test=yes` to test building, and `--type=TYPE` to skip auto-detection (C/C++).
+
+For full documentation, see the
+[CE Library Wizard repository](https://github.com/compiler-explorer/ce-library-wizard).
+
+## Manual configuration
+
+The rest of this document describes how to add libraries manually, which is useful for understanding how the
+configuration works or for cases the wizard doesn't cover.
+
 If you're specifically looking for adding a Rust crate to CE, go here
 https://github.com/compiler-explorer/infra/blob/main/docs/adding_rust_crates.md
 
@@ -16,10 +71,14 @@ files (for C++, other languages follow the obvious pattern). For a comprehensive
 see [Configuration.md](Configuration.md).
 
 Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed. Lines
-starting with `#` are considered comments and not parsed. The list of libraries is set by the `libs` key and is a list
-of library identifiers, separated by colons. The identifier itself is not important, but must be unique to that library.
+starting with `#` are considered comments and not parsed.
 
-An example configuration:
+Library identifiers are automatically discovered from the property keys in the file. Any key matching `libs.ID.*` will
+register `ID` as a library. You can also explicitly list libraries using the `libs` key with a colon-separated list of
+identifiers, but this is optional. If `libs=` is present, only the listed libraries will be used; if absent, all
+libraries defined via `libs.ID.*` keys will be discovered automatically.
+
+An example configuration using explicit listing:
 
 ```INI
 libs=kvasir:boost:rangesv3
@@ -27,7 +86,7 @@ libs=kvasir:boost:rangesv3
 
 This says there are three libraries with identifiers `kvasir`, `boost` and `rangesv3`. CE will look for the key named
 `libs.ID.versions`, `libs.ID.name` and the optionals `libs.ID.url` & `libs.ID.description`. The `ID` is the identifier
-(The one we just set) of the library being looked up. The `name` key expects the human-readable name of the library
+of the library being looked up. The `name` key expects the human-readable name of the library
 (Note that you can use spaces here!). The `versions` key expects another list, akin to the libs key itself. This time,
 you have to define the available versions for each library. The `url` key expects an unescaped url, where users can go
 to learn more about the library (This is usually the project's homepage, or in its absence, the GitHub repo). The

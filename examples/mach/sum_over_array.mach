@@ -1,0 +1,11 @@
+use std.types.size.usize;
+
+pub fun sum_array(array: *u32, len: usize) u32 {
+    var sum: u32 = 0;
+    var i: usize = 0;
+    for (i < len) {
+        sum = sum + array[i];
+        i = i + 1;
+    }
+    ret sum;
+}

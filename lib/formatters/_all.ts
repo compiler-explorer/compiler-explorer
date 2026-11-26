@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export {ClangFormatFormatter} from './clang-format.js';
+export {Co2FmtFormatter} from './co2fmt.js';
 export {DartFormatFormatter} from './dartformat.js';
 export {GoFmtFormatter} from './gofmt.js';
+export {MojoFormatter} from './mojo.js';
 export {RustFmtFormatter} from './rustfmt.js';
 export {VFmtFormatter} from './vfmt.js';

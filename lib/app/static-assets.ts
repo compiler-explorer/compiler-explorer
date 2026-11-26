@@ -31,6 +31,7 @@ import urljoin from 'url-join';
 
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
+import {resolvePathFromAppRoot} from '../utils.js';
 import {PugRequireHandler, ServerOptions} from './server.interfaces.js';
 
 /**
@@ -84,15 +85,22 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
     return path => urljoin(options.httpRoot, path);
 }
 
+export async function loadStaticManifest(manifestPath: string): Promise<Record<string, string>> {
+    return JSON.parse(await fs.readFile(path.join(manifestPath, 'manifest.json'), 'utf-8'));
+}
+
 /**
  * Sets up static file middleware for production mode
  * @param options - Server options
  * @param router - Express router
+ * @param staticManifest - Webpack manifest mapping asset names to hashed filenames
  * @returns Function to handle Pug requires
  */
-export async function setupStaticMiddleware(options: ServerOptions, router: Router): Promise<PugRequireHandler> {
-    const staticManifest = JSON.parse(await fs.readFile(path.join(options.manifestPath, 'manifest.json'), 'utf-8'));
-
+export function setupStaticMiddleware(
+    options: ServerOptions,
+    router: Router,
+    staticManifest: Record<string, string>,
+): PugRequireHandler {
     if (options.staticUrl) {
         logger.info(`  using static files from '${options.staticUrl}'`);
     } else {
@@ -108,21 +116,63 @@ export async function setupStaticMiddleware(options: ServerOptions, router: Rout
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
 }
 
+// `siteLogo` and `favicon` are paths relative to public/.
+export interface BrandingConfig {
+    extraBodyClass: string;
+    siteLogo?: string;
+    favicon?: string;
+}
+
+export function getFaviconFilename(extraBodyClass: string, favicon?: string): string {
+    if (extraBodyClass) return `favicon-${extraBodyClass}.ico`;
+    return favicon || 'favicon.ico';
+}
+
+export function getLogoOverlayFilename(extraBodyClass: string): string | undefined {
+    return extraBodyClass ? `site-logo-${extraBodyClass}.svg` : undefined;
+}
+
 /**
- * Gets the appropriate favicon filename based on the environment
- * @param isDevMode - Whether the app is running in development mode
- * @param env - The environment names array
- * @returns The favicon filename to use
+ * The directory branding assets are served from in dev mode: the webpack dev middleware
+ * serves public/ directly (they aren't on disk in staticPath).
  */
-export function getFaviconFilename(isDevMode: boolean, env?: string[]): string {
-    if (isDevMode) {
-        return 'favicon-dev.ico';
+export function getBrandingPublicDir(): string {
+    return resolvePathFromAppRoot('public');
+}
+
+// The plain favicon.ico always ships, so it is only checked when something else was asked for.
+function requiredBrandingAssets({extraBodyClass, siteLogo, favicon}: BrandingConfig): string[] {
+    const favicons = extraBodyClass || favicon ? [getFaviconFilename(extraBodyClass, favicon)] : [];
+    return [...favicons, getLogoOverlayFilename(extraBodyClass), siteLogo].filter((f): f is string => !!f);
+}
+
+function throwIfMissingBrandingAssets(where: string, missing: string[]): void {
+    if (missing.length > 0) {
+        throw new Error(`Missing branding assets in ${where}: ${missing.join(', ')}`);
     }
-    if (env?.includes('beta')) {
-        return 'favicon-beta.ico';
+}
+
+export async function validateBrandingAssetsOnDisk(assetDir: string, branding: BrandingConfig): Promise<void> {
+    const missing: string[] = [];
+    for (const filename of requiredBrandingAssets(branding)) {
+        try {
+            await fs.access(path.join(assetDir, filename));
+        } catch (e: unknown) {
+            const err = e as NodeJS.ErrnoException;
+            if (err.code === 'ENOENT') missing.push(filename);
+            else throw err;
+        }
     }
-    if (env?.includes('staging')) {
-        return 'favicon-staging.ico';
-    }
-    return 'favicon.ico';
+    throwIfMissingBrandingAssets(assetDir, missing);
+}
+
+/**
+ * Production deploys ship the static assets in a separate CDN bundle (see build-dist.sh), so
+ * they are not on disk next to the node app and cannot be checked with the filesystem. The
+ * webpack manifest *does* ship with the node app and lists every asset in the static bundle
+ * (public/ is copied in wholesale), so presence of a manifest key proves the asset shipped.
+ */
+export function validateBrandingAssetsInManifest(manifest: Record<string, string>, branding: BrandingConfig): void {
+    const missing = requiredBrandingAssets(branding).filter(filename => !Object.hasOwn(manifest, filename));
+    throwIfMissingBrandingAssets('the static manifest', missing);
 }

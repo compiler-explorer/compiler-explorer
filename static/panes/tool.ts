@@ -38,7 +38,7 @@ import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolSt
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
-import {options as ceoptions} from '../options.js';
+import {type ToolEntry, toolsService} from '../services/tools.service.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -70,6 +70,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     optionsField: JQuery;
     localStdinField: JQuery;
     createToolInputView: () => ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME>;
+    private argChoicesApplied = false;
 
     wrapButton: JQuery;
     wrapTitle: JQuery;
@@ -181,9 +182,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    onLanguageChange(editorId: number | boolean, newLangId: LanguageKey) {
+    async onLanguageChange(editorId: number | boolean, newLangId: LanguageKey) {
         if (this.compilerInfo.editorId && this.compilerInfo.editorId === editorId) {
-            const tools = ceoptions.tools[newLangId];
+            const tools = await toolsService.getToolsForLang(newLangId);
             this.toggleUsable(!!tools?.[this.toolId]);
         }
     }
@@ -207,13 +208,13 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             this.eventHub.emit('toolSettingsChange', this.compilerInfo.compilerId);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
+        this.optionsField.on('change', optionsChange).on('input', optionsChange);
 
         if (state.args) {
             this.optionsField.val(state.args);
         }
 
-        this.localStdinField.on('change', optionsChange).on('keyup', optionsChange);
+        this.localStdinField.on('change', optionsChange).on('input', optionsChange);
 
         if (state.stdin) {
             if (!this.monacoStdin) {
@@ -222,6 +223,33 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 this.eventHub.emit('setToolInput', this.compilerInfo.compilerId, this.toolId, state.stdin);
             }
         }
+    }
+
+    private applyArgChoices(toolInfo: ToolEntry) {
+        const choices = toolInfo.argChoices;
+        if (this.argChoicesApplied || !choices || choices.length === 0) return;
+        this.argChoicesApplied = true;
+
+        const current = unwrapString(this.optionsField.val());
+        const defaultArg = toolInfo.args ?? '';
+        // The backend matches stages case-insensitively, so a saved or hand-typed value in any case is kept.
+        const matching = (arg: string) => choices.find(choice => choice.toLowerCase() === arg.trim().toLowerCase());
+        const initial = matching(current) ?? matching(defaultArg) ?? choices[0];
+
+        const select = $(
+            '<select class="tool-arg-choices form-select form-select-sm" aria-label="Tool mode"></select>',
+        );
+        for (const choice of choices) {
+            select.append($('<option></option>').val(choice).text(choice));
+        }
+        select.val(initial);
+        select.on('change', () => {
+            this.optionsField.val(unwrapString(select.val())).trigger('change');
+        });
+
+        this.optionsField.val(initial).addClass('d-none').after(select);
+        this.showPanel(this.toggleArgs, this.panelArgs);
+        if (initial !== current) this.optionsField.trigger('change');
     }
 
     getInputArgs() {
@@ -262,9 +290,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.monacoEditorHasBeenAutoOpened = true; // just in case we get here in an unexpected way
         this.monacoEditorOpen = true;
         this.toggleStdin.addClass('active');
-        const insertPoint =
-            this.hub.findParentRowOrColumn(this.container.parent) || this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(this.createToolInputView());
+        this.hub.addToParentRowOrColumn(this.container, this.createToolInputView());
         this.onOptionsChange();
         this.eventHub.emit('setToolInput', this.compilerInfo.compilerId, this.toolId, this.monacoStdinField);
     }
@@ -415,9 +441,10 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         try {
             if (id !== this.compilerInfo.compilerId) return;
 
-            const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
+            const compilerToolIds = compiler.tools as unknown as string[];
+            const compilerSupportsTool = compilerToolIds.includes(this.toolId);
 
-            this.toggleUsable(!!foundTool);
+            this.toggleUsable(compilerSupportsTool);
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;
@@ -427,19 +454,20 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 toolResult = _.find(result.result.tools, tool => tool.id === this.toolId);
             }
 
-            // any for now for typing reasons... TODO(jeremy-rifkin)
-            let toolInfo: any = null;
-            toolInfo = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
+            const toolInfo = compilerSupportsTool
+                ? toolsService.getCachedToolsForLang(compiler.lang)?.[this.toolId]
+                : undefined;
 
             if (toolInfo) {
+                this.applyArgChoices(toolInfo);
                 this.toggleStdin.prop('disabled', false);
 
                 if (this.monacoStdin && !this.monacoEditorOpen && !this.monacoEditorHasBeenAutoOpened) {
                     this.monacoEditorHasBeenAutoOpened = true;
                     this.openMonacoEditor();
-                } else if (!this.monacoStdin && toolInfo.tool.stdinHint) {
-                    this.localStdinField.prop('placeholder', toolInfo.tool.stdinHint);
-                    if (toolInfo.tool.stdinHint === 'disabled') {
+                } else if (!this.monacoStdin && toolInfo.stdinHint) {
+                    this.localStdinField.prop('placeholder', toolInfo.stdinHint);
+                    if (toolInfo.stdinHint === 'disabled') {
                         this.toggleStdin.prop('disabled', true);
                     } else {
                         this.showPanel(this.toggleStdin, this.panelStdin);

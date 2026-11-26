@@ -1,0 +1,185 @@
+{
+    "asm": [
+        {
+            "text": "bar(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $r3,$r3,-16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        st.d    $r1,$r3,8",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.w  $r12,$r0,5              # 0x5",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        bgt     $r4,$r12,.L6",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": [
+                {
+                    "name": ".L6",
+                    "range": {
+                        "startCol": 26,
+                        "endCol": 29
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        bl      %plt(_Z4ext2i)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 55
+            },
+            "labels": []
+        },
+        {
+            "text": "        ld.d    $r1,$r3,8",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        or      $r4,$r0,$r0",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 67
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $r3,$r3,16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $r1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": ".L6:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        bl      %plt(_Z3exti)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 34
+            },
+            "labels": []
+        },
+        {
+            "text": "        ld.d    $r1,$r3,8",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.w  $r4,$r0,1             # 0x1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 46
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $r3,$r3,16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $r1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "bar(int):": {
+            "nodes": [
+                {
+                    "id": "bar(int):",
+                    "label": "bar(int):\n        addi.d  $r3,$r3,-16\n        st.d    $r1,$r3,8\n        addi.w  $r12,$r0,5              # 0x5\n        bgt     $r4,$r12,.L6"
+                },
+                {
+                    "id": "bar(int):@5",
+                    "label": "bar(int):@5\n        bl      %plt(_Z4ext2i)\n        ld.d    $r1,$r3,8\n        or      $r4,$r0,$r0\n        addi.d  $r3,$r3,16\n        jr      $r1"
+                },
+                {
+                    "id": ".L6:",
+                    "label": ".L6:\n        bl      %plt(_Z3exti)\n        ld.d    $r1,$r3,8\n        addi.w  $r4,$r0,1             # 0x1\n        addi.d  $r3,$r3,16\n        jr      $r1"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "bar(int):",
+                    "to": ".L6:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "bar(int):",
+                    "to": "bar(int):@5",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}

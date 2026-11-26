@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs';
+import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 
@@ -59,6 +60,8 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    sysroot?: string;
+    dynamicLinker?: string;
     $order?: number;
 };
 export type OptionsHandlerLibrary = {
@@ -106,6 +109,7 @@ export type ClientOptionsType = {
     localStoragePrefix: PropertyValue;
     cvCompilerCountMax: number;
     defaultFontScale: number;
+    formatStyles: string[];
     doCache: boolean;
     thirdPartyIntegrationEnabled: boolean;
     statusTrackingEnabled: boolean;
@@ -130,6 +134,7 @@ export type ClientOptionsType = {
  */
 export class ClientOptionsHandler implements ClientOptionsSource {
     compilerProps: CompilerProps['get'];
+    compilerPropsInstance: CompilerProps;
     ceProps: PropertyGetter;
     supportsBinary: Record<LanguageKey, boolean>;
     supportsBinaryObject: Record<LanguageKey, boolean>;
@@ -151,6 +156,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
      */
     constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: AppArguments) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
+        this.compilerPropsInstance = compilerProps;
         this.ceProps = compilerProps.ceProps;
         const ceProps = compilerProps.ceProps;
         const sources = _.sortBy(
@@ -208,6 +214,9 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),
+            formatStyles: _.compact(
+                ceProps('formatter.clangformat.styles', 'Google:LLVM:Mozilla:Chromium:WebKit:Microsoft:GNU').split(':'),
+            ),
             doCache: defArgs.doCache,
             thirdPartyIntegrationEnabled: ceProps('thirdPartyIntegrationEnabled', true),
             compilerVersionsUrl: ceProps<string | undefined>('compilerVersionsUrl', undefined),
@@ -226,10 +235,10 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             explainApiEndpoint: ceProps('explainApiEndpoint', ''),
             pageloadUrl: ceProps('pageloadUrl', ''),
         };
-        // Will be immediately replaced with actual values
+        // Replaced with real values by the first setCompilers() call, which
+        // always happens before the server starts listening.
         this.optionsJSON = '';
         this.optionsHash = '';
-        this._updateOptionsHash();
     }
 
     parseTools(baseTools: Record<string, string>) {
@@ -243,7 +252,11 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                     const Tool = getToolTypeByKey(className);
 
                     const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
-                    if (fs.existsSync(toolPath)) {
+                    const skipExeCheck = this.compilerProps<boolean>(lang, toolBaseName + '.skipExeCheck', false);
+                    if (skipExeCheck || fs.existsSync(toolPath)) {
+                        const argChoices = splitIntoArray(
+                            this.compilerProps<string>(lang, toolBaseName + '.argChoices'),
+                        ).filter(Boolean);
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,
@@ -254,12 +267,13 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 includeKey: this.compilerProps<string>(lang, toolBaseName + '.includeKey'),
                                 options: splitArguments(this.compilerProps<string>(lang, toolBaseName + '.options')),
                                 args: this.compilerProps<string>(lang, toolBaseName + '.args'),
+                                argChoices: argChoices.length > 0 ? argChoices : undefined,
                                 languageId: this.compilerProps<string>(
                                     lang,
                                     toolBaseName + '.languageId',
                                 ) as LanguageKey,
                                 stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
-                                monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
+                                monacoStdin: this.compilerProps<boolean>(lang, toolBaseName + '.monacoStdin'),
                                 icon: this.compilerProps<string>(lang, toolBaseName + '.icon'),
                                 darkIcon: this.compilerProps<string>(lang, toolBaseName + '.darkIcon'),
                                 compilerLanguage: lang as LanguageKey,
@@ -278,13 +292,27 @@ export class ClientOptionsHandler implements ClientOptionsSource {
         return tools;
     }
 
+    discoverLibIdsFromProperties(lang: string): string[] {
+        const allKeys = this.compilerPropsInstance.getKeysStartingWith(lang, 'libs.');
+        const libIds = new Set<string>();
+        for (const key of allKeys) {
+            const match = key.match(/^libs\.([^.]+)\./);
+            if (match) {
+                libIds.add(match[1]);
+            }
+        }
+        return [...libIds].sort();
+    }
+
     parseLibraries(baseLibs: Record<string, string>) {
         // Record language -> {Record lib name -> lib}
         const libraries: Record<string, Record<string, OptionsHandlerLibrary>> = {};
         for (const [lang, forLang] of Object.entries(baseLibs)) {
-            if (lang && forLang) {
+            if (!lang) continue;
+            const libIds = forLang ? forLang.split(':') : this.discoverLibIdsFromProperties(lang);
+            if (libIds.length > 0) {
                 libraries[lang] = {};
-                for (const lib of forLang.split(':')) {
+                for (const lib of libIds) {
                     const libBaseName = `libs.${lib}`;
                     libraries[lang][lib] = {
                         name: this.compilerProps<string>(lang, libBaseName + '.name'),
@@ -341,10 +369,19 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 versionObject.lookupname = libraries[lang][lib].lookupname;
                             }
 
+                            const sysroot = this.compilerProps<string>(lang, libVersionName + '.sysroot');
+                            if (sysroot !== undefined) {
+                                versionObject.sysroot = sysroot;
+                            }
+
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else if (version !== 'autodetect' && !versionObject.packagedheaders) {
+                            } else if (
+                                version !== 'autodetect' &&
+                                !versionObject.packagedheaders &&
+                                !versionObject.sysroot
+                            ) {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 
@@ -363,6 +400,11 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 libVersionName + '.packagedheaders',
                                 libraries[lang][lib].packagedheaders,
                             );
+
+                            const dynamicLinker = this.compilerProps<string>(lang, libVersionName + '.dynamicLinker');
+                            if (dynamicLinker !== undefined) {
+                                versionObject.dynamicLinker = dynamicLinker;
+                            }
 
                             libraries[lang][lib].versions[version] = versionObject;
                         }
@@ -407,24 +449,31 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
                 logger.info(`Fetching remote libraries from ${url}`);
+                const requestLib = url.startsWith('https:') ? https : http;
                 let fullData = '';
-                https.get(url, res => {
-                    res.on('data', data => {
-                        fullData += data;
-                    });
-                    res.on('end', () => {
-                        try {
-                            const libsArr = JSON.parse(fullData);
+                requestLib
+                    .get(url, res => {
+                        res.on('data', data => {
+                            fullData += data;
+                        });
+                        res.on('end', () => {
+                            try {
+                                const libsArr = JSON.parse(fullData);
 
-                            this.remoteLibs[remoteId] = this.libArrayToObject(libsArr);
-                        } catch (e) {
-                            logger.error('Error while fetching remote libraries, but continuing.', e);
-                            this.remoteLibs[remoteId] = {};
-                        }
+                                this.remoteLibs[remoteId] = this.libArrayToObject(libsArr);
+                            } catch (e) {
+                                logger.error('Error while fetching remote libraries, but continuing.', e);
+                                this.remoteLibs[remoteId] = {};
+                            }
 
+                            resolve(this.remoteLibs[remoteId]);
+                        });
+                    })
+                    .on('error', e => {
+                        logger.error('Error while fetching remote libraries, but continuing.', e);
+                        this.remoteLibs[remoteId] = {};
                         resolve(this.remoteLibs[remoteId]);
                     });
-                });
             });
         }
         return this.remoteLibs[remoteId];
@@ -492,6 +541,16 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             // Set $order to -index on array. As group is an array, iteration order is guaranteed.
             for (const compiler of group) {
                 compiler['$order'] = -order++;
+            }
+        }
+
+        // Mirror $order onto the input compilers so other consumers (notably
+        // the api handler used by lazy-load) see the same ordering as the
+        // deep-copied client options here.
+        for (let i = 0; i < compilers.length; i++) {
+            const order = copiedCompilers[i].$order;
+            if (order !== undefined) {
+                compilers[i].$order = order;
             }
         }
 

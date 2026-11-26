@@ -30,10 +30,11 @@ import TomSelect from 'tom-select';
 import _ from 'underscore';
 
 import {assert, unwrap} from '../../shared/assert.js';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, GccDumpOutput} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
@@ -74,9 +75,17 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     optionUidTitle: string;
     optionAllButton: JQuery<HTMLElement>;
     optionAllTitle: string;
+
+    optionLibraryFunctionsButton: JQuery<HTMLElement>;
+    optionLibraryFunctionsTitle: string;
+
     inhibitPassSelect = false;
     cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     selectedPass: string | null = null;
+    // Maps a pass's filename_suffix to its dump content, sent in full on each compile by
+    // regular-GCC backends. When populated, switching passes is a client-side lookup with no
+    // recompile. Empty for libgccjit compilers, which fall back to recompiling per selection.
+    passDumps: Record<string, string> = {};
 
     constructor(hub: Hub, container: Container, state: GccDumpViewState & MonacoPaneState) {
         super(hub, container, state);
@@ -171,7 +180,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             options: [],
             items: [],
             plugins: ['input_autogrow'],
-            maxOptions: 500,
+            maxOptions: 1000,
         });
 
         this.filters = new Toggles(this.domRoot.find('.dump-filters'), state as any as Record<string, boolean>);
@@ -187,7 +196,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
         this.dumpIpaTitle = this.dumpIpaButton.prop('title');
 
-        this.optionGimpleFeButton = this.domRoot.find("[data-bind='gimpleFe']");
+        this.optionGimpleFeButton = this.domRoot.find("[data-bind='gimpleFeOption']");
         this.optionGimpleFeTitle = this.optionGimpleFeButton.prop('title');
 
         this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
@@ -222,6 +231,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         this.optionAllButton = this.domRoot.find("[data-bind='allOption']");
         this.optionAllTitle = this.optionAllButton.prop('title');
+
+        this.optionLibraryFunctionsButton = this.domRoot.find("[data-bind='libraryFunctionsOption']");
+        this.optionLibraryFunctionsTitle = this.optionLibraryFunctionsButton.prop('title');
     }
 
     override registerCallbacks() {
@@ -286,6 +298,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         formatButtonTitle(this.optionLinenoButton, this.optionLinenoTitle);
         formatButtonTitle(this.optionUidButton, this.optionUidTitle);
         formatButtonTitle(this.optionAllButton, this.optionAllTitle);
+        formatButtonTitle(this.optionLibraryFunctionsButton, this.optionLibraryFunctionsTitle);
     }
 
     // Disable view's menu when invalid compiler has been
@@ -313,7 +326,16 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
 
         if (this.inhibitPassSelect !== true) {
-            this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
+            const suffix = selectedPass.filename_suffix;
+            if (suffix !== null && suffix in this.passDumps) {
+                // All pass dumps were shipped with the last compile: switch the view
+                // client-side, no recompile needed.
+                this.showCachedPass(suffix, selectedPass.name);
+                this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, false);
+            } else {
+                // No cached dumps (libgccjit compilers): recompile to fetch this single pass.
+                this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
+            }
         }
 
         // To keep shared URL compatible, we keep on storing only a string in the
@@ -328,9 +350,27 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.updateState();
     }
 
+    notDumpedMessage(passName: string | null): string {
+        return `Pass '${passName}' was requested
+but nothing was dumped. Possible causes are:
+ - pass is not valid in this (maybe you changed the compiler options);
+ - pass is valid but did not emit anything (eg. it was not executed).`;
+    }
+
+    // Display a pass whose dump content is already cached in this.passDumps (no recompile).
+    showCachedPass(suffix: string, passName: string | null) {
+        const content = this.passDumps[suffix];
+        const hasContent = !/^\s*$/.test(content);
+        const model = this.editor.getModel();
+        if (model) {
+            monaco.editor.setModelLanguage(model, hasContent ? 'gccdump-rtl-gimple' : 'plaintext');
+        }
+        this.showGccDumpResults(hasContent ? content : this.notDumpedMessage(passName));
+    }
+
     // Called after result from new compilation received
     // if gccDumpOutput is false, cleans the select menu
-    updatePass(filters: Toggles, selectize: TomSelect, gccDumpOutput) {
+    updatePass(filters: Toggles, selectize: TomSelect, gccDumpOutput: GccDumpOutput | null) {
         const passes = gccDumpOutput ? gccDumpOutput.all : [];
 
         // we are changing selectize but don't want any callback to
@@ -338,16 +378,19 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = true;
 
         selectize.clear(true);
-        selectize.clearOptions();
+        // Pass `() => false` so EVERY option is dropped: TomSelect's default clearOptions filter
+        // keeps options belonging to the currently-selected item, which would otherwise leave a
+        // stale pass (e.g. a Tree pass after Tree dumps are unchecked) in the drop-down.
+        replaceOptions(selectize, passes, () => false);
 
-        for (const p of passes) {
-            selectize.addOption(p);
-        }
-
-        if (gccDumpOutput?.selectedPass) {
+        if (gccDumpOutput?.selectedPass?.name) {
             selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
         } else selectize.clear(true);
+
+        // addItem() above goes through refreshItems(), which re-marks the drop-down stale, so
+        // the repaint replaceOptions() already did is no longer enough on that path.
+        selectize.refreshOptions(false);
 
         this.inhibitPassSelect = false;
     }
@@ -366,6 +409,11 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         if (compiler.supportsGccDump && result.gccDumpOutput) {
             const currOutput = result.gccDumpOutput.currentPassOutput;
 
+            // Cache every pass's dump so later pass selections are served client-side without
+            // a recompile. Replaced wholesale so stale dumps are never consulted after a
+            // filter-change recompile. Empty for libgccjit compilers (recompile-per-pass).
+            this.passDumps = result.gccDumpOutput.passDumps ?? {};
+
             // if result contains empty selected pass, probably means
             // we requested an invalid/outdated pass.
             if (!result.gccDumpOutput.selectedPass) {
@@ -381,6 +429,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
                 this.onUiReady();
             }
         } else {
+            this.passDumps = {};
             this.selectize.clear(true);
             this.selectedPass = null;
             this.updatePass(this.filters, this.selectize, null);

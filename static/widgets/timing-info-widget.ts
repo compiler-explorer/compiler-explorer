@@ -92,7 +92,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         }
 
         if (compileResult.packageDownloadAndUnzipTime) {
-            pushTimingInfo(data, 'Download binary from cache', unwrap(compileResult.execTime));
+            pushTimingInfo(data, 'Download binary from cache', compileResult.packageDownloadAndUnzipTime);
         }
 
         if (compileResult.execResult?.execTime) {

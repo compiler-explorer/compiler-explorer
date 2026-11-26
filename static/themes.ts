@@ -38,6 +38,8 @@ export type Theme = {
     name: string;
     mainColor: string;
     monaco: string;
+    // Whether compiler output is shown on a dark background, so that colours made for one suit it better.
+    darkBackgroundColours: boolean;
 };
 
 export const themes: Record<Themes, Theme> = {
@@ -47,6 +49,7 @@ export const themes: Record<Themes, Theme> = {
         name: 'Light',
         mainColor: '#f2f2f2',
         monaco: 'ce',
+        darkBackgroundColours: false,
     },
     dark: {
         path: 'dark',
@@ -54,6 +57,7 @@ export const themes: Record<Themes, Theme> = {
         name: 'Dark',
         mainColor: '#333333',
         monaco: 'ce-dark',
+        darkBackgroundColours: true,
     },
     darkplus: {
         path: 'dark',
@@ -61,6 +65,7 @@ export const themes: Record<Themes, Theme> = {
         name: 'Dark+',
         mainColor: '#333333',
         monaco: 'ce-dark-plus',
+        darkBackgroundColours: true,
     },
     pink: {
         path: 'pink',
@@ -68,6 +73,7 @@ export const themes: Record<Themes, Theme> = {
         name: 'Pink',
         mainColor: '#333333',
         monaco: 'ce-pink',
+        darkBackgroundColours: false,
     },
     'real-dark': {
         path: 'dark',
@@ -75,6 +81,7 @@ export const themes: Record<Themes, Theme> = {
         name: 'Real dark',
         mainColor: '#333333',
         monaco: 'ce-dark',
+        darkBackgroundColours: true,
     },
     onedark: {
         path: 'one-dark',
@@ -82,6 +89,7 @@ export const themes: Record<Themes, Theme> = {
         name: 'One Dark',
         mainColor: '#282c34',
         monaco: 'ce-one-dark',
+        darkBackgroundColours: true,
     },
     system: {
         id: 'system',
@@ -89,6 +97,7 @@ export const themes: Record<Themes, Theme> = {
         path: 'default',
         mainColor: '#f2f2f2',
         monaco: 'ce',
+        darkBackgroundColours: false,
     },
 };
 
@@ -102,6 +111,7 @@ editor.defineTheme('ce', {
             fontStyle: 'bold',
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
+        {token: 'entity.name.function.duckling', foreground: '795e26'},
     ],
     colors: {
         // There seems to be a monaco bug when switching between themes with the minimap's background not updating
@@ -120,6 +130,7 @@ editor.defineTheme('ce-dark', {
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
         {token: 'variable.predefined', foreground: '949eb0'},
+        {token: 'entity.name.function.duckling', foreground: 'dcdcaa'},
     ],
     colors: {},
 });
@@ -135,6 +146,7 @@ editor.defineTheme('ce-dark-plus', {
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
         {token: 'variable.predefined', foreground: '949eb0'},
+        {token: 'entity.name.function.duckling', foreground: 'dcdcaa'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -389,6 +401,7 @@ editor.defineTheme('ce-pink', {
             }
             return monacoRules;
         })(),
+        {token: 'entity.name.function.duckling', foreground: 'a770db'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -429,6 +442,7 @@ editor.defineTheme('ce-one-dark', {
             fontStyle: 'bold',
         },
         {token: 'variable.predefined', foreground: '949eb0'},
+        {token: 'entity.name.function.duckling', foreground: '61afef'},
         // General Identifiers
         {token: 'identifier.cpp', foreground: 'abb2bf'},
         // Annotations (includes items in attribute list)
@@ -580,6 +594,7 @@ export class Themer {
         editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
+        this.eventHub.emit('themeChange', theme);
     }
 
     public getCurrentTheme() {

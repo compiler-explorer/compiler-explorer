@@ -211,6 +211,16 @@ describe('Properties append syntax', () => {
         expect(props.flag).toBe(true);
     });
 
+    it('should not trigger += when key contains a plus sign like abc+def=etc', () => {
+        const props = properties.parseProperties('abc+def=etc\n', '<test props>');
+        expect(props['abc+def']).toEqual('etc');
+    });
+
+    it('should preserve plus signs in values', () => {
+        const props = properties.parseProperties('abc=def+ghi\n', '<test props>');
+        expect(props.abc).toEqual('def+ghi');
+    });
+
     it('should preserve leading whitespace for += but trim trailing', () => {
         const props = properties.parseProperties('opts=-Wall\n' + 'opts+= -Wextra   \n', '<test props>');
         // Leading space preserved, trailing trimmed

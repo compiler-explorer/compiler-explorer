@@ -39,6 +39,9 @@ export enum DiffType {
     RustHirOutput = 12,
     ClojureMacroExpOutput = 13,
     YulOutput = 14,
+    LeanCOutput = 15,
+    Source = 16,
+    ToolOutput = 17,
 }
 
 export type DiffState = {

@@ -23,16 +23,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import type {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {PythonAstParser} from '../python-ast.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class PythonCompiler extends BaseCompiler {
+    private static readonly stagedDisasmScript = '.ce-python-disasm.py';
+    private static readonly stagedAstScript = '.ce-python-ast.py';
+
     private readonly disasmScriptPath: string;
+    private readonly astScriptPath: string;
+    // For execution backends that run the interpreter on another host, which can see the compilation directory but
+    // not CE's own install: copy the helper scripts in alongside the source.
+    private readonly stageHelperScripts: boolean;
+    private readonly pythonAstParser: PythonAstParser;
 
     static get key() {
         return 'python';
@@ -45,6 +59,31 @@ export class PythonCompiler extends BaseCompiler {
         this.disasmScriptPath =
             this.compilerProps<string>('disasmScript') ||
             resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
+        this.astScriptPath =
+            this.compilerProps<string>('astScript') || resolvePathFromAppRoot('etc', 'scripts', 'ast_dump.py');
+        this.stageHelperScripts = this.compilerProps<boolean>('stageHelperScripts', false);
+        this.pythonAstParser = new PythonAstParser(this.compilerProps);
+    }
+
+    protected override async writeAllFiles(dirPath: string, source: string, files: FiledataPair[]) {
+        const writeSummary = await super.writeAllFiles(dirPath, source, files);
+        if (this.stageHelperScripts) {
+            await Promise.all([
+                fs.copyFile(this.disasmScriptPath, path.join(dirPath, PythonCompiler.stagedDisasmScript)),
+                fs.copyFile(this.astScriptPath, path.join(dirPath, PythonCompiler.stagedAstScript)),
+            ]);
+        }
+        return writeSummary;
+    }
+
+    private getDisasmScriptPath(outputFilename: string) {
+        if (!this.stageHelperScripts) return this.disasmScriptPath;
+        return path.join(path.dirname(outputFilename), PythonCompiler.stagedDisasmScript);
+    }
+
+    private getAstScriptPath(inputFilename: string) {
+        if (!this.stageHelperScripts) return this.astScriptPath;
+        return path.join(path.dirname(inputFilename), PythonCompiler.stagedAstScript);
     }
 
     override async processAsm(result) {
@@ -76,8 +115,52 @@ export class PythonCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
+    getIsolationOptions(): string[] {
+        // Python 2 (e.g. PyPy 2.7) has no -I; -E -s is the closest equivalent
+        return /^Python 2\./.test(this.compiler.version ?? '') ? ['-E', '-s'] : ['-I'];
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
+        return [
+            ...this.getIsolationOptions(),
+            this.getDisasmScriptPath(outputFilename),
+            '--outputfile',
+            outputFilename,
+            '--inputfile',
+        ];
+    }
+
+    override couldSupportASTDump(version: string) {
+        // Python's ast module is available since Python 2.6. However, the
+        // formatted dump of Python AST via `ast.dump()` is available since
+        // Python 3.9. Therefore, we return true for all versions >= 3.9.
+
+        const versionRegex = /Python (\d+)\.(\d+)\.(\d+)$/;
+        const versionMatch = versionRegex.exec(version);
+
+        if (versionMatch === null) {
+            return false;
+        }
+
+        const major = Number.parseInt(versionMatch[1], 10);
+        const minor = Number.parseInt(versionMatch[2], 10);
+        return major > 3 || (major === 3 && minor >= 9);
+    }
+
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        const astOptions = [
+            ...this.getIsolationOptions(),
+            this.getAstScriptPath(inputFilename),
+            this.filename(inputFilename),
+        ];
+        const execOptions = this.getDefaultExecOptions();
+        const result: CompilationResult = await this.runCompiler(
+            this.compiler.exe,
+            astOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
+        return this.pythonAstParser.processAst(result);
     }
 
     override getArgumentParserClass() {

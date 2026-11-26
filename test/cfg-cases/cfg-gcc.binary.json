@@ -8,111 +8,85 @@
       "opcodes": ["85", "ff"],
       "address": 4195280,
       "text": " test edi,edi",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["78", "16"],
       "address": 4195282,
       "text": " js 4003ea <main+0x1a>",
-      "source": 3,
-      "links": [
-        {
-          "offset": 4,
-          "length": 6,
-          "to": 4195306
-        }
-      ]
+      "source": 3
     },
     {
       "opcodes": ["83", "c7", "01"],
       "address": 4195284,
       "text": " add edi,0x1",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["31", "c0"],
       "address": 4195287,
       "text": " xor eax,eax",
-      "source": 2,
-      "links": null
+      "source": 2
     },
     {
       "opcodes": ["31", "d2"],
       "address": 4195289,
       "text": " xor edx,edx",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["0f", "1f", "44", "00", "00"],
       "address": 4195291,
       "text": " nop DWORD PTR [rax+rax*1+0x0]",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["01", "d0"],
       "address": 4195296,
       "text": " add eax,edx",
-      "source": 4,
-      "links": null
+      "source": 4
     },
     {
       "opcodes": ["83", "c2", "01"],
       "address": 4195298,
       "text": " add edx,0x1",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["39", "fa"],
       "address": 4195301,
       "text": " cmp edx,edi",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["75", "f7"],
       "address": 4195303,
       "text": " jne 4003e0 <main+0x10>",
-      "source": 3,
-      "links": [
-        {
-          "offset": 5,
-          "length": 6,
-          "to": 4195296
-        }
-      ]
+      "source": 3
     },
     {
       "opcodes": ["c3"],
       "address": 4195305,
       "text": " ret ",
-      "source": 3,
-      "links": null
+      "source": 3
     },
     {
       "opcodes": ["31", "c0"],
       "address": 4195306,
       "text": " xor eax,eax",
-      "source": 2,
-      "links": null
+      "source": 2
     },
     {
       "opcodes": ["c3"],
       "address": 4195308,
       "text": " ret ",
-      "source": 9,
-      "links": null
+      "source": 9
     },
     {
       "opcodes": ["0f", "1f", "00"],
       "address": 4195309,
       "text": " nop DWORD PTR [rax]",
-      "source": 9,
-      "links": null
+      "source": 9
     }
   ],
   "cfg": {

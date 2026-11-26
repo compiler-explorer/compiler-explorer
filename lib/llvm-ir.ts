@@ -45,6 +45,7 @@ export class LlvmIrParser {
     private maxIrLines: number;
     private debugReference: RegExp;
     private metaNodeRe: RegExp;
+    private debugMetaNodeLine: RegExp;
     private otherMetaDirective: RegExp;
     private namedMetaDirective: RegExp;
     private metaNodeOptionsRe: RegExp;
@@ -58,10 +59,12 @@ export class LlvmIrParser {
     private functionAttrs: RegExp;
     private commentOnly: RegExp;
     private commentAtEOL: RegExp;
+    private declareLine: RegExp;
+    private libraryFunctionDefine: RegExp;
 
     constructor(
         compilerProps: PropertyGetter,
-        private readonly irDemangler: LLVMIRDemangler,
+        private readonly createIrDemangler: () => LLVMIRDemangler,
     ) {
         this.maxIrLines = 5000;
         if (compilerProps) {
@@ -70,6 +73,9 @@ export class LlvmIrParser {
 
         this.debugReference = /!dbg (!\d+)/;
         this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]*?)\)/;
+        // Anchored to a line start so IR embedded as a string in assembly (e.g. clang's
+        // -fsycl/-foffload `.llvm.offloading` section) isn't mistaken for IR output.
+        this.debugMetaNodeLine = /^!\d+ = (?:distinct )?!DI/m;
         this.otherMetaDirective = /^(!\d+) = (?:distinct )?!{.*}/;
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
@@ -86,6 +92,15 @@ export class LlvmIrParser {
 
         // Issue #5923: make sure the comment mark `;` is outside quotes
         this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
+
+        // External function declarations (issue #6319)
+        this.declareLine = /^declare\s+/;
+
+        // Julia foreign-pointer thunks: auto-generated dispatch wrappers of the form @jfptr_<name>_<id>.
+        // These are not user code and clutter the IR view. See: #6320
+        // TODO: consider making this list configurable per compiler/language to support
+        // other runtimes that generate similar boilerplate (e.g. C++ vtable thunks, Rust shims).
+        this.libraryFunctionDefine = /^define\s+.*@jfptr_/;
     }
 
     getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {
@@ -189,8 +204,24 @@ export class LlvmIrParser {
             filters.push(this.commentOnly);
             lineFilters.push(this.commentAtEOL);
         }
+        if (options.filterDeclarations) {
+            filters.push(this.declareLine);
+        }
 
+        let inFilteredFunctionBody = false;
         for (const line of irLines) {
+            // Block-level filtering for library function thunks (e.g. @jfptr_* in Julia)
+            if (options.filterLibraryFunctions) {
+                if (!inFilteredFunctionBody && this.libraryFunctionDefine.test(line)) {
+                    inFilteredFunctionBody = true;
+                }
+                if (inFilteredFunctionBody) {
+                    if (line.trim() === '}') {
+                        inFilteredFunctionBody = false;
+                    }
+                    continue;
+                }
+            }
             if (line.trim().length === 0) {
                 // Avoid multiple successive empty lines.
                 if (!prevLineEmpty) {
@@ -249,8 +280,9 @@ export class LlvmIrParser {
             };
         }
 
-        if (options.demangle && this.irDemangler.canDemangle()) {
-            const demangled = await this.irDemangler.process({asm: result});
+        const irDemangler = options.demangle ? this.createIrDemangler() : undefined;
+        if (irDemangler?.canDemangle()) {
+            const demangled = await irDemangler.process({asm: result});
             return {
                 asm: demangled.asm,
                 languageId: 'llvm-ir',
@@ -269,6 +301,8 @@ export class LlvmIrParser {
                 filterIRMetadata: !!filters.directives,
                 filterAttributes: false,
                 filterComments: !!filters.commentOnly,
+                filterDeclarations: false,
+                filterLibraryFunctions: false,
                 demangle: !!filters.demangle,
                 // discard value names is handled earlier
             });
@@ -283,6 +317,6 @@ export class LlvmIrParser {
     }
 
     isLlvmIr(code: string) {
-        return code.includes('@llvm') && code.includes('!DI') && code.includes('!dbg');
+        return code.includes('@llvm') && code.includes('!dbg') && this.debugMetaNodeLine.test(code);
     }
 }

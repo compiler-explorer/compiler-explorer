@@ -28,9 +28,9 @@ import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {GoldenLayoutRootStruct} from '../../lib/clientstate-normalizer.js';
+import {extractJsonFromBufferAndInflateIfRequired, GoldenLayoutRootStruct} from '../../lib/clientstate-normalizer.js';
 import {HandlerConfig, ShortLinkMetaData} from '../../lib/handlers/handler.interfaces.js';
-import {extractJsonFromBufferAndInflateIfRequired, RouteAPI} from '../../lib/handlers/route-api.js';
+import {RouteAPI} from '../../lib/handlers/route-api.js';
 
 function possibleCompression(buffer: Buffer): boolean {
     // code used in extractJsonFromBufferAndInflateIfRequired
@@ -184,5 +184,18 @@ describe('clientStateHandler', () => {
         const corruptGzipData = Buffer.from([0x18, 0x01, 0x02, 0x03]).toString('base64');
         const response = await request(app).get(`/clientstate/${corruptGzipData}`);
         expect(response.status).toBe(400);
+    });
+    it('should return 200 for GoldenLayout format in /clientstate', async () => {
+        const goldenLayout = {
+            content: [
+                {
+                    type: 'column',
+                    content: [],
+                },
+            ],
+        };
+        const document = Buffer.from(JSON.stringify(goldenLayout), 'utf-8').toString('base64');
+        const response = await request(app).get(`/clientstate/${document}`);
+        expect(response.status).toBe(200);
     });
 });

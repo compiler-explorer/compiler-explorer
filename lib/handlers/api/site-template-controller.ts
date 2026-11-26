@@ -26,13 +26,13 @@ import express from 'express';
 
 import {SiteTemplateConfiguration} from '../../../types/features/site-templates.interfaces.js';
 import {getSiteTemplates} from '../../site-templates.js';
-import {cached, cors} from '../middleware.js';
+import {cached} from '../middleware.js';
 import {HttpController} from './controller.interfaces.js';
 
 export class SiteTemplateController implements HttpController {
     createRouter(): express.Router {
         const router = express.Router();
-        router.get('/api/siteTemplates', cors, cached, this.getSiteTemplates.bind(this));
+        router.get('/api/siteTemplates', cached, this.getSiteTemplates.bind(this));
         return router;
     }
 

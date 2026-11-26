@@ -34,8 +34,10 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {asSafeVer} from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
 
@@ -46,6 +48,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
     ptxParser: PTXAsmParser;
+    tileIrParser: MlirAsmParser;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
@@ -53,6 +56,7 @@ export class NvccCompiler extends BaseCompiler {
         this.compiler.supportsDeviceAsmView = true;
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
         this.ptxParser = new PTXAsmParser(this.compilerProps);
+        this.tileIrParser = new MlirAsmParser();
     }
 
     // TODO: (for all of CUDA)
@@ -103,6 +107,30 @@ export class NvccCompiler extends BaseCompiler {
         return result;
     }
 
+    async tileirdisasm(outputFilename: string, result: any, maxOutput: number) {
+        const {tileirdisasm} = this.compiler;
+        const {code, execTime, stdout} = await this.exec(unwrap(tileirdisasm), [outputFilename], {
+            maxOutput,
+            customCwd: result.dirPath,
+        });
+
+        if (code === 0) {
+            result.objdumpTime = execTime;
+            result.asm = stdout;
+        } else {
+            result.asm = `<No output: ${Path.basename(unwrap(tileirdisasm))} returned ${code}>`;
+        }
+        return result;
+    }
+
+    async readPtx(ptxFilename: string, maxSize: number) {
+        const {size} = await fs.stat(ptxFilename);
+        if (size >= maxSize) {
+            return {asm: `<No output: generated PTX was too large (${size} > ${maxSize} bytes)>`};
+        }
+        return {asm: await fs.readFile(ptxFilename, 'utf8')};
+    }
+
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve([]);
@@ -135,6 +163,67 @@ export class NvccCompiler extends BaseCompiler {
         return Promise.all([asmPromise, optPromise, []]);
     }
 
+    // Matches the start/end of a GAS inline-assembly block emitted by the host compiler.
+    private static readonly appBlockStartRe = /^#APP\b/;
+    private static readonly appBlockEndRe = /^#NO_APP\b/;
+    // Matches the .nv_fatbin section directive that NVCC injects to hold the fat binary blob.
+    private static readonly nvFatBinSectionRe = /^\s*\.section\s+\.nv_fatbin\b/;
+
+    /**
+     * Strip `#APP`/`#NO_APP` inline-assembly blocks that contain a `.nv_fatbin`
+     * section from the host-side x86 assembly.  These blocks hold the raw CUDA
+     * fat binary blob (the `fatbinData` label followed by hundreds of `.quad`
+     * hex lines) which is never useful to inspect in the asm view.
+     *
+     * Only blocks that contain `.nv_fatbin` are removed; any `#APP`/`#NO_APP`
+     * blocks originating from genuine user inline-assembly are left intact.
+     */
+    protected removeNvccFatbinaryBlob(asm: string): string {
+        const lines = asm.split('\n');
+        const result: string[] = [];
+        let inAppBlock = false;
+        let hasFatBin = false;
+        let appBuffer: string[] = [];
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (NvccCompiler.appBlockStartRe.test(trimmed)) {
+                inAppBlock = true;
+                hasFatBin = false;
+                appBuffer = [line];
+            } else if (NvccCompiler.appBlockEndRe.test(trimmed)) {
+                inAppBlock = false;
+                if (!hasFatBin) {
+                    // Not a fat-binary block — keep it
+                    appBuffer.push(line);
+                    result.push(...appBuffer);
+                }
+                appBuffer = [];
+            } else if (inAppBlock) {
+                if (NvccCompiler.nvFatBinSectionRe.test(line)) {
+                    hasFatBin = true;
+                }
+                appBuffer.push(line);
+            } else {
+                result.push(line);
+            }
+        }
+
+        // Handle (malformed) unclosed #APP block: keep it
+        if (appBuffer.length > 0) {
+            result.push(...appBuffer);
+        }
+
+        return result.join('\n');
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
+        if (filters.labels && typeof result.asm === 'string') {
+            result = {...result, asm: this.removeNvccFatbinaryBlob(result.asm)};
+        }
+        return super.processAsm(result, filters, options);
+    }
+
     override async extractDeviceCode(
         result: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
@@ -148,16 +237,28 @@ export class NvccCompiler extends BaseCompiler {
             const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
             await Promise.all(
                 files
-                    .filter(f => f.endsWith('.ptx') || f.endsWith('.cubin'))
+                    .filter(
+                        f =>
+                            f.endsWith('.ptx') ||
+                            f.endsWith('.cubin') ||
+                            (f.endsWith('.tilebc') && !!this.compiler.tileirdisasm),
+                    )
                     .map(async name => {
-                        const type = name.endsWith('.ptx') ? 'PTX' : 'SASS';
+                        const type = name.endsWith('.ptx') ? 'PTX' : name.endsWith('.tilebc') ? 'Tile IR' : 'SASS';
                         const {asm} =
                             type === 'PTX'
-                                ? {asm: await fs.readFile(Path.join(dirPath, name), 'utf8')}
-                                : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
+                                ? await this.readPtx(Path.join(dirPath, name), maxSize)
+                                : type === 'Tile IR'
+                                  ? await this.tileirdisasm(Path.join(dirPath, name), {dirPath}, maxSize)
+                                  : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
-                        const parser = type === 'PTX' ? this.ptxParser : this.deviceAsmParser;
+                        const parser =
+                            type === 'PTX'
+                                ? this.ptxParser
+                                : type === 'Tile IR'
+                                  ? this.tileIrParser
+                                  : this.deviceAsmParser;
                         Object.assign(devices, {
                             [nameAndArch]: await this.postProcessAsm(
                                 {
@@ -172,5 +273,54 @@ export class NvccCompiler extends BaseCompiler {
             result.devices = devices;
         }
         return result;
+    }
+}
+
+// Refer to "etc/config/cuda.dev.win32.properties" for proper configuration
+export class NvccWin32Compiler extends NvccCompiler {
+    static override get key() {
+        return 'nvcc-win32';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+        this.asm = new VcAsmParser(this.compilerProps);
+
+        if (process.platform !== 'win32') {
+            throw new Error('NvccWin32Compiler can only be used on Windows');
+        }
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+        let compilerOptions: string[] = [];
+        let nvccOutput = outputFilename;
+        if (!filters.binary && !filters.binaryObject) {
+            // Caller expects that `outputFilename` is an assembly file
+            const outputObj = outputFilename.replace(/\.\w+$/, '.obj');
+            const outputPdb = outputFilename.replace(/\.\w+$/, '.pdb');
+            compilerOptions = [
+                '/nologo',
+                '/FA',
+                '/c',
+                '/Fa' + this.filename(outputFilename),
+                '/Fo' + this.filename(outputObj.replaceAll('\\', '/')),
+                '/Zi',
+                '/Fd' + this.filename(outputPdb),
+            ];
+            nvccOutput = outputObj;
+        } else if (filters.binaryObject) {
+            // Caller expects that `outputFilename` is an object file
+            compilerOptions = ['/nologo', '/c', '/Fo' + this.filename(outputFilename.replaceAll('\\', '/')), '/Zi'];
+            nvccOutput = outputFilename;
+        } else {
+            // Caller expects that `outputFilename` is the executable
+            compilerOptions = ['/nologo', '/Fe' + this.filename(outputFilename.replaceAll('\\', '/')), '/Zi'];
+            nvccOutput = outputFilename;
+        }
+        const nvccOptions = ['-o', this.filename(nvccOutput), '-g', '-lineinfo', '--keep-device-functions'];
+        if (!filters.execute) {
+            nvccOptions.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
+        }
+        return [...nvccOptions, '-Xcompiler', compilerOptions.join(',')];
     }
 }

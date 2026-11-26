@@ -31,6 +31,7 @@ import {ToolInfo} from '../../types/tool.interfaces.js';
 import {assert} from '../assert.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import * as utils from '../utils.js';
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
@@ -49,7 +50,13 @@ export class PvsStudioTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
+    override async runTool(
+        compilationInfo: CompilationInfo,
+        inputFilepath?: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+    ) {
         if (compilationInfo.code !== 0) {
             return this.createErrorResponse('Unable to start analysis due to compilation error.');
         }
@@ -61,10 +68,10 @@ export class PvsStudioTool extends BaseTool {
         // Collecting the flags of compilation
         let compileFlags = splitArguments(compilationInfo.compiler.options);
 
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler, sourceDir);
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries ?? {}, sourceDir);
         compileFlags = compileFlags.concat(includeflags);
 
-        const libOptions = super.getLibraryOptions(compilationInfo.libraries, compilationInfo.compiler);
+        const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries ?? {});
         compileFlags = compileFlags.concat(libOptions);
 
         const manualCompileFlags = compilationInfo.options.filter((option: string) => option !== inputFilepath);
@@ -72,11 +79,12 @@ export class PvsStudioTool extends BaseTool {
 
         compileFlags = compileFlags.filter(flag => flag !== '');
 
-        // Deal with args
-        args = [];
+        // Arguments typed into the tool's "Arguments" box go first, so the options below that this tool
+        // controls follow them and a dangling user option can't swallow '--cl-params'.
+        const userArgs = (args ?? []).filter(arg => arg !== '');
 
         // Necessary arguments
-        args.push('analyze', '--source-file', inputFilepath);
+        args = ['analyze', ...userArgs, '--source-file', inputFilepath];
         const outputFilePath = path.join(sourceDir, 'pvs-studio-log.log');
         args.push(
             '--output-file',
@@ -86,6 +94,8 @@ export class PvsStudioTool extends BaseTool {
             '/opt',
             '-e',
             '/usr',
+            '-e',
+            '/cefs',
             '--pvs-studio-path',
             path.dirname(this.tool.exe) + '/pvs-studio',
             // TODO: expand this to switch() for all supported compilers:

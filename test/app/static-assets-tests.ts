@@ -22,9 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it, vi} from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import {createDefaultPugRequireHandler, getFaviconFilename} from '../../lib/app/static-assets.js';
+import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
+
+import {
+    createDefaultPugRequireHandler,
+    getBrandingPublicDir,
+    getFaviconFilename,
+    getLogoOverlayFilename,
+    validateBrandingAssetsInManifest,
+    validateBrandingAssetsOnDisk,
+} from '../../lib/app/static-assets.js';
+import {resolvePathFromAppRoot} from '../../lib/utils.js';
 
 // Mock the logger
 vi.mock('../../lib/logger.js', () => ({
@@ -112,38 +123,167 @@ describe('Static assets', () => {
     });
 
     describe('getFaviconFilename', () => {
-        it('should prioritize dev environment over other environments', () => {
-            // Dev mode favicon should be used regardless of environment flags
-            expect(getFaviconFilename(true, [])).toContain('dev');
-            expect(getFaviconFilename(true, ['beta'])).toContain('dev');
-            expect(getFaviconFilename(true, ['staging'])).toContain('dev');
-            expect(getFaviconFilename(true, ['beta', 'staging'])).toContain('dev');
+        it('uses the default favicon when no body class is set', () => {
+            expect(getFaviconFilename('')).toBe('favicon.ico');
         });
 
-        it('should select appropriate favicon based on environment', () => {
-            // Test specific environments when not in dev mode
-            const environments = [
-                {env: ['beta'], expected: 'beta'},
-                {env: ['staging'], expected: 'staging'},
-                {env: [], expected: 'favicon.ico'},
-            ];
-
-            for (const {env, expected} of environments) {
-                const result = getFaviconFilename(false, env);
-                if (expected === 'favicon.ico') {
-                    expect(result).toBe(expected);
-                } else {
-                    expect(result).toContain(expected);
-                }
-            }
+        it('derives the favicon name from the body class', () => {
+            expect(getFaviconFilename('dev')).toBe('favicon-dev.ico');
+            expect(getFaviconFilename('beta')).toBe('favicon-beta.ico');
+            expect(getFaviconFilename('staging')).toBe('favicon-staging.ico');
+            expect(getFaviconFilename('anything-else')).toBe('favicon-anything-else.ico');
         });
 
-        it('should handle environment arrays with mixed values', () => {
-            // When multiple environments are specified, there should be a consistent priority
-            expect(getFaviconFilename(false, ['beta', 'staging'])).toContain('beta');
-            expect(getFaviconFilename(false, ['staging', 'beta'])).toContain('beta');
-            expect(getFaviconFilename(false, ['other', 'beta'])).toContain('beta');
-            expect(getFaviconFilename(false, ['other', 'staging'])).toContain('staging');
+        it('uses a configured favicon in place of the default', () => {
+            expect(getFaviconFilename('', 'favicon-acme.ico')).toBe('favicon-acme.ico');
+        });
+
+        it('prefers the body class favicon over a configured one', () => {
+            expect(getFaviconFilename('staging', 'favicon-acme.ico')).toBe('favicon-staging.ico');
+        });
+    });
+
+    describe('getLogoOverlayFilename', () => {
+        it('returns undefined when no body class is set', () => {
+            expect(getLogoOverlayFilename('')).toBeUndefined();
+        });
+
+        it('derives the overlay filename from the body class', () => {
+            expect(getLogoOverlayFilename('dev')).toBe('site-logo-dev.svg');
+            expect(getLogoOverlayFilename('beta')).toBe('site-logo-beta.svg');
+            expect(getLogoOverlayFilename('intern')).toBe('site-logo-intern.svg');
+        });
+    });
+
+    describe('validateBrandingAssetsOnDisk', () => {
+        let tmpDir: string;
+
+        beforeAll(async () => {
+            const fs = await import('node:fs/promises');
+            const os = await import('node:os');
+            tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-branding-test-'));
+            await fs.writeFile(path.join(tmpDir, 'favicon-good.ico'), '');
+            await fs.writeFile(path.join(tmpDir, 'site-logo-good.svg'), '');
+            await fs.writeFile(path.join(tmpDir, 'favicon-partial.ico'), '');
+            await fs.writeFile(path.join(tmpDir, 'favicon-acme.ico'), '');
+            await fs.writeFile(path.join(tmpDir, 'site-logo-acme.svg'), '');
+        });
+
+        afterAll(async () => {
+            const fs = await import('node:fs/promises');
+            await fs.rm(tmpDir, {recursive: true, force: true});
+        });
+
+        it('is a no-op when no body class is set', async () => {
+            await expect(
+                validateBrandingAssetsOnDisk('/nonexistent/path', {extraBodyClass: ''}),
+            ).resolves.toBeUndefined();
+        });
+
+        it('passes when both assets exist', async () => {
+            await expect(validateBrandingAssetsOnDisk(tmpDir, {extraBodyClass: 'good'})).resolves.toBeUndefined();
+        });
+
+        it('throws listing every missing asset', async () => {
+            await expect(validateBrandingAssetsOnDisk(tmpDir, {extraBodyClass: 'missing'})).rejects.toThrow(
+                /favicon-missing\.ico/,
+            );
+            await expect(validateBrandingAssetsOnDisk(tmpDir, {extraBodyClass: 'missing'})).rejects.toThrow(
+                /site-logo-missing\.svg/,
+            );
+        });
+
+        it('throws when only one asset is missing', async () => {
+            await expect(validateBrandingAssetsOnDisk(tmpDir, {extraBodyClass: 'partial'})).rejects.toThrow(
+                /site-logo-partial\.svg/,
+            );
+        });
+
+        it('passes when the configured logo and favicon exist', async () => {
+            const branding = {extraBodyClass: '', siteLogo: 'site-logo-acme.svg', favicon: 'favicon-acme.ico'};
+            await expect(validateBrandingAssetsOnDisk(tmpDir, branding)).resolves.toBeUndefined();
+        });
+
+        it('throws when the configured logo or favicon is missing', async () => {
+            await expect(
+                validateBrandingAssetsOnDisk(tmpDir, {extraBodyClass: '', siteLogo: 'nope.svg'}),
+            ).rejects.toThrow(/nope\.svg/);
+            await expect(
+                validateBrandingAssetsOnDisk(tmpDir, {extraBodyClass: '', favicon: 'nope.ico'}),
+            ).rejects.toThrow(/nope\.ico/);
+        });
+    });
+
+    describe('validateBrandingAssetsInManifest', () => {
+        // Regression for the gh-8755 revert: production nodes don't have the static files on
+        // disk (they ship in the CDN bundle), so validation must go via the manifest, which
+        // lists everything webpack copied from public/ into that bundle.
+        const manifest = {
+            'favicon-staging.ico': 'favicon-staging.ico',
+            'site-logo-staging.svg': 'site-logo-staging.svg',
+            'favicon-partial.ico': 'favicon-partial.ico',
+        };
+
+        it('is a no-op when no body class is set', () => {
+            expect(() => validateBrandingAssetsInManifest({}, {extraBodyClass: ''})).not.toThrow();
+        });
+
+        it('passes when both assets are in the manifest', () => {
+            expect(() => validateBrandingAssetsInManifest(manifest, {extraBodyClass: 'staging'})).not.toThrow();
+        });
+
+        it('throws listing every missing asset', () => {
+            expect(() => validateBrandingAssetsInManifest(manifest, {extraBodyClass: 'missing'})).toThrow(
+                /favicon-missing\.ico/,
+            );
+            expect(() => validateBrandingAssetsInManifest(manifest, {extraBodyClass: 'missing'})).toThrow(
+                /site-logo-missing\.svg/,
+            );
+        });
+
+        it('throws when only one asset is missing', () => {
+            expect(() => validateBrandingAssetsInManifest(manifest, {extraBodyClass: 'partial'})).toThrow(
+                /site-logo-partial\.svg/,
+            );
+        });
+
+        it('checks the configured logo and favicon', () => {
+            const branding = {extraBodyClass: '', siteLogo: 'logos/acme.svg', favicon: 'favicon-acme.ico'};
+            expect(() => validateBrandingAssetsInManifest(manifest, branding)).toThrow(/logos\/acme\.svg/);
+            expect(() => validateBrandingAssetsInManifest(manifest, branding)).toThrow(/favicon-acme\.ico/);
+            const shipped = {...manifest, 'logos/acme.svg': 'logos/acme.svg', 'favicon-acme.ico': 'favicon-acme.ico'};
+            expect(() => validateBrandingAssetsInManifest(shipped, branding)).not.toThrow();
+        });
+    });
+
+    describe('getBrandingPublicDir', () => {
+        it('points at the public source dir (dev serves branding from there, not staticPath)', () => {
+            // Regression: in dev the webpack middleware serves branding from public/, so validating
+            // staticPath (the source dir, which has no branding assets) spuriously crashes startup.
+            expect(getBrandingPublicDir()).toBe(resolvePathFromAppRoot('public'));
+        });
+    });
+
+    describe('branding assets ship for every deployed environment', () => {
+        // Guards the dev path end-to-end: the real files must exist in public/, so a missing
+        // asset fails the build, not just a deploy. Covers dev mode plus every extraBodyClass in etc/config.
+        const publicDir = getBrandingPublicDir();
+        const configDir = resolvePathFromAppRoot('etc', 'config');
+        const configuredClasses = fs
+            .readdirSync(configDir)
+            .filter(file => file.endsWith('.properties') && !file.includes('.local.'))
+            .flatMap(file => [
+                ...fs.readFileSync(path.join(configDir, file), 'utf8').matchAll(/^extraBodyClass=(\S+)/gm),
+            ])
+            .map(match => match[1]);
+        const extraBodyClasses = [...new Set(['dev', ...configuredClasses])];
+
+        it('finds the environments in etc/config', () => {
+            expect(extraBodyClasses).toEqual(expect.arrayContaining(['dev', 'staging']));
+        });
+
+        it.each(extraBodyClasses)('has favicon + logo overlay for %s', async extraBodyClass => {
+            await expect(validateBrandingAssetsOnDisk(publicDir, {extraBodyClass})).resolves.toBeUndefined();
         });
     });
 });

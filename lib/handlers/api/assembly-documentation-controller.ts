@@ -26,13 +26,13 @@ import express from 'express';
 
 import {getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
 import {unwrapString} from '../../assert.js';
-import {cached, cors} from '../middleware.js';
+import {cached} from '../middleware.js';
 import {HttpController} from './controller.interfaces.js';
 
 export class AssemblyDocumentationController implements HttpController {
     createRouter(): express.Router {
         const router = express.Router();
-        router.get('/api/asm/:arch/:opcode', cors, cached, this.getOpcodeDocumentation.bind(this));
+        router.get('/api/asm/:arch/:opcode', cached, this.getOpcodeDocumentation.bind(this));
         return router;
     }
 
