@@ -62,6 +62,7 @@ export class ClangCompiler extends BaseCompiler {
     protected offloadBundlerPath?: string;
     protected llvmDisassemblerPath?: string;
     protected msvcDemanglerPath?: string;
+    private ptxDeviceParserInstance?: PTXAsmParser;
 
     static get key() {
         return 'clang';
@@ -343,6 +344,13 @@ export class ClangCompiler extends BaseCompiler {
         return '<error: no llvm-dis found to disassemble bitcode>';
     }
 
+    // Created on first use: most clang instances never see nvptx device code.
+    protected get ptxDeviceParser(): PTXAsmParser {
+        if (this.asm instanceof PTXAsmParser) return this.asm;
+        this.ptxDeviceParserInstance ??= new PTXAsmParser(this.compilerProps);
+        return this.ptxDeviceParserInstance;
+    }
+
     async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {
         if (deviceAsm.startsWith('BC')) {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
@@ -350,6 +358,11 @@ export class ClangCompiler extends BaseCompiler {
 
         // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
         if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
+
+        if (deviceName.includes('nvptx')) {
+            // OpenMP device names (openmp-nvptx64-nvidia-cuda) don't name the instruction set.
+            return {...(await this.ptxDeviceParser.process(deviceAsm, filters)), instructionSet: 'ptx' as const};
+        }
 
         const processed = await this.asm.process(deviceAsm, filters);
         // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the

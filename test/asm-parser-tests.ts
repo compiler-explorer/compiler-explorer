@@ -935,6 +935,22 @@ vprintf,
             expect(lines[0]).toBe('');
         });
     });
+
+    describe('Library code filter', () => {
+        it('should end an extern declaration that has no parameters at its semicolon', () => {
+            const ptx = [
+                '.extern .func  (.param .b32 func_retval0) __kmpc_get_hardware_num_threads_in_block',
+                '()',
+                ';',
+                '.visible .entry kernel()',
+                '{',
+                '        ret;',
+                '}',
+            ].join('\n');
+            const result = parser.process(ptx, {libraryCode: true, directives: true});
+            expect(result.asm.map(line => line.text.trim())).toEqual(['.visible .entry kernel()', '{', 'ret;', '}']);
+        });
+    });
 });
 
 describe('MlirAsmParser tests', () => {
