@@ -57,6 +57,9 @@ const MIN_STORED_ID_LENGTH = 9;
 
 assert(MIN_STORED_ID_LENGTH >= PREFIX_LENGTH, 'MIN_STORED_ID_LENGTH must be at least PREFIX_LENGTH');
 
+// DynamoDB refuses a range key larger than this, so no stored link can have a longer ID.
+const MAX_RANGE_KEY_BYTES = 1024;
+
 export type TestReq = {
     ip?: string;
 };
@@ -162,6 +165,7 @@ export class StorageS3 extends StorageBase {
     async expandId(id: string): Promise<ExpandedShortLink> {
         // By just getting the item and not trying to update it, we save an update when the link does not exist
         // for which we have less resources allocated, but get one extra read (But we do have more reserved for it)
+        if (Buffer.byteLength(id) > MAX_RANGE_KEY_BYTES) throw new ShortLinkNotFoundError(id);
         const item = await this.dynamoDb.getItem({
             TableName: this.table,
             Key: this.getKeyStruct(id),
