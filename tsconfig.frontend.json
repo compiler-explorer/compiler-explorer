@@ -9,6 +9,7 @@
     "moduleResolution": "node",
     /* "node" resolution ignores package.json "exports", which is the only place this package names its types. */
     "paths": {
+      "monaco-editor": ["./node_modules/monaco-editor/esm/vs/index.d.ts"],
       "@ambrus-toth/abi-explorer-share-link": ["./node_modules/@ambrus-toth/abi-explorer-share-link/dist/index.d.ts"]
     },
     /* Code generation */
