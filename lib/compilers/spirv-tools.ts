@@ -30,6 +30,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
 
@@ -44,6 +45,7 @@ export class SPIRVToolsCompiler extends BaseCompiler {
     protected assemblerPath: string;
     protected disassemblerPath: string;
     protected spirvAsm: SPIRVAsmParser;
+    generatedCodeParser = new AsmParserCpp();
 
     static get key() {
         return 'spirv-tools';
@@ -190,7 +192,7 @@ export class SPIRVToolsCompiler extends BaseCompiler {
         if (result.asm.startsWith('; SPIR-V')) {
             return this.spirvAsm.processAsm(result.asm, filters);
         }
-        // If not SPIR-V, just display as plain text to be safe
-        return super.processAsm(result, filters, options);
+        // otherwise it is spirv-cross's GLSL, HLSL or MSL, or spirv-reflect's report, which the asm parser would mangle
+        return this.generatedCodeParser.process(result.asm, filters);
     }
 }

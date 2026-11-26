@@ -28,10 +28,16 @@ import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
+// Clang names the blocks of an inlined function after it (`_Z3bari.exit`), so a symbol directly followed by an
+// identifier character is part of a different name and must stay as it is.
+const llvmIdentifierChar = /[-\w$.]/;
+
 export class LLVMIRDemangler {
     // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
     llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
     llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
+    // Metadata strings such as TBAA type names: !{!"_ZTS5Outer", !31, i64 0}
+    llvmMetadataStringRE = /!"(?<symbol>_Z[^"]*)"/g;
 
     symbolDemangler: BaseDemangler;
     result: ParsedAsmResult;
@@ -59,7 +65,11 @@ export class LLVMIRDemangler {
             const text = line.text;
             if (!text) continue;
 
-            const matches = [...text.matchAll(this.llvmSymbolRE), ...text.matchAll(this.llvmQuotedSymbolRE)];
+            const matches = [
+                ...text.matchAll(this.llvmSymbolRE),
+                ...text.matchAll(this.llvmQuotedSymbolRE),
+                ...text.matchAll(this.llvmMetadataStringRE),
+            ];
             for (const match of matches) {
                 labels.add(match.groups!.symbol);
             }
@@ -74,7 +84,7 @@ export class LLVMIRDemangler {
 
     protected processPassOutput(passOutput: OptPipelineResults, translations: [string, string][]) {
         if (translations.length > 0) {
-            const tree = new PrefixTree(translations);
+            const tree = new PrefixTree(translations, llvmIdentifierChar);
             // Pass dumps are hugely redundant: `before[N+1]` is usually identical to `after[N]`, and the same IR
             // lines repeat across dozens/hundreds of passes. Demangle each unique string once and reuse the result.
             const cache = new Map<string, string>();
@@ -117,6 +127,9 @@ export class LLVMIRDemangler {
         if (this.labels.length === 0) {
             return result;
         }
-        return await this.symbolDemangler.process(result, {overrideSymbols: this.labels});
+        return await this.symbolDemangler.process(result, {
+            overrideSymbols: this.labels,
+            identifierChar: llvmIdentifierChar,
+        });
     }
 }

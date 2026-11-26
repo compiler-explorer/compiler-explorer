@@ -1,0 +1,62 @@
+error[E0308]: mismatched types
+ --> /app/b/mod.rs:2:18
+  |
+2 |     let y: i32 = "no";
+  |            ---   ^^^^ expected `i32`, found `&str`
+  |            |
+  |            expected due to this
+
+error[E0308]: mismatched types
+ --> /app/example.rs:9:10
+  |
+9 |     a::f(v);
+  |     ---- ^ expected `u16`, found `u8`
+  |     |
+  |     arguments to this function are incorrect
+  |
+note: function defined here
+ --> /app/a/mod.rs:1:8
+  |
+1 | pub fn f(x: u16) -> u16 { x }
+  |        ^ ------
+help: you can convert a `u8` to a `u16`
+  |
+9 |     a::f(v.into());
+  |           +++++++
+
+error[E0308]: mismatched types
+  --> /app/example.rs:10:11
+   |
+10 |     takes(v);
+   |     ----- ^ expected `u16`, found `u8`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> /app/example.rs:5:4
+   |
+ 5 | fn takes(x: u16) -> u16 { x }
+   |    ^^^^^ ------
+help: you can convert a `u8` to a `u16`
+   |
+10 |     takes(v.into());
+   |            +++++++
+
+error[E0425]: cannot find function `missing_fn` in this scope
+  --> /app/example.rs:14:5
+   |
+14 |     missing_fn();
+   |     ^^^^^^^^^^ not found in this scope
+
+warning: unused variable: `z`
+ --> /app/util/fmt.rs:2:9
+  |
+2 |     let z: u8 = 300;
+  |         ^ help: if this is intentional, prefix it with an underscore: `_z`
+  |
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+error: aborting due to 4 previous errors; 1 warning emitted
+
+Some errors have detailed explanations: E0308, E0425.
+For more information about an error, try `rustc --explain E0308`.

@@ -46,6 +46,23 @@ levels:
         displayType: SideBySide
         topIconShowEvery: 3
         statsId: cppcon
+      - name: Andreas Fertig
+        description: Modern C++ training that helps your team write robust, efficient code. Delivered in person or remotely by Andreas Fertig, C++ expert, ISO C++ committee member and creator of C++ Insights.
+        img: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
+        icon: https://static.ce-cdn.net/andreasfertig/logo3.svg
+        icon_dark: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
+        url: https://andreasfertig.com/compiler-explorer/
+        displayType: SideBySide
+        topIconShowEvery: 3
+        statsId: andreasfertig
+      - name: PVS-Studio
+        description: PVS-Studio is a cross-platform SAST solution for C, C++, and more, built to detect bugs and potential vulnerabilities early in the development cycle, helping enhance code quality, security, and safety.
+        img: https://static.ce-cdn.net/pvs/wordmark_120px_sized.svg
+        icon: https://static.ce-cdn.net/pvs/wordmark_24px_sized.svg
+        url: https://pvs-studio.com/en/pvs-studio/cpp/?utm_source=godbolt.org&utm_medium=sponsorship
+        topIconShowEvery: 3
+        statsId: pvs
+        displayType: SideBySide
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -90,6 +107,7 @@ levels:
       - name: 3dB Labs
         url: https://www.3db-labs.com/
       - name: Doug Patti
+      - name: Guillaume Morin
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -544,3 +562,10 @@ levels:
       - Brian Tabone
       - Alex Besogonov
       - fourish tolod
+      - Rebecca Cran
+      - Andrew
+      - Chris
+      - Woof
+      - Gašper Ažman
+      - Airman09
+      - Daniil Botnarenku

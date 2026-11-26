@@ -23,15 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs';
+import path from 'node:path';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {JavaCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {makeCompilationEnvironment} from './utils.js';
+import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import {makeCompilationEnvironment, newTempDir} from './utils.js';
 
 const languages = {
     java: {id: 'java'},
@@ -178,5 +180,103 @@ describe('javap parsing', () => {
 
     it('Properly parses lookupswitch blocks', () => {
         return testJava('test/java/lookupswitch-bug-2995', 'Main');
+    });
+});
+
+describe('javap invocation', () => {
+    const javapInfo = {...info, objdumper: 'javap', objdumperArgs: []} as unknown as CompilerInfo;
+    let env: CompilationEnvironment;
+    beforeAll(() => {
+        env = makeCompilationEnvironment({languages});
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function makeClassDir(...classFiles: string[]) {
+        const dirPath = newTempDir();
+        for (const classFile of classFiles) {
+            fs.mkdirSync(path.dirname(path.join(dirPath, classFile)), {recursive: true});
+            fs.writeFileSync(path.join(dirPath, classFile), '');
+        }
+        return dirPath;
+    }
+
+    function javapResult(stdout: string, code = 0): UnprocessedExecResult {
+        return {
+            code,
+            stdout,
+            stderr: '',
+            execTime: 0,
+            okToCache: true,
+            timedOut: false,
+            truncated: false,
+            filenameTransform: (f: string) => f,
+        };
+    }
+
+    const firstClass = fs.readFileSync('test/java/two-classes/ZFirstClass.asm').toString();
+    const secondClass = fs.readFileSync('test/java/two-classes/ASecondClass.asm').toString();
+
+    it('disassembles every class file with a single javap', async () => {
+        const compiler = new JavaCompiler(javapInfo, env);
+        const classFiles = ['ZFirstClass.class', path.join('pkg', 'ASecondClass.class')];
+        const dirPath = makeClassDir(...classFiles);
+        const exec = vi.spyOn(compiler, 'exec').mockResolvedValue(javapResult(firstClass + secondClass));
+
+        const result = await compiler.objdump(path.join(dirPath, 'example.class'), {}, 1024);
+
+        expect(exec).toHaveBeenCalledTimes(1);
+        expect(exec.mock.calls[0][1]).toEqual(expect.arrayContaining(classFiles));
+        expect(result.asm).toEqual([{text: firstClass}, {text: secondClass}]);
+    });
+
+    it('keeps the classes javap could disassemble when it fails', async () => {
+        const compiler = new JavaCompiler(javapInfo, env);
+        const dirPath = makeClassDir('ZFirstClass.class', 'Broken.class');
+        vi.spyOn(compiler, 'exec').mockResolvedValue(javapResult(firstClass, 1));
+
+        const result = await compiler.objdump(path.join(dirPath, 'example.class'), {}, 1024);
+
+        expect(result.asm).toEqual([{text: firstClass}, {text: '<No output: javap returned 1>'}]);
+    });
+
+    it('does not run javap without class files', async () => {
+        const compiler = new JavaCompiler(javapInfo, env);
+        const dirPath = makeClassDir();
+        const exec = vi.spyOn(compiler, 'exec');
+
+        const result = await compiler.objdump(path.join(dirPath, 'example.class'), {}, 1024);
+
+        expect(exec).not.toHaveBeenCalled();
+        expect(result.asm).toEqual([]);
+    });
+
+    it('finds the main class with a single javap', async () => {
+        const compiler = new JavaCompiler(javapInfo, env);
+        const dirPath = makeClassDir('Helper.class', 'Program.class');
+        const exec = vi
+            .spyOn(compiler, 'exec')
+            .mockResolvedValue(
+                javapResult(
+                    'Compiled from "example.java"\nclass Helper {\n  Helper();\n}\n' +
+                        'Compiled from "example.java"\npublic final class Program {\n  Program();\n' +
+                        '  public static void main(java.lang.String[]);\n}\n',
+                ),
+            );
+
+        await expect(compiler.getMainClassName(dirPath)).resolves.toEqual('Program');
+        expect(exec).toHaveBeenCalledTimes(1);
+    });
+
+    it('falls back to Main without a main method', async () => {
+        const compiler = new JavaCompiler(javapInfo, env);
+        const dirPath = makeClassDir('Helper.class');
+        vi.spyOn(compiler, 'exec').mockResolvedValue(
+            javapResult('Compiled from "example.java"\nclass Helper {\n  Helper();\n}\n'),
+        );
+
+        await expect(compiler.getMainClassName(dirPath)).resolves.toEqual('Main');
     });
 });

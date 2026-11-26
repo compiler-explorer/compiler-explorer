@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {encodeBuffer, getSafeHash, isCleanText} from '../../lib/storage/index.js';
+import {configFor, encodeBuffer, getSafeHash, isCleanText} from '../../lib/storage/index.js';
 
 describe('Hash tests', () => {
     // afterEach(() => restore());
@@ -82,5 +82,27 @@ describe('Hash tests', () => {
         getSafeHash(testCase);
         expect(JSON.stringify(testCase)).toBe(before);
         expect(testCase).not.toHaveProperty('nonce');
+    });
+});
+
+describe('configFor', () => {
+    it('unwraps a config-wrapped state object', () => {
+        const state = {content: [{type: 'column', content: []}]};
+        expect(configFor({body: {config: state}} as any)).toBe(state);
+    });
+
+    it('accepts a bare ClientState', () => {
+        const body = {sessions: [{id: 1}]};
+        expect(configFor({body} as any)).toBe(body);
+    });
+
+    it('accepts a bare GoldenLayout', () => {
+        const body = {content: [{type: 'column', content: []}]};
+        expect(configFor({body} as any)).toBe(body);
+    });
+
+    it('returns null when no recognizable state is present', () => {
+        expect(configFor({body: {}} as any)).toBeNull();
+        expect(configFor({body: {something: 'else'}} as any)).toBeNull();
     });
 });

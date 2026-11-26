@@ -184,10 +184,10 @@ export class BaseDemangler extends AsmRegex {
         for (let i = 0; i < lines.length; ++i) this.addTranslation(this.input[i], lines[i]);
     }
 
-    protected applyTranslations() {
+    protected applyTranslations(identifierChar?: RegExp) {
         const translations = this.getTranslations();
         if (translations.length > 0) {
-            const tree = new PrefixTree(translations);
+            const tree = new PrefixTree(translations, identifierChar);
             const translationsDict = Object.fromEntries(translations);
             for (const asm of this.result.asm) {
                 const {newText, mapRanges, mapNames} = tree.replaceAll(asm.text);
@@ -243,7 +243,7 @@ export class BaseDemangler extends AsmRegex {
         if (options.skipTranslation) {
             return this.result;
         }
-        return this.applyTranslations();
+        return this.applyTranslations(options.identifierChar);
     }
 
     public getTranslations() {

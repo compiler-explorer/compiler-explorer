@@ -700,6 +700,10 @@ kbd {
     margin-right: 6px;
 }
 
+.build-system-name {
+    margin-left: 5px;
+}
+
 .linked-compiler-output-line {
     cursor: pointer;
     color: var(--terminal-bright-blue) !important;
@@ -724,7 +728,7 @@ kbd {
 }
 
 .lm_content {
-    overflow: visible;
+    overflow: clip;
 }
 
 .lm_header {
@@ -770,7 +774,8 @@ li.lm_tab.lm_active {
 }
 
 .open-in-cppinsights *,
-.open-in-quickbench * {
+.open-in-quickbench *,
+.open-in-abiexplorer * {
     vertical-align: middle;
 }
 

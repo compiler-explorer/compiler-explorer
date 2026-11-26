@@ -26,7 +26,7 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
 
-import {escapeHTML} from '../../shared/common-utils.js';
+import type {BuildSystemId} from '../../shared/build-systems.js';
 import {
     BypassCache,
     CompilationRequest,
@@ -35,12 +35,11 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {ArtifactHandler} from '../artifact-handler.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
-import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -49,8 +48,10 @@ import * as LibUtils from '../lib-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {languagesService} from '../services/languages.service.js';
 import {Settings, SiteSettings} from '../settings.js';
+import type {Theme} from '../themes.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
+import {ExecutionCompilationOptions} from '../widgets/compilation-options.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 import {FontScale} from '../widgets/fontscale.js';
@@ -62,10 +63,6 @@ import {LangInfo} from './compiler-request.interfaces.js';
 import {ExecutorState} from './executor.interfaces.js';
 import {PaneState} from './pane.interfaces.js';
 import {Pane} from './pane.js';
-
-type CompilationStatus = Omit<CompilerServiceCompilationStatus, 'compilerOut'> & {
-    didExecute?: boolean;
-};
 
 function makeAnsiToHtml(color?: string): AnsiToHtml {
     return new AnsiToHtml({
@@ -83,14 +80,15 @@ export class Executor extends Pane<ExecutorState> {
     private readonly id: number;
     private deferCompiles: boolean;
     private needsCompile: boolean;
+    private darkBackgroundColours = false;
     private executionArguments: string;
     private executionStdin: string;
     private source: string;
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
-    private pendingCMakeRequestSentAt: number;
+    private pendingBuildRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
-    private nextCMakeRequest: CompilationRequest | null;
+    private nextBuildRequest: {buildSystem: BuildSystemId; request: CompilationRequest} | null;
     private options: string;
     private lastResult: CompilationResult | null;
     private alertSystem: Alert;
@@ -99,6 +97,8 @@ export class Executor extends Pane<ExecutorState> {
     private fontScale: FontScale;
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
+    private initialStateLoaded = false;
+    private optionsChangedBeforeInitialStateLoad = false;
     private toggleWrapButton: Toggles;
     private outputContentRoot: JQuery<HTMLElement>;
     private executionStatusSection: JQuery<HTMLElement>;
@@ -107,15 +107,12 @@ export class Executor extends Pane<ExecutorState> {
     private optionsField: JQuery<HTMLElement>;
     private execArgsField: JQuery<HTMLElement>;
     private execStdinField: JQuery<HTMLElement>;
-    private prependOptions: JQuery<HTMLElement>;
     private fullCompilerName: JQuery<HTMLElement>;
     private fullTimingInfo: JQuery<HTMLElement>;
     private libsButton: JQuery<HTMLElement>;
     private compileTimeLabel: JQuery<HTMLElement>;
     private shortCompilerName: JQuery<HTMLElement>;
     private bottomBar: JQuery<HTMLElement>;
-    private statusLabel: JQuery<HTMLElement>;
-    private statusIcon: JQuery<HTMLElement> | null;
     private panelCompilation: JQuery<HTMLElement>;
     private panelArgs: JQuery<HTMLElement>;
     private panelStdin: JQuery<HTMLElement>;
@@ -150,9 +147,9 @@ export class Executor extends Pane<ExecutorState> {
         this.lastResult = {code: -1, timedOut: false, stdout: [], stderr: []};
         this.lastTimeTaken = 0;
         this.pendingRequestSentAt = 0;
-        this.pendingCMakeRequestSentAt = 0;
+        this.pendingBuildRequestSentAt = 0;
         this.nextRequest = null;
-        this.nextCMakeRequest = null;
+        this.nextBuildRequest = null;
 
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Executor #' + this.id;
@@ -170,12 +167,20 @@ export class Executor extends Pane<ExecutorState> {
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
+        this.eventHub.emit('requestTheme');
+        new ExecutionCompilationOptions(this, this.id, result => result.buildResult ?? result.result);
 
         this.postInit(state);
     }
 
     private async postInit(state: PaneState & ExecutorState) {
         await this.initLangAndCompiler(state);
+        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
+            this.options =
+                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
+            this.optionsField.val(this.options);
+        }
+        this.initialStateLoaded = true;
 
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
@@ -303,6 +308,11 @@ export class Executor extends Pane<ExecutorState> {
                 executorRequest: true,
                 skipAsm: true,
                 overrides: this.compilerShared.getOverrides(),
+                // Only for a compiler whose output depends on it, so the request (and the cache key) for any other compiler
+                // is the same whatever the theme.
+                darkBackgroundColours: this.compiler?.supportsDarkBackgroundColours
+                    ? this.darkBackgroundColours
+                    : undefined,
             },
             filters: {execute: true},
             tools: [],
@@ -402,19 +412,20 @@ export class Executor extends Pane<ExecutorState> {
         Promise.all(fetches)
             .then(() => {
                 const treeState = tree.currentState();
-                const cmakeProject = tree.multifileService.isACMakeProject();
+                const buildSystem = tree.multifileService.getBuildSystemDescriptor();
                 request.files.push(...moreFiles);
 
                 if (bypassCache) request.bypassCache = bypassCache;
                 if (!this.compiler) {
                     this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-                } else if (cmakeProject && request.source === '') {
-                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
+                } else if (buildSystem && request.source === '') {
+                    const message = `<Please supply a ${buildSystem.manifestFilename}>`;
+                    this.onCompileResponse(request, this.errorResult(message), false);
                 } else {
-                    if (cmakeProject) {
+                    if (buildSystem) {
                         request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
                         request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                        this.sendCMakeCompile(request);
+                        this.sendBuildCompile(buildSystem.id, request);
                     } else {
                         this.sendCompile(request);
                     }
@@ -432,23 +443,23 @@ export class Executor extends Pane<ExecutorState> {
             });
     }
 
-    sendCMakeCompile(request: CompilationRequest): void {
-        const onCompilerResponse = this.onCMakeResponse.bind(this);
+    sendBuildCompile(buildSystem: BuildSystemId, request: CompilationRequest): void {
+        const onCompilerResponse = this.onBuildResponse.bind(this);
 
-        if (this.pendingCMakeRequestSentAt) {
+        if (this.pendingBuildRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
-            this.nextCMakeRequest = request;
+            this.nextBuildRequest = {buildSystem, request};
             return;
         }
-        // this.eventHub.emit('compiling', this.id, this.compiler);
-        // Display the spinner
-        this.handleCompilationStatus({code: 4});
-        this.pendingCMakeRequestSentAt = Date.now();
+        if (this.compiler) {
+            this.eventHub.emit('executeCompiling', this.id, this.compiler);
+        }
+        this.pendingBuildRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         this.hub.compilerService
-            .submitCMake(request)
+            .submitBuild(buildSystem, request)
             .then((x: any) => {
                 onCompilerResponse(request, x.result, x.localCacheHit);
             })
@@ -476,9 +487,9 @@ export class Executor extends Pane<ExecutorState> {
             this.nextRequest = request;
             return;
         }
-        // this.eventHub.emit('compiling', this.id, this.compiler);
-        // Display the spinner
-        this.handleCompilationStatus({code: 4});
+        if (this.compiler) {
+            this.eventHub.emit('executeCompiling', this.id, this.compiler);
+        }
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
@@ -622,17 +633,17 @@ export class Executor extends Pane<ExecutorState> {
         return result.stderr || [];
     }
 
-    onCMakeResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
+    onBuildResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
         result.source = this.source;
         this.lastResult = result;
-        const timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
+        const timeTaken = Math.max(0, Date.now() - this.pendingBuildRequestSentAt);
         this.lastTimeTaken = timeTaken;
-        const wasRealReply = this.pendingCMakeRequestSentAt > 0;
-        this.pendingCMakeRequestSentAt = 0;
+        const wasRealReply = this.pendingBuildRequestSentAt > 0;
+        this.pendingBuildRequestSentAt = 0;
 
         this.handleCompileRequestAndResponse(request, result, cached, wasRealReply, timeTaken);
 
-        this.doNextCMakeRequest();
+        this.doNextBuildRequest();
     }
 
     doNextCompileRequest(): void {
@@ -643,11 +654,11 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    doNextCMakeRequest(): void {
-        if (this.nextCMakeRequest) {
-            const next = this.nextCMakeRequest;
-            this.nextCMakeRequest = null;
-            this.sendCMakeCompile(next);
+    doNextBuildRequest(): void {
+        if (this.nextBuildRequest) {
+            const next = this.nextBuildRequest;
+            this.nextBuildRequest = null;
+            this.sendBuildCompile(next.buildSystem, next.request);
         }
     }
 
@@ -715,7 +726,6 @@ export class Executor extends Pane<ExecutorState> {
             }
         }
 
-        this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
         let timeLabelText = '';
         if (cached) {
             timeLabelText = ' - cached';
@@ -723,8 +733,6 @@ export class Executor extends Pane<ExecutorState> {
             timeLabelText = ' - ' + timeTaken + 'ms';
         }
         this.compileTimeLabel.text(timeLabelText);
-
-        this.setCompilationOptionsPopover(result.buildResult ? result.buildResult.compilationOptions.join(' ') : '');
 
         if (this.currentLangId) {
             const languages = languagesService.getLanguagesOrFail();
@@ -799,10 +807,8 @@ export class Executor extends Pane<ExecutorState> {
         this.optionsField = this.domRoot.find('.compilation-options');
         this.execArgsField = this.domRoot.find('.execution-arguments');
         this.execStdinField = this.domRoot.find('.execution-stdin');
-        this.prependOptions = this.domRoot.find('.prepend-options');
         this.fullCompilerName = this.domRoot.find('.full-compiler-name');
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
-        this.setCompilationOptionsPopover(this.compiler?.options ?? null);
 
         this.compileTimeLabel = this.domRoot.find('.compile-time');
         this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -811,15 +817,6 @@ export class Executor extends Pane<ExecutorState> {
         // the popover or on any alert
         $(document).on('mouseup', e => {
             const target = $(e.target);
-            if (
-                !target.is(this.prependOptions) &&
-                this.prependOptions.has(target as any).length === 0 &&
-                target.closest('.popover').length === 0
-            ) {
-                const popover = BootstrapUtils.getPopoverInstance(this.prependOptions);
-                if (popover) popover.hide();
-            }
-
             if (
                 !target.is(this.fullCompilerName) &&
                 this.fullCompilerName.has(target as any).length === 0 &&
@@ -839,10 +836,8 @@ export class Executor extends Pane<ExecutorState> {
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
-        this.statusLabel = this.domRoot.find('.status-text');
 
         this.hideable = this.domRoot.find('.hideable');
-        this.statusIcon = this.domRoot.find('.status-icon');
 
         this.panelCompilation = this.domRoot.find('.panel-compilation');
         this.panelArgs = this.domRoot.find('.panel-args');
@@ -934,6 +929,7 @@ export class Executor extends Pane<ExecutorState> {
         this.eventHub.on('resize', this.resize, this);
         this.eventHub.on('findExecutors', this.sendExecutor, this);
         this.eventHub.on('languageChange', this.onLanguageChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
 
         this.fullTimingInfo.off('click').on('click', () => {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
@@ -976,11 +972,16 @@ export class Executor extends Pane<ExecutorState> {
             this.onExecStdinChange($(e.target).val() as string);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
+        this.optionsField.on('change input', e => {
+            if (!this.initialStateLoaded) {
+                this.optionsChangedBeforeInitialStateLoad = true;
+            }
+            optionsChange(e);
+        });
 
-        this.execArgsField.on('change', execArgsChange).on('keyup', execArgsChange);
+        this.execArgsField.on('change', execArgsChange).on('input', execArgsChange);
 
-        this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
+        this.execStdinField.on('change', execStdinChange).on('input', execStdinChange);
 
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
@@ -1047,6 +1048,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onOptionsChange(options: string): void {
+        if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
         this.options = options;
         this.doTypicalOnChange();
     }
@@ -1085,7 +1087,6 @@ export class Executor extends Pane<ExecutorState> {
                     dismissTime: 5000,
                 });
             }
-            this.prependOptions.data('content', this.compiler.options);
         }
         this.sendExecutor();
     }
@@ -1200,7 +1201,7 @@ export class Executor extends Pane<ExecutorState> {
 
     override updateTitle(): void {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     updateCompilerName() {
@@ -1220,62 +1221,19 @@ export class Executor extends Pane<ExecutorState> {
         );
     }
 
-    setCompilationOptionsPopover(content: string | null) {
-        // Dispose of existing popover
-        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
-        if (existingPopover) existingPopover.dispose();
-
-        // Initialize new popover
-        BootstrapUtils.initPopover(this.prependOptions, {
-            content: content || 'No options in use',
-            template:
-                '<div class="popover' +
-                (content ? ' compiler-options-popover' : '') +
-                '" role="tooltip"><div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-        });
-    }
-
     setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string, compilerId?: string) {
         setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
 
+    onThemeChange(newTheme: Theme | null): void {
+        const darkBackgroundColours = newTheme?.darkBackgroundColours ?? false;
+        if (darkBackgroundColours === this.darkBackgroundColours) return;
+        this.darkBackgroundColours = darkBackgroundColours;
+        if (this.compiler?.supportsDarkBackgroundColours) this.compile();
+    }
+
     override onSettingsChange(newSettings: SiteSettings): void {
         this.settings = _.clone(newSettings);
-    }
-
-    private ariaLabel(status: CompilationStatus): string {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.didExecute) {
-            return 'Program compiled & executed';
-        }
-        return 'Program could not be executed';
-    }
-
-    private color(status: CompilationStatus) {
-        // Compiling...
-        if (status.code === 4) return '#888888';
-        if (status.didExecute) return '#12BB12';
-        return '#FF1212';
-    }
-
-    // TODO: Duplicate with compiler-service.ts?
-    handleCompilationStatus(status: CompilationStatus): void {
-        // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
-        CompilerService.handleCompilationStatus(this.statusLabel, null, {compilerOut: 0, ...status});
-
-        if (this.statusIcon != null) {
-            this.statusIcon
-                .removeClass()
-                .addClass('status-icon fas')
-                .css('color', this.color(status))
-                .toggle(status.code !== 0)
-                .attr('aria-label', this.ariaLabel(status))
-                .toggleClass('fa-spinner fa-spin', status.code === 4)
-                .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
-                .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
-        }
     }
 
     async updateLibraries(): Promise<void> {

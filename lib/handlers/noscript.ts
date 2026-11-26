@@ -28,7 +28,7 @@ import {LanguageKey} from '../../types/languages.interfaces.js';
 import {isMobileViewer} from '../app/url-handlers.js';
 import {unwrapString} from '../assert.js';
 import {ClientState} from '../clientstate.js';
-import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {configToClientState, extractJsonFromBufferAndInflateIfRequired} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {getSafeHash, StorageBase} from '../storage/index.js';
@@ -55,7 +55,7 @@ export class NoScriptHandler {
                 /^\/noscript\/clientstate\/(?<clientstatebase64>.*)/,
                 cached,
                 csp,
-                this.clientStateHandlerNoScript.bind(this),
+                this.unstoredStateHandlerNoScript.bind(this),
             )
             .get('/noscript/sponsors', cached, csp, (req, res) => {
                 res.render(
@@ -81,17 +81,7 @@ export class NoScriptHandler {
         this.storageHandler
             .expandId(id)
             .then(result => {
-                const config = JSON.parse(result.config);
-
-                let clientstate: ClientState;
-                if (config.content) {
-                    const normalizer = new ClientStateNormalizer();
-                    normalizer.fromGoldenLayout(config);
-
-                    clientstate = normalizer.normalized;
-                } else {
-                    clientstate = new ClientState(config);
-                }
+                const clientstate = configToClientState(JSON.parse(result.config));
 
                 this.renderNoScriptLayout(clientstate, req, res);
 
@@ -108,11 +98,11 @@ export class NoScriptHandler {
             });
     }
 
-    clientStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
+    unstoredStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
         try {
             const buffer = Buffer.from(unwrapString(req.params.clientstatebase64), 'base64');
-            const config = JSON.parse(buffer.toString());
-            const clientstate = new ClientState(config);
+            const config = extractJsonFromBufferAndInflateIfRequired(buffer);
+            const clientstate = configToClientState(config);
 
             this.renderNoScriptLayout(clientstate, req, res);
         } catch (err) {

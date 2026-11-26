@@ -23,8 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
 
 const forbiddenOptions = new Set(['--report', '--text-report', '--html-report']);
@@ -32,6 +34,18 @@ const forbiddenOptions = new Set(['--report', '--text-report', '--html-report'])
 export class PPCICompiler extends BaseCompiler {
     static get key() {
         return 'ppci';
+    }
+
+    private readonly python: string;
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+        // ppci is run as a Python module. Prefer a compiler- or group-specific interpreter, as
+        // older ppci releases do not run on every Python version; fall back to the global python3.
+        this.python =
+            this.compilerProps<string>(`compiler.${this.compiler.id}.python`, '') ||
+            this.compilerProps<string>(`group.${this.compiler.group}.python`, '') ||
+            this.env.ceProps<string>('python3');
     }
 
     override filterUserOptions(args: string[]) {
@@ -44,7 +58,6 @@ export class PPCICompiler extends BaseCompiler {
 
     override exec(compiler: string, args: string[], options: ExecutionOptions) {
         if (compiler.endsWith('.py')) {
-            const python = this.env.ceProps<string>('python3');
             options = options || {};
 
             const matches = compiler.match(/^(.*)(\/ppci\/)(.*).py/);
@@ -53,7 +66,7 @@ export class PPCICompiler extends BaseCompiler {
                 const ppciName = `ppci.${matches[3].replace('/', '.')}`;
                 options.env = {PYTHONPATH: pythonPath};
                 const python_args = ['-m', ppciName].concat(args);
-                return exec.execute(python, python_args, options);
+                return exec.execute(this.python, python_args, options);
             }
             assert(false, `Invalid ppci path ${compiler}`);
         } else {

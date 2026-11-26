@@ -1,0 +1,2 @@
+{"schema":1,"record":"diagnostic","severity":"error","code":"comptime.user_error","message":"std.print needs the files capability (std.system.capability.HAS_FILES)","origin":"resolve","primary":{"file":"dep/std/src/print.mach","line":24,"column":5,"end_line":24,"end_column":86,"byte_start":609,"byte_end":690},"related":[],"notes":[],"help":[],"fixes":[]}
+{"schema":1,"record":"summary","errors":1,"warnings":0,"notes":0,"outcome":"failure","exit_code":1}

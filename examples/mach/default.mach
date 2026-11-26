@@ -1,0 +1,4 @@
+# Type your code here, or load an example.
+pub fun square(num: i64) i64 {
+    ret num * num;
+}

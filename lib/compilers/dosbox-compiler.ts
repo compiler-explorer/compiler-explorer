@@ -53,7 +53,7 @@ export class DosboxCompiler extends BaseCompiler {
         for (const file of files) {
             if (!file.filename) throw new Error('One of more files do not have a filename');
 
-            const fullpath = this.getExtraFilepath(dirPath, file.filename);
+            const fullpath = utils.resolveWithinDir(dirPath, file.filename);
             const contents = file.contents.replaceAll('\n', '\r\n');
             filesToWrite.push(utils.outputTextFile(fullpath, contents));
         }

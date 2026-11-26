@@ -30,6 +30,7 @@ import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
 import type {ClientOptionsSource} from '../options-handler.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import type {Sponsors} from '../sponsors.interfaces.js';
+import type {TrustProxySetting} from './config.interfaces.js';
 
 export interface ServerOptions {
     staticPath: string;
@@ -40,7 +41,10 @@ export interface ServerOptions {
     sentrySlowRequestMs: number;
     manifestPath: string;
     extraBodyClass: string;
+    siteLogo: string;
+    favicon: string;
     maxUploadSize: string;
+    trustProxy: TrustProxySetting;
 }
 
 export interface PugOptions {
@@ -60,6 +64,7 @@ export interface RenderConfig extends PugOptions {
     metadata?: ShortLinkMetaData;
     faviconFilename: string;
     logoOverlayFilename?: string;
+    siteLogo?: string;
     storedStateId?: string | false;
     require?: PugRequireHandler;
     sponsors?: Sponsors;

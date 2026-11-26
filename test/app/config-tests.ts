@@ -415,6 +415,18 @@ describe('Config Module', () => {
             expect(result.staticRoot).toBe('https://static.example.com/');
         });
 
+        it('should pass through trustProxy and default it to loopback', () => {
+            const appArgs = createMockAppArgs({
+                useLocalProps: true,
+                propDebug: false,
+            });
+
+            expect(loadConfiguration(appArgs).trustProxy).toBe('loopback');
+
+            mockCeProps.trustProxy = 2;
+            expect(loadConfiguration(appArgs).trustProxy).toBe(2);
+        });
+
         it('should handle staticUrl with trailing slash correctly', () => {
             // This tests the production scenario where staticUrl already has trailing slash
             mockCeProps.staticUrl = 'https://static.ce-cdn.net/';

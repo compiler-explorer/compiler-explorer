@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {deserialiseState} from '../url.js';
+import {deserialiseState, parseSavedLayoutState, removeEmptyLayoutItems} from '../url.js';
 
 describe('Historical URL Backward Compatibility', () => {
     describe('Version 4 (modern minified format)', () => {
@@ -221,5 +221,152 @@ describe('Historical URL Backward Compatibility', () => {
                 deserialiseState('(z:invalid_base64_data)');
             }).toThrow();
         });
+    });
+});
+
+describe('parseSavedLayoutState', () => {
+    const validLayout = {
+        settings: {},
+        content: [
+            {
+                type: 'row',
+                content: [
+                    {type: 'component', componentName: 'codeEditor', componentState: {id: 1}, content: []},
+                    {
+                        type: 'stack',
+                        content: [{type: 'component', componentName: 'compiler', componentState: {source: 1}}],
+                    },
+                ],
+            },
+        ],
+    };
+
+    it('should accept a layout as written by layout.toConfig()', () => {
+        expect(parseSavedLayoutState(JSON.stringify(validLayout))).toEqual(validLayout);
+    });
+
+    it('should accept an empty layout', () => {
+        expect(parseSavedLayoutState('{"content":[]}')).toEqual({content: []});
+    });
+
+    it.each([
+        ['truncated JSON', '{"content":[{"type":"row"'],
+        ['non-JSON text', 'not json at all'],
+        ['JSON null', 'null'],
+        ['a JSON array', '[]'],
+        ['a JSON string', '"layout"'],
+        ['missing content', '{"settings":{}}'],
+        ['non-array content', '{"content":{}}'],
+        ['an unknown item type', '{"content":[{"type":"banana","content":[]}]}'],
+        ['a non-object item', '{"content":[42]}'],
+        ['a component without a name', '{"content":[{"type":"component"}]}'],
+        ['a layout item without content', '{"content":[{"type":"row"}]}'],
+        ['an invalid nested item', '{"content":[{"type":"row","content":[{"type":"stack","content":[null]}]}]}'],
+    ])('should reject %s', (_description, savedState) => {
+        expect(parseSavedLayoutState(savedState)).toBeNull();
+    });
+});
+
+describe('removeEmptyLayoutItems', () => {
+    const component = (componentName: string, width?: number): any => ({
+        type: 'component',
+        componentName,
+        componentState: {},
+        ...(width === undefined ? {} : {width}),
+    });
+    const stack = (componentName: string, width?: number): any => ({
+        type: 'stack',
+        content: [component(componentName)],
+        ...(width === undefined ? {} : {width}),
+    });
+
+    it('should remove a row with no content from its parent row', () => {
+        const config: any = {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        stack('codeEditor', 35.4),
+                        stack('executor', 25.9),
+                        {type: 'row', width: 13.6, height: 100},
+                        stack('compiler', 25),
+                    ],
+                },
+            ],
+        };
+        removeEmptyLayoutItems(config);
+        expect(config.content).toEqual([
+            {type: 'row', content: [stack('codeEditor', 35.4), stack('executor', 25.9), stack('compiler', 25)]},
+        ]);
+    });
+
+    it('should remove a stack with no content from its parent row', () => {
+        const config: any = {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        stack('tree', 20),
+                        {type: 'stack', width: 12.26},
+                        {type: 'column', content: [stack('compiler'), stack('executor')], width: 67.74},
+                    ],
+                },
+            ],
+        };
+        removeEmptyLayoutItems(config);
+        expect(config.content).toEqual([
+            {
+                type: 'row',
+                content: [
+                    stack('tree', 20),
+                    {type: 'column', content: [stack('compiler'), stack('executor')], width: 67.74},
+                ],
+            },
+        ]);
+    });
+
+    it('should remove a layout item with an empty content array', () => {
+        const config: any = {content: [{type: 'row', content: [stack('codeEditor'), {type: 'stack', content: []}]}]};
+        removeEmptyLayoutItems(config);
+        expect(config.content).toEqual([{type: 'row', content: [stack('codeEditor')]}]);
+    });
+
+    it('should remove layout items left empty by removing their children', () => {
+        const config: any = {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        stack('codeEditor'),
+                        {type: 'column', content: [{type: 'stack'}, {type: 'row', content: [{type: 'stack'}]}]},
+                    ],
+                },
+            ],
+        };
+        removeEmptyLayoutItems(config);
+        expect(config.content).toEqual([{type: 'row', content: [stack('codeEditor')]}]);
+    });
+
+    it('should leave a layout without empty items unchanged', () => {
+        const layout = {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        stack('codeEditor'),
+                        {type: 'column', content: [stack('compiler'), {type: 'stack', content: [component('output')]}]},
+                    ],
+                },
+            ],
+        };
+        const config: any = structuredClone(layout);
+        removeEmptyLayoutItems(config);
+        expect(config).toEqual(layout);
+    });
+
+    it('should accept a config with no content', () => {
+        const config: any = {settings: {}};
+        removeEmptyLayoutItems(config);
+        expect(config).toEqual({settings: {}});
     });
 });

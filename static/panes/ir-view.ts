@@ -41,6 +41,7 @@ import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 import {Alert} from '../widgets/alert.js';
+import {CompilationOptions} from '../widgets/compilation-options.js';
 import {Toggles} from '../widgets/toggles.js';
 import {Compiler} from './compiler.js';
 import {IrState} from './ir-view.interfaces.js';
@@ -79,6 +80,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
+        new CompilationOptions(this, this.compilerInfo.compilerId, result => result.irOutput);
         if (state.irOutput) {
             this.showIrResults(state.irOutput ?? []);
         }
@@ -130,10 +132,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         };
         createDragSource(this.container.layoutManager, this.cfgButton, () => createCfgView());
         this.cfgButton.on('click', () => {
-            const insertPoint =
-                this.hub.findParentRowOrColumn(this.container.parent) ||
-                this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createCfgView());
+            this.hub.addToParentRowOrColumn(this.container, createCfgView());
         });
 
         this.toggleWrapButton = new Toggles(this.domRoot.find('.wrap'), state as unknown as Record<string, boolean>);

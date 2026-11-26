@@ -43,6 +43,7 @@ import * as BootstrapUtils from '../bootstrap-utils.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
 import {Hub} from '../hub.js';
 import * as MonacoConfig from '../monaco-config.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {CfgState} from './cfg-view.interfaces.js';
@@ -125,6 +126,7 @@ export class Cfg extends Pane<CfgState> {
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
+    renderGeneration = 0;
     tooltipOpen = false;
     readonly extraTransforms: string;
     fictitiousGraphContainer: HTMLDivElement;
@@ -333,25 +335,18 @@ export class Cfg extends Pane<CfgState> {
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
-        this.functionSelector.clearOptions();
         const cfg = this.state.isircfg ? result.irOutput?.cfg : result.cfg;
         if (cfg) {
             this.results = cfg;
             this.contentsAreIr = !!this.state.isircfg || !!result.compilationOptions?.includes('-emit-llvm');
             let selectedFunction: string | null = this.state.selectedFunction;
             const keys = Object.keys(cfg);
-            if (keys.length === 0) {
-                this.functionSelector.addOption({
-                    title: '<No functions available>',
-                    value: '<No functions available>',
-                });
-            }
-            for (const fn of keys) {
-                this.functionSelector.addOption({
-                    title: fn,
-                    value: fn,
-                });
-            }
+            replaceOptions(
+                this.functionSelector,
+                keys.length === 0
+                    ? [{title: '<No functions available>', value: '<No functions available>'}]
+                    : keys.map(fn => ({title: fn, value: fn})),
+            );
             if (keys.length > 0) {
                 if (selectedFunction === '' || !(selectedFunction !== null && selectedFunction in cfg)) {
                     selectedFunction = keys[0];
@@ -365,11 +360,13 @@ export class Cfg extends Pane<CfgState> {
             this.selectFunction(selectedFunction);
         } else {
             // this case can be fallen into with a blank input file
+            replaceOptions(this.functionSelector, []);
             this.selectFunction(null);
         }
     }
 
-    async createBasicBlocks(fn: CfgDescriptor) {
+    async createBasicBlocks(fn: CfgDescriptor): Promise<Record<string, HTMLDivElement>> {
+        const bbMap: Record<string, HTMLDivElement> = {};
         for (const node of fn.nodes) {
             const div = document.createElement('div');
             div.classList.add('block');
@@ -429,16 +426,12 @@ export class Cfg extends Pane<CfgState> {
                     this.tooltipOpen = false;
                 });
             }
-            // So because this is async there's a race condition here if you rapidly switch functions.
-            // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
-            // to another PR. TODO(jeremy-rifkin)
-            assert(!(node.id in this.bbMap), "Duplicate basic block node id's found while drawing cfg");
-            this.bbMap[node.id] = div;
-            this.blockContainer.appendChild(div);
+            assert(!(node.id in bbMap), "Duplicate basic block node id's found while drawing cfg", node.id);
+            bbMap[node.id] = div;
         }
         for (const node of fn.nodes) {
             const fictitiousBlock = this.fictitiousBlockContainer.appendChild(
-                this.bbMap[node.id].cloneNode(true),
+                bbMap[node.id].cloneNode(true),
             ) as HTMLDivElement;
             const elem = $(fictitiousBlock);
             void fictitiousBlock.offsetHeight; // try to trigger a layout recompute
@@ -447,6 +440,7 @@ export class Cfg extends Pane<CfgState> {
         }
         // remove all children
         this.fictitiousBlockContainer.replaceChildren();
+        return bbMap;
     }
 
     drawEdges() {
@@ -520,6 +514,9 @@ export class Cfg extends Pane<CfgState> {
     // Display the cfg for the specified function if it exists
     // This function sets this.state.selectedFunction if the input is non-null and valid
     async selectFunction(name: string | null) {
+        // Rendering awaits per block, so a newer call (e.g. two compile results arriving back to back) can start
+        // before this one finishes; only the latest call may touch the DOM after the await.
+        const generation = ++this.renderGeneration;
         $('.fold').each((_, element) => {
             const popover = BootstrapUtils.getPopoverInstance(element);
             if (popover) popover.dispose();
@@ -532,8 +529,19 @@ export class Cfg extends Pane<CfgState> {
             return;
         }
         const fn = this.results[name];
-        this.bbMap = {};
-        await this.createBasicBlocks(fn);
+        const bbMap = await this.createBasicBlocks(fn);
+        if (generation !== this.renderGeneration) {
+            // These blocks never reach the document, so the $('.fold') cleanup above can't find their popovers,
+            // and Bootstrap would keep them alive.
+            for (const block of Object.values(bbMap)) {
+                for (const fold of block.getElementsByClassName('fold')) {
+                    BootstrapUtils.getPopoverInstance(fold as HTMLElement)?.dispose();
+                }
+            }
+            return;
+        }
+        this.bbMap = bbMap;
+        this.blockContainer.append(...Object.values(bbMap));
         this.layout = new GraphLayoutCore(
             fn as AnnotatedCfgDescriptor,
             !!this.state.centerparents,

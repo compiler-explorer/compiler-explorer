@@ -145,6 +145,26 @@ describe('MCP endpoint', () => {
             'lookup_asm_instruction',
         ]);
     });
+
+    it('gives every tool explicit readOnly, destructive and openWorld hints', async () => {
+        await postJsonRpc(app, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+                protocolVersion: '2024-11-05',
+                capabilities: {},
+                clientInfo: {name: 'test', version: '0.0.0'},
+            },
+        });
+        const res = await postJsonRpc(app, {jsonrpc: '2.0', id: 2, method: 'tools/list'});
+        const body = parseMcpResponse(res);
+        for (const tool of body.result.tools) {
+            expect(typeof tool.annotations.readOnlyHint, tool.name).toBe('boolean');
+            expect(tool.annotations.destructiveHint, tool.name).toBe(false);
+            expect(tool.annotations.openWorldHint, tool.name).toBe(false);
+        }
+    });
 });
 
 function postJsonRpc(app: express.Express, payload: object) {
@@ -807,6 +827,7 @@ describe('MCP compile tool', () => {
     ): CompileHandler {
         const fakeBaseCompiler = {
             getDefaultFilters: () => ({}),
+            getRemote: () => false,
             compile: vi.fn().mockResolvedValue({
                 code: topLevelCode,
                 asm: asm.map(text => ({text})),
@@ -966,6 +987,57 @@ describe('MCP compile tool', () => {
         const result = await toolHandlers.compile({source: 'x', language: 'wat'});
         expect(result.isError).toBe(true);
         expect(result.content[0].text).toMatch(/No compiler specified.*language "wat"/);
+    });
+
+    it('posts to the sub-server instead of compiling locally when the compiler is remote', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['ret']);
+        const baseCompiler = compileHandler.findCompiler('c++' as any, 'g161');
+        const compileSpy = vi.spyOn(baseCompiler!, 'compile');
+        vi.spyOn(baseCompiler!, 'getRemote').mockReturnValue({
+            target: 'https://sub.example.com',
+            path: '/api/compiler/vcpp/compile',
+            cmakePath: '/api/compiler/vcpp/cmake',
+            basePath: '/',
+        });
+        const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(JSON.stringify({code: 0, asm: [{text: 'ret 0'}], stdout: [], stderr: []}), {
+                status: 200,
+                headers: {'Content-Type': 'application/json'},
+            }),
+        );
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'vcpp'});
+
+        expect(result.isError).toBeUndefined();
+        expect(compileSpy).not.toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalledOnce();
+        const [url, init] = fetchSpy.mock.calls[0];
+        expect(url).toBe('https://sub.example.com/api/compiler/vcpp/compile');
+        expect(init?.method).toBe('POST');
+        expect(JSON.parse(result.content[0].text).asm).toBe('ret 0');
+        fetchSpy.mockRestore();
+    });
+
+    it('surfaces a failing sub-server response as a tool error', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['ret']);
+        const baseCompiler = compileHandler.findCompiler('c++' as any, 'g161');
+        vi.spyOn(baseCompiler!, 'getRemote').mockReturnValue({
+            target: 'https://sub.example.com',
+            path: '/api/compiler/vcpp/compile',
+            cmakePath: '/api/compiler/vcpp/cmake',
+            basePath: '/',
+        });
+        const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('nope', {status: 502}));
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'vcpp'});
+
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toMatch(/502/);
+        fetchSpy.mockRestore();
     });
 
     it('normalises a human library version (1.88.0) to its id (188) and reaches baseCompiler.compile', async () => {

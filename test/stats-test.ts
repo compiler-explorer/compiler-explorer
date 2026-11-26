@@ -22,9 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import {PutObjectCommand, S3} from '@aws-sdk/client-s3';
+import {mockClient} from 'aws-sdk-client-mock';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
+import {ParsedRequest} from '../lib/handlers/compile.js';
+import {createStatsNoter, filterCompilerOptions, KnownBuildMethod, makeSafe} from '../lib/stats.js';
 import {getHash} from '../lib/utils.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
@@ -101,6 +104,33 @@ describe('Stats', () => {
         expect(filterCompilerOptions(['-moo', 'foo', '/moo'])).toEqual(['-moo', '/moo']);
         expect(filterCompilerOptions(['-Dsecret=1234', '/Dsecret'])).toEqual([]);
         expect(filterCompilerOptions(['-ithings', '/Ithings'])).toEqual([]);
+    });
+
+    describe('S3 flushing', () => {
+        const mockS3 = mockClient(S3);
+        const request = {
+            source: '',
+            options: [],
+            backendOptions: {},
+            filters: {} as ParseFiltersAndOutputOptions,
+            bypassCache: 0,
+            tools: [],
+            executeParameters: {},
+            libraries: [],
+        } as unknown as ParsedRequest;
+
+        beforeEach(() => {
+            mockS3.reset();
+            mockS3.on(PutObjectCommand).resolves({});
+        });
+
+        it('should store compilation records as STANDARD', async () => {
+            const noter = createStatsNoter(() => 'S3(test.bucket,compile-stats,uk-north-1,1ms)');
+            noter.noteCompilation('g130', request, [], KnownBuildMethod.Compile);
+            await vi.waitUntil(() => mockS3.commandCalls(PutObjectCommand).length > 0);
+            const puts = mockS3.commandCalls(PutObjectCommand);
+            expect(puts.map(put => put.args[0].input.StorageClass)).toEqual(['STANDARD']);
+        });
     });
 
     it('should sanitize some duplications', () => {

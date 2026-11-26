@@ -61,9 +61,13 @@ class Config:
 
     archive : Archive
     documentation : str
-    def __init__(self, *, archive, documentation):
+    preferred_index : str
+    preferred_files : list
+    def __init__(self, *, archive, documentation, preferredIndex=None, preferredFiles=()):
         self.archive = Config.Archive(**archive)
         self.documentation = str(documentation)
+        self.preferred_index = preferredIndex
+        self.preferred_files = list(preferredFiles)
 
 
 class Instruction(object):
@@ -166,6 +170,40 @@ def parse_xml(directory):
     return instructions
 
 
+def select_instructions(instructions, directory):
+    # A mnemonic gets one entry, and the first instruction to claim it wins. Filename order alone would hand AND to
+    # and_advsimd over and_log_imm, and LDR to ldr_imm_fpsimd over ldr_imm_gen, as "advsimd" and "fpsimd" sort first.
+    preferred_index = set()
+    if config.preferred_index:
+        with open(os.path.join(directory, config.preferred_index), encoding='utf-8') as f:
+            preferred_index = set(re.findall(r'iformfile="([^"]+)\.xml"', f.read()))
+
+    def rank(instr):
+        if instr.name in config.preferred_files:
+            return 0
+        return 1 if instr.name in preferred_index else 2
+
+    selected = []
+    all_inst = set()
+    preferred_names = set()
+    for inst in sorted(instructions, key=lambda b: (rank(b), b.name)):
+        if rank(inst) == 2:
+            # Give up only the names a preferred instruction took: SMULL2 is documented by smull_advsimd_* alone.
+            inst.names = inst.names - preferred_names
+            if not inst.names:
+                continue
+        if not all_inst.isdisjoint(inst.names):
+            print("Overlap in instruction names: {} for {} - dropping".format(
+                inst.names.intersection(all_inst), inst.name))
+            continue
+        all_inst = all_inst.union(inst.names)
+        if rank(inst) < 2:
+            preferred_names = preferred_names.union(inst.names)
+        selected.append(inst)
+    selected.sort(key=lambda b: b.name)
+    return selected
+
+
 def self_test(instructions, directory):
     # For each generated instruction, check that there is a path to a file in
     # the documentation.
@@ -217,13 +255,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
     if (!opcode) return;
     switch (opcode) {
 """.lstrip())
-        all_inst = set()
-        for inst in instructions:
-            if not all_inst.isdisjoint(inst.names):
-                print("Overlap in instruction names: {} for {} - dropping".format(
-                    inst.names.intersection(all_inst), inst.name))
-                continue
-            all_inst = all_inst.union(inst.names)
+        for inst in select_instructions(instructions, os.path.join(args.inputfolder, config.archive.subdir)):
             for name in sorted(inst.names):
                 f.write('        case "{}":\n'.format(name))
             f.write('            return {}'.format(json.dumps({

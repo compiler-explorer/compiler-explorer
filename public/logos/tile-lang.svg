@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 401 463">
+  <defs>
+    <linearGradient
+      id="logoGradient"
+      x1="0" y1="463"
+      x2="0" y2="0"
+      gradientUnits="userSpaceOnUse"
+      spreadMethod="pad">
+      <stop offset="0" stop-color="#E73768"/>
+      <stop offset="0.5" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#69E0F9"/>
+    </linearGradient>
+  </defs>
+
+  <g fill="url(#logoGradient)">
+    <path d="M200 0 104 57 305 173 305 274
+             401 218 401 116Z"/>
+
+    <path d="M0 116 89 65 185 123 97 174
+             97 404 0 348Z"/>
+
+    <path d="M112 300 200 350 401 234
+             401 348 200 463 112 412Z"/>
+
+    <path d="M201 138 282 184 282 279
+             200 326 119 279 119 185Z"/>
+  </g>
+</svg>

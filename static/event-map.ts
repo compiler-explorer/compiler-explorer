@@ -72,6 +72,7 @@ export type EventMap = {
     // Right now nothing emits this event, but it might be useful at some point so we keep it
     compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
     compiling: (compilerId: number, compiler: CompilerInfo) => void;
+    executeCompiling: (executorId: number, compiler: CompilerInfo) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
     copyShortLinkToClip: () => void;
@@ -118,6 +119,8 @@ export type EventMap = {
     haskellCoreViewOpened: (compilerId: number) => void;
     haskellStgViewClosed: (compilerId: number) => void;
     haskellStgViewOpened: (compilerId: number) => void;
+    jvmBytecodeViewOpened: (compilerId: number) => void;
+    jvmBytecodeViewClosed: (compilerId: number) => void;
     leanCViewClosed: (compilerId: number) => void;
     leanCViewOpened: (compilerId: number) => void;
     leanCViewOptionsUpdated: (compilerId: number, options: LeanCOptions, recompile: boolean) => void;

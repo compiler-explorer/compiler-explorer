@@ -29,6 +29,7 @@ import {
     DIFF_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    JVM_BYTECODE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     TOOL_COMPONENT_NAME,
@@ -79,6 +80,19 @@ describe('Components validation', () => {
                 const config = {content: []};
                 const result = fromGoldenLayoutConfig(config);
                 expect(result).toEqual(config);
+            });
+
+            it('should restore a JVM bytecode pane from a saved layout', () => {
+                const config = {
+                    content: [
+                        {
+                            type: 'component',
+                            componentName: JVM_BYTECODE_VIEW_COMPONENT_NAME,
+                            componentState: {id: 1, editorid: 1},
+                        },
+                    ],
+                };
+                expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
 
             it('should accept valid compiler component', () => {

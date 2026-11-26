@@ -44,6 +44,7 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         compilerType === 'zig' ||
         compilerType === 'ispc' ||
         compilerType === 'lean' ||
+        compilerType === 'mojo' ||
         compilerType === 'snowball'
     );
 }

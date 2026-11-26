@@ -33,6 +33,7 @@ export type LanguageKey =
     | 'c++'
     | 'c3'
     | 'carbon'
+    | 'cargo'
     | 'circle'
     | 'circt'
     | 'clean'
@@ -55,11 +56,13 @@ export type LanguageKey =
     | 'cutedsl'
     | 'd'
     | 'dart'
+    | 'duckling'
     | 'elixir'
     | 'erlang'
     | 'fortran'
     | 'fsharp'
     | 'gimple'
+    | 'gleam'
     | 'glsl'
     | 'go'
     | 'haskell'
@@ -78,9 +81,14 @@ export type LanguageKey =
     | 'llvm'
     | 'llvm_mir'
     | 'lua'
+    | 'mach'
+    | 'makefile'
+    | 'maven'
+    | 'metal'
     | 'mlir'
     | 'modula2'
     | 'mojo'
+    | 'nexium'
     | 'nim'
     | 'nix'
     | 'numba'
@@ -100,6 +108,7 @@ export type LanguageKey =
     | 'ruby'
     | 'rust'
     | 'sail'
+    | 'salam'
     | 'scala'
     | 'sfpi'
     | 'slang'
@@ -109,6 +118,7 @@ export type LanguageKey =
     | 'sway'
     | 'swift'
     | 'tablegen'
+    | 'tilelang'
     | 'toit'
     | 'triton'
     | 'typescript'
@@ -151,6 +161,8 @@ export interface Language {
     defaultCompiler?: string;
     /** Default libraries for the language. This is populated when handed to the frontend. */
     defaultLibs?: string;
+    /** Default compiler options for the language. This is populated when handed to the frontend. */
+    defaultOptions?: string;
     digitSeparator?: string;
     /** Hint to display when no assembly is generated (e.g., for inlined functions) */
     noAsmHint?: string;

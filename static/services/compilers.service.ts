@@ -25,6 +25,7 @@
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {fetchJson} from './fetch-json.js';
 
 export class CompilersService {
     private readonly loadPromises = new Map<string, Promise<Record<string, CompilerInfo>>>();
@@ -91,6 +92,7 @@ export class CompilersService {
         'supportsHaskellStgView',
         'supportsHaskellCmmView',
         'supportsLeanCView',
+        'supportsJvmBytecodeView',
         'supportsClojureMacroExpView',
         'supportsYulView',
         'supportsCfg',
@@ -101,14 +103,13 @@ export class CompilersService {
         'supportsDemangle',
         'supportsVerboseDemangling',
         'supportsFiltersInBinary',
+        'supportsDarkBackgroundColours',
     ];
 
     private async fetchCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
-        const response = await fetch(
+        const compilers = await fetchJson<CompilerInfo[]>(
             `${window.httpRoot}api/compilers/${encodeURIComponent(langId)}?fields=${CompilersService.compilerFields.join(',')}&hash=${optionsHash}`,
-            {headers: {Accept: 'application/json'}},
         );
-        const compilers: CompilerInfo[] = await response.json();
         const result: Record<string, CompilerInfo> = {};
         for (const compiler of compilers) {
             result[compiler.id] = compiler;

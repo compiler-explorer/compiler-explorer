@@ -37,6 +37,13 @@ function gccDumpPane() {
     return cy.get('.gccdump-pass-picker', {timeout: 10000}).closest('.lm_content');
 }
 
+// The pass picker stays disabled until the compile triggered by opening the pane returns, and
+// TomSelect ignores clicks while disabled, so wait for it to be enabled before opening it.
+function openPassPicker() {
+    cy.get('.gccdump-pass-picker + .ts-wrapper', {timeout: 10000}).should('not.have.class', 'disabled');
+    cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
+}
+
 beforeEach(visitPage);
 
 afterEach(() => {
@@ -55,14 +62,27 @@ describe('GCC Tree/RTL dump', () => {
     it('should show a pass picker with available passes', () => {
         setupAndWaitForCompilation();
         openGccDump();
-        cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
+        openPassPicker();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
+    });
+
+    it('should show the ON/OFF state in every dump option tooltip', () => {
+        setupAndWaitForCompilation();
+        openGccDump();
+        // Each option button is looked up by its data-bind to format its tooltip, so a lookup that
+        // doesn't match the template leaves that button's tooltip unformatted.
+        gccDumpPane()
+            .find('.dump-filters .button-checkbox button')
+            .should('have.length.greaterThan', 0)
+            .each($button => {
+                expect($button.attr('title'), $button.attr('data-bind')).to.match(/^\[(ON|OFF)\] /);
+            });
     });
 
     it('should display tree dump content when a pass is selected', () => {
         setupAndWaitForCompilation();
         openGccDump();
-        cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
+        openPassPicker();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
         // Pick a tree pass specifically: the first option is now an IPA summary (cgraph), whereas
         // this test is about the GIMPLE/tree body, which is what shows the `square` function.
@@ -83,7 +103,7 @@ describe('GCC Tree/RTL dump', () => {
         openGccDump();
 
         // Wait for the picker to populate from the initial compile, then pick a first pass.
-        cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
+        openPassPicker();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 1);
         cy.get('.ts-dropdown .option:visible').first().click();
 

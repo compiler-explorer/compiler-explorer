@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'node:child_process';
+import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
 import process from 'node:process';
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -42,6 +44,7 @@ describe('setupTempDir', () => {
         savedVars = Object.fromEntries(TEMP_VARS.map(v => [v, process.env[v]]));
         for (const v of TEMP_VARS) delete process.env[v];
         vi.spyOn(child_process, 'execSync');
+        vi.spyOn(fs, 'mkdirSync').mockReturnValue(undefined);
     });
 
     afterEach(() => {
@@ -71,6 +74,22 @@ describe('setupTempDir', () => {
         setupTempDir('/custom/tmp', false);
 
         expect(os.tmpdir()).toEqual('/custom/tmp');
+    });
+
+    it('should create the tmpDir if it does not exist yet', () => {
+        if (process.platform === 'win32') return;
+        vi.mocked(fs.mkdirSync).mockRestore();
+        const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'ce-temp-dir-test-'));
+        const tmpDir = path.join(parent, 'not', 'there', 'yet');
+
+        try {
+            setupTempDir(tmpDir, false);
+
+            expect(fs.statSync(tmpDir).isDirectory()).toBe(true);
+            expect(os.tmpdir()).toEqual(tmpDir);
+        } finally {
+            fs.rmSync(parent, {recursive: true, force: true});
+        }
     });
 
     it('should try to use Windows TEMP on WSL without tmpDir option', () => {

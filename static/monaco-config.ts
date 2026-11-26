@@ -80,3 +80,14 @@ export function extendConfig<
     }
     return _.extend({}, DEFAULT_MONACO_CONFIG, overrides);
 }
+
+/**
+ * Every standalone editor's constructor rebinds Monaco's module-global hover delegate factory to the instantiation
+ * service that created it. A diff editor builds its inner editors from a child service that dies with the diff
+ * editor, after which every context menu on the page throws "InstantiationService has been disposed"
+ * (microsoft/monaco-editor#5518). A throwaway plain editor rebinds the factory to the page-lifetime global service.
+ */
+export function disposeDiffEditor(editor: monaco.editor.IStandaloneDiffEditor) {
+    editor.dispose();
+    monaco.editor.create(document.createElement('div')).dispose();
+}
