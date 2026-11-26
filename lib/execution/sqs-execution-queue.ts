@@ -26,6 +26,7 @@ import {SQS} from '@aws-sdk/client-sqs';
 
 import {ExecutionParams} from '../../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
+import {awsCredentials} from '../aws.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {Graceful} from '../node-graceful.js';
@@ -50,7 +51,7 @@ export class SqsExecuteQueueBase {
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
         const region = awsProps<string>('region', '');
-        this.sqs = new SQS({region: region});
+        this.sqs = new SQS({region: region, credentials: awsCredentials()});
         this.queue_url = props<string>('execqueue.queue_url', '');
         if (this.queue_url === '') throw new Error('execqueue.queue_url property required');
     }
