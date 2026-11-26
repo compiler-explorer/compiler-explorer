@@ -26,7 +26,7 @@ import {AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-import {AsmParser} from './asm-parser.js';
+import {AsmParser, truncatedLine} from './asm-parser.js';
 
 export class PTXAsmParser extends AsmParser {
     protected commentOnlyLine: RegExp;
@@ -204,6 +204,10 @@ export class PTXAsmParser extends AsmParser {
                 processedLine = this.applyTrimFilter(processedLine);
             }
 
+            if (asm.length >= this.maxTextAsmLines) {
+                asm.push(truncatedLine());
+                break;
+            }
             asm.push({
                 text: processedLine,
                 source: this.hasOpcode(line) ? currentSource : null,
