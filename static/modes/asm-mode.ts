@@ -96,6 +96,8 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/\d+/, 'number'],
                 // ARM-style immediate numbers (which otherwise look like comments)
                 [/#-?\d+/, 'number'],
+                // ARM relocation operators (e.g. #:lo12:sym), which otherwise look like comments too
+                [/#(?=:)/, 'operator'],
 
                 // operators
                 [/[-+,*/!:&{}()]/, 'operator'],

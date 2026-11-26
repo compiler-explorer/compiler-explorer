@@ -27,9 +27,10 @@ its language ID. In JSON, all the information is returned as an array of compile
 identifier of each compiler.
 
 Due to the amount of compilers and information available through this api call, by default you will only get these
-fields per compiler: `['id', 'name', 'lang', 'compilerType', 'semver', 'extensions', 'monaco']`
+fields per compiler: `['id', 'name', 'lang', 'compilerType', 'semver', 'extensions', 'monaco', 'instructionSet']`
 
-If you require different fields, you can specify them by adding `?fields=field1,field2,field3` to your query.
+If you require different fields, you can specify them by adding `?fields=field1,field2,field3` to your query. Repeating
+the parameter (`?fields=field1&fields=field2`) works too.
 
 To see all the available fields, you can use `?fields=all`. It is not recommended using this by default.
 
@@ -488,6 +489,8 @@ An example of one the easiest forms of a clientstate:
   ]
 }
 ```
+
+`compilers` and `executors` are optional; a session without either opens as just an editor.
 
 **Usage Examples:**
 

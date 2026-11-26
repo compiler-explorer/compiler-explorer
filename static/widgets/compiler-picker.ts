@@ -69,9 +69,15 @@ export class CompilerPicker {
             throw new Error('.compiler-picker is not an HTMLSelectElement');
         }
         this.toolbarPopoutButton = domRoot.find('.picker-popout-button');
-        domRoot.find('.picker-popout-button').on('click', () => {
-            unwrap(this.tomSelect).close();
+        domRoot.find('.picker-popout-button').on('click', async () => {
+            const tomSelect = await this.ensureInitialised();
+            if (!tomSelect) return;
+            tomSelect.close();
             this.popup.show();
+        });
+        // Until TomSelect replaces it, the bare select is what the user sees and clicks.
+        $(compilerPicker).on('mousedown', () => {
+            this.ensureInitialised();
         });
         this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
@@ -90,6 +96,8 @@ export class CompilerPicker {
     }
 
     destroy() {
+        // An initialisation still waiting on the compiler list then gives up instead of rebuilding a closed picker.
+        ++this.initNonce;
         this.eventHub.unsubscribe();
         if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
@@ -100,6 +108,12 @@ export class CompilerPicker {
         this.lastCompilerId = compilerId;
 
         const nonce = ++this.initNonce;
+        try {
+            await this.compilerService.getCompilersForLang(langId);
+        } catch {
+            // compilersService reports the failed fetch; ensureInitialised retries when the picker is next used.
+            return;
+        }
         const groups = await this.getGroups(langId);
         const options = await this.getOptions(langId, compilerId);
 
@@ -240,8 +254,14 @@ export class CompilerPicker {
         return optgroups;
     }
 
+    private async ensureInitialised(): Promise<TomSelect | null> {
+        if (!this.tomSelect) await this.initialize(this.lastLangId, this.lastCompilerId);
+        return this.tomSelect;
+    }
+
     update(langId: string, compilerId: string) {
         this.tomSelect?.destroy();
+        this.tomSelect = null;
         this.initialize(langId, compilerId);
     }
 

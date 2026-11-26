@@ -332,6 +332,19 @@ describe('Compiler tests', () => {
                 });
         });
 
+        it('responds with an error when the result cannot be serialised', async () => {
+            await setFakeResult({
+                code: 0,
+                toJSON() {
+                    throw new RangeError('Invalid string length');
+                },
+            });
+            const res = await makeFakeJson('I am a program').expect(200);
+            const body = JSON.parse(res.text);
+            expect(body.code).toEqual(-1);
+            expect(body.stderr[0].text).toContain('RangeError: Invalid string length');
+        });
+
         it('parses options and filters', async () => {
             await setFakeResult();
             const res = await makeFakeJson('I am a program', {

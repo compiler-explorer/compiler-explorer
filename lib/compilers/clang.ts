@@ -25,8 +25,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import {splitArguments} from '../../shared/common-utils.js';
 import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
@@ -64,6 +62,7 @@ export class ClangCompiler extends BaseCompiler {
     protected offloadBundlerPath?: string;
     protected llvmDisassemblerPath?: string;
     protected msvcDemanglerPath?: string;
+    private ptxDeviceParserInstance?: PTXAsmParser;
 
     static get key() {
         return 'clang';
@@ -211,21 +210,18 @@ export class ClangCompiler extends BaseCompiler {
     // compiling `#include <string>` with flag `-stdlib=libc++` succeeds: https://godbolt.org/z/7dKrad7Wc
 
     override filterUserOptions(userOptions: string[]): string[] {
-        if (
-            this.lang.id === 'c++' &&
-            !this.buildenvsetup?.compilerSupportsX86 && // cross-compilation
-            _.any(userOptions, option => {
-                return option === '-stdlib=libc++';
-            })
-        ) {
+        const isCrossCompile = !this.buildenvsetup?.compilerSupportsX86;
+        // clang accepts -stdlib=libc++, --stdlib=libc++ and `--stdlib libc++`
+        const usesLibCxx = userOptions.some(
+            (option, i) =>
+                option === '-stdlib=libc++' ||
+                option === '--stdlib=libc++' ||
+                (option === '--stdlib' && userOptions[i + 1] === 'libc++'),
+        );
+        if (this.lang.id === 'c++' && isCrossCompile && usesLibCxx) {
             const addedIncludePath =
                 '-I' + path.join(path.dirname(this.compiler.exe), '../include/x86_64-unknown-linux-gnu/c++/v1/');
-            if (
-                !_.any(userOptions, option => {
-                    return option === addedIncludePath;
-                })
-            )
-                userOptions = userOptions.concat(addedIncludePath);
+            if (!userOptions.includes(addedIncludePath)) userOptions = userOptions.concat(addedIncludePath);
         }
         return userOptions;
     }
@@ -233,7 +229,8 @@ export class ClangCompiler extends BaseCompiler {
     override async afterCompilation(
         result: CompilationResult,
         doExecute: boolean,
-        key: CacheKey,
+        adaptedRequest: CacheKey,
+        compilationCacheKey: CacheKey,
         executeParameters: ExecutableExecutionOptions,
         tools: ActiveTool[],
         backendOptions: Record<string, any>,
@@ -243,8 +240,9 @@ export class ClangCompiler extends BaseCompiler {
         stackUsageOutput: StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
+        delayCaching?: boolean,
     ) {
-        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+        const compilationInfo = this.getCompilationInfo(adaptedRequest, result, customBuildPath);
 
         const dirPath = path.dirname(compilationInfo.outputFilename);
         const filename = path.basename(compilationInfo.outputFilename);
@@ -253,7 +251,8 @@ export class ClangCompiler extends BaseCompiler {
         return super.afterCompilation(
             result,
             doExecute,
-            key,
+            adaptedRequest,
+            compilationCacheKey,
             executeParameters,
             tools,
             backendOptions,
@@ -263,6 +262,7 @@ export class ClangCompiler extends BaseCompiler {
             stackUsageOutput,
             bypassCache,
             customBuildPath,
+            delayCaching,
         );
     }
 
@@ -344,6 +344,13 @@ export class ClangCompiler extends BaseCompiler {
         return '<error: no llvm-dis found to disassemble bitcode>';
     }
 
+    // Created on first use: most clang instances never see nvptx device code.
+    protected get ptxDeviceParser(): PTXAsmParser {
+        if (this.asm instanceof PTXAsmParser) return this.asm;
+        this.ptxDeviceParserInstance ??= new PTXAsmParser(this.compilerProps);
+        return this.ptxDeviceParserInstance;
+    }
+
     async processDeviceAssembly(deviceName: string, deviceAsm: string, filters, compilationInfo: CompilationInfo) {
         if (deviceAsm.startsWith('BC')) {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
@@ -351,6 +358,11 @@ export class ClangCompiler extends BaseCompiler {
 
         // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
         if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
+
+        if (deviceName.includes('nvptx')) {
+            // OpenMP device names (openmp-nvptx64-nvidia-cuda) don't name the instruction set.
+            return {...(await this.ptxDeviceParser.process(deviceAsm, filters)), instructionSet: 'ptx' as const};
+        }
 
         const processed = await this.asm.process(deviceAsm, filters);
         // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the

@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 const WORKER_ERROR_VALUE = 'Event `Event` (type=error) captured as exception';
+const TIMER_MECHANISM = 'auto.browser.browserapierrors.setTimeout';
 
 // Scanner browsers (e.g. old Chromium on Windows from cloud data centres) fail to start our web workers. The
 // resulting error carries no message or stack, so there is nothing to act on.
@@ -34,4 +35,26 @@ export function isWorkerErrorNoise(event: Sentry.ErrorEvent): boolean {
         exception?.value === WORKER_ERROR_VALUE &&
         exception.mechanism?.type?.startsWith('auto.browser.browserapierrors.') === true
     );
+}
+
+// Monaco reports an internal error by rethrowing it from a timer as `new Error(message + '\n\n' + stack)`. Chrome
+// starts `stack` with the message, so the original frames are parsed along with the rethrow site. Firefox and Safari
+// don't, leaving only the rethrow site, so every Monaco error from those browsers lands in one Sentry issue.
+export function restoreRethrownFrames(event: Sentry.ErrorEvent): void {
+    const exception = event.exception?.values?.[0];
+    if (exception?.mechanism?.type !== TIMER_MECHANISM || !exception.value) return;
+    const stackStart = exception.value.indexOf('\n\n');
+    if (stackStart < 0) return;
+    const original = Sentry.defaultStackParser(exception.value.slice(stackStart + 2));
+    const throwSite = original[original.length - 1];
+    if (!throwSite) return;
+    const frames = exception.stacktrace?.frames ?? [];
+    const alreadyParsed = frames.some(
+        frame =>
+            frame.filename === throwSite.filename &&
+            frame.lineno === throwSite.lineno &&
+            frame.colno === throwSite.colno,
+    );
+    if (alreadyParsed) return;
+    exception.stacktrace = {...exception.stacktrace, frames: [...frames, ...original]};
 }

@@ -27,12 +27,7 @@ import path from 'node:path';
 import Semver from 'semver';
 
 import {splitArguments} from '../../shared/common-utils.js';
-import type {
-    ActiveTool,
-    BypassCache,
-    ExecutionParams,
-    FiledataPair,
-} from '../../types/compilation/compilation.interfaces.js';
+import type {FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -77,29 +72,9 @@ export class MicroPythonCompiler extends BaseCompiler {
         }
     }
 
-    override async compile(
-        source: string,
-        options: string[],
-        backendOptions: Record<string, any>,
-        filters: ParseFiltersAndOutputOptions,
-        bypassCache: BypassCache,
-        tools: ActiveTool[],
-        executeParameters: ExecutionParams,
-        libraries: SelectedLibraryVersion[],
-        files: FiledataPair[],
-    ) {
+    override fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         filters.binary = true;
-        return super.compile(
-            source,
-            options,
-            backendOptions,
-            filters,
-            bypassCache,
-            tools,
-            executeParameters,
-            libraries,
-            files,
-        );
+        super.fixFiltersForCompiler(filters, options, files);
     }
 
     override async runExecutable(

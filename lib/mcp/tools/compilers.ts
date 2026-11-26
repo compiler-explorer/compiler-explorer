@@ -160,6 +160,7 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
         {
             title: 'List compilers',
             readOnlyHint: true,
+            destructiveHint: false,
             openWorldHint: false,
         },
         async ({language, instructionSet, match, maxResults, lean, latestPerMajor, includeExperimental}) => {

@@ -40,7 +40,7 @@ import $ from 'jquery';
 
 import 'bootstrap';
 
-import {Dropdown, Modal, Popover, Toast} from 'bootstrap';
+import {Dropdown, Modal, Popover, Toast, Tooltip} from 'bootstrap';
 
 // Golden Layout clips each pane's content to the pane, so dropdown menus inside a pane are positioned
 // with `position: fixed` to let them extend past the pane's edges.
@@ -295,6 +295,87 @@ export function initPopoverIfExists(
     if (!element) return null;
 
     return new Popover(element, options);
+}
+
+const HTML_POPOVER_TEMPLATE =
+    '<div class="popover" role="tooltip"><div class="arrow"></div>' +
+    '<h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+
+export type HtmlPopoverContent = {
+    title?: string | Element;
+    body: string | Element;
+    className?: string;
+};
+
+const htmlPopoverContents = new WeakMap<HTMLElement, HtmlPopoverContent>();
+
+/**
+ * Set the content of an HTML popover, creating it on first use and updating it in place afterwards.
+ *
+ * Replacing a popover with dispose() + new Popover() is unsafe: if it is still fading out, Bootstrap's queued
+ * transition callback runs against the disposed instance and throws (https://github.com/twbs/bootstrap/issues/37474).
+ *
+ * @param elementOrSelector Element or selector for the popover
+ * @param content Title, body and extra CSS class for the popover
+ * @returns Popover instance or null if the element cannot be found
+ */
+export function setHtmlPopoverContent(
+    elementOrSelector: string | HTMLElement | JQuery,
+    content: HtmlPopoverContent,
+): Popover | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
+
+    htmlPopoverContents.set(element, content);
+    const existing = Popover.getInstance(element);
+    if (existing) {
+        existing.setContent();
+        return existing;
+    }
+
+    return new Popover(element, {
+        html: true,
+        title: () => htmlPopoverContents.get(element)?.title ?? '',
+        content: () => htmlPopoverContents.get(element)?.body ?? '',
+        template: HTML_POPOVER_TEMPLATE,
+        customClass: () => htmlPopoverContents.get(element)?.className ?? '',
+    });
+}
+
+const flashTooltipHideTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+
+/**
+ * Briefly show a message in a tooltip below an element, replacing any message already showing there.
+ *
+ * The tooltip is not animated: Bootstrap runs an animated tooltip's hide callback after the fade, and if the tooltip has
+ * been disposed by then (to show the next message) the callback throws (https://github.com/twbs/bootstrap/issues/37474).
+ * Reusing the tooltip instead does not work either, since showing a manual tooltip that is already visible hides it.
+ *
+ * @param elementOrSelector Element or selector to attach the tooltip to
+ * @param message Text to show
+ * @param durationMs How long the tooltip stays up
+ */
+export function flashTooltip(
+    elementOrSelector: string | HTMLElement | JQuery,
+    message: string,
+    durationMs = 1500,
+): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
+
+    clearTimeout(flashTooltipHideTimers.get(element));
+    Tooltip.getInstance(element)?.dispose();
+    const tooltip = new Tooltip(element, {
+        placement: 'bottom',
+        trigger: 'manual',
+        title: message,
+        animation: false,
+    });
+    tooltip.show();
+    flashTooltipHideTimers.set(
+        element,
+        setTimeout(() => tooltip.hide(), durationMs),
+    );
 }
 
 /**

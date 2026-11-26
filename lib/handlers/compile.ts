@@ -53,7 +53,12 @@ import {unwrapString} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildSystemDriver} from '../build-systems/index.js';
 import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
-import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
+import {
+    parseExecutionParameters,
+    parseTools,
+    parseUserArguments,
+    withDefaultFilters,
+} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
 import {logger} from '../logger.js';
@@ -473,7 +478,7 @@ export class CompileHandler implements ICompileHandler {
                 buildSystem?.getBuildPath('.'),
             );
             if (filenameError) throw new Error(filenameError);
-            filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
+            filters = {...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
         } else if (body?.compiler) {
@@ -534,6 +539,18 @@ export class CompileHandler implements ICompileHandler {
             executeParameters,
             libraries,
         };
+    }
+
+    private logCompileRequest(req: express.Request, compiler: BaseCompiler, buildSystem?: BuildSystemDriver) {
+        if (!this.compilerEnv.logCompilationCacheAccesses) return;
+        const {source, files, ...rest} = typeof req.body === 'object' ? req.body : {};
+        const fileSummary = Array.isArray(files) ? files.map((f: FiledataPair) => f.filename) : [];
+        logger.info(
+            `Compile request ${compiler.getInfo().id} build=${buildSystem?.id ?? 'none'} type=${req.get('content-type')}` +
+                ` query=${JSON.stringify(req.query)}` +
+                ` sourceLength=${(source ?? (typeof req.body === 'string' ? req.body : '')).length}` +
+                ` files=${JSON.stringify(fileSummary)} body=${JSON.stringify(rest)}`,
+        );
     }
 
     parseRequest(req: express.Request, compiler: BaseCompiler, buildSystem?: BuildSystemDriver): ParsedRequest {
@@ -636,6 +653,8 @@ export class CompileHandler implements ICompileHandler {
             return;
         }
 
+        this.logCompileRequest(req, compiler, buildSystem);
+
         try {
             if (req.body.files === undefined) throw new Error('Missing files property');
 
@@ -644,7 +663,7 @@ export class CompileHandler implements ICompileHandler {
             const parsedRequest = this.parseRequest(req, compiler, buildSystem);
             this.compilerEnv.statsNoter.noteCompilation(
                 compiler.getInfo().id,
-                parsedRequest,
+                withDefaultFilters(parsedRequest, compiler),
                 req.body.files as FiledataPair[],
                 buildSystem.id,
             );
@@ -689,6 +708,8 @@ export class CompileHandler implements ICompileHandler {
             return;
         }
 
+        this.logCompileRequest(req, compiler);
+
         let parsedRequest: ParsedRequest | undefined;
         try {
             parsedRequest = this.parseRequest(req, compiler);
@@ -719,77 +740,74 @@ export class CompileHandler implements ICompileHandler {
         this.compileCounter.inc({language: compiler.lang.id});
         this.compilerEnv.statsNoter.noteCompilation(
             compiler.getInfo().id,
-            parsedRequest,
+            withDefaultFilters(parsedRequest, compiler),
             files as FiledataPair[],
             KnownBuildMethod.Compile,
         );
 
         compiler
             .compile(source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries, files)
-            .then(
-                result => {
-                    if (result.didExecute || result.execResult?.didExecute)
-                        this.executeCounter.inc({language: compiler.lang.id});
-                    if (req.accepts(['text', 'json']) === 'json') {
-                        delete result.s3Key; // Remove s3Key before sending to user
-                        res.send(result);
-                    } else {
-                        res.set('Content-Type', 'text/plain');
-                        try {
-                            if (!_.isEmpty(this.textBanner)) res.write('# ' + this.textBanner + '\n');
-                            res.write(textify(result.asm, backendOptions.filterAnsi));
-                            if (result.code !== 0) res.write('\n# Compiler exited with result code ' + result.code);
-                            if (!_.isEmpty(result.stdout))
-                                res.write('\nStandard out:\n' + textify(result.stdout, backendOptions.filterAnsi));
-                            if (!_.isEmpty(result.stderr))
-                                res.write('\nStandard error:\n' + textify(result.stderr, backendOptions.filterAnsi));
+            .then(result => {
+                if (result.didExecute || result.execResult?.didExecute)
+                    this.executeCounter.inc({language: compiler.lang.id});
+                if (req.accepts(['text', 'json']) === 'json') {
+                    delete result.s3Key; // Remove s3Key before sending to user
+                    res.send(result);
+                } else {
+                    res.set('Content-Type', 'text/plain');
+                    try {
+                        if (!_.isEmpty(this.textBanner)) res.write('# ' + this.textBanner + '\n');
+                        res.write(textify(result.asm, backendOptions.filterAnsi));
+                        if (result.code !== 0) res.write('\n# Compiler exited with result code ' + result.code);
+                        if (!_.isEmpty(result.stdout))
+                            res.write('\nStandard out:\n' + textify(result.stdout, backendOptions.filterAnsi));
+                        if (!_.isEmpty(result.stderr))
+                            res.write('\nStandard error:\n' + textify(result.stderr, backendOptions.filterAnsi));
 
-                            if (result.execResult) {
-                                res.write('\n\n# Execution result with exit code ' + result.execResult.code + '\n');
-                                if (!_.isEmpty(result.execResult.stdout)) {
-                                    res.write(
-                                        '# Standard out:\n' +
-                                            textify(result.execResult.stdout, backendOptions.filterAnsi),
-                                    );
-                                }
-                                if (!_.isEmpty(result.execResult.stderr)) {
-                                    res.write(
-                                        '\n# Standard error:\n' +
-                                            textify(result.execResult.stderr, backendOptions.filterAnsi),
-                                    );
-                                }
+                        if (result.execResult) {
+                            res.write('\n\n# Execution result with exit code ' + result.execResult.code + '\n');
+                            if (!_.isEmpty(result.execResult.stdout)) {
+                                res.write(
+                                    '# Standard out:\n' + textify(result.execResult.stdout, backendOptions.filterAnsi),
+                                );
                             }
-                        } catch (ex) {
-                            SentryCapture(ex, 'lib/handlers/compile.ts res.write');
-                            res.write(`Error handling request: ${ex}`);
+                            if (!_.isEmpty(result.execResult.stderr)) {
+                                res.write(
+                                    '\n# Standard error:\n' +
+                                        textify(result.execResult.stderr, backendOptions.filterAnsi),
+                                );
+                            }
                         }
-                        res.end('\n');
+                    } catch (ex) {
+                        SentryCapture(ex, 'lib/handlers/compile.ts res.write');
+                        res.write(`Error handling request: ${ex}`);
                     }
-                },
-                error => {
-                    if (typeof error === 'string') {
-                        logger.error('Error during compilation 1: ', {error});
+                    res.end('\n');
+                }
+            })
+            .catch(error => {
+                if (typeof error === 'string') {
+                    logger.error('Error during compilation 1: ', {error});
+                } else {
+                    if (error.stack) {
+                        logger.error('Error during compilation 2: ', error);
+                        SentryCapture(error, 'compile failed');
+                    } else if (error.code) {
+                        logger.error('Error during compilation 3: ', error.code);
+                        if (typeof error.stderr === 'string') {
+                            error.stdout = utils.parseOutput(error.stdout);
+                            error.stderr = utils.parseOutput(error.stderr);
+                        }
+                        res.end(JSON.stringify(error));
+                        return;
                     } else {
-                        if (error.stack) {
-                            logger.error('Error during compilation 2: ', error);
-                            SentryCapture(error, 'compile failed');
-                        } else if (error.code) {
-                            logger.error('Error during compilation 3: ', error.code);
-                            if (typeof error.stderr === 'string') {
-                                error.stdout = utils.parseOutput(error.stdout);
-                                error.stderr = utils.parseOutput(error.stderr);
-                            }
-                            res.end(JSON.stringify(error));
-                            return;
-                        } else {
-                            logger.error('Error during compilation 4: ', error);
-                        }
-
-                        error = `Internal Compiler Explorer error: ${error.stack || error}`;
+                        logger.error('Error during compilation 4: ', error);
                     }
-                    res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
-                },
-            );
+
+                    error = `Internal Compiler Explorer error: ${error.stack || error}`;
+                }
+                res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
+            });
     }
 }
 

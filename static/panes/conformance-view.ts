@@ -291,10 +291,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         createDragSource(this.container.layoutManager, popCompilerButton, () => getCompilerConfig());
 
         popCompilerButton.on('click', () => {
-            const insertPoint =
-                this.hub.findParentRowOrColumn(this.container.parent) ||
-                this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(getCompilerConfig());
+            this.hub.addToParentRowOrColumn(this.container, getCompilerConfig());
         });
 
         this.selectorList.append(newSelector);

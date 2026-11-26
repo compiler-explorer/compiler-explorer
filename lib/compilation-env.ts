@@ -61,6 +61,8 @@ export class CompilationEnvironment {
     possibleToolchains?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
+    readonly logCompilationCacheAccesses: boolean;
+    private readonly loggedCompilerInfoHashes = new Set<string>();
     private cachingInProgress: Record<string, boolean>;
     private findCompilerFunc?: FindCompiler;
 
@@ -114,6 +116,7 @@ export class CompilationEnvironment {
             this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
         this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
+        this.logCompilationCacheAccesses = this.ceProps('logCompilationCacheAccesses', false);
         this.statsNoter = createStatsNoter(this.ceProps);
     }
 
@@ -135,10 +138,39 @@ export class CompilationEnvironment {
         return this.possibleToolchains || [];
     }
 
+    // Each part of the key is hashed separately so that two keys which ought to match can be compared part by part in
+    // the log, without dumping the full CompilerInfo or source every time.
+    private describeCacheKey(object: CacheableValue): string {
+        if (typeof object === 'string') return `string(${object.length})`;
+        if (object === null || typeof object !== 'object') return JSON.stringify(object);
+        const parts: Record<string, unknown> = {};
+        for (const [name, value] of Object.entries(object as Record<string, unknown>)) {
+            if (name === 'compiler' && value && typeof value === 'object') {
+                const compilerHash = BaseCache.hash(value as any);
+                parts.compiler = `${(value as any).id} ${compilerHash}`;
+                if (!this.loggedCompilerInfoHashes.has(compilerHash)) {
+                    this.loggedCompilerInfoHashes.add(compilerHash);
+                    logger.info(`Compilation cache key compiler ${compilerHash} ${JSON.stringify(value)}`);
+                }
+            } else if (name === 'source' || name === 'files') {
+                parts[name] = BaseCache.hash(JSON.stringify(value ?? null));
+            } else {
+                parts[name] = value;
+            }
+        }
+        return JSON.stringify(parts);
+    }
+
     async cacheGet(object: CacheableValue) {
-        const result = await this.cache.get(BaseCache.hash(object));
+        const hash = BaseCache.hash(object);
+        const result = await this.cache.get(hash);
         if (this.cache.gets % this.reportCacheEvery === 0) {
             this.cache.report();
+        }
+        if (this.logCompilationCacheAccesses) {
+            logger.info(
+                `Compilation cache get ${hash} ${result.hit ? 'hit' : 'miss'} ${this.describeCacheKey(object)}`,
+            );
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());
@@ -146,6 +178,9 @@ export class CompilationEnvironment {
 
     async cachePut(object: CacheableValue, result: object, creator: string | undefined) {
         const key = BaseCache.hash(object);
+        if (this.logCompilationCacheAccesses) {
+            logger.info(`Compilation cache put ${key} ${this.describeCacheKey(object)}`);
+        }
         return this.cache.put(key, JSON.stringify(result), creator);
     }
 

@@ -123,6 +123,14 @@ export class NvccCompiler extends BaseCompiler {
         return result;
     }
 
+    async readPtx(ptxFilename: string, maxSize: number) {
+        const {size} = await fs.stat(ptxFilename);
+        if (size >= maxSize) {
+            return {asm: `<No output: generated PTX was too large (${size} > ${maxSize} bytes)>`};
+        }
+        return {asm: await fs.readFile(ptxFilename, 'utf8')};
+    }
+
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve([]);
@@ -239,7 +247,7 @@ export class NvccCompiler extends BaseCompiler {
                         const type = name.endsWith('.ptx') ? 'PTX' : name.endsWith('.tilebc') ? 'Tile IR' : 'SASS';
                         const {asm} =
                             type === 'PTX'
-                                ? {asm: await fs.readFile(Path.join(dirPath, name), 'utf8')}
+                                ? await this.readPtx(Path.join(dirPath, name), maxSize)
                                 : type === 'Tile IR'
                                   ? await this.tileirdisasm(Path.join(dirPath, name), {dirPath}, maxSize)
                                   : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);

@@ -43,6 +43,7 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
 import {sleep} from '../utils.js';
+import {withDefaultFilters} from './compilation-request-parser.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -515,7 +516,7 @@ async function doOneCompilation(
                 sqsProjectBuildCounter.inc({language: compiler.lang.id, build_system: buildSystem.id});
                 compilationEnvironment.statsNoter.noteCompilation(
                     compiler.getInfo().id,
-                    parsedRequest,
+                    withDefaultFilters(parsedRequest, compiler),
                     files,
                     buildSystem.id,
                 );
@@ -530,7 +531,7 @@ async function doOneCompilation(
                 sqsCompileCounter.inc({language: compiler.lang.id});
                 compilationEnvironment.statsNoter.noteCompilation(
                     compiler.getInfo().id,
-                    parsedRequest,
+                    withDefaultFilters(parsedRequest, compiler),
                     files,
                     KnownBuildMethod.Compile,
                 );

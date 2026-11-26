@@ -485,7 +485,6 @@ describe('Cargo build system', () => {
         const compiler = makeRustCompiler(env, {libPath: ['/opt/rust/lib']});
         const request = makeParsedRequest();
         const cacheKey = compiler.getBuildProjectCacheKey(cargoBuildSystem, request, []);
-        vi.spyOn(compiler, 'newTempDir').mockResolvedValue('/tmp/ce-cargo-execution');
 
         const build = await (compiler as any).prepareProjectBuild(
             cargoBuildSystem,
@@ -495,6 +494,7 @@ describe('Cargo build system', () => {
             undefined,
             cacheKey,
             'unused-package-hash',
+            '/tmp/ce-cargo-execution',
         );
 
         expect(build.executeOptions.ldPath).toContain('/opt/rust/lib');
