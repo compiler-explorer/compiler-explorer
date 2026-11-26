@@ -64,7 +64,7 @@ export class NasmCompiler extends AssemblyCompiler {
         }
 
         if (!fmode) {
-            options = ['-g', '-f', 'elf', '-F', 'stabs'].concat(options);
+            options = ['-g', '-f', 'elf64', '-F', 'stabs'].concat(options);
         }
 
         return options;

@@ -31,6 +31,7 @@ import {RouteAPI} from '../handlers/route-api.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {getHash} from '../utils.js';
 
 /**
  * Setup handling of compiler changes and periodic rescanning
@@ -51,20 +52,24 @@ export async function setupCompilerChangeHandling(
     compilerFinder: CompilerFinder,
     appArgs: AppArguments,
 ): Promise<void> {
-    let prevCompilers = '';
+    const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
+    const rescanEnabled = !!rescanCompilerSecs && !appArgs.prediscovered;
+    let prevCompilersHash: string | undefined;
 
     /**
      * Handle compiler change events
      * @param compilers - New set of compilers
      */
     async function onCompilerChange(compilers: CompilerInfo[]) {
-        const compilersAsJson = JSON.stringify(compilers);
-        if (prevCompilers === compilersAsJson) {
-            return;
+        if (rescanEnabled) {
+            const compilersHash = getHash(compilers);
+            if (prevCompilersHash === compilersHash) {
+                return;
+            }
+            prevCompilersHash = compilersHash;
         }
         logger.info(`Compiler scan count: ${compilers.length}`);
         logger.debug('Compilers:', compilers);
-        prevCompilers = compilersAsJson;
         await clientOptionsHandler.setCompilers(compilers);
         const apiHandler = unwrap(routeApi.apiHandler);
         apiHandler.setCompilers(compilers);
@@ -72,12 +77,9 @@ export async function setupCompilerChangeHandling(
         apiHandler.setOptions(clientOptionsHandler);
     }
 
-    // Set initial compilers
     await onCompilerChange(initialCompilers);
 
-    // Set up compiler rescanning if configured
-    const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
-    if (rescanCompilerSecs && !appArgs.prediscovered) {
+    if (rescanEnabled) {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
         setInterval(
             () => compilerFinder.find().then(result => onCompilerChange(result.compilers)),

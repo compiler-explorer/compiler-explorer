@@ -47,7 +47,10 @@ function debug(str: string) {
     if (propDebug) logger.info(`prop: ${str}`);
 }
 
-export type PropFunc = (s: string, a?: any) => any;
+export interface PropFunc {
+    (s: string, a?: any): any;
+    _sourceData?: Record<string, PropertyValue>;
+}
 
 export function get(base: string, property: string, defaultValue: any): PropertyValue;
 export function get<T extends PropertyValue>(
@@ -96,7 +99,7 @@ export function parseProperties(
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
-        const split = line.match(/([^=+]+)(\+?=)(.*)/);
+        const split = line.match(/(.+?)(\+?=)(.*)/);
         if (!split) {
             onError({line: index + 1, text: lineOrig.trim()}, name);
             continue;
@@ -153,6 +156,21 @@ export function reset() {
     logger.debug('Properties reset');
 }
 
+export function getKeysStartingWith(base: string, prefix: string): string[] {
+    const keys = new Set<string>();
+    for (const elem of hierarchy) {
+        const propertyMap = findProps(base, elem);
+        if (propertyMap) {
+            for (const key of Object.keys(propertyMap)) {
+                if (key.startsWith(prefix)) {
+                    keys.add(key);
+                }
+            }
+        }
+    }
+    return [...keys];
+}
+
 export function propsFor(base: string): PropertyGetter {
     return (property: string, defaultValue: any) => get(base, property, defaultValue);
 }
@@ -186,6 +204,19 @@ export class CompilerProps {
 
         // Instantiate a function to access records concerning the chosen language in hidden object props.properties
         _.each(this.languages, lang => (this.propsByLangId[lang.id] = propsFor(lang.id)));
+    }
+
+    getKeysStartingWith(langId: string, prefix: string): string[] {
+        const keys = new Set<string>(getKeysStartingWith(langId, prefix));
+        const sourceData = (this.ceProps as PropFunc)._sourceData;
+        if (sourceData) {
+            for (const key of Object.keys(sourceData)) {
+                if (key.startsWith(prefix)) {
+                    keys.add(key);
+                }
+            }
+        }
+        return [...keys];
     }
 
     $getInternal(base: string, property: string, defaultValue: undefined): PropertyValue;
@@ -312,7 +343,9 @@ export function setDebug(debug: boolean) {
 }
 
 export function fakeProps(fake: Record<string, PropertyValue>): PropFunc {
-    return (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
+    const fn: PropFunc = (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
+    fn._sourceData = fake;
+    return fn;
 }
 
 export function getRawProperties() {

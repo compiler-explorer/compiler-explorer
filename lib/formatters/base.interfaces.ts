@@ -26,6 +26,7 @@ export interface FormatterInfo {
     name: string;
     exe: string;
     styles: string[];
+    styleFiles: Record<string, string>;
     type: string;
     version: string;
     explicitVersion?: string;

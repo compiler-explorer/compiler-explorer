@@ -1,6 +1,30 @@
+// Copyright (c) 2023, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import {serialiseState} from '../../shared/url-serialization.js';
 import {setupFakeCompiler} from '../support/fake-compile';
-import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
+import {assertNoConsoleOutput, setupAndWaitForCompilation, stubConsoleOutput} from '../support/utils';
 
 const PANE_DATA_MAP = {
     codeEditor: {name: 'Editor', selector: 'new-editor'},
@@ -38,6 +62,8 @@ describe('Individual pane testing', () => {
                 stubConsoleOutput(win);
             },
         });
+
+        setupAndWaitForCompilation();
 
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
         // Shows every pane button even if the compiler does not support it
@@ -200,5 +226,30 @@ describe('Known good state test', () => {
             const pane = PANE_DATA_MAP[paneId];
             cy.get('span.lm_title:visible').contains(pane.name);
         }
+    });
+});
+
+describe('Unloadable state test', () => {
+    beforeEach(() => {
+        const state = {
+            version: 4,
+            content: [
+                {
+                    type: 'row',
+                    content: [{type: 'component', componentName: 'editor', componentState: {id: 1, lang: 'c++'}}],
+                },
+            ],
+        };
+        cy.visit(`/#${serialiseState(state)}`, {
+            onBeforeLoad: win => {
+                stubConsoleOutput(win);
+            },
+        });
+    });
+
+    it('Falls back to the default layout when the state names an unknown component', () => {
+        cy.get('@consoleLog').should('be.calledWithMatch', 'resetting layout to default');
+        cy.get('span.lm_title:visible').contains('source');
+        cy.get('span.lm_title:visible').contains('Editor #1');
     });
 });

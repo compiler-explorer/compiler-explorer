@@ -25,7 +25,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
@@ -107,6 +107,35 @@ export class BeebAsmCompiler extends BaseCompiler {
         result.forceBinaryView = true;
 
         return result;
+    }
+
+    override async afterCmakeCompilation(
+        ...args: Parameters<BaseCompiler['afterCmakeCompilation']>
+    ): ReturnType<BaseCompiler['afterCmakeCompilation']> {
+        const fullResult = await super.afterCmakeCompilation(...args);
+        const customBuildPath = args[11];
+
+        if (fullResult.result && fullResult.result.code === 0 && customBuildPath) {
+            await this.scanForSsdArtifacts(fullResult.result, customBuildPath);
+        }
+
+        return fullResult;
+    }
+
+    private async scanForSsdArtifacts(result: CompilationResult, buildDir: string) {
+        try {
+            const files = await fs.readdir(buildDir, {recursive: true});
+            for (const file of files) {
+                if (typeof file === 'string' && file.endsWith('.ssd')) {
+                    const fullPath = path.join(buildDir, file);
+                    if (await utils.fileExists(fullPath)) {
+                        await addArtifactToResult(result, fullPath, ArtifactType.bbcdiskimage);
+                    }
+                }
+            }
+        } catch {
+            // Build directory may not exist if compilation failed
+        }
     }
 
     override isCfgCompiler(): boolean {

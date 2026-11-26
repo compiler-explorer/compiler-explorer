@@ -1,0 +1,13 @@
+Module(
+  body=[
+    FunctionDef(
+      name='square',
+      args=arguments(
+        args=[
+          arg(arg='num')]),
+      body=[
+        Return(
+          value=BinOp(
+            left=Name(id='num', ctx=Load()),
+            op=Mult(),
+            right=Name(id='num', ctx=Load())))])])

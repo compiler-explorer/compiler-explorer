@@ -12,7 +12,7 @@ The "IDE Mode", also known as the "Tree View" allows you to work with multiple f
     - **Include/exclude files from the build:** Choose which files to include in a compilation.
 - **Project Management:**
     - **Save and Load:** Save your entire project, including all files and settings, as a `.zip` archive. You can later load this `.zip` file to restore your project.
-    - **CMake Support:** The Tree View supports CMake projects. You can enable CMake mode and provide custom arguments for your build. Note that you will need a file called `CMakeLists.txt` in your project for this to work. CMake mode is only available when the selected language is C, C++, Fortran, or CUDA.
+    - **CMake Support:** The Tree View supports CMake projects. You can enable CMake mode and provide custom arguments for your build. Note that you will need a file called `CMakeLists.txt` in your project for this to work. CMake mode is only available when the selected language is C, C++, Fortran, CUDA, or Assembly.
 - **Drag and Drop:** You can drag and drop files from your computer directly into the Tree View to add them to your project.
 - **Language Support:** The Tree View is language-aware and allows you to select the primary language for your project.
 

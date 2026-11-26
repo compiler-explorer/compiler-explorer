@@ -150,27 +150,17 @@ function deepMerge(target: Record<string, any>, source: Record<string, any>) {
  * Default: echoes source as asm, with options and filters shown as comments.
  */
 export function setupFakeCompiler() {
-    // Patch compiler capabilities in the client options
-    cy.intercept('GET', '**/client-options.js*', req => {
+    // Patch compiler capabilities. The client fetches each language's compilers lazily from
+    // /api/compilers/<lang> (it used to read them from client-options.js).
+    cy.intercept('GET', '**/api/compilers/*', req => {
         req.continue(res => {
-            const body = String(res.body);
-            try {
-                const jsonStart = body.indexOf('{');
-                const jsonEnd = body.lastIndexOf('}');
-                if (jsonStart >= 0 && jsonEnd > jsonStart) {
-                    const opts = JSON.parse(body.substring(jsonStart, jsonEnd + 1));
-                    if (opts.compilers) {
-                        for (const compiler of opts.compilers) {
-                            Object.assign(compiler, FAKE_CAPABILITIES);
-                        }
-                    }
-                    res.body = `window.compilerExplorerOptions = ${JSON.stringify(opts)};`;
+            if (Array.isArray(res.body)) {
+                for (const compiler of res.body) {
+                    Object.assign(compiler, FAKE_CAPABILITIES);
                 }
-            } catch {
-                // If parsing fails, let it through unmodified
             }
         });
-    }).as('clientOptions');
+    }).as('compilers');
 
     // Default compile handler — echo source as asm
     cy.intercept('POST', '/api/compiler/*/compile', req => {

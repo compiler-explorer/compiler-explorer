@@ -26,7 +26,7 @@ import fs from 'node:fs';
 
 import {describe, expect, it} from 'vitest';
 
-import {ClientState} from '../lib/clientstate.js';
+import {ClientState, ClientStateCompilerOptions} from '../lib/clientstate.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer.js';
 
 describe('Normalizing clientstate', () => {
@@ -117,6 +117,47 @@ describe('Normalizing clientstate', () => {
 
         expect(normalized).toEqual(resultdata);
     });
+
+    it('Should keep default filters for a compiler without filters', () => {
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout({
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        {
+                            type: 'stack',
+                            content: [
+                                {
+                                    type: 'component',
+                                    componentName: 'codeEditor',
+                                    componentState: {id: 1, lang: 'c++', source: 'int main() {}'},
+                                    isClosable: true,
+                                    reorderEnabled: true,
+                                },
+                            ],
+                        },
+                        {
+                            type: 'stack',
+                            content: [
+                                {
+                                    type: 'component',
+                                    componentName: 'compiler',
+                                    componentState: {lang: 'c++', source: 1},
+                                    isClosable: true,
+                                    reorderEnabled: true,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        const compilers = normalizer.normalized.sessions[0].compilers;
+        expect(compilers.length).toEqual(1);
+        expect(compilers[0].filters).toEqual(new ClientStateCompilerOptions());
+    });
 });
 
 describe('ClientState parsing', () => {
@@ -150,6 +191,15 @@ describe('ClientState parsing', () => {
 
         expect(state.sessions[0].compilers.length).toEqual(0);
         expect(state.sessions[0].executors.length).toEqual(1);
+    });
+
+    it('Should work without a compilers key', () => {
+        const state = new ClientState({
+            sessions: [{id: 1, language: 'c++', source: 'int main() {}'}],
+        });
+
+        expect(state.sessions[0].compilers.length).toEqual(0);
+        expect(state.sessions[0].source).toEqual('int main() {}');
     });
 
     it('Should not contain id-less compilers', () => {
@@ -204,6 +254,79 @@ describe('Trees', () => {
         expect(normalized).toEqual(resultdata);
     });
 
+    // A stack may only hold components; anything else renders as a blank, untitled tab.
+    function expectNoNestedStacks(golden: any) {
+        const check = (item: any) => {
+            if (item.type === 'stack') {
+                for (const child of item.content ?? []) {
+                    expect(child.type).toEqual('component');
+                }
+            }
+            for (const child of item.content ?? []) check(child);
+        };
+        check({content: golden.content});
+    }
+
+    function componentNamesOf(golden: any): string[] {
+        const names: string[] = [];
+        const collect = (item: any) => {
+            if (item.componentName) names.push(item.componentName);
+            for (const child of item.content ?? []) collect(child);
+        };
+        collect({content: golden.content});
+        return names;
+    }
+
+    // https://godbolt.org/z/59q8GYa5z: a CMake tree whose only pane is an executor, with no
+    // editor-attached compilers or executors either. The right hand pane came out empty.
+    function goldenifyExecutorOnlyTree(mutate?: (state: ClientState) => void) {
+        const jsonStr = fs.readFileSync('test/state/tree-executor-only.json', {encoding: 'utf8'});
+        const state = new ClientState(JSON.parse(jsonStr));
+        expect(state.trees.length).toEqual(1);
+        mutate?.(state);
+
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+
+        const golden = JSON.parse(JSON.stringify(gl.golden));
+        expectNoNestedStacks(golden);
+        return golden;
+    }
+
+    it('ClientState to GL with only a tree executor', () => {
+        const golden = goldenifyExecutorOnlyTree(state => {
+            expect(state.trees[0].compilers.length).toEqual(0);
+            expect(state.trees[0].executors.length).toEqual(1);
+        });
+
+        expect(componentNamesOf(golden)).toContain('executor');
+    });
+
+    it('ClientState to GL with only a tree compiler', () => {
+        const treeJson = fs.readFileSync('test/state/tree.json', {encoding: 'utf8'});
+        const treeCompiler = new ClientState(JSON.parse(treeJson)).trees[0].compilers[0];
+
+        const golden = goldenifyExecutorOnlyTree(state => {
+            state.trees[0].compilers = [treeCompiler];
+            state.trees[0].executors = [];
+        });
+
+        const names = componentNamesOf(golden);
+        expect(names).toContain('compiler');
+        expect(names).not.toContain('executor');
+    });
+
+    it('ClientState to GL with neither tree compilers nor executors', () => {
+        const golden = goldenifyExecutorOnlyTree(state => {
+            state.trees[0].compilers = [];
+            state.trees[0].executors = [];
+        });
+
+        // Nothing to show on the right, so no empty pane should be reserved for it.
+        expect(componentNamesOf(golden)).toEqual(['tree', 'codeEditor', 'codeEditor', 'codeEditor']);
+        expect(golden.content[0].content.length).toEqual(2);
+    });
+
     it('ClientState to Mobile GL', () => {
         const jsonStr = fs.readFileSync('test/state/tree-mobile.json', {encoding: 'utf8'});
         const state = new ClientState(JSON.parse(jsonStr));
@@ -247,5 +370,48 @@ describe('overrides-and-runtimeTools', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/libsegfault.normalized.json', {encoding: 'utf8'}));
         expect(normalized).toEqual(resultdata);
+    });
+});
+
+describe('executor overrides', () => {
+    function findExecutorStates(item: any): any[] {
+        if (item.type === 'component' && item.componentName === 'executor') return [item.componentState];
+        return (item.content || []).flatMap(findExecutorStates);
+    }
+
+    function goldenify(state: ClientState) {
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+        return JSON.parse(JSON.stringify(gl.golden));
+    }
+
+    it('Should keep overrides set on a ClientState executor', () => {
+        const overrides = [{name: 'arch', value: 'aarch64'}];
+        const state = new ClientState({
+            sessions: [
+                {
+                    id: 1,
+                    language: 'c++',
+                    source: 'int main() {}',
+                    compilers: [],
+                    executors: [{compiler: {id: 'g91', options: ''}, overrides}],
+                },
+            ],
+        });
+
+        expect(state.sessions[0].executors[0].overrides).toEqual(overrides);
+        expect(findExecutorStates(goldenify(state)).map(executor => executor.overrides)).toEqual([overrides]);
+    });
+
+    it('Should keep executor overrides through a layout to ClientState to layout round trip', () => {
+        const golden = JSON.parse(fs.readFileSync('test/state/libsegfault.json', {encoding: 'utf8'}));
+        const originalOverrides = findExecutorStates(golden).map(executor => executor.overrides);
+        expect(originalOverrides).toEqual([[{name: 'stdver', value: 'c++2b'}]]);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(golden);
+        const state = new ClientState(JSON.parse(JSON.stringify(normalizer.normalized)));
+
+        expect(findExecutorStates(goldenify(state)).map(executor => executor.overrides)).toEqual(originalOverrides);
     });
 });

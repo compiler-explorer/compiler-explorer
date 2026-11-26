@@ -1,0 +1,956 @@
+{
+    "id": "g161",
+    "exe": "/opt/compiler-explorer/gcc-16.1.0/bin/g++",
+    "name": "x86-64 gcc 16.1",
+    "alias": [],
+    "options": "-fdiagnostics-color=always",
+    "compilerType": "",
+    "compilerCategories": [
+        "gcc"
+    ],
+    "debugPatched": false,
+    "demangler": "/opt/compiler-explorer/clang-trunk/bin/llvm-cxxfilt",
+    "demanglerType": "cpp",
+    "demanglerArgs": [],
+    "nvdisasm": "",
+    "tileirdisasm": "",
+    "ptxas": "",
+    "objdumper": "/opt/compiler-explorer/gcc-14.2.0/bin/objdump",
+    "objdumperType": "default",
+    "objdumperArgs": [],
+    "llvmDisassembler": "/opt/compiler-explorer/clang-19.1.0/bin/llvm-dis",
+    "llvmObjdumper": "",
+    "intelAsm": "-masm=intel",
+    "supportsAsmDocs": true,
+    "instructionSet": "amd64",
+    "needsMulti": false,
+    "adarts": "",
+    "supportsDemangle": true,
+    "supportsBinary": true,
+    "supportsBinaryObject": true,
+    "emulated": false,
+    "interpreted": false,
+    "supportsExecute": true,
+    "executionWrapper": "",
+    "executionWrapperArgs": [],
+    "supportsLibraryCodeFilter": true,
+    "postProcess": [],
+    "lang": "c++",
+    "group": "gcc86",
+    "groupName": "GCC x86-64",
+    "includeFlag": "-isystem",
+    "includePath": "",
+    "linkFlag": "-l",
+    "rpathFlag": "-Wl,-rpath,",
+    "libpathFlag": "-L",
+    "libPath": [],
+    "ldPath": [
+        "/opt/compiler-explorer/gcc-16.1.0/lib",
+        "/opt/compiler-explorer/gcc-16.1.0/lib32",
+        "/opt/compiler-explorer/gcc-16.1.0/lib64"
+    ],
+    "extraPath": [],
+    "envVars": [],
+    "notification": "",
+    "isSemVer": true,
+    "semver": "16.1",
+    "isNightly": false,
+    "releaseTrack": "stable",
+    "libsArr": [],
+    "tools": {
+        "PVS-Studio": {
+            "tool": {
+                "id": "PVS-Studio",
+                "name": "PVS-Studio",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/pvs-studio-latest/bin/pvs-studio-analyzer",
+                "exclude": [
+                    "cl19",
+                    "cl19_2015_u3",
+                    "cl_new",
+                    "icc",
+                    "rvclang",
+                    "wasmclang",
+                    "cross",
+                    "ellcc",
+                    "zapcc",
+                    "djggp",
+                    "armclang32",
+                    "armclang64"
+                ],
+                "includeKey": "supportsPVS-Studio",
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "PVS-Studio",
+            "type": "postcompilation",
+            "sandboxType": "nsjail",
+            "plogConverterPath": "/opt/compiler-explorer/pvs-studio-latest/bin/plog-converter"
+        },
+        "clangformattrunk": {
+            "tool": {
+                "id": "clangformattrunk",
+                "name": "clang-format",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/clang-format",
+                "exclude": [],
+                "options": [],
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "clangformattrunk",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "clangquerytrunk": {
+            "tool": {
+                "id": "clangquerytrunk",
+                "name": "clang-query (trunk)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/clang-query",
+                "exclude": [],
+                "options": [],
+                "stdinHint": "Query commands",
+                "monacoStdin": true,
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "clangquerytrunk",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "clangtidytrunk": {
+            "tool": {
+                "id": "clangtidytrunk",
+                "name": "clang-tidy (trunk)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/clang-tidy",
+                "exclude": [
+                    "cl19",
+                    "cl_new"
+                ],
+                "options": [
+                    "--gcc-toolchain=/opt/compiler-explorer/gcc-snapshot"
+                ],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "clangtidytrunk",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "iwyu": {
+            "tool": {
+                "id": "iwyu",
+                "name": "include-what-you-use (0.12)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/iwyu/0.12/bin/include-what-you-use",
+                "exclude": [],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "iwyu",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "iwyu022": {
+            "tool": {
+                "id": "iwyu022",
+                "name": "include-what-you-use (0.22)",
+                "type": "independent",
+                "exe": "/opt/compiler-explorer/iwyu/0.22/bin/include-what-you-use",
+                "exclude": [],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": false,
+            "id": "iwyu022",
+            "type": "independent",
+            "sandboxType": "nsjail"
+        },
+        "ldd": {
+            "tool": {
+                "id": "ldd",
+                "name": "ldd",
+                "type": "postcompilation",
+                "exe": "/usr/bin/ldd",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "ldd",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "llvm-mcatrunk": {
+            "tool": {
+                "id": "llvm-mcatrunk",
+                "name": "llvm-mca (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/llvm-mca",
+                "exclude": [
+                    "avr",
+                    "rv32",
+                    "armv7",
+                    "mips",
+                    "msp",
+                    "ppc",
+                    "cl19",
+                    "cl_new",
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "llvm-mcatrunk",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "readelf": {
+            "tool": {
+                "id": "readelf",
+                "name": "readelf (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/gcc-snapshot/bin/readelf",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "readelf",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "nm": {
+            "tool": {
+                "id": "nm",
+                "name": "nm (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/gcc-snapshot/bin/nm",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "nm",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "strings": {
+            "tool": {
+                "id": "strings",
+                "name": "strings",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/gcc-snapshot/bin/strings",
+                "exclude": [
+                    "djggp"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "strings",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        },
+        "llvmdwarfdumptrunk": {
+            "tool": {
+                "id": "llvmdwarfdumptrunk",
+                "name": "llvm-dwarfdump (trunk)",
+                "type": "postcompilation",
+                "exe": "/opt/compiler-explorer/clang-trunk/bin/llvm-dwarfdump",
+                "exclude": [
+                    "cl19",
+                    "cl_new"
+                ],
+                "options": [],
+                "stdinHint": "disabled",
+                "compilerLanguage": "c++"
+            },
+            "env": {},
+            "addOptionsToToolArgs": true,
+            "id": "llvmdwarfdumptrunk",
+            "type": "postcompilation",
+            "sandboxType": "nsjail"
+        }
+    },
+    "unwiseOptions": [
+        "-march=native"
+    ],
+    "hidden": false,
+    "skipExeCheck": false,
+    "buildenvsetup": {
+        "id": "ceconan"
+    },
+    "externalparser": {
+        "id": "CEAsmParser",
+        "exe": "/usr/local/bin/asm-parser",
+        "args": ""
+    },
+    "license": {
+        "link": "https://gcc.gnu.org/onlinedocs/gcc/Copying.html",
+        "name": "GNU General Public License",
+        "preamble": "Copyright (c) 2007 Free Software Foundation, Inc. <a href=\"https://fsf.org/\" target=\"_blank\">https://fsf.org/</a>",
+        "invasive": false
+    },
+    "possibleOverrides": [
+        {
+            "type": "options",
+            "name": "arch",
+            "display_title": "Target architecture",
+            "description": "Change the target architecture of the compiler. Be aware that the architecture might not be fully supported by the compiler even though the option is available. The compiler might also require additional arguments to be fully functional.",
+            "flags": [
+                "-march=<value>"
+            ],
+            "values": [
+                {
+                    "name": "i386",
+                    "value": "i386"
+                },
+                {
+                    "name": "i486",
+                    "value": "i486"
+                },
+                {
+                    "name": "i586",
+                    "value": "i586"
+                },
+                {
+                    "name": "pentium",
+                    "value": "pentium"
+                },
+                {
+                    "name": "lakemont",
+                    "value": "lakemont"
+                },
+                {
+                    "name": "pentium-mmx",
+                    "value": "pentium-mmx"
+                },
+                {
+                    "name": "winchip-c6",
+                    "value": "winchip-c6"
+                },
+                {
+                    "name": "winchip2",
+                    "value": "winchip2"
+                },
+                {
+                    "name": "c3",
+                    "value": "c3"
+                },
+                {
+                    "name": "samuel-2",
+                    "value": "samuel-2"
+                },
+                {
+                    "name": "c3-2",
+                    "value": "c3-2"
+                },
+                {
+                    "name": "nehemiah",
+                    "value": "nehemiah"
+                },
+                {
+                    "name": "c7",
+                    "value": "c7"
+                },
+                {
+                    "name": "esther",
+                    "value": "esther"
+                },
+                {
+                    "name": "i686",
+                    "value": "i686"
+                },
+                {
+                    "name": "pentiumpro",
+                    "value": "pentiumpro"
+                },
+                {
+                    "name": "pentium2",
+                    "value": "pentium2"
+                },
+                {
+                    "name": "pentium3",
+                    "value": "pentium3"
+                },
+                {
+                    "name": "pentium3m",
+                    "value": "pentium3m"
+                },
+                {
+                    "name": "pentium-m",
+                    "value": "pentium-m"
+                },
+                {
+                    "name": "pentium4",
+                    "value": "pentium4"
+                },
+                {
+                    "name": "pentium4m",
+                    "value": "pentium4m"
+                },
+                {
+                    "name": "prescott",
+                    "value": "prescott"
+                },
+                {
+                    "name": "nocona",
+                    "value": "nocona"
+                },
+                {
+                    "name": "core2",
+                    "value": "core2"
+                },
+                {
+                    "name": "nehalem",
+                    "value": "nehalem"
+                },
+                {
+                    "name": "corei7",
+                    "value": "corei7"
+                },
+                {
+                    "name": "westmere",
+                    "value": "westmere"
+                },
+                {
+                    "name": "sandybridge",
+                    "value": "sandybridge"
+                },
+                {
+                    "name": "corei7-avx",
+                    "value": "corei7-avx"
+                },
+                {
+                    "name": "ivybridge",
+                    "value": "ivybridge"
+                },
+                {
+                    "name": "core-avx-i",
+                    "value": "core-avx-i"
+                },
+                {
+                    "name": "haswell",
+                    "value": "haswell"
+                },
+                {
+                    "name": "core-avx2",
+                    "value": "core-avx2"
+                },
+                {
+                    "name": "broadwell",
+                    "value": "broadwell"
+                },
+                {
+                    "name": "skylake",
+                    "value": "skylake"
+                },
+                {
+                    "name": "skylake-avx512",
+                    "value": "skylake-avx512"
+                },
+                {
+                    "name": "cannonlake",
+                    "value": "cannonlake"
+                },
+                {
+                    "name": "icelake-client",
+                    "value": "icelake-client"
+                },
+                {
+                    "name": "rocketlake",
+                    "value": "rocketlake"
+                },
+                {
+                    "name": "icelake-server",
+                    "value": "icelake-server"
+                },
+                {
+                    "name": "cascadelake",
+                    "value": "cascadelake"
+                },
+                {
+                    "name": "tigerlake",
+                    "value": "tigerlake"
+                },
+                {
+                    "name": "cooperlake",
+                    "value": "cooperlake"
+                },
+                {
+                    "name": "sapphirerapids",
+                    "value": "sapphirerapids"
+                },
+                {
+                    "name": "emeraldrapids",
+                    "value": "emeraldrapids"
+                },
+                {
+                    "name": "alderlake",
+                    "value": "alderlake"
+                },
+                {
+                    "name": "raptorlake",
+                    "value": "raptorlake"
+                },
+                {
+                    "name": "meteorlake",
+                    "value": "meteorlake"
+                },
+                {
+                    "name": "graniterapids",
+                    "value": "graniterapids"
+                },
+                {
+                    "name": "graniterapids-d",
+                    "value": "graniterapids-d"
+                },
+                {
+                    "name": "arrowlake",
+                    "value": "arrowlake"
+                },
+                {
+                    "name": "arrowlake-s",
+                    "value": "arrowlake-s"
+                },
+                {
+                    "name": "lunarlake",
+                    "value": "lunarlake"
+                },
+                {
+                    "name": "pantherlake",
+                    "value": "pantherlake"
+                },
+                {
+                    "name": "diamondrapids",
+                    "value": "diamondrapids"
+                },
+                {
+                    "name": "wildcatlake",
+                    "value": "wildcatlake"
+                },
+                {
+                    "name": "novalake",
+                    "value": "novalake"
+                },
+                {
+                    "name": "bonnell",
+                    "value": "bonnell"
+                },
+                {
+                    "name": "atom",
+                    "value": "atom"
+                },
+                {
+                    "name": "silvermont",
+                    "value": "silvermont"
+                },
+                {
+                    "name": "slm",
+                    "value": "slm"
+                },
+                {
+                    "name": "goldmont",
+                    "value": "goldmont"
+                },
+                {
+                    "name": "goldmont-plus",
+                    "value": "goldmont-plus"
+                },
+                {
+                    "name": "tremont",
+                    "value": "tremont"
+                },
+                {
+                    "name": "gracemont",
+                    "value": "gracemont"
+                },
+                {
+                    "name": "sierraforest",
+                    "value": "sierraforest"
+                },
+                {
+                    "name": "grandridge",
+                    "value": "grandridge"
+                },
+                {
+                    "name": "clearwaterforest",
+                    "value": "clearwaterforest"
+                },
+                {
+                    "name": "intel",
+                    "value": "intel"
+                },
+                {
+                    "name": "geode",
+                    "value": "geode"
+                },
+                {
+                    "name": "k6",
+                    "value": "k6"
+                },
+                {
+                    "name": "k6-2",
+                    "value": "k6-2"
+                },
+                {
+                    "name": "k6-3",
+                    "value": "k6-3"
+                },
+                {
+                    "name": "athlon",
+                    "value": "athlon"
+                },
+                {
+                    "name": "athlon-tbird",
+                    "value": "athlon-tbird"
+                },
+                {
+                    "name": "athlon-4",
+                    "value": "athlon-4"
+                },
+                {
+                    "name": "athlon-xp",
+                    "value": "athlon-xp"
+                },
+                {
+                    "name": "athlon-mp",
+                    "value": "athlon-mp"
+                },
+                {
+                    "name": "x86-64",
+                    "value": "x86-64"
+                },
+                {
+                    "name": "x86-64-v2",
+                    "value": "x86-64-v2"
+                },
+                {
+                    "name": "x86-64-v3",
+                    "value": "x86-64-v3"
+                },
+                {
+                    "name": "x86-64-v4",
+                    "value": "x86-64-v4"
+                },
+                {
+                    "name": "eden-x2",
+                    "value": "eden-x2"
+                },
+                {
+                    "name": "nano",
+                    "value": "nano"
+                },
+                {
+                    "name": "nano-1000",
+                    "value": "nano-1000"
+                },
+                {
+                    "name": "nano-2000",
+                    "value": "nano-2000"
+                },
+                {
+                    "name": "nano-3000",
+                    "value": "nano-3000"
+                },
+                {
+                    "name": "nano-x2",
+                    "value": "nano-x2"
+                },
+                {
+                    "name": "eden-x4",
+                    "value": "eden-x4"
+                },
+                {
+                    "name": "nano-x4",
+                    "value": "nano-x4"
+                },
+                {
+                    "name": "lujiazui",
+                    "value": "lujiazui"
+                },
+                {
+                    "name": "yongfeng",
+                    "value": "yongfeng"
+                },
+                {
+                    "name": "shijidadao",
+                    "value": "shijidadao"
+                },
+                {
+                    "name": "k8",
+                    "value": "k8"
+                },
+                {
+                    "name": "k8-sse3",
+                    "value": "k8-sse3"
+                },
+                {
+                    "name": "opteron",
+                    "value": "opteron"
+                },
+                {
+                    "name": "opteron-sse3",
+                    "value": "opteron-sse3"
+                },
+                {
+                    "name": "athlon64",
+                    "value": "athlon64"
+                },
+                {
+                    "name": "athlon64-sse3",
+                    "value": "athlon64-sse3"
+                },
+                {
+                    "name": "athlon-fx",
+                    "value": "athlon-fx"
+                },
+                {
+                    "name": "amdfam10",
+                    "value": "amdfam10"
+                },
+                {
+                    "name": "barcelona",
+                    "value": "barcelona"
+                },
+                {
+                    "name": "bdver1",
+                    "value": "bdver1"
+                },
+                {
+                    "name": "bdver2",
+                    "value": "bdver2"
+                },
+                {
+                    "name": "bdver3",
+                    "value": "bdver3"
+                },
+                {
+                    "name": "bdver4",
+                    "value": "bdver4"
+                },
+                {
+                    "name": "znver1",
+                    "value": "znver1"
+                },
+                {
+                    "name": "znver2",
+                    "value": "znver2"
+                },
+                {
+                    "name": "znver3",
+                    "value": "znver3"
+                },
+                {
+                    "name": "znver4",
+                    "value": "znver4"
+                },
+                {
+                    "name": "znver5",
+                    "value": "znver5"
+                },
+                {
+                    "name": "znver6",
+                    "value": "znver6"
+                },
+                {
+                    "name": "btver1",
+                    "value": "btver1"
+                },
+                {
+                    "name": "btver2",
+                    "value": "btver2"
+                },
+                {
+                    "name": "generic",
+                    "value": "generic"
+                },
+                {
+                    "name": "native",
+                    "value": "native"
+                }
+            ]
+        },
+        {
+            "type": "options",
+            "name": "stdver",
+            "display_title": "Std version",
+            "description": "Change the C/C++ standard version of the compiler.",
+            "flags": [
+                "-std=<value>"
+            ],
+            "values": [
+                {
+                    "name": "c++03: Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum. Same as -std=c++98.",
+                    "value": "c++03"
+                },
+                {
+                    "name": "c++11: Conform to the ISO 2011 C++ standard.",
+                    "value": "c++11"
+                },
+                {
+                    "name": "c++14: Conform to the ISO 2014 C++ standard.",
+                    "value": "c++14"
+                },
+                {
+                    "name": "c++17: Conform to the ISO 2017 C++ standard.",
+                    "value": "c++17"
+                },
+                {
+                    "name": "c++20: Conform to the ISO 2020 C++ standard.",
+                    "value": "c++20"
+                },
+                {
+                    "name": "c++23: Conform to the ISO 2023 C++ standard (published in 2024; experimental and incomplete support).",
+                    "value": "c++23"
+                },
+                {
+                    "name": "c++26: Conform to the ISO 2026 C++ draft standard (experimental and incomplete support).",
+                    "value": "c++26"
+                },
+                {
+                    "name": "c++2c: Conform to the ISO 2026 C++ draft standard (experimental and incomplete support). Same as -std=c++26.",
+                    "value": "c++2c"
+                },
+                {
+                    "name": "c++98: Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum.",
+                    "value": "c++98"
+                },
+                {
+                    "name": "gnu++03: Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum with GNU extensions. Same as -std=gnu++98.",
+                    "value": "gnu++03"
+                },
+                {
+                    "name": "gnu++11: Conform to the ISO 2011 C++ standard with GNU extensions.",
+                    "value": "gnu++11"
+                },
+                {
+                    "name": "gnu++14: Conform to the ISO 2014 C++ standard with GNU extensions.",
+                    "value": "gnu++14"
+                },
+                {
+                    "name": "gnu++17: Conform to the ISO 2017 C++ standard with GNU extensions.",
+                    "value": "gnu++17"
+                },
+                {
+                    "name": "gnu++20: Conform to the ISO 2020 C++ standard with GNU extensions.",
+                    "value": "gnu++20"
+                },
+                {
+                    "name": "gnu++23: Conform to the ISO 2023 C++ standard with GNU extensions (published in 2024; experimental and incomplete support).",
+                    "value": "gnu++23"
+                },
+                {
+                    "name": "gnu++26: Conform to the ISO 2026 C++ draft standard with GNU extensions (experimental and incomplete support).",
+                    "value": "gnu++26"
+                },
+                {
+                    "name": "gnu++2c: Conform to the ISO 2026 C++ draft standard with GNU extensions (experimental and incomplete support). Same as -std=gnu++26.",
+                    "value": "gnu++2c"
+                },
+                {
+                    "name": "gnu++98: Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum with GNU extensions.",
+                    "value": "gnu++98"
+                }
+            ]
+        }
+    ],
+    "possibleRuntimeTools": [
+        {
+            "name": "heaptrack",
+            "description": "Heaptrack gets loaded into your code and collects the heap allocations, we'll display them in a flamegraph.",
+            "possibleOptions": [
+                {
+                    "name": "graph",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                },
+                {
+                    "name": "summary",
+                    "possibleValues": [
+                        "stderr"
+                    ]
+                },
+                {
+                    "name": "details",
+                    "possibleValues": [
+                        "stderr"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "libsegfault",
+            "description": "libSegFault will display tracing information in case of segfaults.",
+            "possibleOptions": [
+                {
+                    "name": "enable",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                },
+                {
+                    "name": "registers",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                },
+                {
+                    "name": "memory",
+                    "possibleValues": [
+                        "yes"
+                    ]
+                }
+            ]
+        }
+    ],
+    "$order": -20,
+    "supportsIntel": true,
+    "optArg": "-fopt-info-all=all.opt",
+    "supportsOptOutput": true,
+    "supportsVerboseAsm": true,
+    "disabledFilters": [],
+    "version": "g++ (Compiler-Explorer-Build-gcc--binutils-2.44) 16.1.0",
+    "fullVersion": "g++ (Compiler-Explorer-Build-gcc--binutils-2.44) 16.1.0\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "supportsCfg": true,
+    "supportsPpView": true,
+    "supportsAstView": false,
+    "stackUsageArg": "-fstack-usage",
+    "supportsStackUsageOutput": true,
+    "supportsGccDump": true,
+    "removeEmptyGccDump": true,
+    "supportsMarch": true
+}

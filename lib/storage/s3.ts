@@ -35,7 +35,7 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
-import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
+import {ExpandedShortLink, ShortLinkNotFoundError, StorageBase, StoredObject} from './base.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -57,8 +57,10 @@ const MIN_STORED_ID_LENGTH = 9;
 
 assert(MIN_STORED_ID_LENGTH >= PREFIX_LENGTH, 'MIN_STORED_ID_LENGTH must be at least PREFIX_LENGTH');
 
+// DynamoDB refuses a range key larger than this, so no stored link can have a longer ID.
+const MAX_RANGE_KEY_BYTES = 1024;
+
 export type TestReq = {
-    get: () => string;
     ip?: string;
 };
 
@@ -89,12 +91,8 @@ export class StorageS3 extends StorageBase {
     async storeItem(item: StoredObject, req: express.Request | TestReq) {
         logger.info(`Storing item ${item.prefix}`);
         const now = new Date();
-        let ip = req.get('X-Forwarded-For') || anonymizeIp(req.ip!);
-        const commaIndex = ip.indexOf(',');
-        if (commaIndex > 0) {
-            // Anonymize only client IP
-            ip = `${anonymizeIp(ip.substring(0, commaIndex))}${ip.substring(commaIndex, ip.length)}`;
-        }
+        // req.ip is what Express resolved from the trusted proxy hops; never read the raw X-Forwarded-For header.
+        const ip = anonymizeIp(req.ip ?? '');
         now.setSeconds(0, 0);
         try {
             await Promise.all([
@@ -167,12 +165,13 @@ export class StorageS3 extends StorageBase {
     async expandId(id: string): Promise<ExpandedShortLink> {
         // By just getting the item and not trying to update it, we save an update when the link does not exist
         // for which we have less resources allocated, but get one extra read (But we do have more reserved for it)
+        if (Buffer.byteLength(id) > MAX_RANGE_KEY_BYTES) throw new ShortLinkNotFoundError(id);
         const item = await this.dynamoDb.getItem({
             TableName: this.table,
             Key: this.getKeyStruct(id),
         });
         const attributes = item.Item;
-        if (!attributes) throw new Error(`ID ${id} not present in links table`);
+        if (!attributes) throw new ShortLinkNotFoundError(id);
         const result = await this.s3.get(unwrap(attributes.full_hash.S), this.prefix);
         // If we're here, we are pretty confident there is a match. But never hurts to double check
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);

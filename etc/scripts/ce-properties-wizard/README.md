@@ -14,7 +14,7 @@ An interactive command-line tool for adding custom compilers to your local Compi
 
 ## Requirements
 
-The wizard requires Python 3.10+ and Poetry. The run scripts handle all setup automatically.
+The wizard requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). The run scripts handle all setup automatically.
 
 ## Usage
 
@@ -317,6 +317,6 @@ To contribute to the wizard:
 
 1. Format code: `./run.sh --format`
 2. Check formatting: `./run.sh --format --check`
-3. Run tests: `poetry run pytest` (after `poetry install`)
+3. Run tests: `uv run pytest` (after `uv sync --all-extras`)
 
 The `--format` flag runs black, ruff, and pytype formatters on the codebase.

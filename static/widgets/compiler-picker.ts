@@ -53,6 +53,7 @@ export class CompilerPicker {
     popup: CompilerPickerPopup;
     toolbarPopoutButton: JQuery<HTMLElement>;
     popupTooltip: JQuery<HTMLElement>;
+    private initNonce: number = 0;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -68,9 +69,15 @@ export class CompilerPicker {
             throw new Error('.compiler-picker is not an HTMLSelectElement');
         }
         this.toolbarPopoutButton = domRoot.find('.picker-popout-button');
-        domRoot.find('.picker-popout-button').on('click', () => {
-            unwrap(this.tomSelect).close();
+        domRoot.find('.picker-popout-button').on('click', async () => {
+            const tomSelect = await this.ensureInitialised();
+            if (!tomSelect) return;
+            tomSelect.close();
             this.popup.show();
+        });
+        // Until TomSelect replaces it, the bare select is what the user sees and clicks.
+        $(compilerPicker).on('mousedown', () => {
+            this.ensureInitialised();
         });
         this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
@@ -89,17 +96,28 @@ export class CompilerPicker {
     }
 
     destroy() {
+        // An initialisation still waiting on the compiler list then gives up instead of rebuilding a closed picker.
+        ++this.initNonce;
         this.eventHub.unsubscribe();
         if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
     }
 
-    private initialize(langId: string, compilerId: string) {
+    private async initialize(langId: string, compilerId: string) {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
 
-        const groups = this.getGroups(langId);
-        const options = this.getOptions(langId, compilerId);
+        const nonce = ++this.initNonce;
+        try {
+            await this.compilerService.getCompilersForLang(langId);
+        } catch {
+            // compilersService reports the failed fetch; ensureInitialised retries when the picker is next used.
+            return;
+        }
+        const groups = await this.getGroups(langId);
+        const options = await this.getOptions(langId, compilerId);
+
+        if (nonce !== this.initNonce) return;
 
         this.tomSelect = new TomSelect(this.domNode, {
             sortField: CompilerService.getSelectizerOrder(),
@@ -115,7 +133,7 @@ export class CompilerPicker {
             dropdownParent: 'body',
             closeAfterSelect: true,
             plugins: ['dropdown_input'],
-            maxOptions: 1000,
+            maxOptions: options.length,
             onChange: (val: string) => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
@@ -212,9 +230,10 @@ export class CompilerPicker {
         this.popup.setLang(groups, options, langId);
     }
 
-    getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
+    async getOptions(langId: string, compilerId: string): Promise<(CompilerInfo & {$groups: string[]})[]> {
         const favorites = this.getFavorites();
-        return Object.values(this.compilerService.getCompilersForLang(langId) ?? {})
+        const compilers = await this.compilerService.getCompilersForLang(langId);
+        return Object.values(compilers)
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
                 const $groups = [e.group];
@@ -226,8 +245,8 @@ export class CompilerPicker {
             });
     }
 
-    getGroups(langId: string) {
-        const optgroups = this.compilerService.getGroupsInUse(langId);
+    async getGroups(langId: string) {
+        const optgroups = await this.compilerService.getGroupsInUse(langId);
         optgroups.unshift({
             value: CompilerPicker.favoriteGroupName,
             label: 'Favorites',
@@ -235,8 +254,14 @@ export class CompilerPicker {
         return optgroups;
     }
 
+    private async ensureInitialised(): Promise<TomSelect | null> {
+        if (!this.tomSelect) await this.initialize(this.lastLangId, this.lastCompilerId);
+        return this.tomSelect;
+    }
+
     update(langId: string, compilerId: string) {
         this.tomSelect?.destroy();
+        this.tomSelect = null;
         this.initialize(langId, compilerId);
     }
 

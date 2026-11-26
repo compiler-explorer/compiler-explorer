@@ -31,9 +31,6 @@ import * as utils from '../utils.js';
 import {AsmParser} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 
-// TODO(#4689): try and deduplicate a lot of the hairy "almost the same but different"
-//  logic between this and asm-parser-vc.ts
-
 // this file uses null throughout for "not there" not undefined.
 type Source = {file: string | null; line: number};
 type Line = {text: string; source: Source | null};
@@ -70,6 +67,16 @@ export class AsmEWAVRParser extends AsmParser {
         this.labelDef = /^`?\?*<?([A-Z_a-z][\w :]*)>?`?:$/;
     }
 
+    private getFilenameFromComment(line: string): string | null {
+        const matches = line.match(this.filenameComment);
+        return matches ? matches[3] : null;
+    }
+
+    private getLineNumberFromComment(line: string): number | null {
+        const matches = line.match(this.lineNumberComment);
+        return matches ? Number.parseInt(matches[1], 10) : null;
+    }
+
     override hasOpcode(line: string): boolean {
         // check for empty lines
         if (line.length === 0) return false;
@@ -92,23 +99,6 @@ export class AsmEWAVRParser extends AsmParser {
     }
 
     override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        // NOTE: EWAVR assembly seems to be closest to visual studio
-        const getFilenameFromComment = (line: string) => {
-            const matches = line.match(this.filenameComment);
-            if (matches) {
-                return matches[3];
-            }
-            return null;
-        };
-
-        const getLineNumberFromComment = (line: string) => {
-            const matches = line.match(this.lineNumberComment);
-            if (matches) {
-                return Number.parseInt(matches[1], 10);
-            }
-            return null;
-        };
-
         const asmLines = utils.splitLines(asm);
 
         const stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
@@ -192,11 +182,11 @@ export class AsmEWAVRParser extends AsmParser {
                 throw new Error('EWAVR: non-comment line after the end statement');
             }
 
-            const fn = getFilenameFromComment(line);
+            const fn = this.getFilenameFromComment(line);
             if (fn === null) {
-                const ln = getLineNumberFromComment(line);
+                const ln = this.getLineNumberFromComment(line);
                 if (ln !== null) {
-                    if (currentFile === undefined) {
+                    if (currentFile === null) {
                         logger.error('Somehow, we have a line number comment without a file comment: %s', line);
                     }
                     if (currentLabel !== null && currentLabel.initialLine === undefined) {

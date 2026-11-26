@@ -47,7 +47,7 @@ export class DotnetExecutionEnvironment extends LocalExecutionEnvironment {
         executable: string,
         executeParameters: ExecutableExecutionOptions,
         homeDir: string,
-        extraConfiguration: any,
+        extraConfiguration: DotnetExtraConfiguration,
     ): Promise<BasicExecutionResult> {
         const programDir = path.dirname(executable);
         const programOutputPath = path.join(
@@ -70,7 +70,7 @@ export class DotnetExecutionEnvironment extends LocalExecutionEnvironment {
         execOptions.input = executeParameters.stdin;
         const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
         try {
-            return this.execBinaryMaybeWrapped(
+            return await this.execBinaryMaybeWrapped(
                 extraConfiguration.corerunPath,
                 execArgs,
                 execOptions,

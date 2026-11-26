@@ -25,6 +25,7 @@
 import path from 'node:path';
 
 import PromClient from 'prom-client';
+import {SemVer} from 'semver';
 import _ from 'underscore';
 
 import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
@@ -85,8 +86,17 @@ export class BaseTool implements ITool {
 
         return (
             this.tool.exclude.find(excl => {
-                if (excl.endsWith('$')) {
-                    return compilerId === excl.substring(0, excl.length - 1);
+                if (excl.includes('<')) {
+                    const [group, version] = excl.split('<');
+                    try {
+                        return (
+                            compilerProps('group') === group &&
+                            !compilerProps('isNightly') &&
+                            new SemVer(compilerProps<string>('semver')).compare(version) < 0
+                        );
+                    } catch {
+                        return false;
+                    }
                 }
                 return compilerId.includes(excl);
             }) !== undefined
@@ -197,8 +207,7 @@ export class BaseTool implements ITool {
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
-        args = args || [];
-        if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
+        args = this.addOptionsToToolArgs ? this.tool.options.concat(args ?? []) : [...(args ?? [])];
         if (inputFilepath && !dontAppendInputFilepath) args.push(inputFilepath);
 
         const toolExe = this.getToolExe(compilationInfo);

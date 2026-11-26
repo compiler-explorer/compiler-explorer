@@ -33,6 +33,7 @@ import type {
     BuildStep,
     CacheKey,
     CompilationResult,
+    ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -63,6 +64,33 @@ export class AssemblyCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         filters.binary = true;
         return [];
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        // The output is always an assembled object, so show its addresses and bytes without needing "Link to binary".
+        result.forceBinaryView = true;
+        return result;
+    }
+
+    override async objdump(
+        outputFilename: string,
+        result: any,
+        maxSize: number,
+        intelAsm: boolean,
+        demangle: boolean,
+        staticReloc: boolean | undefined,
+        dynamicReloc: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        // Nothing is linked, so calls to other symbols only make sense alongside their relocations.
+        return super.objdump(outputFilename, result, maxSize, intelAsm, demangle, true, dynamicReloc, filters);
     }
 
     getGeneratedOutputFilename(fn: string): string {
@@ -176,7 +204,7 @@ export class AssemblyCompiler extends BaseCompiler {
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath);
 
-        const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
+        const result = await this.buildExecutable(this.compiler.exe, compilerArguments, inputFilename, execOptions);
 
         const fullResult: BuildResult = {
             ...result,

@@ -23,12 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {setupFakeCompiler, stubCompileResponse} from '../support/fake-compile';
-import {clearAllIntercepts, setMonacoEditorContent, stubConsoleOutput} from '../support/utils';
+import {
+    clearAllIntercepts,
+    setMonacoEditorContent,
+    stubConsoleOutput,
+    waitForCompilationToSettle,
+} from '../support/utils';
 
 // Claude Explain specific test utilities
 function mockClaudeExplainAPI() {
     // Mock GET request for options
-    cy.intercept('GET', 'http://test.localhost/fake-api/explain', {
+    cy.intercept('GET', '/fake-api/explain', {
         statusCode: 200,
         body: {
             audience: [
@@ -45,7 +50,7 @@ function mockClaudeExplainAPI() {
     }).as('getOptions');
 
     // Mock POST request for explanation
-    cy.intercept('POST', 'http://test.localhost/fake-api/explain', {
+    cy.intercept('POST', '/fake-api/explain', {
         statusCode: 200,
         body: {
             status: 'success',
@@ -58,6 +63,9 @@ function mockClaudeExplainAPI() {
 }
 
 function openClaudeExplainPane() {
+    // Cannot use setupAndWaitForCompilation: some tests have replaced the default source
+    // (and so its expected output) before opening the pane.
+    waitForCompilationToSettle();
     cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
     cy.get('[data-cy="new-view-explain-btn"]:visible').click();
 }
@@ -77,13 +85,13 @@ function setupClaudeExplainEnvironment() {
         onBeforeLoad: (win: any) => {
             stubConsoleOutput(win);
             win.compilerExplorerOptions = win.compilerExplorerOptions || {};
-            win.compilerExplorerOptions.explainApiEndpoint = 'http://test.localhost/fake-api/explain';
+            win.compilerExplorerOptions.explainApiEndpoint = '/fake-api/explain';
         },
     });
 
     // Force override after page loads
     cy.window().then((win: any) => {
-        win.compilerExplorerOptions.explainApiEndpoint = 'http://test.localhost/fake-api/explain';
+        win.compilerExplorerOptions.explainApiEndpoint = '/fake-api/explain';
     });
 }
 
@@ -93,7 +101,7 @@ function mockClaudeExplainAPIWithOptions() {
 }
 
 function mockSuccessfulExplanation() {
-    cy.intercept('POST', 'http://test.localhost/fake-api/explain', {
+    cy.intercept('POST', '/fake-api/explain', {
         statusCode: 200,
         body: {
             status: 'success',
@@ -115,7 +123,7 @@ function mockSuccessfulExplanation() {
 }
 
 function mockAPIError() {
-    cy.intercept('POST', 'http://test.localhost/fake-api/explain', {
+    cy.intercept('POST', '/fake-api/explain', {
         statusCode: 500,
         body: {error: 'Internal server error'},
     }).as('explainError');
@@ -135,7 +143,7 @@ function mockCachedExplanation() {
         cost: {totalCost: 0.001},
     };
 
-    cy.intercept('POST', 'http://test.localhost/fake-api/explain', mockResponse).as('explainRequest');
+    cy.intercept('POST', '/fake-api/explain', mockResponse).as('explainRequest');
 }
 
 // Simplified test helpers
@@ -303,7 +311,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             // Mock slow API response with direct reply (no network request)
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', {
+            cy.intercept('POST', '/fake-api/explain', {
                 delay: 1000,
                 statusCode: 200,
                 body: {
@@ -382,7 +390,7 @@ describe('Claude Explain feature', () => {
             }).as('blockedProduction');
 
             // Only set up GET mock for options, not POST (we have custom POST below)
-            cy.intercept('GET', 'http://test.localhost/fake-api/explain', {
+            cy.intercept('GET', '/fake-api/explain', {
                 statusCode: 200,
                 body: {
                     audience: [
@@ -399,7 +407,7 @@ describe('Claude Explain feature', () => {
             }).as('getOptions');
 
             let explainCallCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', req => {
+            cy.intercept('POST', '/fake-api/explain', req => {
                 explainCallCount++;
                 req.reply({
                     status: 'success',
@@ -472,7 +480,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             let callCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', req => {
+            cy.intercept('POST', '/fake-api/explain', req => {
                 callCount++;
                 const isBypassCache = req.body.bypassCache === true;
                 req.reply({
@@ -515,7 +523,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             let explainCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', req => {
+            cy.intercept('POST', '/fake-api/explain', req => {
                 explainCount++;
                 req.reply({
                     status: 'success',
@@ -598,14 +606,14 @@ describe('Claude Explain feature', () => {
                 cy.visit(url, {
                     onBeforeLoad: (win: any) => {
                         win.compilerExplorerOptions = win.compilerExplorerOptions || {};
-                        win.compilerExplorerOptions.explainApiEndpoint = 'http://test.localhost/fake-api/explain';
+                        win.compilerExplorerOptions.explainApiEndpoint = '/fake-api/explain';
                     },
                 });
 
                 // Force override after page loads (in case it gets reset)
                 cy.window().then((win: any) => {
                     win.compilerExplorerOptions = win.compilerExplorerOptions || {};
-                    win.compilerExplorerOptions.explainApiEndpoint = 'http://test.localhost/fake-api/explain';
+                    win.compilerExplorerOptions.explainApiEndpoint = '/fake-api/explain';
                 });
 
                 // Verify options are restored

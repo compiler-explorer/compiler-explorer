@@ -94,6 +94,18 @@ describe('Compiler options', () => {
         compilerPane().find('input.options').clear().type('-O2 -Wall');
         monacoEditorTextShouldContain(compilerOutput(), '-O2 -Wall');
     });
+
+    it('should recompile when the options change without a keystroke', () => {
+        // Regression test for #8984: the field listened for "keyup" and "change"
+        // only, so an edit that involves no key press left the compilation stale
+        // until the field lost focus. A middle-click paste in Firefox dispatches
+        // "input" and no key event, which is what this reproduces; the same holds
+        // for drag and drop and for autofill.
+        compilerPane().find('input.options').invoke('val', '-DCYPRESS_TEST').trigger('input');
+
+        monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
+        monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
+    });
 });
 
 describe('Output filters', () => {

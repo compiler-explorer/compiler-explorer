@@ -1,6 +1,6 @@
 # Adding a new language
 
-If you want to add a new language to the site, you should follow this steps:
+If you want to add a new language to the site, you should follow these steps:
 
 - Add the new language to the exported `languages` variable in `lib/languages.ts`:
 
@@ -12,21 +12,20 @@ If you want to add a new language to the site, you should follow this steps:
     monaco: MONACO_MODE_ID,
     extensions: ARRAY_OF_FILE_EXTENSIONS_OF_YOUR_LANGUAGE,
     alias: [], // Leave empty unless needed,
-    logoFilename: NAME_OF_LOGO_FILE, // Name of the logo file in views/resources/logos/
+    logoFilename: NAME_OF_LOGO_FILE, // Name of the logo file in public/logos/
     logoFilenameDark: NAME_OF_DARK_LOGO_FILE, // Optional, if there is a dark version of the logo
   }
   ```
 
   - If the language is supported by Monaco Editor (You can find the list
-    [here](https://github.com/microsoft/monaco-editor/tree/main/src/basic-languages)), you should add it to the list of
+    [here](https://github.com/microsoft/monaco-editor/tree/main/src/languages/definitions)), you should add it to the list of
     languages inside the `MonacoEditorWebpackPlugin` config in `webpack.config.esm.ts`
   - If not, you should implement your own language mode; see `static/modes/asm-mode.ts` as an example. Don't forget to
     _require_ your mode file in `static/modes/_all.ts`, in alphabetical order
   - `language-key` is how your language will be referred internally by the code. In the rest of this document, replace
-    `{language-key}` by the corresponding value in the real files.
-  - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoFilename{Dark}` key(s) in the
+    `{language-key}` by the corresponding value in the real files
+  - Add a logo file to the `public/logos/` folder and add its filename to the `logoFilename{Dark}` key(s) in the
     language object
-  - Add the logo keys to the `static/logos.ts` file, in alphabetical order.
 
 - Add `{language-key}` to type list in `types/languages.interfaces.ts`
 - Add a `lib/compilers/{language-key}.ts` file using the template below:
@@ -55,10 +54,14 @@ If you want to add a new language to the site, you should follow this steps:
     - execute the compiler.exe with the arguments from `OptionsForFilter()` and adding `inputFilename`
     - be aware that the language class is only instanced once, so storing state is not possible
   - If the compiler has problems with the defaults, you will have to override the `runCompiler()` method too. When
-    overriding it, here are some ideas
+    overriding it, here are some ideas:
     - set `execOptions.customCwd` parameter if the working directory needs to be somewhere else
     - set `execOptions.env` parameter if the compiler requires special environment variables
     - manipulate `options`, but make sure the user can still add their own arguments in CE
+  - Compilations are cached under the request as it arrived plus the compiler's id, and ce-router computes the same key
+    without knowing anything about your class. So adapt the request in the hooks that run after the key is built:
+    `getDefaultFilters()`, `fixFiltersForCompiler()`, `fixBackendOptionsForCompiler()`, `optionsForFilter()`. Don't
+    override `compile()` to change its arguments before calling `super.compile()`, and don't override `getCacheKey()`.
 
 - Add your `LanguageCompiler` to `lib/compilers/_all.ts`, in alphabetical order
 
@@ -70,7 +73,7 @@ If you want to add a new language to the site, you should follow this steps:
   - You should add 1 compiler for the language you want to test
   - Test the command line options of the language compilers outside CE
 
-- Add a new file `etc/config/{language-key}.defaults.properties`. This is where a default configuration will live.
+- Add a new file `etc/config/{language-key}.defaults.properties`. This is where a default configuration will live
 
   - Usually, this loads default compilers from their usual paths on a normal installation (Check
     `etc/config/c++.defaults.properties` for an example)

@@ -10,16 +10,17 @@ Please check before acting on information derived from this view."
           )
           i.fas.fa-triangle-exclamation.me-1
           | LLMs can be inaccurate
-        .input-group
-          select.explain-audience.form-select.form-select-sm(style="width: auto;" aria-label="Select audience level")
-            option(value="loading") Loading...
-          button.btn.btn-sm.btn-outline-secondary.explain-audience-info(type="button" title="Audience level" tabindex="0")
-            i.fas.fa-info-circle
-        .input-group
-          select.explain-type.form-select.form-select-sm(style="width: auto;" aria-label="Select explanation type")
-            option(value="loading") Loading...
-          button.btn.btn-sm.btn-outline-secondary.explain-type-info(type="button" title="Explanation focus" tabindex="0")
-            i.fas.fa-info-circle
+      //- The selects sit directly in the toolbar so they wrap onto a new line when the pane is narrow
+      .input-group.w-auto
+        select.explain-audience.form-select.form-select-sm(style="width: auto;" aria-label="Select audience level")
+          option(value="loading") Loading...
+        button.btn.btn-sm.btn-outline-secondary.explain-audience-info(type="button" title="Audience level" tabindex="0")
+          i.fas.fa-info-circle
+      .input-group.w-auto
+        select.explain-type.form-select.form-select-sm(style="width: auto;" aria-label="Select explanation type")
+          option(value="loading") Loading...
+        button.btn.btn-sm.btn-outline-secondary.explain-type-info(type="button" title="Explanation focus" tabindex="0")
+          i.fas.fa-info-circle
       .btn-group(role="group" aria-label="Status").ms-auto
         .status.my-auto
           i.status-icon.fas.d-none

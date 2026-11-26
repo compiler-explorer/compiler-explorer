@@ -74,6 +74,10 @@ export class ParsingState {
         this.inCustomAssembly--;
     }
 
+    closeCustomAssembly() {
+        this.inCustomAssembly = 0;
+    }
+
     isInCustomAssembly(): boolean {
         return this.inCustomAssembly > 0;
     }

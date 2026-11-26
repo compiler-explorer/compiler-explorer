@@ -30,6 +30,7 @@ import systemdSocket from 'systemd-socket';
 
 import type {AppArguments} from '../app.interfaces.js';
 import {logger} from '../logger.js';
+import {startupPhases} from '../startup-phases.js';
 
 /**
  * Starts the web server listening for connections
@@ -44,6 +45,7 @@ export function startListening(webServer: express.Express, appArgs: AppArguments
         setupStandardHttpListening(webServer, appArgs);
     }
 
+    startupPhases.mark('listen');
     setupStartupMetrics();
 }
 
@@ -100,12 +102,19 @@ function setupStandardHttpListening(webServer: express.Express, appArgs: AppArgu
  * Set up startup metrics
  */
 function setupStartupMetrics(): void {
+    const phases = startupPhases.finish();
     try {
         const startupGauge = new PromClient.Gauge({
             name: 'ce_startup_seconds',
             help: 'Time taken from process start to serving requests',
         });
         startupGauge.set(process.uptime());
+        const phaseGauge = new PromClient.Gauge({
+            name: 'ce_startup_phase_seconds',
+            help: 'Time taken by each phase of startup',
+            labelNames: ['phase'],
+        });
+        for (const [phase, ms] of phases) phaseGauge.set({phase}, ms / 1000);
     } catch (err: unknown) {
         const error = err as Error;
         logger.warn(`Error setting up startup metric: ${error.message}`);

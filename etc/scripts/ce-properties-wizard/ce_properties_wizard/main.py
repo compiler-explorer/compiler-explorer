@@ -332,12 +332,14 @@ def cli(
                     "windows_sdk_path",
                     message="Windows SDK base path (optional)",
                     default="",
-                    validate=lambda _, x: x == "" or os.path.isdir(x.replace("\\", "/"))
+                    validate=lambda _, x: x == "" or os.path.isdir(x.replace("\\", "/")),
                 )
                 sdk_answers = inquirer.prompt([sdk_question])
                 if sdk_answers and sdk_answers["windows_sdk_path"].strip():
                     # Apply the user-provided SDK path
-                    detected_info = detector.set_windows_sdk_path(detected_info, sdk_answers["windows_sdk_path"].strip())
+                    detected_info = detector.set_windows_sdk_path(
+                        detected_info, sdk_answers["windows_sdk_path"].strip()
+                    )
                     print_success(f"Windows SDK paths added from: {sdk_answers['windows_sdk_path']}")
 
         # Interactive prompts for missing information
