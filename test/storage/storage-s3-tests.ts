@@ -213,6 +213,19 @@ describe('Retrieves from s3', () => {
         await expect(storage.expandId('ABCDEF')).rejects.toThrow('ID ABCDEF not present in links table');
         await expect(storage.expandId('ABCDEF')).rejects.toBeInstanceOf(ShortLinkNotFoundError);
     });
+    it('treats an ID too long for a DynamoDB range key as not found', async () => {
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
+        mockDynamoDb
+            .on(GetItemCommand)
+            .rejects(
+                new Error(
+                    'One or more parameter values were invalid: ' +
+                        'Aggregated size of all range keys has exceeded the size limit of 1024 bytes',
+                ),
+            );
+        await expect(storage.expandId('A'.repeat(1025))).rejects.toBeInstanceOf(ShortLinkNotFoundError);
+        expect(mockDynamoDb.commandCalls(GetItemCommand)).toHaveLength(0);
+    });
 });
 
 describe('Updates counts in s3', async () => {
