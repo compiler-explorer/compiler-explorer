@@ -32,7 +32,7 @@ import _ from 'underscore';
 import urljoin from 'url-join';
 
 import {basic_comparator, remove} from '../shared/common-utils.js';
-import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {CompilerInfo, PreliminaryCompilerInfo, Remote} from '../types/compiler.interfaces.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool, ToolInfo} from '../types/tool.interfaces.js';
@@ -82,14 +82,31 @@ export class CompilerFinder {
         };
     }
 
-    static getRemoteInfo(uriSchema: string, host: string, port: number, uriBase: string, compilerId: string) {
+    static getRemoteInfo(
+        uriSchema: string,
+        host: string,
+        port: number,
+        uriBase: string,
+        compilerId: string,
+        sameOrigin = false,
+    ): Remote {
+        const target = `${uriSchema}://${host}:${port}`;
+        const basePath = urljoin('/', uriBase);
         return {
-            target: `${uriSchema}://${host}:${port}`,
+            target,
             path: urljoin('/', uriBase, 'api/compiler', compilerId, 'compile'),
             cmakePath: urljoin('/', uriBase, 'api/compiler', compilerId, 'cmake'),
             buildPath: urljoin('/', uriBase, 'api/compiler', compilerId, 'build'),
-            basePath: urljoin('/', uriBase),
+            basePath,
+            browserUrl: sameOrigin ? basePath : target + basePath,
         };
+    }
+
+    isSameOriginRemoteHost(host: string): boolean {
+        return this.ceProps('sameOriginRemoteHosts', '')
+            .split(':')
+            .map(h => h.trim().toLowerCase())
+            .includes(host.toLowerCase());
     }
 
     async fetchRemote(
@@ -101,6 +118,7 @@ export class CompilerFinder {
     ): Promise<CompilerInfo[] | null> {
         const requestLib = port === 443 ? https : http;
         const {uriSchema, uri, apiPath} = CompilerFinder.prepareRemoteUrlParts(host, port, uriBase, langId);
+        const sameOrigin = this.isSameOriginRemoteHost(host);
         logger.info(`Fetching compilers from remote source ${uri}`);
         return this.retryPromise(
             () => {
@@ -155,6 +173,7 @@ export class CompilerFinder {
                                                 port,
                                                 uriBase,
                                                 compiler.id,
+                                                sameOrigin,
                                             );
                                             // Older CE remotes won't have releaseTrack. Backfill to keep the
                                             // type contract intact for downstream consumers.

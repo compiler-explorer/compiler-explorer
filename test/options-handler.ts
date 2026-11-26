@@ -681,7 +681,11 @@ describe('Options handler', () => {
             cmakePath: '/gpu/api/compiler/g123remote/cmake',
             buildPath: '/gpu/api/compiler/g123remote/build',
             basePath: '/gpu',
+            browserUrl: 'https://godbolt.org:443/gpu',
         });
+        expect(CompilerFinder.getRemoteInfo(uriSchema, host, port, uriBase, 'g123remote', true).browserUrl).toEqual(
+            '/gpu',
+        );
 
         const fullUrl = ClientOptionsHandler.getFullRemoteUrl(info);
         const librariesUrl = ClientOptionsHandler.getRemoteUrlForLibraries(fullUrl, 'c++');

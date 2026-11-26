@@ -255,6 +255,12 @@ compilers=local1:local2:remote@hostname:port
 When a compiler ID contains the `@` symbol followed by a hostname and port, it is interpreted as a remote compiler. This
 allows running compilers on separate machines and accessing them through the main Compiler Explorer instance.
 
+Compilations are proxied by the server, but the browser fetches a remote compiler's library list itself, by default
+from the remote's own address (e.g. `https://hostname:port/path/api/libraries/<lang>`). If the remote's path is also
+served by the same site the browser is on (for example, a load balancer that routes `/gpu` to another instance), list
+its hostname in `sameOriginRemoteHosts` (colon-separated) in `compiler-explorer.*.properties`. Browsers then fetch from
+the remote's path on the current origin (e.g. `/gpu/api/libraries/<lang>`) instead of contacting `hostname` directly.
+
 ### Branding
 
 A deployment can use its own logo and favicon by putting them under `public/` and setting `siteLogo` and `favicon` (paths

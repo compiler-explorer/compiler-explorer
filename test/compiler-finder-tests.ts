@@ -24,7 +24,10 @@
 
 import './utils.js';
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import http from 'node:http';
+import type {AddressInfo} from 'node:net';
+
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler} from '../lib/options-handler.js';
@@ -155,5 +158,57 @@ describe('Compiler-finder', () => {
         const compilers = await finder.getCompilers();
         const libsArr = compilers[0].libsArr;
         expect(libsArr).toEqual(['fmt', 'catch2.2101']);
+    });
+});
+
+describe('Compiler-finder remote compilers', () => {
+    let server: http.Server;
+    let port: number;
+
+    beforeAll(async () => {
+        server = http.createServer((req, res) => {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify([{id: 'remote1', lang: 'a-lang', name: 'Remote 1', semver: '1.0', isSemVer: true}]));
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+        port = (server.address() as AddressInfo).port;
+    });
+
+    afterAll(() => {
+        server.close();
+    });
+
+    const fetchWith = async (ceProps: Record<string, string>) => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(ceProps));
+        const finder = new CompilerFinder({} as any, compilerProps, {} as any, {} as any);
+        const compilers = await finder.fetchRemote('127.0.0.1', port, 'gpu', compilerProps.ceProps, 'a-lang');
+        expect(compilers).toHaveLength(1);
+        return compilers![0].remote!;
+    };
+
+    it('points browsers at the remote host when it is not same-origin', async () => {
+        const remote = await fetchWith({});
+        expect(remote.target).toEqual(`http://127.0.0.1:${port}`);
+        expect(remote.basePath).toEqual('/gpu');
+        expect(remote.browserUrl).toEqual(`http://127.0.0.1:${port}/gpu`);
+    });
+
+    it('points browsers at the remote path on this origin when the host is same-origin', async () => {
+        const remote = await fetchWith({sameOriginRemoteHosts: 'example.com:127.0.0.1'});
+        // The server itself still talks to the remote host directly.
+        expect(remote.target).toEqual(`http://127.0.0.1:${port}`);
+        expect(remote.path).toEqual('/gpu/api/compiler/remote1/compile');
+        expect(remote.browserUrl).toEqual('/gpu');
+    });
+
+    it('matches same-origin hosts exactly and case-insensitively', () => {
+        const compilerProps = new properties.CompilerProps(
+            languages,
+            properties.fakeProps({sameOriginRemoteHosts: 'ALB.godbolt.org'}),
+        );
+        const finder = new CompilerFinder({} as any, compilerProps, {} as any, {} as any);
+        expect(finder.isSameOriginRemoteHost('alb.godbolt.org')).toBe(true);
+        expect(finder.isSameOriginRemoteHost('godbolt.org')).toBe(false);
+        expect(finder.isSameOriginRemoteHost('alb.godbolt.org.evil.com')).toBe(false);
     });
 });
