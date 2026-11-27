@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {readdirSync} from 'node:fs';
+import {existsSync, readdirSync} from 'node:fs';
 import path from 'node:path';
 
 import {SemVer} from 'semver';
@@ -160,21 +160,51 @@ export class RustCompiler extends BaseCompiler {
         return [];
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath?: string) {
         const includeFlag = '--extern';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion?.name) return [];
             const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
+            const debugDir = `${foundVersion.name}/build/debug`;
+            const dependencyArgs = RustCompiler.getCrateDependencyDirs(debugDir, dirPath).flatMap(dir => [
+                '-L',
+                `dependency=${dir}`,
+            ]);
             return foundVersion.path.flatMap(rlib => {
-                return [
-                    includeFlag,
-                    `${lowercaseLibName}=${foundVersion.name}/build/debug/${rlib}`,
-                    '-L',
-                    `dependency=${foundVersion.name}/build/debug/deps`,
-                ];
+                return [includeFlag, `${lowercaseLibName}=${debugDir}/${rlib}`, ...dependencyArgs];
             });
         });
+    }
+
+    /**
+     * The directories holding a prebuilt crate's dependencies, relative to the compilation directory like the rlib
+     * itself. rustc needs them for the dependency rlibs, and also for the crate's own metadata: cargo builds rlibs
+     * without embedded metadata, so the uplifted rlib only points at an .rmeta that has to be on the search path.
+     *
+     * Cargo up to 1.99 put every dependency in `debug/deps`. Cargo 1.100 builds each one in its own
+     * `debug/build/<package>/<hash>/out` instead. Crate packages keep the layout of the cargo that built them, so look
+     * at what was unpacked rather than at the compiler version.
+     */
+    static getCrateDependencyDirs(debugDir: string, dirPath: string | undefined): string[] {
+        const legacyDir = `${debugDir}/deps`;
+        if (!dirPath || existsSync(path.join(dirPath, legacyDir))) return [legacyDir];
+        const dirs: string[] = [];
+        try {
+            const buildDir = path.join(dirPath, debugDir, 'build');
+            for (const pkg of readdirSync(buildDir, {withFileTypes: true})) {
+                if (!pkg.isDirectory()) continue;
+                for (const hash of readdirSync(path.join(buildDir, pkg.name), {withFileTypes: true})) {
+                    if (!hash.isDirectory()) continue;
+                    if (existsSync(path.join(buildDir, pkg.name, hash.name, 'out'))) {
+                        dirs.push(`${debugDir}/build/${pkg.name}/${hash.name}/out`);
+                    }
+                }
+            }
+        } catch {
+            // Not unpacked (yet): fall back to the old layout, as before.
+        }
+        return dirs.length > 0 ? dirs.sort() : [legacyDir];
     }
 
     /**

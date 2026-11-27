@@ -989,6 +989,67 @@ describe('Rust options', () => {
     });
 });
 
+describe('Rust crate libraries', () => {
+    let ce: CompilationEnvironment;
+    let compiler: RustCompiler;
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+        compiler = new RustCompiler(makeFakeCompilerInfo({lang: 'rust', options: '', semver: '1.100.0'}), ce);
+        vi.spyOn(compiler, 'findLibVersion').mockReturnValue({
+            name: 'regex-automata',
+            path: ['libregex_automata.rlib'],
+        } as any);
+    });
+
+    afterAll(() => {
+        props.reset();
+    });
+
+    const lib: SelectedLibraryVersion[] = [{id: 'regex-automata', version: '049'}];
+    const makeDirs = (dirPath: string, dirs: string[]) => {
+        for (const dir of dirs) fs.mkdirSync(path.join(dirPath, dir), {recursive: true});
+    };
+
+    it('uses debug/deps for crates built by cargo 1.99 and older', () => {
+        const dirPath = newTempDir();
+        makeDirs(dirPath, ['regex-automata/build/debug/deps', 'regex-automata/build/debug/build/foo-123/out']);
+        expect(compiler.getIncludeArguments(lib, dirPath)).toEqual([
+            '--extern',
+            'regex_automata=regex-automata/build/debug/libregex_automata.rlib',
+            '-L',
+            'dependency=regex-automata/build/debug/deps',
+        ]);
+    });
+
+    it('uses each package build dir for crates built by cargo 1.100', () => {
+        const dirPath = newTempDir();
+        makeDirs(dirPath, [
+            'regex-automata/build/debug/build/regex-automata/31cbaef987fa134b/out',
+            'regex-automata/build/debug/build/memchr/cf838bbb9c99998e/out',
+            'regex-automata/build/debug/build/memchr/cf838bbb9c99998e/fingerprint',
+        ]);
+        expect(compiler.getIncludeArguments(lib, dirPath)).toEqual([
+            '--extern',
+            'regex_automata=regex-automata/build/debug/libregex_automata.rlib',
+            '-L',
+            'dependency=regex-automata/build/debug/build/memchr/cf838bbb9c99998e/out',
+            '-L',
+            'dependency=regex-automata/build/debug/build/regex-automata/31cbaef987fa134b/out',
+        ]);
+    });
+
+    it('falls back to debug/deps when the crate is not unpacked', () => {
+        expect(compiler.getIncludeArguments(lib, newTempDir())).toEqual([
+            '--extern',
+            'regex_automata=regex-automata/build/debug/libregex_automata.rlib',
+            '-L',
+            'dependency=regex-automata/build/debug/deps',
+        ]);
+    });
+});
+
 describe('Rust overrides', () => {
     let ce: CompilationEnvironment;
     const executingCompilerInfo = makeFakeCompilerInfo({
