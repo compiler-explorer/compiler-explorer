@@ -43,9 +43,8 @@ import {BaseRuntimeTool} from './base-runtime-tool.js';
 
 const O_NONBLOCK = fsConstants.O_NONBLOCK;
 
-const DEFAULT_MAX_RAW_OUTPUT = 64 * 1024 * 1024;
-// heaptrack_interpret resolves addresses to symbol names, so its output can outgrow the raw trace somewhat.
-const INTERPRETED_OUTPUT_FACTOR = 4;
+// At roughly 36 bytes per allocation event this is about 7M allocations.
+const DEFAULT_MAX_RAW_OUTPUT = 256 * 1024 * 1024;
 
 export class ByteLimitExceededError extends Error {
     constructor(public readonly limit: number) {
@@ -207,7 +206,8 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
         const runOptions = JSON.parse(JSON.stringify(execOptions));
         const interpretOptions = JSON.parse(JSON.stringify(execOptions));
-        interpretOptions.maxOutput = this.maxRawOutput * INTERPRETED_OUTPUT_FACTOR;
+        // heaptrack_interpret output is typically a quarter of the raw trace's size.
+        interpretOptions.maxOutput = this.maxRawOutput;
         this.addToEnv(runOptions);
 
         await this.makePipe();
