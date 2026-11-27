@@ -201,7 +201,7 @@ supplying the library ids and versions in an array. The id's to supply can be fo
 `/api/libraries/<language-id>`
 
 Each library entry may also set `buildType` to `"Debug"` (the default) or `"Release"`, choosing which prebuilt package
-is linked. Release packages are optimised (`-O2 -g -DNDEBUG`); if a library has no Release package, the Debug one is
+is linked. Release packages are the library's own release build plus `-g`; if a library has no Release package, the Debug one is
 used. Leave `buildType` out unless you need Release: requests without it behave, and cache, exactly as before. MSVC
 compilers always prefer Release packages, whatever is requested. For example:
 `{"id": "benchmark", "version": "161", "buildType": "Release"}`
