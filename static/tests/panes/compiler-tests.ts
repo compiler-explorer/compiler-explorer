@@ -26,8 +26,11 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
+import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
+import {CompilerShared} from '../../compiler-shared.js';
 import type {CompilerState} from '../../panes/compiler.interfaces.js';
 import {Compiler} from '../../panes/compiler.js';
+import {compilersService} from '../../services/compilers.service.js';
 import * as fetchJson from '../../services/fetch-json.js';
 import {type LanguageMap, LanguagesService, languagesService} from '../../services/languages.service.js';
 
@@ -248,5 +251,67 @@ describe('Compiler language change', () => {
         await vi.waitFor(() => expect(compiler.sendCompiler).toHaveBeenCalled());
 
         expect(compiler.compileFromEditorSource).toHaveBeenCalledTimes(compilations);
+    });
+});
+
+describe('Compiler change', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function rustc(id: string, defaultEdition: string) {
+        return {
+            id,
+            lang: 'rust',
+            possibleOverrides: [
+                {
+                    type: 'options',
+                    name: 'edition',
+                    display_title: 'Edition',
+                    description: '',
+                    flags: ['--edition', '<value>'],
+                    values: ['2015', '2018', '2021', '2024'].map(edition => ({name: edition, value: edition})),
+                    default: defaultEdition,
+                },
+            ],
+        } as unknown as CompilerInfo;
+    }
+
+    it('compiles with the overrides of the new compiler', async () => {
+        vi.spyOn(compilersService, 'getCompilersForLang').mockResolvedValue({
+            r1970: rustc('r1970', '2024'),
+            r1840: rustc('r1840', '2021'),
+        });
+        const compilerShared = new CompilerShared(
+            $('<div><button class="btn show-overrides"></button></div>'),
+            () => {},
+        );
+        await compilerShared.updateState({compiler: 'r1970', lang: 'rust'} as CompilerState);
+
+        const compiler = Object.create(Compiler.prototype) as Compiler;
+        const compiledWith: unknown[] = [];
+        const container = {setState: vi.fn()};
+        Object.assign(compiler, {
+            compilerService: {findCompiler: vi.fn(async (_lang: string, id: string) => ({id}))},
+            currentLangId: 'rust',
+            compilerShared,
+            container,
+            getCurrentState: () => ({
+                compiler: Reflect.get(compiler, 'compiler').id,
+                lang: 'rust',
+                overrides: compilerShared.getOverrides(),
+            }),
+            updateLibraries: vi.fn(async () => {}),
+            updateCompilerUI: vi.fn(),
+            compile: vi.fn(() => compiledWith.push(compilerShared.getOverrides())),
+            sendCompiler: vi.fn(),
+        });
+
+        await compiler.onCompilerChange('r1840');
+
+        expect(compiledWith).toEqual([[{name: 'edition', value: '2021'}]]);
+        expect(container.setState).toHaveBeenLastCalledWith(
+            expect.objectContaining({compiler: 'r1840', overrides: [{name: 'edition', value: '2021'}]}),
+        );
     });
 });
