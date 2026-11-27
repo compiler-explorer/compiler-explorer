@@ -1487,6 +1487,11 @@ export class BaseCompiler {
         }
     }
 
+    // Opted-in adapters must request IR alongside the primary output without changing that output.
+    protected shouldGenerateIRFromMainCompilation(): boolean {
+        return false;
+    }
+
     async generateIR(
         inputFilename: string,
         options: string[],
@@ -1513,10 +1518,20 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        return this.buildIrPaneResult(output, newOptions, irOptions, produceCfg, filters);
+    }
+
+    private async buildIrPaneResult(
+        output: CompilationResult,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ): Promise<NonNullable<CompilationResult['irOutput']>> {
         if (output.code !== 0) {
             return {
                 code: output.code,
-                compilationOptions: newOptions,
+                compilationOptions: options,
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
@@ -1529,7 +1544,7 @@ export class BaseCompiler {
             cfg?: Record<string, cfg.CFG>;
         } = {
             code: output.code,
-            compilationOptions: newOptions,
+            compilationOptions: options,
             asm: ir.asm,
         };
 
@@ -1546,6 +1561,21 @@ export class BaseCompiler {
         }
 
         return result;
+    }
+
+    private async runIrPaneTask(
+        run: () => Promise<NonNullable<CompilationResult['irOutput']>>,
+        compilationOptions?: string[],
+    ): Promise<NonNullable<CompilationResult['irOutput']>> {
+        try {
+            return await run();
+        } catch (error) {
+            return {
+                code: 1,
+                compilationOptions,
+                asm: [{text: `Failed to process LLVM IR: ${String(error)}`}],
+            };
+        }
     }
 
     async processIrOutput(
@@ -2728,7 +2758,10 @@ export class BaseCompiler {
         const makePp = backendOptions.producePp && this.compiler.supportsPpView;
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
-        const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
+        const irOptions = backendOptions.produceIr;
+        const produceIrCfg = backendOptions.produceCfg?.ir;
+        const makeIr = irOptions && this.compiler.supportsIrView;
+        const irFromMainCompilation = makeIr && this.shouldGenerateIRFromMainCompilation();
         const makeClangir = backendOptions.produceClangir && this.compiler.supportsClangirView;
         const makeClojureMacroExp = backendOptions.produceClojureMacroExp && this.compiler.supportsClojureMacroExpView;
         const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
@@ -2746,7 +2779,7 @@ export class BaseCompiler {
             asmResult,
             astResult,
             ppResult,
-            irResult,
+            separateIrResult,
             clangirResult,
             optPipelineResult,
             rustHirResult,
@@ -2757,14 +2790,8 @@ export class BaseCompiler {
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
             makeAst ? this.generateAST(inputFilename, options) : undefined,
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : undefined,
-            makeIr
-                ? this.generateIR(
-                      inputFilename,
-                      options,
-                      backendOptions.produceIr,
-                      backendOptions.produceCfg?.ir,
-                      filters,
-                  )
+            makeIr && !irFromMainCompilation
+                ? this.runIrPaneTask(() => this.generateIR(inputFilename, options, irOptions, produceIrCfg, filters))
                 : undefined,
             makeClangir ? this.generateClangir(inputFilename, options, backendOptions.produceClangir) : undefined,
             makeOptPipeline
@@ -2781,6 +2808,13 @@ export class BaseCompiler {
                 ),
             ),
         ]);
+
+        const irResult = irFromMainCompilation
+            ? await this.runIrPaneTask(
+                  () => this.buildIrPaneResult(asmResult, options, irOptions, produceIrCfg, filters),
+                  options,
+              )
+            : separateIrResult;
 
         // GNAT, GCC and rustc can produce their extra output files along
         // with the main compilation command.
@@ -3735,6 +3769,9 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(result);
+
+        // Assembly processing also uses okToCache, so only clear it after that work is done.
+        if (result.irOutput?.code) result.okToCache = false;
 
         if (result.okToCache && !delayCaching) {
             await this.env.cachePut(compilationCacheKey, result, undefined);

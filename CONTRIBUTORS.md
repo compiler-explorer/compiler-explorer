@@ -184,3 +184,4 @@ From oldest to newest contributor, we would like to thank:
 - [Amr Hesham](https://github.com/AmrDeveloper)
 - [Michalis Papadimitriou](https://github.com/mikepapadim)
 - [Jacen Li](https://github.com/jtl06)
+- [Jan Piotrowicz](https://github.com/taw3e8)
