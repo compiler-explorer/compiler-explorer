@@ -26,6 +26,34 @@ import type {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces
 import {BaseAssemblyDocumentationProvider} from './base.js';
 import {getAsmOpcode} from './generated/asm-docs-amd64.js';
 
+// Pseudo-op mnemonics that assemblers accept for an instruction plus a fixed immediate. They have no page of their
+// own: Intel documents them in a table on the page of the instruction that takes the immediate.
+// https://github.com/compiler-explorer/compiler-explorer/issues/1026
+const COMPARE_PSEUDO_OPS: [RegExp, (match: RegExpExecArray) => string][] = [
+    // cmpltps, cmpneqsd, vcmpunordss, ... (predicates 0-7)
+    [/^(v?)cmp(?:eq|lt|le|unord|neq|nlt|nle|ord)([ps][sd])$/, m => `${m[1]}cmp${m[2]}`],
+    // vcmpeq_uqpd, vcmplt_ossd, ... (the 32 AVX predicates)
+    [/^vcmp(?:eq|lt|le|unord|neq|nlt|nle|ord|nge|ngt|false|ge|gt|true)_(?:oq|os|uq|us)([ps][sd])$/, m => `vcmp${m[1]}`],
+    // vpcmpltb, vpcmpnled, ... (signed AVX-512 integer compares; vpcmpeqb and vpcmpgtb are instructions of their own)
+    [/^vpcmp(?:lt|le|neq|nlt|nle)([bwdq])$/, m => `vpcmp${m[1]}`],
+    // vpcmpequb, vpcmpltuw, ... (unsigned AVX-512 integer compares)
+    [/^vpcmp(?:eq|lt|le|neq|nlt|nle)u([bwdq])$/, m => `vpcmpu${m[1]}`],
+    // pclmullqlqdq, vpclmulhqhqdq, ...
+    [/^(v?)pclmul[lh]q[lh]qdq$/, m => `${m[1]}pclmulqdq`],
+];
+
+function getComparePseudoOpInfo(instruction: string): AssemblyInstructionInfo | undefined {
+    const lower = instruction.toLowerCase();
+    for (const [pattern, parentOf] of COMPARE_PSEUDO_OPS) {
+        const match = pattern.exec(lower);
+        if (!match) continue;
+        const parent = parentOf(match);
+        // Not every VEX form is documented separately from its legacy SSE one (e.g. vcmpsd)
+        return getAsmOpcode(parent) ?? getAsmOpcode(parent.replace(/^v/, ''));
+    }
+    return undefined;
+}
+
 export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvider {
     // abs is included as a suffix here for its use in movabs and movabsq
     // https://github.com/compiler-explorer/compiler-explorer/issues/4481
@@ -43,6 +71,6 @@ export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvide
                 info = getAsmOpcode(alternativeInstruction[1]);
             }
         }
-        return info || null;
+        return info || getComparePseudoOpInfo(instruction) || null;
     }
 }
