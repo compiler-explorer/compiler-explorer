@@ -35,6 +35,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildSystemDriver} from '../build-systems/index.js';
+import {defaultMaxToolsPerRequest} from '../compilation/compilation-request-parser.js';
 import {CompilerArguments} from '../compiler-arguments.js';
 
 export class FakeCompiler {
@@ -71,6 +72,10 @@ export class FakeCompiler {
 
     getDefaultFilters() {
         return {};
+    }
+
+    getMaxToolsPerRequest() {
+        return defaultMaxToolsPerRequest;
     }
 
     getDefaultExecOptions() {

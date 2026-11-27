@@ -26,6 +26,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
+import {default as PQueue} from 'p-queue';
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
 import {parseAllDocuments} from 'yaml';
@@ -91,6 +92,7 @@ import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js'
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
 import * as cfg from './cfg/cfg.js';
+import {defaultMaxToolsPerRequest} from './compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
 import {
@@ -239,6 +241,8 @@ export class BaseCompiler {
     protected executionEnvironmentClass: typeof LocalExecutionEnvironment;
     protected readonly argParser: BaseParser;
     protected readonly isCompilationWorker: boolean;
+    protected readonly maxToolsPerRequest: number;
+    protected readonly toolConcurrencyPerRequest: number;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -257,6 +261,8 @@ export class BaseCompiler {
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath', false);
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
+        this.maxToolsPerRequest = this.env.ceProps('maxToolsPerRequest', defaultMaxToolsPerRequest);
+        this.toolConcurrencyPerRequest = Math.max(1, this.env.ceProps('toolConcurrencyPerRequest', 2));
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');
@@ -2105,22 +2111,31 @@ export class BaseCompiler {
         return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
     }
 
+    getMaxToolsPerRequest(): number {
+        return this.maxToolsPerRequest;
+    }
+
+    // The returned promises are in the order the tools were requested, but only `toolConcurrencyPerRequest` of the
+    // tools run at once.
     runToolsOfType(tools: ActiveTool[], type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
+            const queue = new PQueue({concurrency: this.toolConcurrencyPerRequest});
             for (const tool of tools) {
                 const matches = this.possibleTools.find(possibleTool => {
                     return possibleTool.id === tool.id && possibleTool.type === type;
                 });
 
                 if (matches) {
-                    const toolPromise: Promise<ToolResult> = matches.runTool(
-                        compilationInfo,
-                        compilationInfo.inputFilename,
-                        tool.args,
-                        tool.stdin,
-                        this.supportedLibraries,
-                        false,
+                    const toolPromise: Promise<ToolResult> = queue.add(() =>
+                        matches.runTool(
+                            compilationInfo,
+                            compilationInfo.inputFilename,
+                            tool.args,
+                            tool.stdin,
+                            this.supportedLibraries,
+                            false,
+                        ),
                     );
                     tooling.push(toolPromise);
                 }

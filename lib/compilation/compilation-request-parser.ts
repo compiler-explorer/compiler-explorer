@@ -77,16 +77,29 @@ export function parseExecutionParameters(execParams: UnparsedExecutionParams = {
     };
 }
 
+export const defaultMaxToolsPerRequest = 5;
+
 /**
- * Parse tools array and ensure args are properly split
+ * Parse tools array and ensure args are properly split. Identical entries (same id, args and stdin) are dropped, and
+ * at most `maxTools` are kept: each one is a separate process run against the compilation, and the UI only ever sends
+ * a handful.
  */
-export function parseTools(tools: LegacyCompatibleActiveTool[] = []): ActiveTool[] {
-    return tools.map(tool => {
-        if (typeof tool.args === 'string') {
-            return {...tool, args: splitArguments(tool.args)};
-        }
-        return tool as ActiveTool;
-    });
+export function parseTools(
+    tools: LegacyCompatibleActiveTool[] = [],
+    maxTools: number = defaultMaxToolsPerRequest,
+): ActiveTool[] {
+    const seen = new Set<string>();
+    const result: ActiveTool[] = [];
+    for (const tool of tools) {
+        if (result.length >= maxTools) break;
+        const parsed: ActiveTool =
+            typeof tool.args === 'string' ? {...tool, args: splitArguments(tool.args)} : (tool as ActiveTool);
+        const key = JSON.stringify([parsed.id, parsed.args, parsed.stdin]);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(parsed);
+    }
+    return result;
 }
 
 /**

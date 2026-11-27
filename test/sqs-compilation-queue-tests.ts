@@ -82,7 +82,7 @@ describe('Whether a queued request recorded a JSON content-type', () => {
 describe('Parsing a queued request whose content-type carries a charset', () => {
     // Reading it as text loses everything the caller asked for except the source, and the compilation still succeeds:
     // the user gets the right code built with default flags and no libraries, and nothing logs a complaint.
-    const compiler = {getDefaultFilters: () => ({intel: true, demangle: true})} as any;
+    const compiler = {getDefaultFilters: () => ({intel: true, demangle: true}), getMaxToolsPerRequest: () => 5} as any;
 
     function parseAsWorkerDoes(contentType: string) {
         const msg = makeMessage({
