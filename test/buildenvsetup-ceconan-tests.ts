@@ -32,6 +32,8 @@ import tar from 'tar-stream';
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {BuildEnvSetupCeConanDirect} from '../lib/buildenvsetup/ceconan.js';
+import {BuildEnvSetupCeConanCircleDirect} from '../lib/buildenvsetup/ceconan-circle.js';
+import {BuildEnvSetupCeConanFortranDirect} from '../lib/buildenvsetup/ceconan-fortran.js';
 import * as temp from '../lib/temp.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
@@ -252,5 +254,35 @@ describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
         const other = await settingsFor('Debug');
         const possibleBuilds = {otherhash: {settings: {...other.settings, 'compiler.version': 'clang1600'}}};
         expect(await setup.findBuildHash(key, possibleBuilds)).toBeUndefined();
+    });
+});
+
+describe('Conan subclasses honour the requested build type', () => {
+    const ce = makeCompilationEnvironment({languages});
+    const key = {options: [] as string[]} as any;
+
+    it('circle', async () => {
+        const linked: Record<string, string> = {linkedCompilerId: 'g132', linkedCompilerType: 'gcc'};
+        const compilerInfo = makeFakeCompilerInfo({
+            lang: 'c++',
+            exe: '/dev/null',
+            options: '',
+            buildenvsetup: {id: 'ceconan-circle', props: (name: string, def?: any) => linked[name] ?? def},
+        });
+        const setup = new BuildEnvSetupCeConanCircleDirect(compilerInfo, ce);
+        const props = await setup.getConanBuildProperties(key, 'Release');
+        expect(props.build_type).toEqual('Release');
+        expect(props['compiler.version']).toEqual('g132');
+    });
+
+    it('fortran', async () => {
+        const compilerInfo = makeFakeCompilerInfo({
+            lang: 'c++',
+            exe: '/dev/null',
+            options: '',
+            buildenvsetup: {id: 'ceconan-fortran', props: (name: string, def?: any) => def},
+        });
+        const setup = new BuildEnvSetupCeConanFortranDirect(compilerInfo, ce);
+        expect((await setup.getConanBuildProperties(key, 'Release')).build_type).toEqual('Release');
     });
 });
