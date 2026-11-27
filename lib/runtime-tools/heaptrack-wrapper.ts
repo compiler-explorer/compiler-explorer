@@ -27,7 +27,7 @@ import {createWriteStream, constants as fsConstants, WriteStream} from 'node:fs'
 import * as fs from 'node:fs/promises';
 import * as net from 'node:net';
 import path from 'node:path';
-import {pipeline} from 'node:stream';
+import {pipeline, Transform, TransformCallback} from 'node:stream';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {
@@ -43,6 +43,40 @@ import {BaseRuntimeTool} from './base-runtime-tool.js';
 
 const O_NONBLOCK = fsConstants.O_NONBLOCK;
 
+const DEFAULT_MAX_RAW_OUTPUT = 64 * 1024 * 1024;
+// heaptrack_interpret resolves addresses to symbol names, so its output can outgrow the raw trace somewhat.
+const INTERPRETED_OUTPUT_FACTOR = 4;
+
+export class ByteLimitExceededError extends Error {
+    constructor(public readonly limit: number) {
+        super(`Output exceeded the limit of ${limit} bytes`);
+        this.name = 'ByteLimitExceededError';
+    }
+}
+
+// Passes data through until more than `limit` bytes have been seen, then fails the stream (and so any pipeline it
+// is part of). Nothing from the chunk that crosses the limit is passed on.
+export class ByteLimitTransform extends Transform {
+    private seen = 0;
+
+    constructor(private readonly limit: number) {
+        super();
+    }
+
+    get bytesSeen() {
+        return this.seen;
+    }
+
+    override _transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
+        this.seen += chunk.length;
+        if (this.seen > this.limit) {
+            callback(new ByteLimitExceededError(this.limit));
+        } else {
+            callback(null, chunk);
+        }
+    }
+}
+
 export class HeaptrackWrapper extends BaseRuntimeTool {
     private rawOutput: string;
     private pipe: string;
@@ -52,6 +86,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     private preload: string;
     private interpreter: string;
     private printer: string;
+    private maxRawOutput: number;
 
     public static FlamegraphFilename = 'heaptrack.flamegraph.txt';
 
@@ -76,6 +111,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         this.preload = path.join(this.heaptrackPath, 'lib/libheaptrack_preload.so');
         this.interpreter = path.join(this.heaptrackPath, 'libexec/heaptrack_interpret');
         this.printer = path.join(this.heaptrackPath, 'bin/heaptrack_print');
+        this.maxRawOutput = ceProps('heaptrackMaxRawOutput', DEFAULT_MAX_RAW_OUTPUT);
     }
 
     public static isSupported(compiler: CompilationEnvironment) {
@@ -110,24 +146,34 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
-    private async finishPipesAndStreams(fd: number, file: WriteStream, socket: net.Socket): Promise<void> {
+    private async finishPipesAndStreams(
+        fd: number,
+        file: WriteStream,
+        socket: net.Socket,
+        pipelineDone: Promise<void>,
+    ): Promise<void> {
+        // If the pipeline was torn down (e.g. the byte limit was hit) the end() callbacks of the destroyed streams
+        // never fire, so don't wait on them past the pipeline finishing.
         socket.push(null);
-        await new Promise(resolve => socket.end(() => resolve(true)));
+        await Promise.race([new Promise(resolve => socket.end(() => resolve(true))), pipelineDone]);
 
-        await new Promise(resolve => file.end(() => resolve(true)));
+        await Promise.race([new Promise(resolve => file.end(() => resolve(true))), pipelineDone]);
 
-        file.write(Buffer.from([0]));
+        if (!file.destroyed) file.write(Buffer.from([0]));
 
         // Don't manually close fd - the socket owns it and closes it during cleanup
         if (socket.resetAndDestroy) socket.resetAndDestroy();
         socket.unref();
 
-        await new Promise(resolve => {
-            file.close(err => {
-                if (err) logger.error('Error while closing heaptrack log: ', err);
-                resolve(true);
-            });
-        });
+        await Promise.race([
+            new Promise(resolve => {
+                file.close(err => {
+                    if (err) logger.error('Error while closing heaptrack log: ', err);
+                    resolve(true);
+                });
+            }),
+            pipelineDone,
+        ]);
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
@@ -161,7 +207,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
     public async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<UnprocessedExecResult> {
         const runOptions = JSON.parse(JSON.stringify(execOptions));
         const interpretOptions = JSON.parse(JSON.stringify(execOptions));
-        interpretOptions.maxOutput = 1024 * 1024 * 1024;
+        interpretOptions.maxOutput = this.maxRawOutput * INTERPRETED_OUTPUT_FACTOR;
         this.addToEnv(runOptions);
 
         await this.makePipe();
@@ -170,17 +216,32 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         const socket = new net.Socket({fd: fd, readable: true, writable: true});
 
         const file = createWriteStream(this.rawOutput);
-        pipeline(socket, file, err => {
-            if (err) {
-                logger.error('Error during heaptrack pipeline: ', err);
-            }
+        let limitExceeded = false;
+        const pipelineDone = new Promise<void>(resolve => {
+            pipeline(socket, new ByteLimitTransform(this.maxRawOutput), file, err => {
+                if (err instanceof ByteLimitExceededError) {
+                    limitExceeded = true;
+                } else if (err) {
+                    logger.error('Error during heaptrack pipeline: ', err);
+                }
+                resolve();
+            });
         });
 
         const result = await this.sandboxFunc(filepath, args, runOptions);
 
-        await this.finishPipesAndStreams(fd, file, socket);
+        await this.finishPipesAndStreams(fd, file, socket, pipelineDone);
 
         await fs.unlink(this.pipe);
+
+        if (limitExceeded) {
+            const limitMiB = Math.round(this.maxRawOutput / (1024 * 1024));
+            result.stderr +=
+                `\nHeaptrack trace exceeded ${limitMiB} MiB and was discarded; ` +
+                'no heaptrack results are available. Try reducing the number of allocations.\n';
+            await fs.unlink(this.rawOutput).catch(() => {});
+            return result;
+        }
 
         await this.interpretAndSave(interpretOptions, result);
 

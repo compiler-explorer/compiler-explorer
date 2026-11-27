@@ -27,8 +27,62 @@ import * as fs from 'node:fs';
 import * as net from 'node:net';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import {Readable, Writable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 
-import {describe, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
+
+import {ByteLimitExceededError, ByteLimitTransform} from '../../lib/runtime-tools/heaptrack-wrapper.js';
+
+function collector() {
+    const chunks: Buffer[] = [];
+    const sink = new Writable({
+        write(chunk: Buffer, _encoding, callback) {
+            chunks.push(chunk);
+            callback();
+        },
+    });
+    return {sink, received: () => Buffer.concat(chunks)};
+}
+
+function chunksOf(...sizes: number[]) {
+    return sizes.map((size, i) => Buffer.alloc(size, i + 1));
+}
+
+describe('ByteLimitTransform', () => {
+    it('passes everything through when under the limit', async () => {
+        const {sink, received} = collector();
+        const limiter = new ByteLimitTransform(100);
+        await pipeline(Readable.from(chunksOf(10, 20, 30)), limiter, sink);
+        expect(received()).toEqual(Buffer.concat(chunksOf(10, 20, 30)));
+        expect(limiter.bytesSeen).toEqual(60);
+    });
+
+    it('allows exactly the limit', async () => {
+        const {sink, received} = collector();
+        await pipeline(Readable.from(chunksOf(40, 60)), new ByteLimitTransform(100), sink);
+        expect(received().length).toEqual(100);
+    });
+
+    it('fails the pipeline once the limit is exceeded, without passing on the overflowing chunk', async () => {
+        const {sink, received} = collector();
+        const source = Readable.from(chunksOf(40, 60, 1, 1000));
+        const result = pipeline(source, new ByteLimitTransform(100), sink);
+        await expect(result).rejects.toBeInstanceOf(ByteLimitExceededError);
+        await expect(result).rejects.toThrow('100 bytes');
+        expect(received()).toEqual(Buffer.concat(chunksOf(40, 60)));
+        expect(source.destroyed).toBe(true);
+        expect(sink.destroyed).toBe(true);
+    });
+
+    it('fails on a single chunk larger than the limit', async () => {
+        const {sink, received} = collector();
+        await expect(pipeline(Readable.from(chunksOf(101)), new ByteLimitTransform(100), sink)).rejects.toBeInstanceOf(
+            ByteLimitExceededError,
+        );
+        expect(received().length).toEqual(0);
+    });
+});
 
 describe('HeaptrackWrapper FD behavior tests', () => {
     it('should verify net.Socket properly handles external FDs', async () => {
