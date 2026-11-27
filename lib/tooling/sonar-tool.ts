@@ -130,10 +130,6 @@ export class SonarTool extends BaseTool {
         return lines;
     }
 
-    protected override parseOutput(lines: string, inputFilepath?: string, pathPrefix?: string): ResultLine[] {
-        return this.parseOutputAndFixes(lines, 'cpp', inputFilepath, pathPrefix).output;
-    }
-
     // Everything request-specific (language, reproducer) is passed in or returned: one SonarTool instance
     // serves every request for its tool, and runs overlap across awaits.
     parseOutputAndFixes(
@@ -256,17 +252,27 @@ export class SonarTool extends BaseTool {
     ): ToolResult {
         const lang = SonarTool.langFor(compilationInfo);
         const transformedFilepath = inputFilepath ? result.filenameTransform(inputFilepath) : undefined;
-        const stderr = this.parseOutputAndFixes(result.stderr, lang, transformedFilepath, exeDir);
-        const stdout = this.parseOutputAndFixes(result.stdout, lang, transformedFilepath, exeDir);
+        const {output: stderr, reproducer: stderrReproducer} = this.parseOutputAndFixes(
+            result.stderr,
+            lang,
+            transformedFilepath,
+            exeDir,
+        );
+        const {output: stdout, reproducer: stdoutReproducer} = this.parseOutputAndFixes(
+            result.stdout,
+            lang,
+            transformedFilepath,
+            exeDir,
+        );
         const res: ToolResult = {
             id: this.tool.id,
             name: this.tool.name,
             code: result.code,
             languageId: this.tool.languageId,
-            stderr: stderr.output,
-            stdout: stdout.output,
+            stderr,
+            stdout,
         };
-        const reproducer = stdout.reproducer ?? stderr.reproducer;
+        const reproducer = stdoutReproducer ?? stderrReproducer;
         if (reproducer) res.artifact = reproducer;
         return res;
     }

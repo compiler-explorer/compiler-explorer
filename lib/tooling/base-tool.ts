@@ -226,7 +226,7 @@ export class BaseTool implements ITool {
         result: UnprocessedExecResult,
         inputFilepath?: string,
         exeDir?: string,
-        _compilationInfo?: CompilationInfo,
+        compilationInfo?: CompilationInfo,
     ): ToolResult {
         const transformedFilepath = inputFilepath ? result.filenameTransform(inputFilepath) : undefined;
         return {

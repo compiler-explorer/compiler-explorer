@@ -535,18 +535,21 @@ describe('SonarTool keeps overlapping requests apart', () => {
             {id: 'sonar', exe: '/bin/sonar', options: []} as unknown as ToolInfo,
             {ceProps: () => undefined, compilerProps: () => undefined} as unknown as ToolEnv,
         );
-        let finishFirst: (value: any) => void = () => {};
-        const firstExec = new Promise(resolve => {
-            finishFirst = resolve;
+        // Both runs are in flight together and finish in the same tick, so each one's output is parsed before
+        // either has assembled its result.
+        const finishers: ((value: any) => void)[] = [];
+        vi.spyOn(tool, 'exec').mockImplementation(
+            () =>
+                new Promise(resolve => {
+                    finishers.push(resolve);
+                }) as any,
+        );
+        const execResult = (reproducer: string) => ({
+            code: 0,
+            stdout: sonarOutput(reproducer),
+            stderr: '',
+            filenameTransform: (f: string) => f,
         });
-        vi.spyOn(tool, 'exec')
-            .mockReturnValueOnce(firstExec as any)
-            .mockResolvedValueOnce({
-                code: 0,
-                stdout: sonarOutput('second'),
-                stderr: '',
-                filenameTransform: (f: string) => f,
-            } as any);
 
         const first = tool.runTool(
             {
@@ -556,7 +559,7 @@ describe('SonarTool keeps overlapping requests apart', () => {
             } as unknown as CompilationInfo,
             '/tmp/first/example.c',
         );
-        const second = await tool.runTool(
+        const secondRun = tool.runTool(
             {
                 compiler: {lang: 'c++', exe: '/bin/c++', options: ''},
                 options: [],
@@ -564,8 +567,10 @@ describe('SonarTool keeps overlapping requests apart', () => {
             } as unknown as CompilationInfo,
             '/tmp/second/example.cpp',
         );
-        finishFirst({code: 0, stdout: sonarOutput('first'), stderr: '', filenameTransform: (f: string) => f});
-        const firstResult = await first;
+        await vi.waitFor(() => expect(finishers).toHaveLength(2));
+        finishers[0](execResult('first'));
+        finishers[1](execResult('second'));
+        const [firstResult, second] = await Promise.all([first, secondRun]);
 
         expect(firstResult.artifact?.content).toEqual('first');
         expect(second.artifact?.content).toEqual('second');
