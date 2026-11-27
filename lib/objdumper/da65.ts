@@ -29,8 +29,8 @@ export class Da65Objdumper extends BaseObjdumper {
         super([], []);
     }
 
-    override getArgs(outputFilename: string) {
-        return [outputFilename];
+    override getArgs(objectFiles: string[]) {
+        return [...objectFiles];
     }
 
     static override get key() {

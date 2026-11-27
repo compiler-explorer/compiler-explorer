@@ -1,0 +1,116 @@
+mirl "0.3.1";
+target { arch: "x86_64", sys: "linux", env: "none", abi: "sysv64", isa: "cmov,cx8,x87,fxsr,osfxsr,mmx,sce,sse,sse2" };
+language { name: "mach", code: 32845 };
+
+debug {
+    directory = "/app";
+    file f0 = "src/example.mach";
+    file f1 = "/opt/compiler-explorer/mach-7.2.0/std/src/math.mach";
+    file f2 = "src/helper.mach";
+    loc l0 = f0:4:5;
+    loc l1 = f0:4:5;
+    loc l2 = f0:7:9;
+    loc l3 = f0:7:14;
+    loc l4 = f0:7:28;
+    loc l5 = f0:8:5;
+    loc l6 = f0:8:9;
+    loc l7 = f0:8:9;
+    loc l8 = f0:8:9;
+    loc l9 = f0:8:13;
+    loc l10 = f0:8:9;
+    loc l11 = f0:8:5;
+    loc l12 = f0:7:28;
+    loc l13 = f0:7:9;
+    loc l14 = f0:11:9;
+    loc l15 = f0:11:14;
+    loc l16 = f0:11:26;
+    loc l17 = f0:12:5;
+    loc l18 = f0:12:20;
+    loc l19 = f0:12:20;
+    loc l20 = f0:12:20;
+    loc l21 = f0:12:29;
+    loc l22 = f0:12:20;
+    loc l23 = f0:12:36;
+    loc l24 = f0:12:20;
+    loc l25 = f0:12:5;
+    loc l26 = f0:12:9;
+    loc l27 = f0:11:26;
+    loc l28 = f0:13:5;
+    loc l29 = f0:13:5;
+    loc l30 = f0:13:11;
+    loc l31 = f0:13:11;
+    loc l32 = f0:13:11;
+    loc l33 = f0:13:17;
+    loc l34 = f0:13:17;
+    loc l35 = f0:13:17;
+    loc l36 = f0:13:29;
+    loc l37 = f0:13:17;
+    loc l38 = f0:13:11;
+    loc l39 = f0:13:5;
+    loc l40 = f0:13:5;
+    loc l41 = f0:13:5;
+    loc l42 = f0:13:5;
+    loc l43 = f0:11:26;
+    loc l44 = f0:14:5;
+    loc l45 = f0:14:9;
+    loc l46 = f0:14:5;
+    loc l47 = f0:11:26;
+    loc l48 = f0:11:9;
+    loc l49 = f1:14:9;
+    loc l50 = f1:14:13;
+    loc l51 = f1:14:21;
+    loc l52 = f1:15:9;
+    loc l53 = f1:15:5;
+    loc l54 = f1:15:18;
+    loc l55 = f1:15:5;
+    loc l56 = f1:16:5;
+    loc l57 = f1:14:9;
+    loc l58 = f2:2:9;
+    loc l59 = f2:2:14;
+    loc l60 = f2:3:9;
+    loc l61 = f2:3:5;
+    loc l62 = f2:2:9;
+    site s0 = "example.helper.bump" at l37;
+    type t0 = "mach.a9b3af603166b142" "i64" base(signed, 64);
+    type t1 = "mach.98278d1353b36749" "^u64" base(unsigned, 64);
+    var v0 = "LANES": t0 at l1;
+    var v1 = "k": t1 at l3 parameter 0;
+    var v2 = "n": t0 at l15 parameter 0;
+    var v3 = "acc": t0 at l26;
+    var v4 = "a": t0 at l50 parameter 0;
+    var v5 = "b": t0 at l51 parameter 1;
+    var v6 = "x": t0 at l59 parameter 0;
+}
+
+#[align(8)] #[debug(v0)] #[visibility(hidden)] pub val example.example.LANES: i64 = 4;
+
+#[constant_time(soft)] #[secret_parameters(0)] #[secret_result] #[effects(none)] #[placed(fun(i64) i64, [{reg(0, 7), fixed, exact}])] #[visibility(hidden)] pub fun example.example.mask(_0: ^i64) i64 {
+    bind v1 = _0;
+    val _1: ^i64 = xor(_0, 6148914691236517205) at l10;
+    br _0(_1) at l11;
+_0(_2: ^i64):
+    ret.placed[places: [{reg(0, 0), fixed, exact}]](_2) at l13;
+}
+
+#[effects(reads, writes, traps, ends)] #[placed(fun(i64) i64, [{reg(0, 7), fixed, exact}])] #[visibility(hidden)] pub fun example.example.main(_0: i64) i64 {
+    bind v6 = unavailable;
+    bind v3 = unavailable;
+    bind v2 = _0;
+    val _1: i64 = call.placed[places: [{reg(0, 7), fixed, exact}, {reg(0, 6), fixed, exact}, {reg(0, 0), fixed, exact}]] std.math.min(4, _0) at l24;
+    bind v3 = _1;
+    br _2(_1) at l37;
+_0(_2: i64):
+    ret.placed[places: [{reg(0, 0), fixed, exact}]](_2) at l48;
+_1(_3: i64):
+    val _4: i64 = add(_1, _3) at l38;
+    bind v3 = _4;
+    br _0(_4) at l46;
+_2(_5: i64):
+    bind v6 = _5;
+    val _6: i64 = add(_5, 1) at l60 in s0;
+    br _1(_6) at l61 in s0;
+}
+
+ext fun std.math.min(i64, i64) i64;
+
+#[inline(always)] ext fun example.helper.bump(i64) i64;

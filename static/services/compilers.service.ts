@@ -89,6 +89,7 @@ export class CompilersService {
         'supportsRustHirView',
         'supportsClangirView',
         'supportsHaskellCoreView',
+        'supportsMachIrView',
         'supportsHaskellStgView',
         'supportsHaskellCmmView',
         'supportsLeanCView',

@@ -660,6 +660,14 @@ export class BaseCompiler {
         return defaultOutputFilename;
     }
 
+    /** Every object the asm view disassembles, for a compilation that produces more than one. */
+    async getObjdumpInputFilenames(
+        defaultOutputFilename: string,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<string[]> {
+        return [this.getObjdumpInputFilename(defaultOutputFilename, filters)];
+    }
+
     postProcessObjdumpOutput(output: string) {
         return output;
     }
@@ -687,11 +695,15 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
+        const objectFiles = result.objdumpInputFilename
+            ? [result.objdumpInputFilename]
+            : await this.getObjdumpInputFilenames(outputFilename, filters);
 
-        if (!(await utils.fileExists(objdumpInputFile))) {
-            result.asm = '<No output file ' + objdumpInputFile + '>';
-            return result;
+        for (const objectFile of objectFiles) {
+            if (!(await utils.fileExists(objectFile))) {
+                result.asm = '<No output file ' + objectFile + '>';
+                return result;
+            }
         }
 
         const objdumperInfo = this.getObjdumperForResult(result);
@@ -702,7 +714,7 @@ export class BaseCompiler {
 
         const objdumper = new objdumperInfo.cls();
         const args = objdumper.getArgs(
-            objdumpInputFile,
+            objectFiles,
             demangle,
             intelAsm,
             staticReloc,
@@ -722,7 +734,7 @@ export class BaseCompiler {
         } else {
             const execOptions: ExecutionOptions = {
                 maxOutput: maxSize,
-                customCwd: (result.dirPath as string) || path.dirname(objdumpInputFile),
+                customCwd: (result.dirPath as string) || path.dirname(objectFiles[0]),
             };
 
             const objResult = await objdumper.executeObjdump(
@@ -1804,6 +1816,19 @@ export class BaseCompiler {
         return [{text: 'Clojure Macro Expansion not applicable to current compiler.'}];
     }
 
+    getMachIrOutputFilename(inputFilename: string): string {
+        return utils.changeExtension(inputFilename, '.ir');
+    }
+
+    async processMachIrOutput(outpath: string, output: CompilationResult): Promise<ParsedAsmResultLine[]> {
+        if (output.code !== 0) return [{text: 'Failed to run compiler to get Mach IR'}];
+        if (await utils.fileExists(outpath)) {
+            const content = await fs.readFile(outpath, 'utf8');
+            return utils.splitLines(content).map(text => ({text}));
+        }
+        return [{text: 'Internal error; unable to open output path'}];
+    }
+
     async processHaskellExtraOutput(outpath: string, output: CompilationResult): Promise<ResultLine[]> {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
@@ -2739,6 +2764,7 @@ export class BaseCompiler {
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
         const makeLeanC = !!backendOptions.produceLeanC && this.compiler.supportsLeanCView;
+        const makeMachIr = backendOptions.produceMachIr && this.compiler.supportsMachIrView;
         const makeGccDump = backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump;
         const makeYul = backendOptions.produceYul && this.compiler.supportsYulView;
 
@@ -2807,6 +2833,10 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
+        const machIrResult = makeMachIr
+            ? await this.processMachIrOutput(this.getMachIrOutputFilename(inputFilename), asmResult)
+            : undefined;
+
         const leanCResult = makeLeanC
             ? await this.processLeanCOutput(outputFilename, asmResult, backendOptions.produceLeanC)
             : undefined;
@@ -2864,6 +2894,7 @@ export class BaseCompiler {
         asmResult.haskellCoreOutput = haskellCoreResult;
         asmResult.haskellStgOutput = haskellStgResult;
         asmResult.haskellCmmOutput = haskellCmmResult;
+        asmResult.machIrOutput = machIrResult;
         asmResult.leanCOutput = leanCResult;
 
         asmResult.clojureMacroExpOutput = clojureMacroExpResult;

@@ -29,12 +29,18 @@ import path from 'node:path';
 
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {MachParser} from '../lib/compilers/argument-parsers.js';
 import {MachCompiler} from '../lib/compilers/mach.js';
 import {logger} from '../lib/logger.js';
+import {LlvmObjdumper} from '../lib/objdumper/llvm.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {MACH_MODULE_SEP, MACH_SPIRV_HEADER, MachAsmParser} from '../lib/parsers/asm-parser-mach.js';
 import {toEditorColumns} from '../lib/parsers/mach-diagnostics.js';
+import {MachIrParser} from '../lib/parsers/mach-ir.js';
 import {parseProperties} from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
+import {unwrap} from '../shared/assert.js';
+import {CompilerOverrideType} from '../types/compilation/compiler-overrides.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
@@ -42,96 +48,124 @@ const languages = {
     mach: {id: 'mach' as LanguageKey, extensions: ['.mach']},
 };
 
-// `mach info targets` as mach 6.7.0 prints it.
-const infoTargets = `linux-x86_64          isa=x86_64    os=linux         abi=sysv64   object=elf
-linux-aarch64         isa=aarch64   os=linux         abi=aapcs64  object=elf
-linux-riscv64         isa=rv64gc    os=linux         abi=lp64     object=elf
-linux-riscv64         isa=rv64gc    os=linux         abi=lp64f    object=elf
-linux-riscv64         isa=rv64gc    os=linux         abi=lp64d    object=elf
-darwin-x86_64         isa=x86_64    os=darwin        abi=sysv64   object=macho
-darwin-aarch64        isa=aarch64   os=darwin        abi=aapcs64  object=macho
-windows-x86_64        isa=x86_64    os=windows       abi=win64    object=coff
-freestanding-x86_64   isa=x86_64    os=freestanding  abi=sysv64   object=elf
-freestanding-x86_64   isa=x86_64    os=freestanding  abi=sysv64   object=raw
-freestanding-x86_64   isa=x86_64    os=freestanding  abi=win64    object=elf
-freestanding-x86_64   isa=x86_64    os=freestanding  abi=win64    object=raw
-freestanding-aarch64  isa=aarch64   os=freestanding  abi=aapcs64  object=elf
-freestanding-aarch64  isa=aarch64   os=freestanding  abi=aapcs64  object=raw
-freestanding-riscv64  isa=rv64gc    os=freestanding  abi=lp64     object=elf
-freestanding-riscv64  isa=rv64gc    os=freestanding  abi=lp64     object=raw
-freestanding-riscv64  isa=rv64gc    os=freestanding  abi=lp64f    object=elf
-freestanding-riscv64  isa=rv64gc    os=freestanding  abi=lp64f    object=raw
-freestanding-riscv64  isa=rv64gc    os=freestanding  abi=lp64d    object=elf
-freestanding-riscv64  isa=rv64gc    os=freestanding  abi=lp64d    object=raw
-freestanding-riscv32  isa=rv32imac  os=freestanding  abi=ilp32    object=elf
-freestanding-riscv32  isa=rv32imac  os=freestanding  abi=ilp32    object=raw
-freestanding-spirv    isa=spirv     os=freestanding  abi=spirv    object=spv
-`;
+// `mach info targets` as mach 7.2.0 prints it.
+const infoTargets = [
+    'target                 env                                            abi                            code_model      linkage                                            note',
+    'linux-x86_64           *none,gnu                                      *sysv64                        *small          *static gnu:*pie,dynamic,static',
+    'linux-aarch64          *none,gnu                                      *aapcs64                       *small          *static gnu:*pie,dynamic,static',
+    'linux-riscv64          *none,gnu                                      *lp64d,lp64,lp64f              *medany         *static gnu:*pie,dynamic,static',
+    'linux-riscv32          *none,gnu                                      ilp32,ilp32f,ilp32d            *medany         *static gnu:*pie,dynamic,static                    needs --isa',
+    'darwin-x86_64          *macos                                         *sysv64                        *small          macos:*pie,dynamic',
+    'darwin-aarch64         *macos                                         *darwinpcs                     *small          macos:*pie',
+    'windows-x86_64         *msvc                                          *win64                         *small          msvc:*pie,dynamic',
+    'windows-aarch64        *msvc                                          *aapcs64win                    *small          msvc:*pie',
+    'windows-arm64ec        *msvc                                          *arm64ec                       *small          msvc:*pie',
+    'uefi-x86_64            *none                                          *win64                         *small          *pie',
+    'uefi-aarch64           *none                                          *aapcs64win                    *small          *pie',
+    'freestanding-x86_64    *none                                          *sysv64,win64                  *small          *static                                            needs --isa',
+    'freestanding-aarch64   *none                                          *aapcs64,darwinpcs,aapcs64win  *small          *static                                            needs --isa',
+    'freestanding-riscv64   *none                                          lp64,lp64f,lp64d               *medany,medlow  *static                                            needs --isa',
+    'freestanding-riscv32   *none                                          ilp32,ilp32f,ilp32d            *medlow         *static                                            needs --isa',
+    'freestanding-riscv32e  *none                                          ilp32e                         *medlow         *static                                            needs --isa',
+    'freestanding-wasm32    *none                                          *basic                         -               *static',
+    'wasi-wasm32            *preview1                                      *basic                         -               preview1:*static',
+    'vulkan-spirv           *none,vulkan1.0,vulkan1.1,vulkan1.2,vulkan1.3  *shader                        -               - vulkan1.0:- vulkan1.1:- vulkan1.2:- vulkan1.3:-',
+    '',
+].join('\n');
 
-// the formats that register a debug model in mach 6.7.0; the flat images refuse the adapter's debug profile, since they
-// carry neither a debug model nor linkable objects.
-const debugCapableFormats = new Set(['elf', 'macho', 'coff', 'spv']);
+const helpBuild = [
+    'usage: mach build [options] <path|entry.mach> [inputs...]',
+    '',
+    'compile a project or one entry file',
+    '',
+    'options:',
+    '  -h, --help            show help',
+    '      --report <human|json|lines>',
+    '                        report as human text, NDJSON records or tab-separated record lines',
+    '                        (default: human)',
+    '  -t, --target <pattern>...',
+    "                        which targets: a name or glob of the manifest's targets in a project, a",
+    "                        <sys>-<arch> in an entry build (default: the host's)",
+    "  -O, --[no-]optimize   optimize, or not with --no-optimize (default: the profile's)",
+    "      --[no-]debug      emit debug information, or not with --no-debug (default: the profile's)",
+    '      --emit <asm|ir|ir-opt|obj|exe>...',
+    '                        a product to write, once each (default: exe)',
+    '  -k, --kind <bin|static|shared|object|module>',
+    '                        the product to make (default: bin)',
+    '',
+].join('\n');
 
 /**
- * Stands in for one probe build, reproducing what mach 6.7.0 with std 9.4.1 answers for the probe module: std has no layer for a
- * freestanding os, so a `use std.print` there fails inside std whatever the object format, and a format with no debug
- * model refuses the profile's debug information.
+ * Reproduces what mach 7.2.0 with mach-std 10.1.1 answers for each probe build: every tuple builds except
+ * `windows-arm64ec`, where `std.runtime.windows` and `std.system.cpu.features` reject `arm64ec`, and any `needs --isa`
+ * tuple invoked without `--isa`.
  */
-async function fakeProbe(root: string, key: string) {
-    const manifest = await fs.readFile(path.join(root, 'mach.toml'), 'utf8');
-    const section = manifest.match(new RegExp(`^\\[target\\.${key}]\\n(?:\\w+ = "\\S+"\\n)+`, 'm'))![0];
-    const os = section.match(/^os = "(\S+)"$/m)![1];
-    const of = section.match(/^of = "(\S+)"$/m)![1];
-    // std.types is header-only and resolves anywhere; anything above it reaches for an os
-    const source = await fs.readFile(path.join(root, 'src', 'probe.mach'), 'utf8');
-    const usesStdOs = /^use .*\bstd\.(?!types\b)/m.test(source);
+function fakeProbe(args: string[]) {
+    const tIdx = args.indexOf('-t');
+    const platform = tIdx !== -1 ? args[tIdx + 1] : '';
+    const hasIsa = args.includes('--isa');
+    const entry = args[1];
 
-    if (os === 'freestanding' && usesStdOs) {
+    if (platform === 'windows-arm64ec' && entry.startsWith('hosted/')) {
         return {
             code: 1,
             stdout: '',
-            stderr: 'error[comptime.user_error]: std.print needs the files capability (std.system.capability.HAS_FILES)',
+            stderr: 'error[comptime.user_error] std.runtime.windows supports x86_64 and aarch64',
         };
     }
-    if (!debugCapableFormats.has(of)) {
+    if ((platform.startsWith('freestanding-') && !platform.endsWith('wasm32')) || platform === 'linux-riscv32') {
+        if (!hasIsa) {
+            return {
+                code: 1,
+                stdout: '',
+                stderr: `error[target.isa_required] ${platform} sets no ISA floor; pass --isa`,
+            };
+        }
+    }
+    if (platform === 'vulkan-spirv' && !args.includes('module')) {
         return {
-            code: 2,
+            code: 1,
             stdout: '',
-            stderr: 'error[compiler.internal]: debug info was requested, but this target registers no debug model',
+            stderr: 'error[link.unsupported] vulkan-spirv requires -k module',
         };
     }
     return {code: 0, stdout: '', stderr: ''};
 }
 
-/** A std checkout the probe can find, standing in for the one installed beside the compiler. */
 async function makeStd() {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-mach-std'));
     await fs.writeFile(path.join(dir, 'mach.toml'), '[project]\nid = "std"\n');
     return dir;
 }
 
-/** Starts a compiler the way a prediscovered deploy does, which skips version and override discovery. */
 function start(compiler: MachCompiler) {
     return compiler.initialise(new Date(), {libs: {}} as any, true);
 }
 
-/** Answers `mach info targets`, `mach dep pull` and each probe build the way mach 6.7.0 with std 9.4.1 does. */
 function fakeMach(compiler: MachCompiler) {
     vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-        if (args[0] === 'info') return {code: 0, stdout: infoTargets, stderr: ''} as any;
-        if (args[0] === 'dep') return {code: 0, stdout: '', stderr: ''} as any;
-        return (await fakeProbe(args[1], args[5])) as any;
+        if (args[0] === 'info' && args[1] === 'targets') return {code: 0, stdout: infoTargets, stderr: ''} as any;
+        if (args[0] === 'help' && args[1] === 'build') return {code: 0, stdout: helpBuild, stderr: ''} as any;
+        return fakeProbe(args) as any;
     });
 }
 
 function makeMach(stdPath: string) {
     return new MachCompiler(
-        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach', libsArr: []}),
+        makeFakeCompilerInfo({
+            id: 'mach',
+            exe: '/opt/compiler-explorer/mach-7.2.0/mach',
+            lang: 'mach',
+            libsArr: [],
+            objdumper: '/usr/bin/objdump',
+            objdumperType: 'default',
+            llvmObjdumper: '/usr/bin/llvm-objdump',
+        }),
         makeCompilationEnvironment({languages, props: {'compiler.mach.stdPath': stdPath}}),
     );
 }
 
-describe('Mach project layout', () => {
+describe('Mach targets and entry build', () => {
     let compiler: MachCompiler;
     let stdPath: string;
     let startupExecArgs: string[][];
@@ -148,89 +182,77 @@ describe('Mach project layout', () => {
         await fs.rm(stdPath, {recursive: true, force: true});
     });
 
-    it('offers only the tuples that build under the profile, named by the dimensions that disambiguate them', async () => {
+    it('offers every tuple that builds under its probe, disambiguated by ABI where needed', () => {
         expect(compiler.targets().map(t => t.name)).toEqual([
             'linux-x86_64',
             'linux-aarch64',
+            'linux-riscv64-lp64d',
             'linux-riscv64-lp64',
             'linux-riscv64-lp64f',
-            'linux-riscv64-lp64d',
+            'linux-riscv32-ilp32',
+            'linux-riscv32-ilp32f',
+            'linux-riscv32-ilp32d',
             'darwin-x86_64',
             'darwin-aarch64',
             'windows-x86_64',
+            'windows-aarch64',
+            'uefi-x86_64',
+            'uefi-aarch64',
+            'freestanding-x86_64-sysv64',
+            'freestanding-x86_64-win64',
+            'freestanding-aarch64-aapcs64',
+            'freestanding-aarch64-darwinpcs',
+            'freestanding-aarch64-aapcs64win',
+            'freestanding-riscv64-lp64',
+            'freestanding-riscv64-lp64f',
+            'freestanding-riscv64-lp64d',
+            'freestanding-riscv32-ilp32',
+            'freestanding-riscv32-ilp32f',
+            'freestanding-riscv32-ilp32d',
+            'freestanding-riscv32e',
+            'freestanding-wasm32',
+            'wasi-wasm32',
+            'vulkan-spirv',
         ]);
     });
 
-    it('probes every tuple `mach info targets` reports at startup, against one project with std realized once', async () => {
-        expect((await compiler.supportedTuples()).length).toEqual(23);
-        expect(startupExecArgs.filter(args => args[0] === 'dep')).toHaveLength(1);
-        expect(startupExecArgs.filter(args => args[0] === 'build')).toHaveLength(23);
+    it('probes all 30 tuples without invoking mach dep pull', async () => {
+        expect((await compiler.supportedTuples()).length).toEqual(30);
+        expect(startupExecArgs.filter(args => args[0] === 'dep')).toHaveLength(0);
+        expect(startupExecArgs.filter(args => args[0] === 'build')).toHaveLength(30);
     });
 
-    it('keeps the probed targets for discovery to write out, and reuses them on a prediscovered start', async () => {
+    it('reuses cachedMachTargets on prediscovered starts, and re-probes if stale v6 entries lack platform', async () => {
         expect(compiler.getInfo().cachedMachTargets).toEqual(compiler.targets());
+
         const prediscovered = makeMach(stdPath);
         prediscovered.getInfo().cachedMachTargets = compiler.targets();
         const exec = vi.spyOn(prediscovered, 'exec');
         expect(await start(prediscovered)).toBe(prediscovered);
         expect(exec).not.toHaveBeenCalled();
         expect(prediscovered.targets()).toEqual(compiler.targets());
+
+        const stale = makeMach(stdPath);
+        stale.getInfo().cachedMachTargets = [{name: 'linux-x86_64', isa: 'x86_64'} as any];
+        fakeMach(stale);
+        expect(await start(stale)).toBe(stale);
+        expect(stale.targets()).toHaveLength(29);
     });
 
-    it('declares every offered target with its object format, the source entry and the bundled std', async () => {
-        const manifest = compiler.manifest(compiler.targets());
-        expect(manifest).toContain(
-            '[target.linux-riscv64-lp64d]\nisa = "rv64gc"\nos = "linux"\nabi = "lp64d"\nof = "elf"\n',
-        );
-        // the format is written out, not assumed: leaving it off takes the os default, which for freestanding is raw
-        expect(manifest).toContain(
-            '[target.darwin-aarch64]\nisa = "aarch64"\nos = "darwin"\nabi = "aapcs64"\nof = "macho"\n',
-        );
-        expect(manifest).toContain('[artifact.example]\nkind = "bin"\nentry = "example.mach"\n');
-        expect(manifest).toContain(
-            '[target.windows-x86_64]\nisa = "x86_64"\nos = "windows"\nabi = "win64"\nof = "coff"\n',
-        );
-        // std has no freestanding os layer, so no tuple on that os survives whatever its object format
-        expect(manifest).not.toContain('freestanding');
-        expect(manifest).toContain(`[dep.std]\npath = ${JSON.stringify(stdPath)}\n`);
-    });
-
-    it('builds the project root and disassembles the module object', () => {
-        const root = path.join('/tmp', 'ce');
-        const input = path.join(root, 'src', 'example.mach');
-        expect(compiler.orderArguments(['--emit', 'obj'], input, [], [], [], [], ['-O2'], [])).toEqual([
-            'build',
-            root,
-            '--diagnostics=json',
-            '--emit',
-            'obj',
-            '-O2',
-        ]);
-        expect(compiler.getOutputFilename(root, 'output')).toEqual(
-            path.join(root, 'out', 'obj', 'example', 'example.o'),
-        );
-        expect(compiler.getExecutableFilename(root, 'output')).toEqual(path.join(root, 'out', 'bin', 'example'));
-    });
-
-    it('states the compilers whose diagnostic records the adapter reads, whatever the compiler at hand', () => {
-        const env = makeCompilationEnvironment({languages});
-        const at = (semver?: string) =>
-            new MachCompiler(makeFakeCompilerInfo({id: 'mach', exe: '/usr/bin/mach', lang: 'mach', semver}), env)
-                .manifest([])
-                .split('\n')
-                .filter(line => line.startsWith('mach = '));
-        expect(at('6.7.0')).toEqual(['mach = "^6.5"']);
-        expect(at(undefined)).toEqual(['mach = "^6.5"']);
-    });
-
-    it('takes std from beside the executable by default', () => {
+    it('takes std from beside the executable by default, or from compiler.<id>.stdPath', () => {
         const env = makeCompilationEnvironment({languages});
         const installed = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach670', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach720', exe: '/opt/compiler-explorer/mach-7.2.0/mach', lang: 'mach'}),
             env,
         );
-        const std = path.join('/opt/compiler-explorer/mach-6.7.0', 'std');
-        expect(installed.manifest([])).toContain(`[dep.std]\npath = ${JSON.stringify(std)}\n`);
+        expect(installed.stdPath).toEqual(path.join('/opt/compiler-explorer/mach-7.2.0', 'std'));
+
+        const devEnv = makeCompilationEnvironment({
+            languages,
+            props: {'compiler.machdev.stdPath': '/src/mach/dep/std'},
+        });
+        const dev = new MachCompiler(makeFakeCompilerInfo({id: 'machdev', exe: '/usr/bin/mach', lang: 'mach'}), devEnv);
+        expect(dev.stdPath).toEqual('/src/mach/dep/std');
     });
 
     it('refuses to offer any target when the compiler has no std', async () => {
@@ -250,16 +272,261 @@ describe('Mach project layout', () => {
         expect(() => bare.targets()).toThrow('targets read before initialise() probed them');
     });
 
-    it('takes std from stdPath when a compiler names one', () => {
-        const env = makeCompilationEnvironment({languages, props: {'compiler.machdev.stdPath': '/src/mach/dep/std'}});
-        const dev = new MachCompiler(makeFakeCompilerInfo({id: 'machdev', exe: '/usr/bin/mach', lang: 'mach'}), env);
-        expect(dev.manifest([])).toContain('[dep.std]\npath = "/src/mach/dep/std"\n');
+    it('builds the entry directly with --source bindings, expanding target ABI, ISA floor, and module kind', () => {
+        const root = path.join('/tmp', 'ce');
+        const input = path.join(root, 'src', 'example.mach');
+
+        expect(compiler.orderArguments(['--emit', 'asm'], input, [], [], [], [], ['-O'], [])).toEqual([
+            'build',
+            'src/example.mach',
+            '--source',
+            'example=src',
+            '--source',
+            `std=${stdPath}`,
+            '-w',
+            'out',
+            '--report',
+            'json',
+            '--debug',
+            '-t',
+            expect.stringMatching(/^(linux|darwin|windows)-(x86_64|aarch64|riscv64)$/),
+            '--emit',
+            'asm',
+            '-O',
+        ]);
+
+        // non-default ABI + needs --isa floor
+        expect(
+            compiler.orderArguments(
+                ['--target', 'freestanding-aarch64-darwinpcs', '--emit', 'asm'],
+                input,
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+            ),
+        ).toContain('--abi');
+        const fsArgs = compiler.orderArguments(
+            ['--target', 'freestanding-aarch64-darwinpcs', '--emit', 'asm'],
+            input,
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        );
+        expect(fsArgs.slice(fsArgs.indexOf('-t'))).toEqual([
+            '-t',
+            'freestanding-aarch64',
+            '--abi',
+            'darwinpcs',
+            '--isa',
+            'armv8-a+fp+simd',
+            '--emit',
+            'asm',
+        ]);
+
+        // user-supplied --isa and --no-debug override defaults cleanly
+        const customIsa = compiler.orderArguments(
+            ['--target', 'freestanding-x86_64-sysv64', '--emit', 'asm'],
+            input,
+            [],
+            [],
+            [],
+            [],
+            ['--isa', 'x86-64,avx2', '--no-debug'],
+            [],
+        );
+        expect(customIsa).not.toContain('--debug');
+        expect(customIsa.filter(arg => arg === '--isa')).toHaveLength(1);
+        expect(customIsa).toContain('x86-64,avx2');
+
+        // vulkan-spirv injects `-k module` unless user already passed `-k`
+        const spvArgs = compiler.orderArguments(
+            ['--target', 'vulkan-spirv', '--emit', 'obj'],
+            input,
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        );
+        expect(spvArgs.slice(spvArgs.indexOf('-t'))).toEqual(['-t', 'vulkan-spirv', '-k', 'module', '--emit', 'obj']);
+    });
+
+    it('chooses .s on CPU targets, .o on Wasm, SPIR-V, and binaryObject, and .spv on linked SPIR-V', () => {
+        const root = path.join('/tmp', 'ce');
+        const keyFor = (target: string, filters: {binary?: boolean; binaryObject?: boolean} = {}) =>
+            ({
+                compiler: compiler.getInfo(),
+                source: '',
+                options: [],
+                backendOptions: {overrides: [{name: CompilerOverrideType.arch, value: target}]},
+                filters: makeFakeParseFiltersAndOutputOptions(filters),
+                libraries: [],
+                files: [],
+            }) as any;
+
+        const cpuOut = compiler.getOutputFilename(root, 'output', keyFor('linux-x86_64'));
+        expect(cpuOut).toEqual(path.join(root, 'out', 'asm', 'example', 'example.s'));
+        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({}), cpuOut)).toEqual(['--emit', 'asm']);
+
+        const cpuObj = compiler.getOutputFilename(root, 'output', keyFor('linux-x86_64', {binaryObject: true}));
+        expect(cpuObj).toEqual(path.join(root, 'out', 'obj', 'example', 'example.o'));
+        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({binaryObject: true}), cpuObj)).toEqual([
+            '--emit',
+            'obj',
+        ]);
+
+        const binaryArgs = compiler.prepareArguments(
+            [],
+            makeFakeParseFiltersAndOutputOptions({binary: true, execute: true}),
+            {},
+            path.join(root, 'src', 'example.mach'),
+            path.join(root, 'out', 'bin', 'example'),
+            [],
+            [{name: CompilerOverrideType.arch, value: 'linux-x86_64'}],
+        );
+        expect(binaryArgs.some(arg => arg.startsWith('-Wl,'))).toBe(false);
+        expect(binaryArgs).not.toContain('-L./lib');
+
+        const wasmOut = compiler.getOutputFilename(root, 'output', keyFor('wasi-wasm32'));
+        expect(wasmOut).toEqual(path.join(root, 'out', 'obj', 'example', 'example.o'));
+        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({}), wasmOut)).toEqual(['--emit', 'obj']);
+
+        const wasmFilters = makeFakeParseFiltersAndOutputOptions({});
+        compiler.prepareArguments(
+            [],
+            wasmFilters,
+            {},
+            path.join(root, 'src', 'example.mach'),
+            wasmOut,
+            [],
+            [{name: CompilerOverrideType.arch, value: 'wasi-wasm32'}],
+        );
+        expect(wasmFilters.binaryObject).toBe(true);
+
+        const spvBin = compiler.getOutputFilename(root, 'output', keyFor('vulkan-spirv', {binary: true}));
+        expect(spvBin).toEqual(path.join(root, 'out', 'bin', 'example.spv'));
+        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({binary: true}), spvBin)).toEqual([
+            '--emit',
+            'exe',
+            '-o',
+            'out/bin/example.spv',
+        ]);
+    });
+
+    it('uses llvm-objdump when disassembling non-Linux x86_64 binaries', () => {
+        const darwinObjdumper = (compiler as any).getObjdumperForResult({
+            compilationOptions: ['build', 'src/example.mach', '-t', 'darwin-x86_64'],
+            instructionSet: 'amd64',
+        });
+        expect(darwinObjdumper).toEqual({exe: '/usr/bin/llvm-objdump', cls: LlvmObjdumper});
+
+        const linuxObjdumper = (compiler as any).getObjdumperForResult({
+            compilationOptions: ['build', 'src/example.mach', '-t', 'linux-x86_64'],
+            instructionSet: 'amd64',
+        });
+        expect(linuxObjdumper?.exe).toEqual('/usr/bin/objdump');
+    });
+
+    it('disassembles every object of the project, the entry first and std left out', async () => {
+        const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-mach-objects'));
+        try {
+            const entry = path.join(root, 'out', 'obj', 'example', 'example.o');
+            for (const file of [
+                entry,
+                path.join(root, 'out', 'obj', 'example', 'util', 'fmt.o'),
+                path.join(root, 'out', 'obj', 'example', 'other.o'),
+                path.join(root, 'out', 'obj', 'std', 'print.o'),
+            ]) {
+                await fs.mkdir(path.dirname(file), {recursive: true});
+                await fs.writeFile(file, '');
+            }
+            expect(await compiler.getObjdumpInputFilenames(entry, makeFakeParseFiltersAndOutputOptions({}))).toEqual([
+                entry,
+                path.join(root, 'out', 'obj', 'example', 'other.o'),
+                path.join(root, 'out', 'obj', 'example', 'util', 'fmt.o'),
+            ]);
+        } finally {
+            await fs.rm(root, {recursive: true, force: true});
+        }
+    });
+
+    it('asks for --emit ir-opt when the Mach IR pane wants it, and reads multi-module MIRL from out/ir-opt', async () => {
+        const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-mach-ir'));
+        try {
+            expect(compiler.optionsForBackend({}, '')).toEqual([]);
+            expect(compiler.optionsForBackend({produceMachIr: true}, '')).toEqual(['--emit', 'ir-opt']);
+
+            const outpath = compiler.getMachIrOutputFilename(path.join(root, 'src', 'example.mach'));
+            expect(outpath).toEqual(path.join(root, 'out', 'ir-opt', 'example', 'example.ir'));
+
+            await fs.mkdir(path.dirname(outpath), {recursive: true});
+            await fs.writeFile(outpath, 'mirl "0.3.1";\npub fun example.example.main() {}\n');
+            await fs.writeFile(
+                path.join(root, 'out', 'ir-opt', 'example', 'helper.ir'),
+                'mirl "0.3.1";\npub fun example.helper.bump() {}\n',
+            );
+
+            const lines = await compiler.processMachIrOutput(outpath, {code: 0} as any);
+            expect(lines.map(l => l.text)).toEqual([
+                'mirl "0.3.1";',
+                'pub fun example.example.main() {}',
+                '',
+                'mirl "0.3.1";',
+                'pub fun example.helper.bump() {}',
+            ]);
+        } finally {
+            await fs.rm(root, {recursive: true, force: true});
+        }
+    });
+
+    it('rejects execution on non-hosted targets while allowing hosted targets through', async () => {
+        for (const nonHosted of ['freestanding-x86_64-sysv64', 'uefi-x86_64', 'wasi-wasm32', 'vulkan-spirv']) {
+            const res = await compiler.doExecution(
+                {
+                    compiler: compiler.getInfo(),
+                    source: '',
+                    options: [],
+                    backendOptions: {overrides: [{name: CompilerOverrideType.arch, value: nonHosted}]},
+                    filters: makeFakeParseFiltersAndOutputOptions({execute: true}),
+                    libraries: [],
+                    files: [],
+                } as any,
+                {} as any,
+                0 as any,
+            );
+            expect(res.didExecute).toBe(false);
+            expect(res.stderr).toEqual([{text: `Execution is not supported for target ${nonHosted}`}]);
+        }
+    });
+
+    it('parses mach help build flags including --[no-]optimize and multi-line descriptions', async () => {
+        vi.spyOn(compiler, 'execCompilerCached').mockResolvedValue({
+            code: 0,
+            stdout: helpBuild,
+            stderr: '',
+        } as any);
+        const parser = new MachParser(compiler);
+        const options = await parser.getOptions('help build');
+        expect(options['-O']).toBeDefined();
+        expect(options['--optimize'].description).toContain('optimize, or not with --no-optimize');
+        expect(options['--no-optimize'].description).toContain('optimize, or not with --no-optimize');
+        expect(options['--emit <asm|ir|ir-opt|obj|exe>...'].description).toEqual(
+            'a product to write, once each (default: exe)',
+        );
+        expect(options['--report <human|json|lines>'].description).toEqual(
+            'report as human text, NDJSON records or tab-separated record lines (default: human)',
+        );
+        expect(await parser.getPossibleTargets()).toContain('vulkan-spirv');
     });
 });
-/**
- * Every project the adapter lays out puts the user's sources under `src/`, so CE's file names become module paths
- * rooted at the project id: `src/util/fmt.mach` is the module `example.util.fmt`.
- */
+
 describe('Mach multi-file projects', () => {
     let compiler: MachCompiler;
     let dirPath: string;
@@ -285,8 +552,8 @@ describe('Mach multi-file projects', () => {
         await fs.rm(stdPath, {recursive: true, force: true});
     });
 
-    it('roots every source at src/ and keeps the directories CE gave them', async () => {
-        const pull = vi.spyOn(compiler, 'exec').mockResolvedValue({code: 0, stdout: '', stderr: ''} as any);
+    it('roots every source at src/ with no mach.toml and zero subprocess calls', async () => {
+        const execSpy = vi.spyOn(compiler, 'exec');
 
         const {inputFilename} = await (compiler as any).writeAllFiles(dirPath, 'entry', [
             {filename: 'util/fmt.mach', contents: 'fmt'},
@@ -295,7 +562,6 @@ describe('Mach multi-file projects', () => {
 
         expect(inputFilename).toEqual(path.join(dirPath, 'src', 'example.mach'));
         expect(((await fs.readdir(dirPath, {recursive: true})) as string[]).sort()).toEqual([
-            'mach.toml',
             'src',
             path.join('src', 'example.mach'),
             path.join('src', 'other.mach'),
@@ -303,35 +569,18 @@ describe('Mach multi-file projects', () => {
             path.join('src', 'util', 'fmt.mach'),
         ]);
         expect(await fs.readFile(path.join(dirPath, 'src', 'util', 'fmt.mach'), 'utf8')).toEqual('fmt');
-        // the pull is the only thing a compilation runs here: the targets were probed at startup
-        expect(pull.mock.calls).toEqual([
-            [
-                '/opt/compiler-explorer/mach-6.7.0/mach',
-                ['dep', 'pull', dirPath],
-                expect.objectContaining({customCwd: dirPath}),
-            ],
-        ]);
+        expect(execSpy).not.toHaveBeenCalled();
     });
 
-    it('refuses an extra file that would land outside the project', async () => {
-        vi.spyOn(compiler, 'exec').mockResolvedValue({code: 0, stdout: '', stderr: ''} as any);
+    it('refuses an extra file that would land outside src/', async () => {
         await expect(
             (compiler as any).writeAllFiles(dirPath, 'entry', [{filename: '../escape.mach', contents: 'no'}]),
         ).rejects.toThrow();
     });
-
-    it('fails the compilation when the dependency pull fails', async () => {
-        vi.spyOn(compiler, 'exec').mockResolvedValue({code: 1, stdout: '', stderr: 'no std'} as any);
-        await expect((compiler as any).writeAllFiles(dirPath, 'entry', [])).rejects.toThrow(
-            'mach dep pull failed: no std',
-        );
-    });
 });
+
 /**
- * Each capture is what `mach build --diagnostics=json` wrote to stderr at 6.7.0 with std 9.4.1, verbatim: the
- * diagnostic, failure and summary records of an error, a warning, both at once, help and a one-edit fix, a note and a
- * two-edit fix over a multi-line span, a related site, a second file, a std file, a link failure and two command-line
- * refusals with no location, and a line with non-ASCII text before the span.
+ * Verbatim captures from `mach build --report json` (schema 3) at mach 7.2.0 with mach-std 10.1.1.
  */
 describe('Mach diagnostics', () => {
     const root = '/tmp/compiler-explorer-compiler-mach';
@@ -340,7 +589,7 @@ describe('Mach diagnostics', () => {
 
     beforeAll(() => {
         compiler = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-7.2.0/mach', lang: 'mach'}),
             makeCompilationEnvironment({languages}),
         );
     });
@@ -357,7 +606,6 @@ describe('Mach diagnostics', () => {
         return parseText(capture(name));
     }
 
-    /** Every marker as [file, line, column, endline, endcolumn, severity, text]. */
     function marks(lines: ReturnType<typeof parse>) {
         return lines
             .filter(line => line.tag)
@@ -400,12 +648,13 @@ describe('Mach diagnostics', () => {
         expect(texts(both).at(-1)).toEqual('1 error / 1 warning');
     });
 
-    it('shows no tally for a build with nothing to report', () => {
-        expect(
-            parseText(
-                '{"schema":1,"record":"summary","errors":0,"warnings":0,"notes":0,"outcome":"success","exit_code":0}',
-            ),
-        ).toEqual([]);
+    it('shows no tally for a build with nothing to report, and renders -v unit and phase records', () => {
+        const lines = parse('verbose');
+        expect(marks(lines)).toEqual([]);
+        expect(texts(lines)[0]).toEqual('building example (linux-x86_64, debug)');
+        expect(texts(lines)).toContain('  target: 13.7ms (1 target)');
+        expect(texts(lines)).toContain('    lower: 0.3ms (1 object)');
+        expect(texts(lines).at(-1)).toEqual('  other: 1.0ms');
     });
 
     it('folds help into the marker and offers the fix as a quick fix over the span it replaces', () => {
@@ -434,20 +683,30 @@ describe('Mach diagnostics', () => {
         });
     });
 
-    it('folds a note into the marker, and offers every edit of a two-edit fix as one quick fix', () => {
-        const [headline] = parse('two-edit-fix');
-        expect(headline.tag?.text).toEqual(
-            'error[type.mismatch]: type mismatch: expected i64, found i32\n' +
-                'note: mach has no implicit widening; cast the value with `value::Type`',
+    it('folds notes and help into single-edit and multi-edit cast quick fixes', () => {
+        const [single] = parse('note-and-fix');
+        expect(single.tag?.text).toEqual(
+            'error[type.mismatch]: expected i64, found i32\n' +
+                'note: implicit numeric conversion is not allowed\n' +
+                'help: cast the value with `::i64`',
         );
-        // the primary span covers all three lines of the expression
-        expect([headline.tag?.line, headline.tag?.column, headline.tag?.endline, headline.tag?.endcolumn]).toEqual([
-            2, 5, 4, 11,
-        ]);
-        // an insertion is an empty edit where its text goes
-        expect(headline.tag?.fixes).toEqual([
+        expect(single.tag?.fixes).toEqual([
             {
-                title: 'cast the value to `i64`',
+                title: 'cast the value with `::i64`',
+                edits: [{file: 'example.mach', line: 2, column: 10, endline: 2, endcolumn: 10, text: '::i64'}],
+            },
+        ]);
+
+        const [multi] = parse('two-edit-fix');
+        expect(multi.tag?.text).toEqual(
+            'error[type.mismatch]: expected i64, found i32\n' +
+                'note: implicit numeric conversion is not allowed\n' +
+                'help: parenthesize the value and cast it with `::i64`',
+        );
+        expect([multi.tag?.line, multi.tag?.column, multi.tag?.endline, multi.tag?.endcolumn]).toEqual([2, 5, 4, 11]);
+        expect(multi.tag?.fixes).toEqual([
+            {
+                title: 'parenthesize the value and cast it with `::i64`',
                 edits: [
                     {file: 'example.mach', line: 2, column: 9, endline: 2, endcolumn: 9, text: '('},
                     {file: 'example.mach', line: 4, column: 10, endline: 4, endcolumn: 10, text: ')::i64'},
@@ -460,15 +719,7 @@ describe('Mach diagnostics', () => {
         const lines = parse('related');
         expect(texts(lines)).toContain(' --> src/example.mach:1:5: previous definition here');
         expect(marks(lines)).toEqual([
-            [
-                'example.mach',
-                2,
-                5,
-                2,
-                8,
-                3,
-                'error[name.duplicate]: duplicate definition: `dup` is already bound in this scope',
-            ],
+            ['example.mach', 2, 5, 2, 8, 3, 'error[name.duplicate]: `dup` is already bound in this scope'],
             ['example.mach', 1, 5, 1, 8, 1, 'previous definition here'],
         ]);
     });
@@ -479,10 +730,22 @@ describe('Mach diagnostics', () => {
         ]);
     });
 
-    it('marks nothing in a std file, which belongs to no editor, but still shows where it is', () => {
+    it('marks the user import while masking a related std site without placing an editor marker in std', () => {
         const lines = parse('std');
-        expect(marks(lines)).toEqual([]);
-        expect(texts(lines)).toContain(' --> dep/std/src/print.mach:24:5');
+        expect(marks(lines)).toEqual([
+            [
+                'example.mach',
+                1,
+                12,
+                1,
+                21,
+                3,
+                'error[comptime.user_error]: std.print needs the files capability (std.system.capability.HAS_FILES)',
+            ],
+        ]);
+        expect(texts(lines)).toContain(
+            ' --> std/src/print.mach:35:5: the module this import reaches is refused by this module-scope `$error`',
+        );
     });
 
     it.each(['link', 'unknown-target', 'flag-conflict'])('shows a %s failure with no location, unmarked', name => {
@@ -497,7 +760,6 @@ describe('Mach diagnostics', () => {
         const [headline] = toEditorColumns(parse('utf8'), (file, line) =>
             file === 'example.mach' ? source[line - 1] : undefined,
         );
-        // `é` and `ö` are two bytes each: byte column 39 is the 37th character
         expect([headline.tag?.column, headline.tag?.endcolumn]).toEqual([37, 41]);
         expect(source[1].slice(36, 40)).toEqual('nope');
     });
@@ -507,20 +769,10 @@ describe('Mach diagnostics', () => {
         expect(headline.tag?.fixes?.[0].edits[0]).toMatchObject({column: 9, endcolumn: 13});
     });
 
-    describe('shows as written', () => {
-        it('a line that is not a record', () => {
-            // mach names the project root the way the host writes paths
-            expect(parseText(`building in ${root}${path.sep}out`)).toEqual([{text: 'building in out'}]);
-        });
-
-        it('a record of a schema this reader does not know', () => {
-            const record = '{"schema":2,"record":"diagnostic"}';
-            expect(parseText(record)).toEqual([{text: record}]);
-        });
-    });
-
-    it('skips a record that is not a diagnostic', () => {
-        expect(parseText('{"schema":1,"record":"test","name":"example#t","outcome":"pass"}')).toEqual([]);
+    it('passes through non-JSON lines and unknown schemas untouched', () => {
+        expect(parseText(`building in ${root}${path.sep}out`)).toEqual([{text: 'building in out'}]);
+        const record = '{"schema":2,"record":"diagnostic"}';
+        expect(parseText(record)).toEqual([{text: record}]);
     });
 
     it('offers no quick fix whose edits reach outside the marked editor', () => {
@@ -530,12 +782,6 @@ describe('Mach diagnostics', () => {
     });
 });
 
-/**
- * Under the production sandbox the compile directory is bind-mounted at `/app`, so the project root the adapter
- * passes to `mach build` is `/app` and the DWARF comp_dir it records is `/app` too. The capture below is a real
- * objdump of an object built with the project root at `/app`.
- */
-// the sandbox that mounts the project at /app is linux only
 describe.skipIf(process.platform === 'win32')('Mach asm with an /app project root', () => {
     it('attributes an /app source line to the editor', () => {
         const objdump = readFileSync(path.join(__dirname, 'mach', 'app-objdump.asm'), 'utf8');
@@ -546,7 +792,7 @@ describe.skipIf(process.platform === 'win32')('Mach asm with an /app project roo
 
         expect(parsed.asm.filter(line => line.source).map(line => line.source)).toContainEqual({
             file: null,
-            line: 9,
+            line: 6,
             mainsource: true,
         });
         expect(parsed.asm.map(line => line.text)).toContain('main:');
@@ -561,14 +807,100 @@ describe.skipIf(process.platform === 'win32')('Mach asm with an /app project roo
 
         expect(parsed.asm.filter(line => line.source).map(line => line.source)).toContainEqual({
             file: 'src/example.mach',
-            line: 9,
+            line: 6,
             mainsource: true,
         });
     });
 });
 
+/**
+ * Multi-module `--emit asm` `.s` outputs from a two-module project (`src/example.mach` and `src/util/fmt.mach`),
+ * where each module defines its own `.file 0` and `.Ltmp*` labels.
+ */
+describe('Mach asm from two modules', () => {
+    const entryAsm = readFileSync(path.join(__dirname, 'mach', 'two-module-entry.s'), 'utf8');
+    const fmtAsm = readFileSync(path.join(__dirname, 'mach', 'two-module-fmt.s'), 'utf8');
+    const joined = entryAsm + MACH_MODULE_SEP + fmtAsm;
+
+    const parse = (filters: object) =>
+        new MachAsmParser(undefined, 'src').process(
+            joined,
+            makeFakeParseFiltersAndOutputOptions({directives: true, labels: true, commentOnly: true, ...filters}),
+        );
+    const sources = (parsed: {asm: {source?: unknown}[]}) =>
+        parsed.asm.filter(line => line.source).map(line => line.source);
+
+    it('shows every function of every module, the entry first, and links cross-module calls', () => {
+        const parsed = parse({});
+        const labels = parsed.asm.map(line => line.text).filter(text => /^[A-Za-z_][\w.]*:$/.test(text));
+        expect(labels).toEqual(['example.example.main:', 'example.util.fmt.twice:', 'example.util.fmt.unused:']);
+        expect(parsed.labelDefinitions?.['example.util.fmt.twice']).toBeGreaterThan(1);
+
+        const callLine = unwrap(parsed.asm.find(line => line.text.includes('call example.util.fmt.twice')));
+        expect(callLine.labels?.map(l => l.name)).toContain('example.util.fmt.twice');
+    });
+
+    it('isolates .file 0 per module and names secondary files as the tree pane knows them', () => {
+        const parsed = parse({dontMaskFilenames: true});
+        expect(sources(parsed)).toContainEqual({file: 'example.mach', line: 6, column: 9, mainsource: true});
+        expect(sources(parsed)).toContainEqual({file: 'util/fmt.mach', line: 2, column: 9, mainsource: false});
+        expect(sources(parsed)).not.toContainEqual(expect.objectContaining({file: 'src/util/fmt.mach'}));
+    });
+
+    it("marks only the entry as the editor's when filenames are masked", () => {
+        const parsed = parse({});
+        expect(sources(parsed)).toContainEqual({file: null, line: 5, column: 5, mainsource: true});
+        expect(sources(parsed)).toContainEqual({file: 'util/fmt.mach', line: 6, column: 9, mainsource: false});
+    });
+
+    it('keeps secondary user files under libraryCode while dropping non-src std functions', () => {
+        const withStd =
+            joined +
+            MACH_MODULE_SEP +
+            [
+                '\t.intel_syntax noprefix',
+                '\t.file 0 "/opt/compiler-explorer/mach-7.2.0/std/src/math.mach"',
+                '\t.globl std.math.min',
+                '\t.type std.math.min, @function',
+                '\t.text',
+                'std.math.min:',
+                '\t.cfi_startproc',
+                '\t.loc 0 14 9',
+                '\tmov rax, rdi',
+                '\tret',
+                '\t.cfi_endproc',
+            ].join('\n');
+
+        const parsed = new MachAsmParser(undefined, 'src').process(
+            withStd,
+            makeFakeParseFiltersAndOutputOptions({
+                directives: true,
+                labels: true,
+                commentOnly: true,
+                libraryCode: true,
+            }),
+        );
+        const labels = parsed.asm.map(line => line.text).filter(text => /^[A-Za-z_][\w.]*:$/.test(text));
+        expect(labels).toContain('example.util.fmt.twice:');
+        expect(labels).not.toContain('std.math.min:');
+    });
+});
+
+describe('Mach SPIR-V asm', () => {
+    const spvasm = readFileSync(path.join(__dirname, 'mach', 'shader.spvasm'), 'utf8');
+
+    it('parses SPIR-V disassembly and normalises src/example.mach to the editor', () => {
+        const parsed = new MachAsmParser(undefined, 'src').process(
+            MACH_SPIRV_HEADER + spvasm,
+            makeFakeParseFiltersAndOutputOptions({directives: true, commentOnly: true}),
+        );
+        expect(parsed.languageId).toEqual('spirv');
+        const retLine = unwrap(parsed.asm.find(line => line.text.includes('OpReturn')));
+        expect(retLine.source).toEqual({file: null, line: 3, column: 9, mainsource: true});
+    });
+});
+
 describe('Mach binary asm', () => {
-    // a Hello World executable, trimmed to the head of each function: std and its runtime are linked in beside main
     const objdump = readFileSync(path.join(__dirname, 'mach', 'hello-binary.asm'), 'utf8');
 
     it.each(['amazon', 'defaults'])('shows only the user functions under the %s properties', env => {
@@ -579,5 +911,66 @@ describe('Mach binary asm', () => {
             makeFakeParseFiltersAndOutputOptions({binary: true, directives: true}),
         );
         expect(parsed.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['main:']);
+    });
+});
+
+/**
+ * `--emit ir-opt` MIRL module captured from mach 7.2.0 with mach-std 10.1.1, where `example.helper.bump` is inlined
+ * into `example.example.main` via `at l60 in s0`.
+ */
+describe('Mach MIRL output', () => {
+    const mirl = readFileSync(path.join(__dirname, 'mach', 'ir-opt.ir'), 'utf8');
+    const parsed = new MachIrParser('src/example.mach').process(mirl);
+
+    function at(text: string) {
+        return unwrap(parsed.find(line => line.text.includes(text)));
+    }
+
+    it('keeps every line of the module in order and masks the debug directory and entry file', () => {
+        expect(parsed).toHaveLength(utils.splitLines(mirl).length);
+        expect(parsed[0].text).toEqual('mirl "0.3.1";');
+        expect(at('directory = ').text).toEqual('    directory = ".";');
+        expect(at('file f0 = ').text).toEqual('    file f0 = "<source>";');
+        expect(parsed.at(-1)!.text).toEqual('#[inline(always)] ext fun example.helper.bump(i64) i64;');
+    });
+
+    it('maps instructions in src/example.mach to the editor across nested decorator brackets', () => {
+        expect(at('xor(_0, 6148914691236517205)').source).toEqual({
+            file: null,
+            line: 8,
+            column: 9,
+            mainsource: true,
+        });
+        expect(at('call.placed').source).toEqual({
+            file: null,
+            line: 12,
+            column: 20,
+            mainsource: true,
+        });
+    });
+
+    it('keeps inlined instructions from another project file off the main editor', () => {
+        const inlined = at('add(_5, 1) at l60 in s0;');
+        expect(inlined.source).toEqual({file: 'src/helper.mach', line: 3, column: 9});
+    });
+
+    it('maps instructions carrying holds clauses and leaves structural lines unmapped', () => {
+        expect(at('pub val example.example.LANES').source).toBeUndefined();
+        expect(at('bind v1 = _0;').source).toBeUndefined();
+        expect(at('_0(_2: ^i64):').source).toBeUndefined();
+        expect(at('ext fun std.math.min').source).toBeUndefined();
+
+        const withHolds = new MachIrParser('src/example.mach').process(
+            [
+                'debug {',
+                '    file f0 = "src/example.mach";',
+                '    loc l0 = f0:9:13;',
+                '}',
+                'pub fun example.f(_0: ptr) {',
+                '    store(_0, 1) at l0 holds [v0][0, 8];',
+                '}',
+            ].join('\n'),
+        );
+        expect(withHolds[5].source).toEqual({file: null, line: 9, column: 13, mainsource: true});
     });
 });

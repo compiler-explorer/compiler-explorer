@@ -1,0 +1,27 @@
+{"schema":3,"record":"unit","verb":"building","artifact":"example","target":"linux-x86_64","profile":"debug"}
+{"schema":3,"record":"phase","name":"target","count":1,"unit":"target","time_us":13663}
+{"schema":3,"record":"phase","name":"load","count":1,"unit":"module","time_us":1113}
+{"schema":3,"record":"phase","name":"resolve","count":1,"unit":"module","time_us":53}
+{"schema":3,"record":"phase","name":"sema","count":1,"unit":"module","time_us":118}
+{"schema":3,"record":"phase","name":"lower","parent":"codegen","count":1,"unit":"object","time_us":255}
+{"schema":3,"record":"phase","name":"verify","parent":"codegen","count":1,"unit":"object","time_us":0}
+{"schema":3,"record":"phase","name":"passes","parent":"codegen","count":1,"unit":"object","time_us":86}
+{"schema":3,"record":"phase","name":"select","parent":"codegen","count":1,"unit":"object","time_us":33}
+{"schema":3,"record":"phase","name":"alloc","parent":"codegen","count":1,"unit":"object","time_us":97}
+{"schema":3,"record":"phase","name":"frame","parent":"codegen","count":1,"unit":"object","time_us":45}
+{"schema":3,"record":"phase","name":"emit","parent":"codegen","count":1,"unit":"object","time_us":211}
+{"schema":3,"record":"phase","name":"layout","parent":"codegen","count":1,"unit":"object","time_us":3}
+{"schema":3,"record":"phase","name":"encode","parent":"codegen","count":1,"unit":"object","time_us":17}
+{"schema":3,"record":"phase","name":"prepare","parent":"codegen","count":1,"unit":"object","time_us":789}
+{"schema":3,"record":"counter","counter":"functions","value":1}
+{"schema":3,"record":"counter","counter":"ir instrs","value":5}
+{"schema":3,"record":"counter","counter":"heap blocks","value":557}
+{"schema":3,"record":"counter","counter":"heap bytes","value":142464}
+{"schema":3,"record":"counter","counter":"heap peak","value":1572864}
+{"schema":3,"record":"counter","counter":"selected instrs","value":7}
+{"schema":3,"record":"counter","counter":"allocated instrs","value":7}
+{"schema":3,"record":"counter","counter":"alloc rounds","value":1}
+{"schema":3,"record":"phase","name":"write","parent":"codegen","count":1,"unit":"object","time_us":431}
+{"schema":3,"record":"phase","name":"codegen","count":1,"unit":"object","time_us":1971}
+{"schema":3,"record":"phase","name":"other","time_us":993}
+{"schema":3,"record":"summary","errors":0,"warnings":0,"notes":0,"outcome":"success","exit_code":0,"time_us":17915,"built":[{"out":"./out/obj","modules":1,"rebuilt":1,"time_us":17915}]}

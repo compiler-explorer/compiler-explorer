@@ -109,6 +109,7 @@ export type CompilerInfo = {
     supportsHaskellCoreView?: boolean;
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
+    supportsMachIrView?: boolean;
     supportsLeanCView?: boolean;
     supportsJvmBytecodeView?: boolean;
     supportsClojureMacroExpView?: boolean;
@@ -196,10 +197,13 @@ export type CompilerInfo = {
 /** One platform tuple a Mach compiler supports, keyed by the name a user passes to `--target`. */
 export type MachTarget = {
     name: string;
-    isa: string;
-    os: string;
+    platform: string;
+    sys: string;
+    arch: string;
     abi: string;
-    object: string;
+    defaultAbi?: boolean;
+    isa?: string;
+    kind?: 'module';
 };
 
 // Compiler information collected by the compiler-finder

@@ -106,7 +106,7 @@ describe('Objdumper', () => {
             const objdumper = new DefaultObjdumper();
 
             const args = objdumper.getArgs(
-                'test.o',
+                ['test.o'],
                 true, // demangle
                 true, // intelAsm
                 true, // staticReloc

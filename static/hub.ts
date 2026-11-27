@@ -51,6 +51,7 @@ import {
     JVM_BYTECODE_VIEW_COMPONENT_NAME,
     LEAN_C_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    MACH_IR_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
@@ -88,6 +89,7 @@ import {HaskellStg as HaskellStgView} from './panes/haskellstg-view.js';
 import {Ir as IrView} from './panes/ir-view.js';
 import {JvmBytecode} from './panes/jvm-bytecode-view.js';
 import {LeanC as LeanCView} from './panes/leanc-view.js';
+import {MachIr as MachIrView} from './panes/machir-view.js';
 import {OptPipeline} from './panes/opt-pipeline.js';
 import {Opt as OptView} from './panes/opt-view.js';
 import {Output} from './panes/output.js';
@@ -163,6 +165,7 @@ export class Hub {
         );
         layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellStgViewFactory(c, s));
         layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellCmmViewFactory(c, s));
+        layout.registerComponent(MACH_IR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.machIrViewFactory(c, s));
         layout.registerComponent(JVM_BYTECODE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => new JvmBytecode(this, c, s));
         layout.registerComponent(LEAN_C_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.leanCViewFactory(c, s));
         layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
@@ -596,6 +599,10 @@ export class Hub {
 
     public leanCViewFactory(container: GoldenLayout.Container, state: InferComponentState<LeanCView>): LeanCView {
         return new LeanCView(this, container, state);
+    }
+
+    public machIrViewFactory(container: GoldenLayout.Container, state: InferComponentState<MachIrView>): MachIrView {
+        return new MachIrView(this, container, state);
     }
 
     public clojureMacroExpViewFactory(

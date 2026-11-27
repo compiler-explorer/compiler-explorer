@@ -73,6 +73,7 @@ export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir' as const;
 export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore' as const;
 export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg' as const;
 export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm' as const;
+export const MACH_IR_VIEW_COMPONENT_NAME = 'machIr' as const;
 export const JVM_BYTECODE_VIEW_COMPONENT_NAME = 'jvmBytecode' as const;
 export const LEAN_C_VIEW_COMPONENT_NAME = 'leanC' as const;
 export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree' as const;
@@ -311,6 +312,15 @@ export type PopulatedLeanCViewState = StateWithId & {
     treeid: number;
 };
 
+export type EmptyMachIrViewState = EmptyState;
+export type PopulatedMachIrViewState = StateWithId & {
+    source: string;
+    machIrOutput: ParsedAsmResultLine[];
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
 export type EmptyGnatDebugTreeViewState = EmptyState;
 export type PopulatedGnatDebugTreeViewState = StateWithId & {
     source: string;
@@ -410,6 +420,7 @@ export interface ComponentStateMap {
     [HASKELL_CORE_VIEW_COMPONENT_NAME]: EmptyHaskellCoreViewState | PopulatedHaskellCoreViewState;
     [HASKELL_STG_VIEW_COMPONENT_NAME]: EmptyHaskellStgViewState | PopulatedHaskellStgViewState;
     [HASKELL_CMM_VIEW_COMPONENT_NAME]: EmptyHaskellCmmViewState | PopulatedHaskellCmmViewState;
+    [MACH_IR_VIEW_COMPONENT_NAME]: EmptyMachIrViewState | PopulatedMachIrViewState;
     [JVM_BYTECODE_VIEW_COMPONENT_NAME]:
         | EmptyState
         | (StateWithId & {

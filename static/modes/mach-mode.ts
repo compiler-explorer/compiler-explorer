@@ -28,7 +28,6 @@ function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: 'invalid',
 
-        // the reserved words of mach's lexer
         keywords: [
             'asm',
             'brk',
@@ -56,22 +55,54 @@ function definition(): monaco.languages.IMonarchLanguage {
             'var',
         ],
 
-        typeKeywords: ['u8', 'u16', 'u32', 'u64', 'i8', 'i16', 'i32', 'i64', 'f32', 'f64', 'ptr'],
+        typeKeywords: [
+            'u1',
+            'u8',
+            'u16',
+            'u32',
+            'u64',
+            'u128',
+            'u256',
+            'u512',
+            'i8',
+            'i16',
+            'i32',
+            'i64',
+            'i128',
+            'i256',
+            'i512',
+            'f16',
+            'f32',
+            'f64',
+            'ptr',
+        ],
 
         constants: ['nil'],
 
         decorators: [
+            'abi_type',
             'align',
+            'at',
+            'constant_time',
             'deprecated',
             'embed',
+            'expect',
+            'export',
+            'extension',
+            'handle',
             'inline',
+            'intrinsic',
             'library',
             'naked',
-            'noinline',
-            'oblivious',
+            'noreturn',
             'packed',
             'section',
             'symbol',
+            'testing',
+            'thread',
+            'vectorize',
+            'volatile',
+            'weak',
         ],
 
         operators: [
@@ -109,7 +140,14 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         tokenizer: {
             root: [
-                [/(asm)(\s+)([a-zA-Z_]\w*)(\s*)(\{)/, ['keyword', '', 'type', '', {token: '@brackets', next: '@asm'}]],
+                [
+                    /(asm)(\s+)([a-zA-Z_][\w+,.-]*)(\s*)(\{)/,
+                    ['keyword', '', 'type', '', {token: '@brackets', next: '@asm'}],
+                ],
+
+                [/\\\\.*$/, 'string'],
+
+                [/\b(?:[ui](?:8|16|32|64|128|256|512)|f(?:16|32|64))x\d+\b/, 'type'],
 
                 [
                     /[a-zA-Z_]\w*/,
@@ -164,24 +202,26 @@ function definition(): monaco.languages.IMonarchLanguage {
 
             decorator: [
                 [/\]/, {token: 'annotation', next: '@pop'}],
+                [/gpu\.[a-zA-Z_]\w*/, 'annotation'],
                 [/[a-zA-Z_]\w*/, {cases: {'@decorators': 'annotation', '@default': 'identifier'}}],
                 [/"/, 'string', '@string'],
                 [/\d[\d_]*/, 'number'],
                 [/[ \t\r\n]+/, 'white'],
-                [/[(),=]/, 'delimiter'],
+                [/[(),=.]/, 'delimiter'],
             ],
 
-            // only an identifier in braces is a local, as mach reads it: any other brace belongs to the isa's own
-            // syntax, such as aarch64's `{v0.16b}`, and closes with its own `}` rather than the block's
+            // only an identifier in braces is a local: any other brace belongs to the dialect's syntax, such as
+            // aarch64's `{v0.16b}`, and closes with its own `}` rather than the block's
             asm: [[/\}/, {token: '@brackets', next: '@pop'}], {include: '@asmBody'}],
 
             asmGroup: [[/\}/, {token: '', next: '@pop'}], {include: '@asmBody'}],
 
             asmBody: [
-                [/#.*$/, 'comment'],
+                [/(?:#|\/\/|;;).*$/, 'comment'],
                 [/\{[a-zA-Z_]\w*\}/, 'variable'],
                 [/\{/, {token: '', next: '@asmGroup'}],
-                [/[^}#{]+/, ''],
+                [/[^}#{/;]+/, ''],
+                [/[/;]/, ''],
             ],
 
             string: [

@@ -1,2 +1,2 @@
-{"schema":1,"record":"failure","severity":"error","code":"link.entry_missing","message":"undefined entry symbol '_start'; ensure the target startup library is linked","origin":"link","primary":null,"related":[],"notes":[],"help":[],"fixes":[]}
-{"schema":1,"record":"summary","errors":1,"warnings":0,"notes":0,"outcome":"failure","exit_code":1}
+{"schema":3,"record":"diagnostic","severity":"error","code":"link.input_invalid","message":"the link does not define the entry symbol `_start`. an image takes its entry symbol from a module its artifact's entry reaches, so write a `use` of the module that defines it in that entry","origin":"link","primary":null,"related":[],"notes":[],"help":[],"fixes":[]}
+{"schema":3,"record":"summary","errors":1,"warnings":0,"notes":0,"outcome":"failure","exit_code":1}

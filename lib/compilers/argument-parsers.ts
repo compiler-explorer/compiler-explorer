@@ -627,9 +627,39 @@ export class MachParser extends BaseParser {
     }
 
     override async getOptions(helpArg: string) {
-        const optionFinder = /^ {2}(--?[\w-]+(?: <[^>]+>)?) {2,}(.*)/;
         const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, splitArguments(helpArg));
-        const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder) : {};
+        const options: Record<string, {description: string; timesused: number}> = {};
+        if (result.code === 0) {
+            const flagLine = /^ {2}(?:(-\w), )?(?: {4})?(--(?:\[no-])?[\w-]+(?: <[^>]+>(?:\.\.\.)?)?)(?: {2,}(.*))?$/;
+            const contLine = /^ {24}(\S.*)$/;
+            let currentKeys: string[] = [];
+            for (const line of utils.splitLines(result.stdout)) {
+                const match = line.match(flagLine);
+                if (match) {
+                    const [, shortFlag, rawLong, desc = ''] = match;
+                    const valueTail = rawLong.includes(' ') ? rawLong.slice(rawLong.indexOf(' ')) : '';
+                    const flagName = rawLong.includes(' ') ? rawLong.slice(0, rawLong.indexOf(' ')) : rawLong;
+                    const expanded = flagName.startsWith('--[no-]')
+                        ? [`--${flagName.slice('--[no-]'.length)}`, `--no-${flagName.slice('--[no-]'.length)}`]
+                        : [`${flagName}${valueTail}`];
+                    currentKeys = shortFlag ? [`${shortFlag}${valueTail}`, ...expanded] : expanded;
+                    for (const key of currentKeys) {
+                        options[key] = {description: desc.trim(), timesused: 0};
+                    }
+                    continue;
+                }
+                const cont = line.match(contLine);
+                if (cont && currentKeys.length > 0) {
+                    for (const key of currentKeys) {
+                        options[key].description = options[key].description
+                            ? `${options[key].description} ${cont[1].trim()}`
+                            : cont[1].trim();
+                    }
+                } else if (line.trim() === '') {
+                    currentKeys = [];
+                }
+            }
+        }
         this.compiler.possibleArguments.populateOptions(options);
         return options;
     }

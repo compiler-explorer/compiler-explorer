@@ -40,8 +40,9 @@ export abstract class BaseObjdumper {
         protected readonly widthOptions: string[],
     ) {}
 
+    /** @param objectFiles every object to disassemble, in the order their code appears; a compilation may produce several */
     getArgs(
-        outputFilename: string,
+        objectFiles: string[],
         demangle?: boolean,
         intelAsm?: boolean,
         staticReloc?: boolean,
@@ -49,7 +50,7 @@ export abstract class BaseObjdumper {
         objdumperArguments?: string[],
         filters?: ParseFiltersAndOutputOptions,
     ) {
-        const args = ['-d', outputFilename, '-l', ...this.widthOptions];
+        const args = ['-d', ...objectFiles, '-l', ...this.widthOptions];
 
         if (staticReloc) args.push('-r');
         if (dynamicReloc) args.push('-R');

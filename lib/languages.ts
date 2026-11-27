@@ -714,7 +714,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoFilename: 'mach-tile.svg',
         logoFilenameDark: null,
-        formatter: null,
+        formatter: 'machfmt',
         previewFilter: null,
         monacoDisassembly: null,
         digitSeparator: '_',
