@@ -229,3 +229,14 @@ describe('Health checks with a stuck compilation queue', () => {
         await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
     });
 });
+
+describe('Health checks with a failing compilation queue', () => {
+    it('should respond with error when the queue rejects the probe', async () => {
+        const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
+        vi.spyOn(compilationQueue, 'enqueue').mockImplementation(() => Promise.reject(new Error('queue is broken')));
+        const app = express();
+        const controller = new HealthcheckController(compilationQueue, null, {hasLanguages: () => true}, false, 0);
+        app.use(controller.createRouter());
+        await request(app).get('/healthcheck').expect(500);
+    });
+});
