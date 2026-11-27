@@ -57,6 +57,7 @@ type LibVerBuild = {
     version: string;
     lookupname: string;
     lookupversion: string;
+    buildType?: string;
     possibleBuilds: any;
 };
 
@@ -292,13 +293,23 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
-    // Release first: a library only has Release packages on Linux when it asked for them (e.g.
-    // benchmark, whose timings mean little from a Debug build), and MSVC packages are Release only.
-    async findBuildHash(key: CacheKey, possibleBuilds: any): Promise<{hash: string; buildType: string} | undefined> {
-        for (const buildType of ['Release', 'Debug']) {
-            const buildProperties = await this.getConanBuildProperties(key, buildType);
+    // Debug unless the request asked for Release for this library; a Release request falls back to
+    // Debug for libraries that have no Release package. MSVC packages are mostly Release only, and
+    // CE compiles MSVC code against the release runtime, so MSVC always prefers Release.
+    buildTypesToTry(buildType?: string): string[] {
+        if (this.compilerTypeOrGCC === 'win32-vc' || buildType === 'Release') return ['Release', 'Debug'];
+        return ['Debug'];
+    }
+
+    async findBuildHash(
+        key: CacheKey,
+        possibleBuilds: any,
+        buildType?: string,
+    ): Promise<{hash: string; buildType: string} | undefined> {
+        for (const candidate of this.buildTypesToTry(buildType)) {
+            const buildProperties = await this.getConanBuildProperties(key, candidate);
             const hash = await this.findMatchingHash(buildProperties, possibleBuilds);
-            if (hash) return {hash, buildType};
+            if (hash) return {hash, buildType: candidate};
         }
         return undefined;
     }
@@ -320,6 +331,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     version: details.version,
                     lookupname: details.lookupname as string,
                     lookupversion: details.lookupversion as string,
+                    buildType: details.buildType,
                     possibleBuilds: this.getAllPossibleBuilds(lookupname as string, lookupversion as string).catch(
                         () => false,
                     ),
@@ -333,7 +345,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             const libVer = `${lookupname}/${lookupversion}`;
             const possibleBuilds = await libVerBuilds.possibleBuilds;
             if (possibleBuilds) {
-                const found = await this.findBuildHash(key, possibleBuilds);
+                const found = await this.findBuildHash(key, possibleBuilds, libVerBuilds.buildType);
                 if (found) {
                     logger.debug(`Found conan hash ${found.hash} for ${libVer} with build type ${found.buildType}`);
                     allDownloads.push(

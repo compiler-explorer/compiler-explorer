@@ -240,14 +240,25 @@ describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
         return {settings: await setup.getConanBuildProperties(key, buildType)};
     }
 
-    it('prefers a Release package when there is one', async () => {
+    it('uses the Debug package by default even when a Release one exists', async () => {
         const possibleBuilds = {debughash: await settingsFor('Debug'), releasehash: await settingsFor('Release')};
-        expect(await setup.findBuildHash(key, possibleBuilds)).toEqual({hash: 'releasehash', buildType: 'Release'});
+        expect(await setup.findBuildHash(key, possibleBuilds)).toEqual({hash: 'debughash', buildType: 'Debug'});
     });
 
-    it('falls back to the Debug package', async () => {
+    it('uses the Release package when the request asks for it', async () => {
+        const possibleBuilds = {debughash: await settingsFor('Debug'), releasehash: await settingsFor('Release')};
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Release')).toEqual({
+            hash: 'releasehash',
+            buildType: 'Release',
+        });
+    });
+
+    it('falls back to Debug when Release is asked for but not built', async () => {
         const possibleBuilds = {debughash: await settingsFor('Debug')};
-        expect(await setup.findBuildHash(key, possibleBuilds)).toEqual({hash: 'debughash', buildType: 'Debug'});
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Release')).toEqual({
+            hash: 'debughash',
+            buildType: 'Debug',
+        });
     });
 
     it('returns undefined when nothing matches', async () => {

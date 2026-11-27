@@ -60,6 +60,8 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    // Set per compilation from the request (SelectedLibraryVersion.buildType), never from properties.
+    buildType?: string;
     sysroot?: string;
     dynamicLinker?: string;
     $order?: number;
