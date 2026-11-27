@@ -29,27 +29,14 @@
 // '+' swapped for '_', and the single '=' of padding dropped: always 27 characters. The SHA-1 is also the name of
 // the stored files, so decoding an id is all it takes to find them.
 //
-// Quick Bench's own decoder turns '_' into "+ " and relies on Node's base64 decoder skipping the stray space; this
-// one maps the characters back exactly instead.
+// The swap is the reverse of base64url's, and Node's base64 decoder also accepts base64url characters, so it has to
+// be undone by hand before decoding.
 
 const QUICK_BENCH_ID_RE = /^[A-Za-z0-9_-]{26}[AEIMQUYcgkosw048]$/;
-const SHA1_HEX_RE = /^[0-9a-f]{40}$/;
-
-/** Whether `id` has the shape of a Quick Bench link id. */
-export function isQuickBenchId(id: string): boolean {
-    return QUICK_BENCH_ID_RE.test(id);
-}
 
 /** Decodes a Quick Bench link id to the lower-case hex SHA-1 it stands for, or undefined if it isn't one. */
 export function decodeQuickBenchId(id: string): string | undefined {
-    if (!isQuickBenchId(id)) return undefined;
+    if (!QUICK_BENCH_ID_RE.test(id)) return undefined;
     const base64 = id.replaceAll('-', '/').replaceAll('_', '+') + '=';
     return Buffer.from(base64, 'base64').toString('hex');
-}
-
-/** Encodes a hex SHA-1 as a Quick Bench link id. */
-export function encodeQuickBenchId(sha1Hex: string): string {
-    const hex = sha1Hex.toLowerCase();
-    if (!SHA1_HEX_RE.test(hex)) throw new Error(`Not a SHA-1: ${sha1Hex}`);
-    return Buffer.from(hex, 'hex').toString('base64').replaceAll('/', '-').replaceAll('+', '_').slice(0, -1);
 }

@@ -25,11 +25,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
+
 // Quick Bench named a compiler by family and major.minor ("clang-11.1", "gcc-13.2"; "clang++-3.8" in its first
-// protocols). Each name was a Docker image built from one exact release. Mapping these by string pattern (as Quick
-// Bench's own "open in CE" button did) breaks: clang-11.1 was LLVM 11.1.0, not 11.0.1, and gcc-5.5 is CE's g550, not
-// g55. So we take the exact release of each image and look for that version among CE's compilers, falling back to
-// the nearest version when CE lacks it.
+// protocols), and each name was a Docker image built from one exact release. The name alone doesn't give the release
+// (clang-11.1 was 11.1.0 but clang-11.0 was 11.0.1), so we look up the image's release and find that among CE's
+// compilers, falling back to the nearest version when CE lacks it.
 
 // From quick-bench-docker's containers.json `release` tags, except: clang-3.8 and clang-3.9 come from their
 // Dockerfiles, and clang-17.0 was only ever published to Docker Hub (its image sets CLANG_RELEASE=llvmorg-17.0.1).
@@ -95,7 +96,7 @@ export const QUICK_BENCH_GCC_VERSIONS: ReadonlySet<string> = new Set([
 /** The compiler Quick Bench's front end selected when a #fragment link named none: its newest. */
 export const QUICK_BENCH_DEFAULT_COMPILER = 'clang-17.0';
 
-export type QuickBenchCompilerFamily = 'clang' | 'gcc';
+type QuickBenchCompilerFamily = 'clang' | 'gcc';
 
 export type QuickBenchCompiler = {
     family: QuickBenchCompilerFamily;
@@ -107,7 +108,6 @@ export type QuickBenchCompiler = {
 
 const QUICK_BENCH_COMPILER_RE = /^(clang|gcc)(?:\+\+)?-(\d+)\.(\d+)$/;
 
-/** Parses a Quick Bench compiler name, or returns undefined if it isn't one. */
 export function parseQuickBenchCompiler(name: string): QuickBenchCompiler | undefined {
     const match = QUICK_BENCH_COMPILER_RE.exec(name);
     if (!match) return undefined;
@@ -193,23 +193,16 @@ export function resolveQuickBenchCompiler(name: string, candidates: QuickBenchCa
     };
 }
 
-/** The subset of a CE compiler's info that picking candidates needs. */
-export type CompilerInfoLike = {id: string; group: string; semver: string; lang: string};
+// The groups of plain x86-64 gcc and clang releases in godbolt.org's configuration (`c++.amazon.properties`).
+const CANDIDATE_GROUPS: Readonly<Record<QuickBenchCompilerFamily, string>> = {gcc: 'gcc86', clang: 'clang'};
 
-/** Groups of x86-64 gcc and clang releases in CE's own configuration (`c++.amazon.properties`). */
-export const DEFAULT_CANDIDATE_GROUPS: Readonly<Record<QuickBenchCompilerFamily, readonly string[]>> = {
-    gcc: ['gcc86'],
-    clang: ['clang'],
-};
-
-/** Picks the C++ compilers in the given groups as candidates for mapping Quick Bench compilers. */
+/** Picks the CE compilers Quick Bench compilers may map to. */
 export function candidatesFromCompilers(
-    compilers: readonly CompilerInfoLike[],
-    groups: Readonly<Record<QuickBenchCompilerFamily, readonly string[]>> = DEFAULT_CANDIDATE_GROUPS,
+    compilers: readonly Pick<CompilerInfo, 'id' | 'group' | 'semver' | 'lang'>[],
 ): QuickBenchCandidates {
     const pick = (family: QuickBenchCompilerFamily) =>
         compilers
-            .filter(c => c.lang === 'c++' && groups[family].includes(c.group))
+            .filter(c => c.lang === 'c++' && c.group === CANDIDATE_GROUPS[family])
             .map(c => ({id: c.id, semver: c.semver}));
     return {gcc: pick('gcc'), clang: pick('clang')};
 }

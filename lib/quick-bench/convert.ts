@@ -39,14 +39,9 @@ export type QuickBenchOptions = {
     cppVersion: string;
     /** "gnu" for libstdc++ or "llvm" for libc++; clang only. Absent before protocol 3. */
     lib?: string;
-    /** Extra flags, from a per-compiler allow-list. Absent before protocol 5. */
+    /** Extra flags. Absent before protocol 5. */
     flags?: string[];
 };
-
-/** Google Benchmark 1.6.1 is the version every Quick Bench image was built with. */
-export const QUICK_BENCH_BENCHMARK_LIB = {name: 'benchmark', ver: '161'};
-/** Quick Bench images had range-v3 0.3.0 in /usr/include, so code could use it without asking. */
-export const QUICK_BENCH_RANGES_LIB = {name: 'rangesv3', ver: '030'};
 
 export type QuickBenchConversion = {
     state: ClientState;
@@ -64,26 +59,23 @@ const OPTIM_FLAGS: Readonly<Record<string, string>> = {
     F: '-Ofast',
 };
 
-const CPP_VERSION_RE = /^(?:(?:c|gnu)\+\+)?(\w+)$/;
+// What Quick Bench accepted: an optional "c++" and a two-character version such as 17 or 2a.
+const CPP_VERSION_RE = /^(?:c\+\+)?(\d[\da-z])$/;
 const RANGES_V3_RE = /#\s*include\s*[<"]range\/v3\//;
 
-function stdFlag(cppVersion: string, warnings: string[]): string | undefined {
-    const match = CPP_VERSION_RE.exec(cppVersion);
-    if (!match) {
-        warnings.push(`Ignored unrecognised C++ version "${cppVersion}"`);
-        return undefined;
-    }
-    // Quick Bench prefixed bare versions with c++, never gnu++.
-    return cppVersion.includes('++') ? `-std=${cppVersion}` : `-std=c++${match[1]}`;
-}
-
-/** Builds the compiler options string Quick Bench would have passed, as far as CE's compiler needs it. */
+/**
+ * Builds the compiler options for a Quick Bench benchmark.
+ *
+ * This is what the user chose, which isn't always what Quick Bench ran: from protocol 5 it ran the lib choice and
+ * the flags together as one argument, so a benchmark with flags actually got libstdc++ and lost its first flag.
+ */
 export function quickBenchCompilerOptions(options: QuickBenchOptions, warnings: string[] = []): string {
     const result: string[] = [];
-    const std = stdFlag(String(options.cppVersion), warnings);
-    if (std) result.push(std);
+    const std = CPP_VERSION_RE.exec(options.cppVersion);
+    if (std) result.push(`-std=c++${std[1]}`);
+    else warnings.push(`Ignored unrecognised C++ version "${options.cppVersion}"`);
 
-    const optim = OPTIM_FLAGS[String(options.optim)];
+    const optim = OPTIM_FLAGS[options.optim];
     if (optim) result.push(optim);
     else warnings.push(`Ignored unrecognised optimisation level "${options.optim}"`);
 
@@ -93,6 +85,7 @@ export function quickBenchCompilerOptions(options: QuickBenchOptions, warnings: 
         else warnings.push(`Ignored libc++ for non-clang compiler ${options.compiler}`);
     }
 
+    // Whitespace would split one flag into several options.
     for (const flag of options.flags ?? []) {
         if (typeof flag === 'string' && /^-\S+$/.test(flag)) result.push(flag);
         else warnings.push(`Ignored malformed flag ${JSON.stringify(flag)}`);
@@ -100,47 +93,29 @@ export function quickBenchCompilerOptions(options: QuickBenchOptions, warnings: 
     return result.join(' ');
 }
 
-function makeSession(id: number, source: string, options: QuickBenchOptions, candidates: QuickBenchCandidates) {
+function convert(code: string, options: QuickBenchOptions, candidates: QuickBenchCandidates): QuickBenchConversion {
     const warnings: string[] = [];
     const resolution = resolveQuickBenchCompiler(options.compiler, candidates);
     if (resolution.note) warnings.push(resolution.note);
-    const libs = [QUICK_BENCH_BENCHMARK_LIB];
-    if (RANGES_V3_RE.test(source)) libs.push(QUICK_BENCH_RANGES_LIB);
+    const source = wrapQuickBenchCode(code);
+    // Google Benchmark 1.6.1 is what every Quick Bench image was built with, and they all had range-v3 0.3.0 in
+    // /usr/include, so code could use it without asking.
+    const libs = [{name: 'benchmark', ver: '161'}];
+    if (RANGES_V3_RE.test(source)) libs.push({name: 'rangesv3', ver: '030'});
     const session = {
-        id,
+        id: 1,
         language: 'c++',
         source,
-        compilers: [],
         executors: [
             {
-                compiler: {
-                    id: resolution.id ?? '',
-                    options: quickBenchCompilerOptions(options, warnings),
-                    libs: libs.map(lib => ({...lib})),
-                    filters: {},
-                },
+                compiler: {id: resolution.id ?? '', options: quickBenchCompilerOptions(options, warnings), libs},
                 compilerVisible: true,
                 compilerOutputVisible: true,
                 arguments: '',
-                stdin: '',
             },
         ],
     };
-    return {session, warnings};
-}
-
-function parseStoredOptions(optJson: string): QuickBenchOptions {
-    const parsed = JSON.parse(optJson);
-    if (typeof parsed !== 'object' || parsed === null || typeof parsed.compiler !== 'string') {
-        throw new Error('Quick Bench options have no compiler');
-    }
-    return {
-        compiler: parsed.compiler,
-        optim: String(parsed.optim ?? '3'),
-        cppVersion: String(parsed.cppVersion ?? '17'),
-        lib: parsed.lib,
-        flags: Array.isArray(parsed.flags) ? parsed.flags : [],
-    };
+    return {state: new ClientState({sessions: [session]}), warnings};
 }
 
 /**
@@ -152,39 +127,29 @@ export function convertStoredQuickBench(
     optJson: string,
     candidates: QuickBenchCandidates,
 ): QuickBenchConversion {
-    const options = parseStoredOptions(optJson);
-    const source = wrapQuickBenchCode(unwrapQuickBenchCode(storedCode));
-    const {session, warnings} = makeSession(1, source, options, candidates);
-    return {state: new ClientState({sessions: [session]}), warnings};
+    const parsed = JSON.parse(optJson);
+    if (typeof parsed?.compiler !== 'string') throw new Error('Quick Bench options have no compiler');
+    const options = {
+        compiler: parsed.compiler,
+        optim: String(parsed.optim ?? '3'),
+        cppVersion: String(parsed.cppVersion ?? '17'),
+        lib: parsed.lib,
+        flags: Array.isArray(parsed.flags) ? parsed.flags : [],
+    };
+    return convert(unwrapQuickBenchCode(storedCode), options, candidates);
 }
-
-/** What other sites (CE among them) put in a quick-bench.com/#... link. All but `text` are optional. */
-type QuickBenchHashEntry = {
-    text?: unknown;
-    compiler?: unknown;
-    optim?: unknown;
-    cppVersion?: unknown;
-    lib?: unknown;
-    flags?: unknown;
-};
 
 /** Quick Bench's front-end defaults for anything a #fragment link left out. */
 const HASH_DEFAULTS = {compiler: QUICK_BENCH_DEFAULT_COMPILER, optim: '3', cppVersion: '20', lib: 'gnu'};
-
-function decodeHashPayload(fragment: string): unknown {
-    let payload = fragment.startsWith('#') ? fragment.slice(1) : fragment;
-    if (payload.includes('%')) payload = decodeURIComponent(payload);
-    // Senders base64 either UTF-8 bytes or JSON with non-ASCII escaped; decoding as UTF-8 handles both.
-    return JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
-}
 
 function stringOr(value: unknown, fallback: string): string {
     return typeof value === 'string' || typeof value === 'number' ? String(value) : fallback;
 }
 
 /**
- * Converts the state in a quick-bench.com/#<base64 JSON> link to CE client state, one session per benchmark in it.
- * Returns undefined if the fragment holds nothing Quick Bench would have opened.
+ * Converts the state in a quick-bench.com/#<base64 JSON> link to CE client state. The JSON is an object or (from
+ * Build Bench, which shares the format) an array of them; like Quick Bench, this takes the first. Returns undefined
+ * if the fragment holds nothing Quick Bench would have opened.
  */
 export function convertQuickBenchHash(
     fragment: string,
@@ -192,30 +157,21 @@ export function convertQuickBenchHash(
 ): QuickBenchConversion | undefined {
     let decoded: unknown;
     try {
-        decoded = decodeHashPayload(fragment);
+        let payload = fragment.startsWith('#') ? fragment.slice(1) : fragment;
+        if (payload.includes('%')) payload = decodeURIComponent(payload);
+        // Senders base64 either UTF-8 bytes or JSON with non-ASCII escaped; decoding as UTF-8 handles both.
+        decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
     } catch {
         return undefined;
     }
-    const entries = ([] as unknown[])
-        .concat(decoded)
-        .filter((e): e is QuickBenchHashEntry => typeof e === 'object' && e !== null)
-        .filter(e => typeof e.text === 'string' && e.text !== '');
-    if (entries.length === 0) return undefined;
-
-    const sessions: ReturnType<typeof makeSession>['session'][] = [];
-    const warnings: string[] = [];
-    for (const [index, entry] of entries.entries()) {
-        const options: QuickBenchOptions = {
-            compiler: stringOr(entry.compiler, HASH_DEFAULTS.compiler),
-            optim: stringOr(entry.optim, HASH_DEFAULTS.optim),
-            cppVersion: stringOr(entry.cppVersion, HASH_DEFAULTS.cppVersion),
-            lib: stringOr(entry.lib, HASH_DEFAULTS.lib),
-            flags: Array.isArray(entry.flags) ? entry.flags : [],
-        };
-        const source = wrapQuickBenchCode(stripQuickBenchHashBoilerplate(entry.text as string));
-        const made = makeSession(index + 1, source, options, candidates);
-        sessions.push(made.session);
-        warnings.push(...made.warnings);
-    }
-    return {state: new ClientState({sessions}), warnings};
+    const entry = ([] as any[]).concat(decoded).find(e => typeof e?.text === 'string' && e.text !== '');
+    if (!entry) return undefined;
+    const options = {
+        compiler: stringOr(entry.compiler, HASH_DEFAULTS.compiler),
+        optim: stringOr(entry.optim, HASH_DEFAULTS.optim),
+        cppVersion: stringOr(entry.cppVersion, HASH_DEFAULTS.cppVersion),
+        lib: stringOr(entry.lib, HASH_DEFAULTS.lib),
+        flags: Array.isArray(entry.flags) ? entry.flags : [],
+    };
+    return convert(stripQuickBenchHashBoilerplate(entry.text), options, candidates);
 }

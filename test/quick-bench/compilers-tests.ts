@@ -36,6 +36,7 @@ import {
     type QuickBenchCandidates,
     resolveQuickBenchCompiler,
 } from '../../lib/quick-bench/compilers.js';
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 
 describe('Parsing Quick Bench compiler names', () => {
     it.each([
@@ -76,7 +77,6 @@ describe('Resolving Quick Bench compilers', () => {
     });
 
     it('falls back to the nearest release in the same major, and says so', () => {
-        // Quick Bench's own CE button sent clang-11.1 to the nonexistent clang1110.
         const resolved = resolveQuickBenchCompiler('clang-11.1', candidates);
         expect(resolved.id).toEqual('clang1101');
         expect(resolved.exact).toBe(false);
@@ -102,7 +102,7 @@ describe('Resolving Quick Bench compilers', () => {
 
 describe('Picking candidates', () => {
     it('takes C++ compilers from the configured groups', () => {
-        const compilers = [
+        const compilers: Pick<CompilerInfo, 'id' | 'group' | 'semver' | 'lang'>[] = [
             {id: 'g132', group: 'gcc86', semver: '13.2', lang: 'c++'},
             {id: 'g132assert', group: 'gcc86assert', semver: '13.2 (assertions)', lang: 'c++'},
             {id: 'cg132', group: 'gcc86', semver: '13.2', lang: 'c'},

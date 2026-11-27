@@ -25,19 +25,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import crypto from 'node:crypto';
-
 import {describe, expect, it} from 'vitest';
 
 import {ClientState} from '../../lib/clientstate.js';
-import {ClientStateGoldenifier} from '../../lib/clientstate-normalizer.js';
+import {goldenLayoutFromClientState} from '../../lib/clientstate-normalizer.js';
 import type {QuickBenchCandidates} from '../../lib/quick-bench/compilers.js';
 import {
     convertQuickBenchHash,
     convertStoredQuickBench,
     quickBenchCompilerOptions,
 } from '../../lib/quick-bench/convert.js';
-import {decodeQuickBenchId, encodeQuickBenchId, isQuickBenchId} from '../../lib/quick-bench/id.js';
+import {decodeQuickBenchId} from '../../lib/quick-bench/id.js';
 import {
     stripQuickBenchHashBoilerplate,
     unwrapQuickBenchCode,
@@ -113,20 +111,8 @@ describe('Quick Bench ids', () => {
         ['Yw05jL2OjJ12vT_xft47d6vkMC4', '630d398cbd8e8c9d76bd3fb17ede3b77abe4302e'],
         ['hbkmjh-0uSQKrYlQ-qNjLpgDEto', '85b9268e1ff4b9240aad8950fea3632e980312da'],
         ['hbkmjh_0uSQKrYlQ_qNjLpgDEto', '85b9268e1fb4b9240aad8950faa3632e980312da'],
-    ])('maps %s to and from %s', (id, sha1) => {
+    ])('decodes %s to %s', (id, sha1) => {
         expect(decodeQuickBenchId(id)).toEqual(sha1);
-        expect(encodeQuickBenchId(sha1)).toEqual(id);
-    });
-
-    it('round-trips any SHA-1 and gives URL-safe ids', () => {
-        for (let i = 0; i < 50; i++) {
-            const sha1 = crypto.createHash('sha1').update(String(i)).digest('hex');
-            const id = encodeQuickBenchId(sha1);
-            expect(id).toHaveLength(27);
-            expect(encodeURIComponent(id)).toEqual(id);
-            expect(isQuickBenchId(id)).toBe(true);
-            expect(decodeQuickBenchId(id)).toEqual(sha1);
-        }
     });
 
     it('rejects things that are not ids', () => {
@@ -137,15 +123,6 @@ describe('Quick Bench ids', () => {
         expect(decodeQuickBenchId('Yw05jL2OjJ12vT+xft47d6vkMC4')).toBeUndefined();
         // 27 characters, but the last one carries bits a 20-byte hash doesn't have.
         expect(decodeQuickBenchId('Yw05jL2OjJ12vT_xft47d6vkMC5')).toBeUndefined();
-        expect(() => encodeQuickBenchId('not a hash')).toThrow();
-    });
-
-    it('names the stored files of the protocol 1 fixture', () => {
-        // Quick Bench's protocol 1 hashed code + compiler + optim + cppVersion + protocolVersion
-        // (quick-bench-back-end test/id.test.js).
-        const sha1 = crypto.createHash('sha1').update(`${START_CODE}clang++-3.81171`).digest('hex');
-        expect(sha1).toEqual('630d398cbd8e8c9d76bd3fb17ede3b77abe4302e');
-        expect(decodeQuickBenchId('Yw05jL2OjJ12vT_xft47d6vkMC4')).toEqual(sha1);
     });
 });
 
@@ -168,11 +145,6 @@ describe('Quick Bench source wrappers', () => {
         expect(unwrapQuickBenchCode(wrapQuickBenchCode(START_CODE))).toEqual(START_CODE);
     });
 
-    it('does not add a second Noop', () => {
-        const code = 'static void Noop(benchmark::State& s) { for (auto _ : s) {} }\nBENCHMARK( Noop );\n';
-        expect(wrapQuickBenchCode(code)).toEqual(`#include <benchmark/benchmark.h>\n${code}\nBENCHMARK_MAIN();`);
-    });
-
     it('strips the boilerplate Quick Bench stripped from #fragment code', () => {
         const text = `#include <benchmark/benchmark.h>\n${START_CODE}\nBENCHMARK_MAIN();`;
         expect(stripQuickBenchHashBoilerplate(text)).toEqual(START_CODE);
@@ -184,6 +156,7 @@ describe('Quick Bench compiler options', () => {
         [{compiler: 'gcc-13.2', optim: '0', cppVersion: '11'}, '-std=c++11 -O0'],
         [{compiler: 'gcc-13.2', optim: 'S', cppVersion: 'c++14'}, '-std=c++14 -Os'],
         [{compiler: 'gcc-13.2', optim: 'G', cppVersion: '2a'}, '-std=c++2a -Og'],
+        [{compiler: 'gcc-13.2', optim: '2', cppVersion: '98'}, '-std=c++98 -O2'],
         [{compiler: 'clang-17.0', optim: 'F', cppVersion: 'c++20', lib: 'gnu'}, '-std=c++20 -Ofast'],
         [{compiler: 'clang-17.0', optim: '2', cppVersion: '17', lib: 'llvm'}, '-std=c++17 -O2 -stdlib=libc++'],
         [
@@ -262,9 +235,7 @@ describe('Converting stored Quick Bench benchmarks', () => {
     it('produces state CE can lay out as an editor and an executor', () => {
         const {state} = convertStoredQuickBench(CODE_V1, OPT_V5, CANDIDATES);
         const roundTripped = new ClientState(JSON.parse(JSON.stringify(state)));
-        const gl = new ClientStateGoldenifier();
-        gl.fromClientState(roundTripped);
-        const components = JSON.stringify(gl.golden);
+        const components = JSON.stringify(goldenLayoutFromClientState(roundTripped));
         expect(components).toContain('"componentName":"codeEditor"');
         expect(components).toContain('"componentName":"executor"');
         expect(components).toContain('"compiler":"clang1701"');
@@ -313,16 +284,15 @@ describe('Converting quick-bench.com/#... links', () => {
         expect(executor.compiler.options).toEqual('-std=c++20 -O3');
     });
 
-    it('makes a session per entry of an array', () => {
+    it('takes the first entry with code from an array, as Quick Bench did', () => {
         const fragment = utf8Hash([
-            {text: START_CODE, compiler: 'gcc-5.5', optim: '1', cppVersion: '14'},
             {text: '', compiler: 'gcc-5.5'},
             {text: START_CODE, compiler: 'clang-3.8', optim: '0', cppVersion: '11', lib: 'llvm'},
+            {text: START_CODE, compiler: 'gcc-5.5', optim: '1', cppVersion: '14'},
         ]);
-        const {state} = convertQuickBenchHash(fragment, CANDIDATES)!;
-        expect(state.sessions.map(s => s.id)).toEqual([1, 2]);
-        expect(state.sessions.map(s => s.executors[0].compiler.id)).toEqual(['g550', 'clang381']);
-        expect(state.sessions[1].executors[0].compiler.options).toEqual('-std=c++11 -O0 -stdlib=libc++');
+        const {executor} = onlyExecutor(convertQuickBenchHash(fragment, CANDIDATES)!.state);
+        expect(executor.compiler.id).toEqual('clang381');
+        expect(executor.compiler.options).toEqual('-std=c++11 -O0 -stdlib=libc++');
     });
 
     it.each([

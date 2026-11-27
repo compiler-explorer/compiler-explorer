@@ -70,14 +70,7 @@ export function stripQuickBenchHashBoilerplate(text: string): string {
     return text.replace(HASH_INCLUDE, '').replace(HASH_MAIN, '');
 }
 
-const NOOP_REGISTERED_RE = /BENCHMARK\s*\(\s*Noop\s*\)/;
-
-/**
- * Wraps unwrapped Quick Bench code in today's wrapper: the include, a Noop benchmark and BENCHMARK_MAIN(). This is
- * exactly what Quick Bench compiled for its last protocol, except that code which already registers its own Noop
- * keeps it rather than getting a second one that would not compile.
- */
+/** Wraps code exactly as Quick Bench's last protocol compiled it: the include, a Noop benchmark and BENCHMARK_MAIN(). */
 export function wrapQuickBenchCode(code: string): string {
-    if (NOOP_REGISTERED_RE.test(code)) return `${PREFIX_V2}${code}\nBENCHMARK_MAIN();`;
     return PREFIX_V2 + code + SUFFIX_V3;
 }
