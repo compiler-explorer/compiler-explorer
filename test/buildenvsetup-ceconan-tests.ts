@@ -35,6 +35,7 @@ import {BuildEnvSetupCeConanDirect} from '../lib/buildenvsetup/ceconan.js';
 import {BuildEnvSetupCeConanCircleDirect} from '../lib/buildenvsetup/ceconan-circle.js';
 import {BuildEnvSetupCeConanFortranDirect} from '../lib/buildenvsetup/ceconan-fortran.js';
 import * as temp from '../lib/temp.js';
+import type {LibraryBuildType} from '../types/libraries/libraries.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -236,13 +237,16 @@ describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
     const setup = new BuildEnvSetupCeConanDirect(compilerInfo, ce);
     const key = {options: [] as string[]} as any;
 
-    async function settingsFor(buildType: string) {
+    async function settingsFor(buildType: LibraryBuildType) {
         return {settings: await setup.getConanBuildProperties(key, buildType)};
     }
 
     it('uses the Debug package by default even when a Release one exists', async () => {
         const possibleBuilds = {debughash: await settingsFor('Debug'), releasehash: await settingsFor('Release')};
-        expect(await setup.findBuildHash(key, possibleBuilds)).toEqual({hash: 'debughash', buildType: 'Debug'});
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Debug')).toEqual({
+            hash: 'debughash',
+            buildType: 'Debug',
+        });
     });
 
     it('uses the Release package when the request asks for it', async () => {
@@ -264,7 +268,7 @@ describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
     it('returns undefined when nothing matches', async () => {
         const other = await settingsFor('Debug');
         const possibleBuilds = {otherhash: {settings: {...other.settings, 'compiler.version': 'clang1600'}}};
-        expect(await setup.findBuildHash(key, possibleBuilds)).toBeUndefined();
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Debug')).toBeUndefined();
     });
 });
 

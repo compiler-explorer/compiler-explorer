@@ -35,6 +35,7 @@ import {splitArguments} from '../shared/common-utils.js';
 import {getRemoteId} from '../shared/remote-utils.js';
 import {CompilerInfo, Remote} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
+import type {LibraryBuildType} from '../types/libraries/libraries.interfaces.js';
 import type {Source} from '../types/source.interfaces.js';
 import type {Tool, ToolTypeKey} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
@@ -61,7 +62,7 @@ export type VersionInfo = {
     hidden: boolean;
     packagedheaders?: boolean;
     // Set per compilation from the request (SelectedLibraryVersion.buildType), never from properties.
-    buildType?: string;
+    buildType?: LibraryBuildType;
     sysroot?: string;
     dynamicLinker?: string;
     $order?: number;

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import type {LibraryBuildType} from '../../types/libraries/libraries.interfaces.js';
 import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
 export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirect {
@@ -30,7 +31,7 @@ export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirec
         return 'ceconan-fortran';
     }
 
-    override async getConanBuildProperties(_key: CacheKey, buildType = 'Debug'): Promise<ConanBuildProperties> {
+    override async getConanBuildProperties(_key: CacheKey, buildType: LibraryBuildType): Promise<ConanBuildProperties> {
         const arch = this.getCompilerArch() || 'x86_64';
         const libcxx = 'std';
         const stdver = '';

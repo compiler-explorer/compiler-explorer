@@ -24,6 +24,7 @@
 
 import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import type {LibraryBuildType} from '../../types/libraries/libraries.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
@@ -42,7 +43,7 @@ export class BuildEnvSetupCeConanCircleDirect extends BuildEnvSetupCeConanDirect
         this.linkedCompilerType = compilerInfo.buildenvsetup!.props('linkedCompilerType');
     }
 
-    override async getConanBuildProperties(key: CacheKey, buildType = 'Debug'): Promise<ConanBuildProperties> {
+    override async getConanBuildProperties(key: CacheKey, buildType: LibraryBuildType): Promise<ConanBuildProperties> {
         const props = await super.getConanBuildProperties(key, buildType);
         props['compiler'] = this.linkedCompilerType;
         props['compiler.version'] = this.linkedCompilerId;
