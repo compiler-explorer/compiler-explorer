@@ -72,7 +72,7 @@ export function setupControllersAndHandlers(
     const siteTemplateController = new SiteTemplateController();
     const sourceController = new SourceController(sources);
     const assemblyDocumentationController = new AssemblyDocumentationController();
-    const formattingController = new FormattingController(formattingService, compilationQueue);
+    const formattingController = new FormattingController(formattingService);
     const noScriptController = new NoScriptController(compileHandler, formDataHandler);
 
     // Initialize healthcheck controller (handled separately in web server setup)

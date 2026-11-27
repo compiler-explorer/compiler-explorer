@@ -25,16 +25,12 @@
 import express from 'express';
 
 import {unwrapString} from '../../assert.js';
-import {CompilationQueue} from '../../compilation-queue.js';
 import {FormattingService} from '../../formatting-service.js';
 import {cached, jsonOnly} from '../middleware.js';
 import {HttpController} from './controller.interfaces.js';
 
 export class FormattingController implements HttpController {
-    public constructor(
-        private formattingService: FormattingService,
-        private compilationQueue: CompilationQueue,
-    ) {}
+    public constructor(private formattingService: FormattingService) {}
 
     createRouter(): express.Router {
         const router = express.Router();
@@ -62,18 +58,13 @@ export class FormattingController implements HttpController {
             res.status(422).json({exit: 3, answer: `Style '${req.body.base}' is not supported`});
             return;
         }
-        // Formatters are external processes, so they share the compilation queue's concurrency limit rather than
-        // running unbounded alongside it.
+        // Do the formatting
         try {
-            const formatted = await this.compilationQueue.enqueue(
-                () =>
-                    formatter.format(req.body.source, {
-                        useSpaces: req.body.useSpaces === undefined ? true : req.body.useSpaces,
-                        tabWidth: req.body.tabWidth === undefined ? 4 : req.body.tabWidth,
-                        baseStyle: req.body.base,
-                    }),
-                {abandonIfStale: true},
-            );
+            const formatted = await formatter.format(req.body.source, {
+                useSpaces: req.body.useSpaces === undefined ? true : req.body.useSpaces,
+                tabWidth: req.body.tabWidth === undefined ? 4 : req.body.tabWidth,
+                baseStyle: req.body.base,
+            });
             res.json({exit: formatted.code, answer: formatted.stdout || formatted.stderr || ''});
         } catch (err: unknown) {
             res.status(500).json({

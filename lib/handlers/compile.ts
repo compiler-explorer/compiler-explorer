@@ -153,7 +153,7 @@ const compilerOptionsSchema = z.object({
     produceGccDump: optionObject.nullish(),
     produceStackUsageInfo: z.boolean().nullish(),
     produceOptInfo: z.boolean().nullish(),
-    produceCfg: z.union([optionObject, z.literal(false)]).nullish(),
+    produceCfg: z.union([optionObject, z.literal(false)], {error: 'expected an object or false'}).nullish(),
     produceGnatDebugTree: z.boolean().nullish(),
     produceGnatDebug: z.boolean().nullish(),
     produceIr: optionObject.nullish(),

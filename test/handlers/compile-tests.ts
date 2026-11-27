@@ -328,6 +328,8 @@ describe('Compiler tests', () => {
                 expect(res.body.message).toContain('Invalid compilerOptions');
                 expect(res.body.message).toContain(Object.keys(compilerOptions)[0]);
             }
+            const cfg = await makeFakeJson('I am a program', {compilerOptions: {produceCfg: true}}).expect(400);
+            expect(cfg.body.message).toEqual('Invalid compilerOptions: produceCfg: expected an object or false');
             const res = await makeFakeJson('I am a program', {compilerOptions: 'skipAsm'}).expect(400);
             expect(res.body.message).toContain('Invalid compilerOptions');
         });
