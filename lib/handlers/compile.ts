@@ -38,6 +38,7 @@ import {remove, splitArguments} from '../../shared/common-utils.js';
 import {
     ActiveTool,
     BypassCache,
+    CompilationRequestOptions,
     ExecutionParams,
     FiledataPair,
     LegacyCompatibleActiveTool,
@@ -138,10 +139,12 @@ export type ParsedRequest = {
 // Nested option objects are passed through as given: the compilers that read them pick out the fields they know about.
 const optionObject = z.record(z.string(), z.unknown());
 
+type CompilerOptionsShape = {[K in keyof CompilationRequestOptions['compilerOptions']]-?: z.ZodType};
+
 /**
  * The `compilerOptions` a JSON compile request may carry. Keys not listed here are dropped, as nothing downstream reads
- * them; a listed key with a value of the wrong type fails the request. Keep in step with `CompilationRequestOptions`
- * and docs/API.md.
+ * them; a listed key with a value of the wrong type fails the request. The `satisfies` makes this fail to compile unless
+ * it names exactly the keys of `CompilationRequestOptions['compilerOptions']`, so the two cannot drift apart.
  */
 const compilerOptionsSchema = z.object({
     executorRequest: z.boolean().nullish(),
@@ -174,7 +177,7 @@ const compilerOptionsSchema = z.object({
     customOutputFilename: z.string().nullish(),
     overrides: z.array(optionObject).nullish(),
     darkBackgroundColours: z.boolean().nullish(),
-});
+} satisfies CompilerOptionsShape);
 
 export function parseCompilerOptions(compilerOptions: unknown): Record<string, any> {
     const input = compilerOptions || {};
