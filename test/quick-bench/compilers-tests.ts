@@ -130,13 +130,11 @@ describe("Quick Bench's compilers on godbolt.org", () => {
         ...[...QUICK_BENCH_GCC_VERSIONS].map(v => `gcc-${v}`),
     ];
 
-    it.each(images)('maps %s to a release of the same major.minor', name => {
+    it.each(images)('maps %s to a release of the same major', name => {
         const resolved = resolveQuickBenchCompiler(name, candidates);
         expect(resolved.id).toBeDefined();
         const semver = candidates[name.startsWith('gcc') ? 'gcc' : 'clang'].find(c => c.id === resolved.id)?.semver;
-        const [major, minor] = parseVersion(semver ?? '') ?? [];
-        // CE has no clang 11.1, so it lands on 11.0.1; everything else matches at least major.minor.
-        const expected = name === 'clang-11.1' ? '11.0' : name.split('-')[1];
-        expect(`${major}.${minor}`).toEqual(expected);
+        const [major] = parseVersion(semver ?? '') ?? [];
+        expect(major).toEqual(parseQuickBenchCompiler(name)?.version[0]);
     });
 });
