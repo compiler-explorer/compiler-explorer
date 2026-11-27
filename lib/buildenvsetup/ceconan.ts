@@ -73,7 +73,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected conan_os: string;
     // Generous cap on the total declared size of extracted files; real library packages are
     // tens to a few hundred MiB, so anything near this is a packaging error or a gzip bomb.
-    protected maxExtractedBytes = 2 * 1024 * 1024 * 1024;
+    protected maxExtractedBytes: number;
     // Applies to each request to the conan server, including reading the whole package body.
     protected fetchTimeoutMs: number;
     // Real compilations select a handful of libraries at most; these bound the time and disk one
@@ -92,6 +92,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
         this.conan_os = os.platform() === 'win32' ? 'Windows' : 'Linux';
+        this.maxExtractedBytes = compilerInfo.buildenvsetup!.props('maxExtractedBytes', 2 * 1024 * 1024 * 1024);
         this.fetchTimeoutMs = compilerInfo.buildenvsetup!.props('fetchTimeoutMs', 120_000);
         this.maxLibraries = compilerInfo.buildenvsetup!.props('maxLibraries', 50);
         this.maxDownloadBytes = compilerInfo.buildenvsetup!.props('maxDownloadBytes', 1024 * 1024 * 1024);

@@ -309,8 +309,9 @@ describe('BuildEnvSetupCeConanDirect library limits', () => {
     });
 
     it('reads limits from properties', () => {
-        const setup = makeSetup({fetchTimeoutMs: 1234, maxLibraries: 3, maxDownloadBytes: 5678});
+        const setup = makeSetup({fetchTimeoutMs: 1234, maxLibraries: 3, maxDownloadBytes: 5678, maxExtractedBytes: 91});
         expect((setup as any).fetchTimeoutMs).toEqual(1234);
+        expect((setup as any).maxExtractedBytes).toEqual(91);
         expect((setup as any).maxLibraries).toEqual(3);
         expect((setup as any).maxDownloadBytes).toEqual(5678);
     });
