@@ -258,10 +258,7 @@ describe('GCC dump output processing', () => {
                 'example.cpp.o',
             ];
             vi.spyOn(fs, 'readdir').mockResolvedValue(names as unknown as any);
-            vi.spyOn(utils, 'isRegularFile').mockImplementation(
-                async (filename: string) => path.basename(filename) in dumpFiles,
-            );
-            vi.spyOn(utils, 'tryReadTextFile').mockImplementation(
+            vi.spyOn(utils, 'tryReadRegularTextFile').mockImplementation(
                 async (filename: string) => dumpFiles[path.basename(filename)],
             );
         }
@@ -314,7 +311,7 @@ describe('GCC dump output processing', () => {
             mockFs();
             // Multi-file compiles write the extra files into the same temp dir, and GCC names them
             // in insn locations too (an inline function from a local header, say).
-            vi.mocked(utils.tryReadTextFile).mockImplementation(async (filename: string) =>
+            vi.mocked(utils.tryReadRegularTextFile).mockImplementation(async (filename: string) =>
                 path.basename(filename) === 'example.cpp.255r.expand'
                     ? `;; Function main (main)\n` +
                       `(insn 2 4 3 2 (set (reg:SI 0) (const_int 1)) "${inputFilename}":3:5 -1)\n` +

@@ -38,7 +38,7 @@ import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
-import {asSafeVer} from '../utils.js';
+import {asSafeVer, isRegularFile, tryReadRegularTextFile} from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
 
 export class NvccCompiler extends BaseCompiler {
@@ -124,11 +124,12 @@ export class NvccCompiler extends BaseCompiler {
     }
 
     async readPtx(ptxFilename: string, maxSize: number) {
-        const {size} = await fs.stat(ptxFilename);
-        if (size >= maxSize) {
-            return {asm: `<No output: generated PTX was too large (${size} > ${maxSize} bytes)>`};
+        const stat = await fs.lstat(ptxFilename);
+        if (!stat.isFile()) return {asm: '<No output file>'};
+        if (stat.size >= maxSize) {
+            return {asm: `<No output: generated PTX was too large (${stat.size} > ${maxSize} bytes)>`};
         }
-        return {asm: await fs.readFile(ptxFilename, 'utf8')};
+        return {asm: (await tryReadRegularTextFile(ptxFilename)) ?? '<No output file>'};
     }
 
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
@@ -149,11 +150,14 @@ export class NvccCompiler extends BaseCompiler {
                               ` (${result.asmSize} > ${maxSize} bytes)>`;
                           return result;
                       }
+                      if (!(await isRegularFile(outputFilename))) {
+                          result.asm = '<No output file>';
+                          return result;
+                      }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       }
-                      const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
-                      result.asm = contents.toString();
+                      result.asm = (await tryReadRegularTextFile(outputFilename)) ?? '<No output file>';
                       return result;
                   })()
         ).then(asm => {

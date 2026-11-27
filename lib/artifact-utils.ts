@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import {BufferOkFunc, BuildResult, CompilationResult} from '../types/compilation/compilation.interfaces.js';
@@ -37,8 +36,8 @@ export async function addArtifactToResult(
     customTitle?: string,
     checkFunc?: BufferOkFunc,
 ): Promise<void> {
-    if (!(await utils.isRegularFile(filepath))) return;
-    const file_buffer = await fs.readFile(filepath);
+    const file_buffer = await utils.tryReadRegularFile(filepath);
+    if (file_buffer === undefined) return;
 
     if (checkFunc && !checkFunc(file_buffer)) return;
 

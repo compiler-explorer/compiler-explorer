@@ -688,8 +688,12 @@ export class BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
     ) {
         const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
-
-        if (!(await utils.fileExists(objdumpInputFile))) {
+        // A project build's chosen artifact may legitimately be a symlink (libfoo.so -> libfoo.so.1); a single-file
+        // compile's own output never is.
+        const inputPresent = result.objdumpInputFilename
+            ? await utils.fileExists(objdumpInputFile)
+            : await utils.isRegularFile(objdumpInputFile);
+        if (!inputPresent) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
             return result;
         }
@@ -1557,9 +1561,9 @@ export class BaseCompiler {
         languageId: string;
     }> {
         const irPath = this.getIrOutputFilename(output.inputFilename!, filters, irOptions);
-        if (await utils.isRegularFile(irPath)) {
-            const output = await fs.readFile(irPath, 'utf8');
-            return await this.llvmIr.process(output, irOptions);
+        const irText = await utils.tryReadRegularTextFile(irPath);
+        if (irText !== undefined) {
+            return await this.llvmIr.process(irText, irOptions);
         }
         return {
             asm: [{text: 'Internal error; unable to open output path'}],
@@ -1595,8 +1599,8 @@ export class BaseCompiler {
             return [{text: 'Failed to run compiler to get ClangIR code'}];
         }
 
-        if (await utils.isRegularFile(outputFilename)) {
-            const content = await fs.readFile(outputFilename, 'utf8');
+        const content = await utils.tryReadRegularTextFile(outputFilename);
+        if (content !== undefined) {
             return content.split('\n').map(line => ({
                 text: line,
             }));
@@ -1767,8 +1771,8 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: `Failed to run compiler to get Rust ${outputFriendlyName}`}];
         }
-        if (await utils.isRegularFile(outputFilename)) {
-            const content = await fs.readFile(outputFilename, 'utf8');
+        const content = await utils.tryReadRegularTextFile(outputFilename);
+        if (content !== undefined) {
             return content.split('\n').map(line => ({
                 text: line,
             }));
@@ -1791,8 +1795,8 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Rust MIR'}];
         }
-        if (await utils.isRegularFile(mirPath)) {
-            const content = await fs.readFile(mirPath, 'utf8');
+        const content = await utils.tryReadRegularTextFile(mirPath);
+        if (content !== undefined) {
             return content.split('\n').map(line => ({
                 text: line,
             }));
@@ -1808,8 +1812,8 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
         }
-        if (await utils.isRegularFile(outpath)) {
-            const content = await fs.readFile(outpath, 'utf8');
+        const content = await utils.tryReadRegularTextFile(outpath);
+        if (content !== undefined) {
             // output file starts with
             //
             // ==================== <HEADER> ====================
@@ -1834,8 +1838,8 @@ export class BaseCompiler {
             return [{text: 'Failed to run compiler to get Lean C output'}];
         }
         const outpath = this.getLeanCOutputFilename(outputFilename);
-        if (await utils.isRegularFile(outpath)) {
-            let content = await fs.readFile(outpath, 'utf8');
+        let content = await utils.tryReadRegularTextFile(outpath);
+        if (content !== undefined) {
             if (options?.['clang-format']) {
                 content = await this.applyClangFormat(content);
             }
@@ -1854,8 +1858,8 @@ export class BaseCompiler {
         }
 
         const outputFilename = this.getYulOutputFilename(defaultOutputFilename);
-        if (await utils.isRegularFile(outputFilename)) {
-            const content = await fs.readFile(outputFilename, 'utf8');
+        const content = await utils.tryReadRegularTextFile(outputFilename);
+        if (content !== undefined) {
             const result: ResultLine[] = content.split('\n').map(line => ({text: line}));
             const filters: RegExp[] = [];
 
@@ -3919,7 +3923,8 @@ export class BaseCompiler {
 
         if (!compilationRes.optPath) return [];
 
-        const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
+        const optRemarksRaw = await utils.tryReadRegularTextFile(compilationRes.optPath);
+        if (optRemarksRaw === undefined) return [];
         const remarks = this.processRawOptRemarks(optRemarksRaw, this.compileFilename);
 
         if (remarks.length > 0 && this.compiler.demangler) {
@@ -3942,7 +3947,9 @@ export class BaseCompiler {
     }
 
     async processStackUsageOutput(suPath: string): Promise<StackUsage.StackUsageInfo[]> {
-        const output = StackUsage.parse(await fs.readFile(suPath, 'utf8'));
+        const suRaw = await utils.tryReadRegularTextFile(suPath);
+        if (suRaw === undefined) return [];
+        const output = StackUsage.parse(suRaw);
 
         if (this.compiler.demangler) {
             const result = JSON.stringify(output, null, 4);
@@ -4044,14 +4051,13 @@ but nothing was dumped. Possible causes are:
                 const pass = this.passObjectFromDumpFilename(filename);
                 if (!pass) continue;
                 if (!selectedCategories.has(categoryByLetter[pass.filename_suffix[0]])) continue;
-                if (!(await utils.isRegularFile(path.join(rootDir, filename)))) continue;
                 candidates.push({filename, pass});
             }
             // Order the drop-down by GCC's global pass-execution counter (stable secondary by name).
             candidates.sort((a, b) => a.pass.nnn - b.pass.nnn || a.pass.name.localeCompare(b.pass.name));
 
             for (const {filename, pass} of candidates) {
-                const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
+                const raw = await utils.tryReadRegularTextFile(path.join(rootDir, filename));
                 const trimmed = raw
                     ? this.trimGccDumpHeaderFunctions(
                           raw,
@@ -4160,8 +4166,8 @@ but nothing was dumped. Possible causes are:
         if (opts.pass && passFound) {
             output.currentPassOutput = '';
 
-            if (dumpFileName && (await utils.isRegularFile(dumpFileName))) {
-                const contents = await utils.tryReadTextFile(dumpFileName);
+            if (dumpFileName) {
+                const contents = await utils.tryReadRegularTextFile(dumpFileName);
                 if (contents) output.currentPassOutput = contents;
             }
             // else leave the currentPassOutput empty. Can happen when some UI options are changed and a now disabled
@@ -4185,8 +4191,16 @@ but nothing was dumped. Possible causes are:
     }
 
     async execPostProcess(result, postProcesses: string[], outputFilename: string, maxSize: number) {
-        const postCommand = `cat "${outputFilename}" | ${postProcesses.join(' | ')}`;
-        return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
+        const contents = await utils.tryReadRegularTextFile(outputFilename);
+        if (contents === undefined) {
+            result.asm = '<No output file>';
+            return result;
+        }
+        const postCommand = postProcesses.join(' | ');
+        return this.handlePostProcessResult(
+            result,
+            await this.exec('bash', ['-c', postCommand], {input: contents, maxOutput: maxSize}),
+        );
     }
 
     preProcess(source: string, filters: CompilerOutputOptions): string {
@@ -4236,15 +4250,15 @@ but nothing was dumped. Possible causes are:
                               ` (${result.asmSize} > ${maxSize} bytes)>`;
                           return result;
                       }
-                      if (postProcess.length > 0) {
-                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      }
                       if (!(await utils.isRegularFile(outputFilename))) {
                           result.asm = '<No output file>';
                           return result;
                       }
-                      const contents = await fs.readFile(outputFilename);
-                      result.asm = contents.toString();
+                      if (postProcess.length > 0) {
+                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                      }
+                      const contents = await utils.tryReadRegularTextFile(outputFilename);
+                      result.asm = contents ?? '<No output file>';
                       return result;
                   })();
         return Promise.all([asmPromise, optPromise, stackUsagePromise]);

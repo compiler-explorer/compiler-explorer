@@ -898,6 +898,35 @@ describe('isRegularFile', () => {
     });
 });
 
+describe('tryReadRegularFile', () => {
+    it('reads a regular file', async () => {
+        const file = path.join(newTempDir(), 'out.s');
+        await fs.writeFile(file, 'mov eax, 1');
+        await expect(utils.tryReadRegularTextFile(file)).resolves.toBe('mov eax, 1');
+    });
+    it('returns undefined for a missing file', async () => {
+        await expect(utils.tryReadRegularFile(path.join(newTempDir(), 'missing.s'))).resolves.toBeUndefined();
+    });
+    it('returns undefined for a directory', async () => {
+        const dir = path.join(newTempDir(), 'out.s');
+        await fs.mkdir(dir);
+        await expect(utils.tryReadRegularFile(dir)).resolves.toBeUndefined();
+    });
+    it.skipIf(process.platform === 'win32')('returns undefined for a FIFO without waiting for a writer', async () => {
+        const fifo = path.join(newTempDir(), 'out.s');
+        execFileSync('mkfifo', [fifo]);
+        await expect(utils.tryReadRegularFile(fifo)).resolves.toBeUndefined();
+    });
+    it.skipIf(process.platform === 'win32')('does not follow a symlink', async () => {
+        const dir = newTempDir();
+        const target = path.join(dir, 'target.s');
+        await fs.writeFile(target, 'mov eax, 1');
+        const link = path.join(dir, 'out.s');
+        await fs.symlink(target, link);
+        await expect(utils.tryReadRegularFile(link)).resolves.toBeUndefined();
+    });
+});
+
 describe('safe semver', () => {
     it('should understand most kinds of semvers', () => {
         expect(utils.asSafeVer('0')).toEqual('0.0.0');

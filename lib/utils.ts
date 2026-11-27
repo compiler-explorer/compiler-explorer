@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import crypto from 'node:crypto';
-import fs from 'node:fs/promises';
+import fs, {type FileHandle} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {Buffer} from 'buffer';
@@ -626,6 +626,37 @@ export async function isRegularFile(filename: string): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+// Opening without following a symlink, and without blocking if the name turns out to be a FIFO, means the handle
+// checked is the one read, even if the name is replaced in between. Neither flag exists on Windows.
+const readRegularFlags = fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0);
+
+/**
+ * Reads a file only if it is a regular file, checked on the opened handle. Returns undefined for anything else,
+ * including a missing file, a symlink, a FIFO or a directory.
+ */
+export async function tryReadRegularFile(filename: string): Promise<Buffer | undefined> {
+    let handle: FileHandle;
+    try {
+        handle = await fs.open(filename, readRegularFlags);
+    } catch {
+        return undefined;
+    }
+    try {
+        const stat = await handle.stat();
+        if (!stat.isFile()) return undefined;
+        return await handle.readFile();
+    } catch {
+        return undefined;
+    } finally {
+        await handle.close();
+    }
+}
+
+export async function tryReadRegularTextFile(filename: string): Promise<string | undefined> {
+    const contents = await tryReadRegularFile(filename);
+    return contents?.toString('utf8');
 }
 
 export async function dirExists(dir: string): Promise<boolean> {

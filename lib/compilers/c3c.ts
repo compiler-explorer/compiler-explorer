@@ -171,9 +171,9 @@ export class C3Compiler extends BaseCompiler {
         for (const baseName of baseNames) {
             const modulePath = path.join(dirPath, baseName + extension);
             // A `module output;` would otherwise have us copy the destination onto itself.
-            if (modulePath !== destination && (await utils.fileExists(modulePath))) {
-                parts.push({name: baseName, text: await fs.readFile(modulePath, 'utf8')});
-            }
+            if (modulePath === destination) continue;
+            const text = await utils.tryReadRegularTextFile(modulePath);
+            if (text !== undefined) parts.push({name: baseName, text});
         }
         // Leave the destination absent, so the usual "no output file" reporting applies, not an empty pane.
         if (parts.length === 0) return;
@@ -208,7 +208,8 @@ export class C3Compiler extends BaseCompiler {
             // checkOutputFileAndDoPostProcess sizes the output before calling us, i.e. before the file
             // exists at all. Without refreshing it, super reports "<No output file>" regardless.
             try {
-                result.asmSize = (await fs.stat(outputFilename)).size;
+                const stat = await fs.lstat(outputFilename);
+                if (stat.isFile()) result.asmSize = stat.size;
             } catch {
                 // Nothing written; leave asmSize unset so the usual reporting applies.
             }

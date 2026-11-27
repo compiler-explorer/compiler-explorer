@@ -36,6 +36,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import * as utils from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
 
 interface ExecResult {
@@ -120,7 +121,8 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
                 const hostAsm = await this.findHostAsmFile(result.dirPath);
                 if (hostAsm) {
                     try {
-                        result.asmSize = (await fs.stat(hostAsm)).size;
+                        const stat = await fs.lstat(hostAsm);
+                        if (stat.isFile()) result.asmSize = stat.size;
                     } catch {
                         // leave asmSize as-is; base behaviour reports "no output" below
                     }
@@ -146,11 +148,14 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
                               ` (${result.asmSize} > ${maxSize} bytes)>`;
                           return result;
                       }
+                      if (!(await utils.isRegularFile(outputFilename))) {
+                          result.asm = '<No output file>';
+                          return result;
+                      }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       }
-                      const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
-                      result.asm = contents.toString();
+                      result.asm = (await utils.tryReadRegularTextFile(outputFilename)) ?? '<No output file>';
                       return result;
                   })()
         ).then(asm => {
