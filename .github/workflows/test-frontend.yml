@@ -23,6 +23,7 @@ jobs:
         uses: browser-actions/setup-firefox@v1
         if: matrix.browser == 'firefox'
       - name: Setup Chrome
+        id: setup-chrome
         uses: browser-actions/setup-chrome@v2
         if: matrix.browser == 'chrome'
       - name: Cypress run
@@ -32,7 +33,9 @@ jobs:
           wait-on: 'http://localhost:10240'
           wait-on-timeout: 120
           config: screenshotOnRunFailure=true,video=false
-          browser: ${{ matrix.browser }}
+          # The runner image has its own Chrome too, and Cypress picks between the two
+          # unpredictably when given a bare 'chrome'. Name the one we installed.
+          browser: ${{ matrix.browser == 'chrome' && steps.setup-chrome.outputs.chrome-path || matrix.browser }}
       - name: Upload screenshots on failure
         uses: actions/upload-artifact@v7
         if: failure()
