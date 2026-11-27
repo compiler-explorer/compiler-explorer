@@ -46,7 +46,7 @@ import {CompilerOverrideOptions} from '../../types/compilation/compiler-override
 import {CompilerInfo, PreliminaryCompilerInfo, Remote} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {libraryBuildTypes, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {AppArguments} from '../app.interfaces.js';
 import {unwrapString} from '../assert.js';
@@ -439,6 +439,15 @@ export class CompileHandler implements ICompileHandler {
         return compiler;
     }
 
+    static checkLibraryBuildTypes(libraries: any[]): string | undefined {
+        for (const lib of libraries) {
+            if (lib?.buildType !== undefined && !(libraryBuildTypes as readonly unknown[]).includes(lib.buildType)) {
+                return `Unknown library buildType ${JSON.stringify(lib.buildType)} for ${lib.id}: use one of ${libraryBuildTypes.join(', ')}`;
+            }
+        }
+        return undefined;
+    }
+
     static checkRequestRequirements(body: any): CompileRequestJsonBody {
         if (body.options === undefined) throw new Error('Missing options property');
         if (body.source === undefined) throw new Error('Missing source property');
@@ -481,6 +490,8 @@ export class CompileHandler implements ICompileHandler {
             filters = {...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
+            const buildTypeError = CompileHandler.checkLibraryBuildTypes(libraries);
+            if (buildTypeError) throw new Error(buildTypeError);
         } else if (body?.compiler) {
             const textRequest = body as CompileRequestTextBody;
             source = textRequest.source;

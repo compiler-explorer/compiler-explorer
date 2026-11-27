@@ -2150,7 +2150,10 @@ export class BaseCompiler {
         const libraryDetails: Record<string, VersionInfo> = {};
         _.each(libraries, selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
-            if (foundVersion) libraryDetails[selectedLib.id] = foundVersion;
+            if (foundVersion) {
+                if (selectedLib.buildType) foundVersion.buildType = selectedLib.buildType;
+                libraryDetails[selectedLib.id] = foundVersion;
+            }
         });
         return libraryDetails;
     }
