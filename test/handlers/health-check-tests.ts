@@ -197,3 +197,35 @@ describe('Health checks for free temp space', () => {
         expect(statfsSpy).not.toHaveBeenCalled();
     });
 });
+
+describe('Health checks with a stuck compilation queue', () => {
+    let app: express.Express;
+    let compilationQueue: CompilationQueue;
+    let releaseSlot: () => void;
+
+    beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
+        compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
+        // Occupy the only slot until the test lets it go.
+        void compilationQueue.enqueue(() => new Promise<void>(resolve => (releaseSlot = resolve)));
+        app = express();
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0, 50);
+        app.use(controller.createRouter());
+    });
+
+    afterEach(() => {
+        releaseSlot();
+    });
+
+    it('should respond with error rather than wait for the queue', async () => {
+        await request(app).get('/healthcheck').expect(500);
+    });
+
+    it('should recover once the queue moves again', async () => {
+        await request(app).get('/healthcheck').expect(500);
+        releaseSlot();
+        await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
+    });
+});

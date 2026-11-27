@@ -52,6 +52,7 @@ export interface ApiControllers {
  * @param compilationQueue - The compilation queue instance
  * @param healthCheckFilePath - Optional path to health check file
  * @param healthCheckMinFreeSpaceMiB - Minimum free space on the temp filesystem to be healthy (0 disables)
+ * @param healthCheckQueueTimeoutMs - How long the health check waits for the compilation queue to run a job
  * @param isExecutionWorker - Whether the server is running as an execution worker
  * @param isCompilationWorker - Whether the server is running as a compilation worker
  * @param formDataHandler - Handler for form data
@@ -64,6 +65,7 @@ export function setupControllersAndHandlers(
     compilationQueue: CompilationQueue,
     healthCheckFilePath: string | null,
     healthCheckMinFreeSpaceMiB: number,
+    healthCheckQueueTimeoutMs: number,
     isExecutionWorker: boolean,
     isCompilationWorker: boolean,
     formDataHandler: express.Handler,
@@ -82,6 +84,7 @@ export function setupControllersAndHandlers(
         compileHandler,
         isExecutionWorker,
         healthCheckMinFreeSpaceMiB,
+        healthCheckQueueTimeoutMs,
     );
 
     return {

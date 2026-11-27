@@ -43,6 +43,7 @@ export class HealthcheckController implements HttpController {
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
         private readonly minFreeSpaceMiB: number,
+        private readonly queueTimeoutMs = 10_000,
     ) {}
 
     public setCompilationWorkerHealthCheck(healthCheck: () => boolean): void {
@@ -68,8 +69,15 @@ export class HealthcheckController implements HttpController {
      */
     public async healthcheck(req: express.Request, res: express.Response) {
         // Enqueue an empty job to ensure the queue is running. This check simply tests that the queue is being
-        // processed by _something_.
-        await this.compilationQueue.enqueue(async () => {}, {highPriority: true});
+        // processed by _something_. Bounded, so a wedged queue reports unhealthy rather than leaving the load
+        // balancer's probe hanging until it gives up on its own.
+        if (!(await this.queueResponds())) {
+            logger.error(
+                `*** HEALTH CHECK FAILURE: compilation queue did not run a job within ${this.queueTimeoutMs}ms`,
+            );
+            res.status(500).send();
+            return;
+        }
 
         // If this is a worker, we don't require that the server has languages configured.
         if (!this.isExecutionWorker && !this.compileHandler.hasLanguages()) {
@@ -134,5 +142,21 @@ export class HealthcheckController implements HttpController {
         }
 
         res.send('Everything is awesome');
+    }
+
+    private async queueResponds(): Promise<boolean> {
+        let timer: NodeJS.Timeout | undefined;
+        const timedOut = new Promise<boolean>(resolve => {
+            timer = setTimeout(() => resolve(false), this.queueTimeoutMs);
+        });
+        const ran = Promise.resolve(this.compilationQueue.enqueue(async () => {}, {highPriority: true})).then(
+            () => true,
+            () => false,
+        );
+        try {
+            return await Promise.race([ran, timedOut]);
+        } finally {
+            clearTimeout(timer);
+        }
     }
 }
