@@ -32,7 +32,6 @@ import type {
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
@@ -45,14 +44,12 @@ export class PascalWinCompiler extends BaseCompiler {
         return 'pascal-win';
     }
 
-    mapFilename: string | null;
     dprFilename: string;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         info.supportsFiltersInBinary = true;
 
-        this.mapFilename = null;
         this.compileFilename = 'output.pas';
         this.dprFilename = 'prog.dpr';
     }
@@ -162,8 +159,6 @@ export class PascalWinCompiler extends BaseCompiler {
         const tempPath = path.dirname(inputFilename);
         const projectFile = path.join(tempPath, this.dprFilename);
 
-        this.mapFilename = path.join(tempPath, 'prog.map');
-
         inputFilename = inputFilename.replaceAll('/', '\\');
 
         if (!alreadyHasDPR) {
@@ -189,11 +184,14 @@ export class PascalWinCompiler extends BaseCompiler {
         });
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         filters.binary = true;
         filters.dontMaskFilenames = true;
+        // The map file sits beside this request's output. It is captured here rather than kept on the compiler,
+        // which serves overlapping requests.
+        const mapFilename = path.join(path.dirname(outputFilename), 'prog.map');
         filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
-            const mapFileReader = new MapFileReaderDelphi(unwrap(this.mapFilename));
+            const mapFileReader = new MapFileReaderDelphi(mapFilename);
             const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader, false);
             reconstructor.run('output');
 

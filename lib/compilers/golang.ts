@@ -28,17 +28,12 @@ import path from 'node:path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import type {
-    CacheKey,
-    CompilationResult,
-    ExecutionOptionsWithEnv,
-} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
-import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
@@ -72,8 +67,6 @@ type GoEnv = {
 
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
-    private hasLibraries = false;
-    private verboseBuild = false;
 
     static get key() {
         return 'golang';
@@ -122,15 +115,6 @@ export class GolangCompiler extends BaseCompiler {
         if (await utils.dirExists(sourceCachePath)) return sourceCachePath;
 
         return undefined;
-    }
-
-    override async setupBuildEnvironment(
-        key: CacheKey,
-        dirPath: string,
-        binary: boolean,
-    ): Promise<BuildEnvDownloadInfo[]> {
-        this.hasLibraries = key.libraries && key.libraries.length > 0;
-        return super.setupBuildEnvironment(key, dirPath, binary);
     }
 
     protected async findDownloadedLibraries(dirPath: string): Promise<string[]> {
@@ -245,10 +229,8 @@ export class GolangCompiler extends BaseCompiler {
         cachePath: string,
         goPath: string,
         dirPath: string,
+        libraries: string[],
     ): Promise<void> {
-        const libraries = await this.findDownloadedLibraries(dirPath);
-        if (libraries.length === 0) return;
-
         for (const libId of libraries) {
             const libPath = path.join(dirPath, libId);
 
@@ -286,10 +268,13 @@ export class GolangCompiler extends BaseCompiler {
             GOPATH: goPath,
         };
 
-        this.verboseBuild = options.some(opt => opt === '-v' || opt === '-x');
+        // This compiler object is shared by concurrent requests, so which libraries this request has comes from
+        // its own directory rather than from a field.
+        const libraries = await this.findDownloadedLibraries(dirPath);
+        const hasLibraries = libraries.length > 0;
 
         // Force offline compilation when libraries are selected
-        if (this.hasLibraries) {
+        if (hasLibraries) {
             execOptions.env.GOPROXY = 'off';
         }
 
@@ -304,10 +289,10 @@ export class GolangCompiler extends BaseCompiler {
         }
 
         // Set up Go libraries if any were downloaded
-        if (this.hasLibraries) {
+        if (hasLibraries) {
             try {
                 await fs.mkdir(goPath, {recursive: true});
-                await this.setupGoLibraries(inputDir, tempCachePath, goPath, dirPath);
+                await this.setupGoLibraries(inputDir, tempCachePath, goPath, dirPath, libraries);
             } catch (e) {
                 logger.warn(`Failed to set up Go libraries: ${e}`);
             }
@@ -457,7 +442,8 @@ export class GolangCompiler extends BaseCompiler {
             out = result.stdout;
         }
         const logging = this.extractLogging(out);
-        result.stderr = this.verboseBuild
+        const verboseBuild = (result.compilationOptions ?? []).some(opt => opt === '-v' || opt === '-x');
+        result.stderr = verboseBuild
             ? out.filter(obj => !obj.text.match(LINE_RE) && !obj.text.match(UNKNOWN_RE) && !obj.text.match(LOGGING_RE))
             : [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
