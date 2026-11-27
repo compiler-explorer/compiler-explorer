@@ -32,6 +32,7 @@ import Server from 'http-proxy';
 import {Counter, Gauge} from 'prom-client';
 import _ from 'underscore';
 import which from 'which';
+import {z} from 'zod';
 
 import {remove, splitArguments} from '../../shared/common-utils.js';
 import {
@@ -133,6 +134,63 @@ export type ParsedRequest = {
     executeParameters: ExecutionParams;
     libraries: SelectedLibraryVersion[];
 };
+
+// Nested option objects are passed through as given: the compilers that read them pick out the fields they know about.
+const optionObject = z.record(z.string(), z.unknown());
+
+/**
+ * The `compilerOptions` a JSON compile request may carry. Keys not listed here are dropped, as nothing downstream reads
+ * them; a listed key with a value of the wrong type fails the request. Keep in step with `CompilationRequestOptions`
+ * and docs/API.md.
+ */
+const compilerOptionsSchema = z.object({
+    executorRequest: z.boolean().nullish(),
+    skipAsm: z.boolean().nullish(),
+    skipPopArgs: z.boolean().nullish(),
+    filterAnsi: z.boolean().nullish(),
+    producePp: optionObject.nullish(),
+    produceAst: z.boolean().nullish(),
+    produceGccDump: optionObject.nullish(),
+    produceStackUsageInfo: z.boolean().nullish(),
+    produceOptInfo: z.boolean().nullish(),
+    produceCfg: z.union([optionObject, z.literal(false)]).nullish(),
+    produceGnatDebugTree: z.boolean().nullish(),
+    produceGnatDebug: z.boolean().nullish(),
+    produceIr: optionObject.nullish(),
+    produceClangir: optionObject.nullish(),
+    produceOptPipeline: optionObject.nullish(),
+    produceDevice: z.boolean().nullish(),
+    produceRustMir: z.boolean().nullish(),
+    produceRustMacroExp: z.boolean().nullish(),
+    produceRustHir: z.boolean().nullish(),
+    produceHaskellCore: z.boolean().nullish(),
+    produceHaskellStg: z.boolean().nullish(),
+    produceHaskellCmm: z.boolean().nullish(),
+    produceLeanC: optionObject.nullish(),
+    produceClojureMacroExp: z.boolean().nullish(),
+    produceYul: optionObject.nullish(),
+    cmakeArgs: z.string().nullish(),
+    buildSystemArgs: z.string().nullish(),
+    customOutputFilename: z.string().nullish(),
+    overrides: z.array(optionObject).nullish(),
+    darkBackgroundColours: z.boolean().nullish(),
+});
+
+export function parseCompilerOptions(compilerOptions: unknown): Record<string, any> {
+    const input = compilerOptions || {};
+    const result = compilerOptionsSchema.safeParse(input);
+    if (!result.success) {
+        const problems = result.error.issues.map(issue => {
+            const where = issue.path.join('.');
+            return where ? `${where}: ${issue.message}` : issue.message;
+        });
+        throw new Error(`Invalid compilerOptions: ${problems.join('; ')}`);
+    }
+    // Rebuild in the request's key order rather than the schema's: backendOptions is part of the compilation cache key,
+    // so reordering it would turn every cached result into a miss.
+    const known = compilerOptionsSchema.shape;
+    return Object.fromEntries(Object.entries(input).filter(([key]) => Object.hasOwn(known, key)));
+}
 
 export class CompileHandler implements ICompileHandler {
     private compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
@@ -472,7 +530,7 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.args = execParams.args;
             execReqParams.stdin = execParams.stdin;
             execReqParams.runtimeTools = execParams.runtimeTools;
-            backendOptions = requestOptions.compilerOptions || {};
+            backendOptions = parseCompilerOptions(requestOptions.compilerOptions);
             const filenameError = utils.checkCustomOutputFilename(
                 backendOptions.customOutputFilename,
                 buildSystem?.getBuildPath('.'),

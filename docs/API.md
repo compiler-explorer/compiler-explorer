@@ -172,6 +172,9 @@ The filters are a JSON object with `true`/`false` values. If not supplied, defau
 filters override their default values. The `compilerOptions` is used to pass extra arguments to the back end, and is
 probably not useful for most REST users.
 
+`compilerOptions` must be an object. Keys the back end does not recognise are ignored, and a recognised key with a value
+of the wrong type (for example `"skipAsm": "true"` rather than `true`) makes the request fail with a 400 response.
+
 Set `compilerOptions.darkBackgroundColours` to `true` when the output will be shown on a dark background. A compiler
 whose `supportsDarkBackgroundColours` is set then colours its output to suit one, and colours it for a light background
 otherwise. Other compilers ignore it.
