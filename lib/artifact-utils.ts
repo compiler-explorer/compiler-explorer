@@ -37,6 +37,7 @@ export async function addArtifactToResult(
     customTitle?: string,
     checkFunc?: BufferOkFunc,
 ): Promise<void> {
+    if (!(await utils.isRegularFile(filepath))) return;
     const file_buffer = await fs.readFile(filepath);
 
     if (checkFunc && !checkFunc(file_buffer)) return;
