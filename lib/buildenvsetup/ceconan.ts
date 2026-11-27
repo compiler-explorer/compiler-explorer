@@ -292,6 +292,17 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
+    // Release first: a library only has Release packages on Linux when it asked for them (e.g.
+    // benchmark, whose timings mean little from a Debug build), and MSVC packages are Release only.
+    async findBuildHash(key: CacheKey, possibleBuilds: any): Promise<{hash: string; buildType: string} | undefined> {
+        for (const buildType of ['Release', 'Debug']) {
+            const buildProperties = await this.getConanBuildProperties(key, buildType);
+            const hash = await this.findMatchingHash(buildProperties, possibleBuilds);
+            if (hash) return {hash, buildType};
+        }
+        return undefined;
+    }
+
     async download(
         key: CacheKey,
         dirPath: string,
@@ -316,32 +327,17 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             }
         });
 
-        // For MSVC compilers, try Release builds first, then fall back to Debug
-        const buildTypesToTry = this.compilerTypeOrGCC === 'win32-vc' ? ['Release', 'Debug'] : ['Debug'];
-
         for (const libVerBuilds of allLibraryBuilds) {
             const lookupname = libVerBuilds.lookupname || libVerBuilds.id;
             const lookupversion = libVerBuilds.lookupversion || libVerBuilds.version;
             const libVer = `${lookupname}/${lookupversion}`;
             const possibleBuilds = await libVerBuilds.possibleBuilds;
             if (possibleBuilds) {
-                let hash: string | undefined;
-                let selectedBuildType: string | undefined;
-
-                // Try each build type in order until we find a matching hash
-                for (const buildType of buildTypesToTry) {
-                    const buildProperties = await this.getConanBuildProperties(key, buildType);
-                    hash = await this.findMatchingHash(buildProperties, possibleBuilds);
-                    if (hash) {
-                        selectedBuildType = buildType;
-                        break;
-                    }
-                }
-
-                if (hash && selectedBuildType) {
-                    logger.debug(`Found conan hash ${hash} for ${libVer} with build type ${selectedBuildType}`);
+                const found = await this.findBuildHash(key, possibleBuilds);
+                if (found) {
+                    logger.debug(`Found conan hash ${found.hash} for ${libVer} with build type ${found.buildType}`);
                     allDownloads.push(
-                        this.getPackageUrl(lookupname, lookupversion, hash).then(downloadUrl => {
+                        this.getPackageUrl(lookupname, lookupversion, found.hash).then(downloadUrl => {
                             return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
                         }),
                     );

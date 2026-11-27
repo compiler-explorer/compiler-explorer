@@ -218,3 +218,39 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         ).rejects.toThrow();
     }, 10_000);
 });
+
+describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
+    const ce = makeCompilationEnvironment({languages});
+    const compilerInfo = makeFakeCompilerInfo({
+        id: 'g132',
+        lang: 'c++',
+        exe: '/dev/null',
+        options: '',
+        buildenvsetup: {
+            id: 'ceconan',
+            props: (name: string, def?: any) => def,
+        },
+    });
+    const setup = new BuildEnvSetupCeConanDirect(compilerInfo, ce);
+    const key = {options: [] as string[]} as any;
+
+    async function settingsFor(buildType: string) {
+        return {settings: await setup.getConanBuildProperties(key, buildType)};
+    }
+
+    it('prefers a Release package when there is one', async () => {
+        const possibleBuilds = {debughash: await settingsFor('Debug'), releasehash: await settingsFor('Release')};
+        expect(await setup.findBuildHash(key, possibleBuilds)).toEqual({hash: 'releasehash', buildType: 'Release'});
+    });
+
+    it('falls back to the Debug package', async () => {
+        const possibleBuilds = {debughash: await settingsFor('Debug')};
+        expect(await setup.findBuildHash(key, possibleBuilds)).toEqual({hash: 'debughash', buildType: 'Debug'});
+    });
+
+    it('returns undefined when nothing matches', async () => {
+        const other = await settingsFor('Debug');
+        const possibleBuilds = {otherhash: {settings: {...other.settings, 'compiler.version': 'clang1600'}}};
+        expect(await setup.findBuildHash(key, possibleBuilds)).toBeUndefined();
+    });
+});
