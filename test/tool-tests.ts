@@ -43,6 +43,7 @@ import {ClangQueryTool} from '../lib/tooling/clang-query-tool.js';
 import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
 import {PvsStudioTool} from '../lib/tooling/pvs-studio-tool.js';
+import {SonarTool} from '../lib/tooling/sonar-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
 
@@ -514,5 +515,82 @@ describe('Tools leave the arguments they are given alone', () => {
             expect(args).toEqual(['--user']);
             expect((runTool.mock.calls[0][2] as string[]).some(arg => arg.startsWith('-style=file:'))).toBe(true);
         });
+    });
+});
+
+describe('SonarTool keeps overlapping requests apart', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function sonarOutput(reproducer: string) {
+        return JSON.stringify({
+            issues: [{text: 'An issue', ruleKey: 'S100', line: 1, column: 1, fixes: [], parts: []}],
+            reproducer: {content: reproducer},
+        });
+    }
+
+    it('returns each request its own reproducer and language', async () => {
+        const tool = new SonarTool(
+            {id: 'sonar', exe: '/bin/sonar', options: []} as unknown as ToolInfo,
+            {ceProps: () => undefined, compilerProps: () => undefined} as unknown as ToolEnv,
+        );
+        let finishFirst: (value: any) => void = () => {};
+        const firstExec = new Promise(resolve => {
+            finishFirst = resolve;
+        });
+        vi.spyOn(tool, 'exec')
+            .mockReturnValueOnce(firstExec as any)
+            .mockResolvedValueOnce({
+                code: 0,
+                stdout: sonarOutput('second'),
+                stderr: '',
+                filenameTransform: (f: string) => f,
+            } as any);
+
+        const first = tool.runTool(
+            {
+                compiler: {lang: 'c', exe: '/bin/cc', options: ''},
+                options: [],
+                libraries: [],
+            } as unknown as CompilationInfo,
+            '/tmp/first/example.c',
+        );
+        const second = await tool.runTool(
+            {
+                compiler: {lang: 'c++', exe: '/bin/c++', options: ''},
+                options: [],
+                libraries: [],
+            } as unknown as CompilationInfo,
+            '/tmp/second/example.cpp',
+        );
+        finishFirst({code: 0, stdout: sonarOutput('first'), stderr: '', filenameTransform: (f: string) => f});
+        const firstResult = await first;
+
+        expect(firstResult.artifact?.content).toEqual('first');
+        expect(second.artifact?.content).toEqual('second');
+        expect(firstResult.stdout.some(l => l.text.includes('(c:S100)'))).toBe(true);
+        expect(second.stdout.some(l => l.text.includes('(cpp:S100)'))).toBe(true);
+    });
+
+    it('does not carry a reproducer over to a later request', async () => {
+        const tool = new SonarTool(
+            {id: 'sonar', exe: '/bin/sonar', options: []} as unknown as ToolInfo,
+            {ceProps: () => undefined, compilerProps: () => undefined} as unknown as ToolEnv,
+        );
+        const info = {compiler: {lang: 'c++', exe: '/bin/c++', options: ''}, options: [], libraries: []};
+        vi.spyOn(tool, 'exec')
+            .mockResolvedValueOnce({
+                code: 0,
+                stdout: sonarOutput('first'),
+                stderr: '',
+                filenameTransform: (f: string) => f,
+            } as any)
+            .mockResolvedValueOnce({code: 0, stdout: '{}', stderr: '', filenameTransform: (f: string) => f} as any);
+
+        await tool.runTool(info as unknown as CompilationInfo, '/tmp/a/example.cpp');
+        const later = await tool.runTool(info as unknown as CompilationInfo, '/tmp/b/example.cpp');
+
+        expect(later.artifact).toBeUndefined();
     });
 });

@@ -26,6 +26,7 @@ import path from 'node:path';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {
     Fix,
     Link,
@@ -39,10 +40,14 @@ import * as utils from '../utils.js';
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 
-export class SonarTool extends BaseTool {
-    reproducer?: Artifact;
-    lang: string;
+type SonarLang = 'c' | 'cpp';
 
+type ParsedSonarOutput = {
+    output: ResultLine[];
+    reproducer?: Artifact;
+};
+
+export class SonarTool extends BaseTool {
     static get key() {
         return 'sonar-tool';
     }
@@ -51,15 +56,17 @@ export class SonarTool extends BaseTool {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
-        this.parseOutput = this.parseOutputAndFixes;
-        this.lang = 'cpp';
     }
 
-    makeURL(rule: string, lang: string): string {
+    static langFor(compilationInfo?: CompilationInfo): SonarLang {
+        return compilationInfo?.compiler.lang === 'c' ? 'c' : 'cpp';
+    }
+
+    makeURL(rule: string, lang: SonarLang): string {
         return `https://rules.sonarsource.com/${lang}/RSPEC-${rule.substring(1)}`;
     }
 
-    readTag(tag: any, output: ResultLine[], severity: number, lang: string) {
+    readTag(tag: any, output: ResultLine[], severity: number, lang: SonarLang) {
         const text = `${tag.text} (${lang}:${tag.ruleKey})`;
         const fixes: Fix[] = tag.fixes.map(f => ({
             title: f.message,
@@ -123,10 +130,21 @@ export class SonarTool extends BaseTool {
         return lines;
     }
 
-    parseOutputAndFixes(lines: string, inputFilepath?: string, pathPrefix?: string): ResultLine[] {
-        if (!lines) return [];
+    protected override parseOutput(lines: string, inputFilepath?: string, pathPrefix?: string): ResultLine[] {
+        return this.parseOutputAndFixes(lines, 'cpp', inputFilepath, pathPrefix).output;
+    }
+
+    // Everything request-specific (language, reproducer) is passed in or returned: one SonarTool instance
+    // serves every request for its tool, and runs overlap across awaits.
+    parseOutputAndFixes(
+        lines: string,
+        lang: SonarLang,
+        inputFilepath?: string,
+        pathPrefix?: string,
+    ): ParsedSonarOutput {
+        if (!lines) return {output: []};
         let output: ResultLine[] = [];
-        const lang: string = this.lang;
+        let reproducer: Artifact | undefined;
         try {
             const results = JSON.parse(this.simplifyPathes(lines, inputFilepath, pathPrefix));
             if (results.header) {
@@ -164,7 +182,7 @@ export class SonarTool extends BaseTool {
                 );
             }
             if (results.reproducer) {
-                this.reproducer = {
+                reproducer = {
                     content: results.reproducer.content,
                     type: 'application/octet-stream',
                     name: 'sonar-reproducer.zip',
@@ -174,7 +192,7 @@ export class SonarTool extends BaseTool {
         } catch {
             output = utils.splitLines(lines).map(l => ({text: l}));
         }
-        return output;
+        return {output, reproducer};
     }
 
     buildCompilationCMD(
@@ -222,17 +240,34 @@ export class SonarTool extends BaseTool {
                 resolve(this.createErrorResponse('Unable to run tool'));
             });
         }
-        this.reproducer = undefined;
-        this.lang = compilationInfo.compiler.lang === 'c' ? 'c' : 'cpp';
         let sonarArgs: string[] = (args ?? [])
             .filter(a => !a.includes('subprocess'))
             .concat(['--directory', path.dirname(inputFilePath), '--']);
         sonarArgs = sonarArgs.concat(this.buildCompilationCMD(compilationInfo, inputFilePath, supportedLibraries));
 
-        const res: ToolResult = await super.runTool(compilationInfo, inputFilePath, sonarArgs);
-        if (this.reproducer) {
-            res.artifact = this.reproducer;
-        }
+        return await super.runTool(compilationInfo, inputFilePath, sonarArgs);
+    }
+
+    override convertResult(
+        result: UnprocessedExecResult,
+        inputFilepath?: string,
+        exeDir?: string,
+        compilationInfo?: CompilationInfo,
+    ): ToolResult {
+        const lang = SonarTool.langFor(compilationInfo);
+        const transformedFilepath = inputFilepath ? result.filenameTransform(inputFilepath) : undefined;
+        const stderr = this.parseOutputAndFixes(result.stderr, lang, transformedFilepath, exeDir);
+        const stdout = this.parseOutputAndFixes(result.stdout, lang, transformedFilepath, exeDir);
+        const res: ToolResult = {
+            id: this.tool.id,
+            name: this.tool.name,
+            code: result.code,
+            languageId: this.tool.languageId,
+            stderr: stderr.output,
+            stdout: stdout.output,
+        };
+        const reproducer = stdout.reproducer ?? stderr.reproducer;
+        if (reproducer) res.artifact = reproducer;
         return res;
     }
 }
