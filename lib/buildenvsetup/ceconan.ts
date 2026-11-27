@@ -25,7 +25,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {Readable} from 'node:stream';
+import {Readable, Transform} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import zlib from 'node:zlib';
 
@@ -60,6 +60,12 @@ type LibVerBuild = {
     possibleBuilds: any;
 };
 
+// Tracks what one compilation's library setup has downloaded so far, so the byte cap applies to the
+// request as a whole rather than to each package separately.
+export type LibraryDownloadBudget = {
+    downloadedBytes: number;
+};
+
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
     protected onlyonstaticliblink: any;
@@ -68,6 +74,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     // Generous cap on the total declared size of extracted files; real library packages are
     // tens to a few hundred MiB, so anything near this is a packaging error or a gzip bomb.
     protected maxExtractedBytes = 2 * 1024 * 1024 * 1024;
+    // Applies to each request to the conan server, including reading the whole package body.
+    protected fetchTimeoutMs: number;
+    // Real compilations select a handful of libraries at most; these bound the time and disk one
+    // compilation can spend setting them up.
+    protected maxLibraries: number;
+    protected maxDownloadBytes: number;
 
     static get key() {
         return 'ceconan';
@@ -80,6 +92,19 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
         this.conan_os = os.platform() === 'win32' ? 'Windows' : 'Linux';
+        this.fetchTimeoutMs = compilerInfo.buildenvsetup!.props('fetchTimeoutMs', 120_000);
+        this.maxLibraries = compilerInfo.buildenvsetup!.props('maxLibraries', 50);
+        this.maxDownloadBytes = compilerInfo.buildenvsetup!.props('maxDownloadBytes', 1024 * 1024 * 1024);
+    }
+
+    protected fetchSettings(): RequestInit {
+        return {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            signal: AbortSignal.timeout(this.fetchTimeoutMs),
+        };
     }
 
     async getAllPossibleBuilds(libid: string, version: string): Promise<any> {
@@ -88,14 +113,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             const encVersion = encodeURIComponent(version);
             const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
 
-            const settings: RequestInit = {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            };
-
-            fetch(url, settings)
+            fetch(url, this.fetchSettings())
                 .then(async (response: Response) => {
                     if (response.status === 404) {
                         reject(`Not found (${url})`);
@@ -116,14 +134,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
         const url = `${libUrl}/packages/${hash}/download_urls`;
 
-        const settings: RequestInit = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-
-        const response = await fetch(url, settings);
+        const response = await fetch(url, this.fetchSettings());
         const body = await response.json();
         const packageURL = body['conan_package.tgz'];
         if (!packageURL) {
@@ -145,6 +156,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         version: string,
         downloadPath: string,
         packageUrl: string,
+        budget: LibraryDownloadBudget = {downloadedBytes: 0},
     ): Promise<BuildEnvDownloadInfo> {
         const protocol = new URL(packageUrl).protocol;
         if (protocol !== 'http:' && protocol !== 'https:') {
@@ -212,24 +224,36 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             }
         });
 
-        const settings: RequestInit = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-
-        const response = await fetch(packageUrl, settings);
+        const response = await fetch(packageUrl, this.fetchSettings());
         if (!response.ok || !response.body) {
             logger.error(`Error requesting package from conan: ${response.status} for ${packageUrl}`);
             throw new Error(`Unable to request library from conan: ${response.status}`);
         }
+
+        const maxDownloadBytes = this.maxDownloadBytes;
+        const tooBig = () => new Error(`Libraries for this compilation exceed ${maxDownloadBytes} bytes downloaded`);
+        const declaredLength = Number(response.headers.get('content-length'));
+        if (declaredLength > 0 && budget.downloadedBytes + declaredLength > maxDownloadBytes) {
+            await response.body.cancel();
+            throw tooBig();
+        }
+        const countDownloaded = new Transform({
+            transform(chunk: Buffer, _encoding, callback) {
+                budget.downloadedBytes += chunk.length;
+                if (budget.downloadedBytes > maxDownloadBytes) {
+                    callback(tooBig());
+                } else {
+                    callback(null, chunk);
+                }
+            },
+        });
 
         try {
             // pipeline propagates errors from every stage (including a download severed
             // mid-stream) and guarantees this settles; hand-rolled .pipe() chains do neither.
             await pipeline(
                 Readable.fromWeb(response.body as import('node:stream/web').ReadableStream),
+                countDownloaded,
                 gunzip,
                 extract,
             );
@@ -299,6 +323,14 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     ): Promise<BuildEnvDownloadInfo[]> {
         const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
         const allLibraryBuilds: LibVerBuild[] = [];
+        const budget: LibraryDownloadBudget = {downloadedBytes: 0};
+
+        const numLibraries = Object.keys(libraryDetails).length;
+        if (numLibraries > this.maxLibraries) {
+            throw new Error(
+                `Too many libraries selected (${numLibraries}); at most ${this.maxLibraries} can be used in one compilation`,
+            );
+        }
 
         _.each(libraryDetails, (details: VersionInfo, libId: string) => {
             if (details.packagedheaders || this.hasBinariesToLink(details)) {
@@ -342,7 +374,13 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     logger.debug(`Found conan hash ${hash} for ${libVer} with build type ${selectedBuildType}`);
                     allDownloads.push(
                         this.getPackageUrl(lookupname, lookupversion, hash).then(downloadUrl => {
-                            return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
+                            return this.downloadAndExtractPackage(
+                                libVerBuilds.id,
+                                lookupversion,
+                                dirPath,
+                                downloadUrl,
+                                budget,
+                            );
                         }),
                     );
                 } else {
