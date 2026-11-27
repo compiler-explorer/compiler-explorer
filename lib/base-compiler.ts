@@ -660,10 +660,14 @@ export class BaseCompiler {
         return defaultOutputFilename;
     }
 
-    /** Every object the asm view disassembles, for a compilation that produces more than one. */
+    /**
+     * Every object the asm view disassembles, for a compilation that produces more than one. `dirPath` is the
+     * directory the compilation ran in, when the result names one.
+     */
     async getObjdumpInputFilenames(
         defaultOutputFilename: string,
         filters?: ParseFiltersAndOutputOptions,
+        dirPath?: string,
     ): Promise<string[]> {
         return [this.getObjdumpInputFilename(defaultOutputFilename, filters)];
     }
@@ -697,7 +701,7 @@ export class BaseCompiler {
     ) {
         const objectFiles = result.objdumpInputFilename
             ? [result.objdumpInputFilename]
-            : await this.getObjdumpInputFilenames(outputFilename, filters);
+            : await this.getObjdumpInputFilenames(outputFilename, filters, result.dirPath);
 
         for (const objectFile of objectFiles) {
             if (!(await utils.fileExists(objectFile))) {
@@ -1816,17 +1820,8 @@ export class BaseCompiler {
         return [{text: 'Clojure Macro Expansion not applicable to current compiler.'}];
     }
 
-    getMachIrOutputFilename(inputFilename: string): string {
-        return utils.changeExtension(inputFilename, '.ir');
-    }
-
-    async processMachIrOutput(outpath: string, output: CompilationResult): Promise<ParsedAsmResultLine[]> {
-        if (output.code !== 0) return [{text: 'Failed to run compiler to get Mach IR'}];
-        if (await utils.fileExists(outpath)) {
-            const content = await fs.readFile(outpath, 'utf8');
-            return utils.splitLines(content).map(text => ({text}));
-        }
-        return [{text: 'Internal error; unable to open output path'}];
+    async processMachIrOutput(inputFilename: string, output: CompilationResult): Promise<ParsedAsmResultLine[]> {
+        return [{text: 'Mach IR not applicable to current compiler.'}];
     }
 
     async processHaskellExtraOutput(outpath: string, output: CompilationResult): Promise<ResultLine[]> {
@@ -2833,9 +2828,7 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
-        const machIrResult = makeMachIr
-            ? await this.processMachIrOutput(this.getMachIrOutputFilename(inputFilename), asmResult)
-            : undefined;
+        const machIrResult = makeMachIr ? await this.processMachIrOutput(inputFilename, asmResult) : undefined;
 
         const leanCResult = makeLeanC
             ? await this.processLeanCOutput(outputFilename, asmResult, backendOptions.produceLeanC)
@@ -3496,7 +3489,12 @@ export class BaseCompiler {
         return fullResult;
     }
 
-    fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    fixFiltersForCompiler(
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+        files: FiledataPair[],
+        backendOptions: Record<string, any>,
+    ) {
         // Don't run binary for unsupported compilers, even if we're asked.
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
@@ -3562,7 +3560,7 @@ export class BaseCompiler {
         }
 
         filters = {...this.getDefaultFilters(), ...filters};
-        this.fixFiltersForCompiler(filters, options, files);
+        this.fixFiltersForCompiler(filters, options, files, backendOptions);
         this.fixBackendOptionsForCompiler(backendOptions);
 
         const executeOptions: ExecutableExecutionOptions = {

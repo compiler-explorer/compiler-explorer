@@ -111,7 +111,7 @@ function maskSpanFile(rawFile: string, projectRoot?: string, stdPath?: string): 
 
 /**
  * Spans inside `src/` belong to user editors, named by their path beneath `src/` as the tree pane names them.
- * Files outside `src/`, such as `std` or `mach.toml`, belong to no editor.
+ * Files outside `src/`, such as std's, belong to no editor.
  */
 function locate(span: Span | null | undefined, projectRoot?: string): Location | undefined {
     if (!span) return undefined;

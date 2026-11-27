@@ -34,7 +34,7 @@ import {MachCompiler} from '../lib/compilers/mach.js';
 import {logger} from '../lib/logger.js';
 import {LlvmObjdumper} from '../lib/objdumper/llvm.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
-import {MACH_MODULE_SEP, MACH_SPIRV_HEADER, MachAsmParser} from '../lib/parsers/asm-parser-mach.js';
+import {MACH_MODULE_SEP, MachAsmParser} from '../lib/parsers/asm-parser-mach.js';
 import {toEditorColumns} from '../lib/parsers/mach-diagnostics.js';
 import {MachIrParser} from '../lib/parsers/mach-ir.js';
 import {parseProperties} from '../lib/properties.js';
@@ -86,19 +86,22 @@ const helpBuild = [
     '  -t, --target <pattern>...',
     "                        which targets: a name or glob of the manifest's targets in a project, a",
     "                        <sys>-<arch> in an entry build (default: the host's)",
+    '  -v, --verbose...      show each phase as it closes, -vv each module too',
     "  -O, --[no-]optimize   optimize, or not with --no-optimize (default: the profile's)",
     "      --[no-]debug      emit debug information, or not with --no-debug (default: the profile's)",
     '      --emit <asm|ir|ir-opt|obj|exe>...',
     '                        a product to write, once each (default: exe)',
     '  -k, --kind <bin|static|shared|object|module>',
     '                        the product to make (default: bin)',
+    "      --isa <selection> the instruction set (default: the target's)",
     '',
 ].join('\n');
 
 /**
- * Reproduces what mach 7.2.0 with mach-std 10.1.1 answers for each probe build: every tuple builds except
+ * Reproduces what mach 7.2.0 with mach-std 10.1.1 answers for each probe build. Objects build for every tuple except
  * `windows-arm64ec`, where `std.runtime.windows` and `std.system.cpu.features` reject `arm64ec`, and any `needs --isa`
- * tuple invoked without `--isa`.
+ * tuple invoked without `--isa`. A listing is refused on Wasm and SPIR-V, which have none, and fails on the
+ * freestanding tuples with a Windows ABI.
  */
 function fakeProbe(args: string[]) {
     const tIdx = args.indexOf('-t');
@@ -121,6 +124,22 @@ function fakeProbe(args: string[]) {
                 stderr: `error[target.isa_required] ${platform} sets no ISA floor; pass --isa`,
             };
         }
+    }
+    const emit = args[args.indexOf('--emit') + 1];
+    if (emit === 'asm' && (platform.endsWith('-wasm32') || platform === 'vulkan-spirv')) {
+        return {
+            code: 1,
+            stdout: '',
+            stderr: "error[cli.flag_inapplicable] '--emit asm' does not apply to this target",
+        };
+    }
+    const abi = args.includes('--abi') ? args[args.indexOf('--abi') + 1] : '';
+    if (emit === 'asm' && platform.startsWith('freestanding-') && ['win64', 'aapcs64win'].includes(abi)) {
+        return {
+            code: 1,
+            stdout: '',
+            stderr: 'error[compiler.internal] masc cannot list the object it made',
+        };
     }
     if (platform === 'vulkan-spirv' && !args.includes('module')) {
         return {
@@ -160,6 +179,8 @@ function makeMach(stdPath: string) {
             objdumper: '/usr/bin/objdump',
             objdumperType: 'default',
             llvmObjdumper: '/usr/bin/llvm-objdump',
+            supportsBinary: true,
+            supportsBinaryObject: true,
         }),
         makeCompilationEnvironment({languages, props: {'compiler.mach.stdPath': stdPath}}),
     );
@@ -216,13 +237,31 @@ describe('Mach targets and entry build', () => {
         ]);
     });
 
-    it('probes all 30 tuples without invoking mach dep pull', async () => {
-        expect((await compiler.supportedTuples()).length).toEqual(30);
-        expect(startupExecArgs.filter(args => args[0] === 'dep')).toHaveLength(0);
-        expect(startupExecArgs.filter(args => args[0] === 'build')).toHaveLength(30);
+    it('reads the objects of a target the compiler writes no listing for', () => {
+        expect(
+            compiler
+                .targets()
+                .filter(t => !t.listing)
+                .map(t => t.name),
+        ).toEqual([
+            'freestanding-x86_64-win64',
+            'freestanding-aarch64-aapcs64win',
+            'freestanding-wasm32',
+            'wasi-wasm32',
+            'vulkan-spirv',
+        ]);
     });
 
-    it('reuses cachedMachTargets on prediscovered starts, and re-probes if stale v6 entries lack platform', async () => {
+    it('probes every tuple mach info targets lists, for its listing first and then for its objects', async () => {
+        expect((await compiler.supportedTuples()).length).toEqual(30);
+        const emits = startupExecArgs.filter(args => args[0] === 'build').map(args => args[args.indexOf('--emit') + 1]);
+        expect(emits.filter(emit => emit === 'asm')).toHaveLength(30);
+        // the five without a listing, and windows-arm64ec, which builds neither way
+        expect(emits.filter(emit => emit === 'obj')).toHaveLength(6);
+        expect(startupExecArgs.filter(args => args[0] !== 'build')).toEqual([['info', 'targets']]);
+    });
+
+    it('reuses cachedMachTargets on prediscovered starts', async () => {
         expect(compiler.getInfo().cachedMachTargets).toEqual(compiler.targets());
 
         const prediscovered = makeMach(stdPath);
@@ -231,12 +270,6 @@ describe('Mach targets and entry build', () => {
         expect(await start(prediscovered)).toBe(prediscovered);
         expect(exec).not.toHaveBeenCalled();
         expect(prediscovered.targets()).toEqual(compiler.targets());
-
-        const stale = makeMach(stdPath);
-        stale.getInfo().cachedMachTargets = [{name: 'linux-x86_64', isa: 'x86_64'} as any];
-        fakeMach(stale);
-        expect(await start(stale)).toBe(stale);
-        expect(stale.targets()).toHaveLength(29);
     });
 
     it('takes std from beside the executable by default, or from compiler.<id>.stdPath', () => {
@@ -358,31 +391,61 @@ describe('Mach targets and entry build', () => {
         expect(spvArgs.slice(spvArgs.indexOf('-t'))).toEqual(['-t', 'vulkan-spirv', '-k', 'module', '--emit', 'obj']);
     });
 
-    it('chooses .s on CPU targets, .o on Wasm, SPIR-V, and binaryObject, and .spv on linked SPIR-V', () => {
+    it('reads a listing on CPU targets and the objects on Wasm, SPIR-V and binaryObject', () => {
         const root = path.join('/tmp', 'ce');
-        const keyFor = (target: string, filters: {binary?: boolean; binaryObject?: boolean} = {}) =>
-            ({
-                compiler: compiler.getInfo(),
-                source: '',
-                options: [],
-                backendOptions: {overrides: [{name: CompilerOverrideType.arch, value: target}]},
-                filters: makeFakeParseFiltersAndOutputOptions(filters),
-                libraries: [],
-                files: [],
-            }) as any;
+        const listing = path.join(root, 'out', 'asm', 'example', 'example.s');
+        const object = path.join(root, 'out', 'obj', 'example', 'example.o');
 
-        const cpuOut = compiler.getOutputFilename(root, 'output', keyFor('linux-x86_64'));
-        expect(cpuOut).toEqual(path.join(root, 'out', 'asm', 'example', 'example.s'));
-        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({}), cpuOut)).toEqual(['--emit', 'asm']);
+        // the filters as a request for `target` reaches the compiler with them, and the key they are part of
+        const request = (
+            target: string,
+            asked: {binary?: boolean; binaryObject?: boolean} = {},
+            options: string[] = [],
+        ) => {
+            const backendOptions = {overrides: [{name: CompilerOverrideType.arch, value: target}]};
+            const filters = makeFakeParseFiltersAndOutputOptions(asked);
+            compiler.fixFiltersForCompiler(filters, options, [], backendOptions);
+            const key = {compiler: compiler.getInfo(), source: '', options, backendOptions, filters} as any;
+            return {filters, output: compiler.getOutputFilename(root, 'output', key)};
+        };
 
-        const cpuObj = compiler.getOutputFilename(root, 'output', keyFor('linux-x86_64', {binaryObject: true}));
-        expect(cpuObj).toEqual(path.join(root, 'out', 'obj', 'example', 'example.o'));
-        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({binaryObject: true}), cpuObj)).toEqual([
+        const cpu = request('linux-x86_64');
+        expect(cpu.filters.binaryObject).toBeFalsy();
+        expect(cpu.output).toEqual(listing);
+        expect(compiler.optionsForFilter(cpu.filters, cpu.output)).toEqual(['--emit', 'asm']);
+
+        const cpuObject = request('linux-x86_64', {binaryObject: true});
+        expect(cpuObject.output).toEqual(object);
+        expect(compiler.optionsForFilter(cpuObject.filters, cpuObject.output)).toEqual(['--emit', 'obj']);
+
+        for (const target of ['wasi-wasm32', 'freestanding-wasm32', 'vulkan-spirv']) {
+            const unlisted = request(target);
+            expect(unlisted.filters.binaryObject).toBe(true);
+            expect(unlisted.output).toEqual(object);
+            expect(compiler.optionsForFilter(unlisted.filters, unlisted.output)).toEqual(['--emit', 'obj']);
+        }
+
+        // a -t among the options is the target that gets built, whatever the picker says
+        expect(request('wasi-wasm32', {}, ['-t', 'linux-aarch64']).output).toEqual(listing);
+        expect(request('linux-x86_64', {}, ['--target', 'wasi-wasm32']).output).toEqual(object);
+
+        const linked = request('linux-x86_64', {binary: true});
+        expect(linked.filters.binaryObject).toBeFalsy();
+        expect(linked.output).toEqual(path.join(root, 'out', 'bin', 'example'));
+
+        const module = request('vulkan-spirv', {binary: true});
+        expect(module.output).toEqual(path.join(root, 'out', 'bin', 'example.spv'));
+        expect(compiler.optionsForFilter(module.filters, module.output)).toEqual([
             '--emit',
-            'obj',
+            'exe',
+            '-o',
+            'out/bin/example.spv',
         ]);
+    });
 
-        const binaryArgs = compiler.prepareArguments(
+    it('passes no gcc-style library flags to a linked build', () => {
+        const root = path.join('/tmp', 'ce');
+        const args = compiler.prepareArguments(
             [],
             makeFakeParseFiltersAndOutputOptions({binary: true, execute: true}),
             {},
@@ -391,33 +454,8 @@ describe('Mach targets and entry build', () => {
             [],
             [{name: CompilerOverrideType.arch, value: 'linux-x86_64'}],
         );
-        expect(binaryArgs.some(arg => arg.startsWith('-Wl,'))).toBe(false);
-        expect(binaryArgs).not.toContain('-L./lib');
-
-        const wasmOut = compiler.getOutputFilename(root, 'output', keyFor('wasi-wasm32'));
-        expect(wasmOut).toEqual(path.join(root, 'out', 'obj', 'example', 'example.o'));
-        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({}), wasmOut)).toEqual(['--emit', 'obj']);
-
-        const wasmFilters = makeFakeParseFiltersAndOutputOptions({});
-        compiler.prepareArguments(
-            [],
-            wasmFilters,
-            {},
-            path.join(root, 'src', 'example.mach'),
-            wasmOut,
-            [],
-            [{name: CompilerOverrideType.arch, value: 'wasi-wasm32'}],
-        );
-        expect(wasmFilters.binaryObject).toBe(true);
-
-        const spvBin = compiler.getOutputFilename(root, 'output', keyFor('vulkan-spirv', {binary: true}));
-        expect(spvBin).toEqual(path.join(root, 'out', 'bin', 'example.spv'));
-        expect(compiler.optionsForFilter(makeFakeParseFiltersAndOutputOptions({binary: true}), spvBin)).toEqual([
-            '--emit',
-            'exe',
-            '-o',
-            'out/bin/example.spv',
-        ]);
+        expect(args.some(arg => arg.startsWith('-Wl,'))).toBe(false);
+        expect(args).not.toContain('-L./lib');
     });
 
     it('uses llvm-objdump when disassembling non-Linux x86_64 binaries', () => {
@@ -447,11 +485,22 @@ describe('Mach targets and entry build', () => {
                 await fs.mkdir(path.dirname(file), {recursive: true});
                 await fs.writeFile(file, '');
             }
-            expect(await compiler.getObjdumpInputFilenames(entry, makeFakeParseFiltersAndOutputOptions({}))).toEqual([
+            const filters = makeFakeParseFiltersAndOutputOptions({binaryObject: true});
+            expect(await compiler.getObjdumpInputFilenames(entry, filters, root)).toEqual([
                 entry,
                 path.join(root, 'out', 'obj', 'example', 'other.o'),
                 path.join(root, 'out', 'obj', 'example', 'util', 'fmt.o'),
             ]);
+
+            // a linked binary is the one image there is to disassemble
+            const linked = path.join(root, 'out', 'bin', 'example');
+            expect(
+                await compiler.getObjdumpInputFilenames(
+                    linked,
+                    makeFakeParseFiltersAndOutputOptions({binary: true}),
+                    root,
+                ),
+            ).toEqual([linked]);
         } finally {
             await fs.rm(root, {recursive: true, force: true});
         }
@@ -463,17 +512,13 @@ describe('Mach targets and entry build', () => {
             expect(compiler.optionsForBackend({}, '')).toEqual([]);
             expect(compiler.optionsForBackend({produceMachIr: true}, '')).toEqual(['--emit', 'ir-opt']);
 
-            const outpath = compiler.getMachIrOutputFilename(path.join(root, 'src', 'example.mach'));
-            expect(outpath).toEqual(path.join(root, 'out', 'ir-opt', 'example', 'example.ir'));
+            const irDir = path.join(root, 'out', 'ir-opt', 'example');
+            await fs.mkdir(irDir, {recursive: true});
+            await fs.writeFile(path.join(irDir, 'example.ir'), 'mirl "0.3.1";\npub fun example.example.main() {}\n');
+            await fs.writeFile(path.join(irDir, 'helper.ir'), 'mirl "0.3.1";\npub fun example.helper.bump() {}\n');
 
-            await fs.mkdir(path.dirname(outpath), {recursive: true});
-            await fs.writeFile(outpath, 'mirl "0.3.1";\npub fun example.example.main() {}\n');
-            await fs.writeFile(
-                path.join(root, 'out', 'ir-opt', 'example', 'helper.ir'),
-                'mirl "0.3.1";\npub fun example.helper.bump() {}\n',
-            );
-
-            const lines = await compiler.processMachIrOutput(outpath, {code: 0} as any);
+            const input = path.join(root, 'src', 'example.mach');
+            const lines = await compiler.processMachIrOutput(input, {code: 0} as any);
             expect(lines.map(l => l.text)).toEqual([
                 'mirl "0.3.1";',
                 'pub fun example.example.main() {}',
@@ -517,12 +562,16 @@ describe('Mach targets and entry build', () => {
         expect(options['-O']).toBeDefined();
         expect(options['--optimize'].description).toContain('optimize, or not with --no-optimize');
         expect(options['--no-optimize'].description).toContain('optimize, or not with --no-optimize');
-        expect(options['--emit <asm|ir|ir-opt|obj|exe>...'].description).toEqual(
+        expect(options['--emit <asm|ir|ir-opt|obj|exe>'].description).toEqual(
             'a product to write, once each (default: exe)',
         );
         expect(options['--report <human|json|lines>'].description).toEqual(
             'report as human text, NDJSON records or tab-separated record lines (default: human)',
         );
+        expect(options['-v'].description).toEqual('show each phase as it closes, -vv each module too');
+        expect(options['--verbose']).toEqual(options['-v']);
+        expect(options['--isa <selection>'].description).toEqual("the instruction set (default: the target's)");
+        expect(options['-t <pattern>']).toEqual(options['--target <pattern>']);
         expect(await parser.getPossibleTargets()).toContain('vulkan-spirv');
     });
 });
@@ -552,9 +601,7 @@ describe('Mach multi-file projects', () => {
         await fs.rm(stdPath, {recursive: true, force: true});
     });
 
-    it('roots every source at src/ with no mach.toml and zero subprocess calls', async () => {
-        const execSpy = vi.spyOn(compiler, 'exec');
-
+    it('roots every source at src/ and writes nothing else', async () => {
         const {inputFilename} = await (compiler as any).writeAllFiles(dirPath, 'entry', [
             {filename: 'util/fmt.mach', contents: 'fmt'},
             {filename: 'other.mach', contents: 'other'},
@@ -569,7 +616,7 @@ describe('Mach multi-file projects', () => {
             path.join('src', 'util', 'fmt.mach'),
         ]);
         expect(await fs.readFile(path.join(dirPath, 'src', 'util', 'fmt.mach'), 'utf8')).toEqual('fmt');
-        expect(execSpy).not.toHaveBeenCalled();
+        expect(compiler.exec).not.toHaveBeenCalled();
     });
 
     it('refuses an extra file that would land outside src/', async () => {
@@ -890,8 +937,8 @@ describe('Mach SPIR-V asm', () => {
     const spvasm = readFileSync(path.join(__dirname, 'mach', 'shader.spvasm'), 'utf8');
 
     it('parses SPIR-V disassembly and normalises src/example.mach to the editor', () => {
-        const parsed = new MachAsmParser(undefined, 'src').process(
-            MACH_SPIRV_HEADER + spvasm,
+        const parsed = new MachAsmParser(undefined, 'src').processSpirv(
+            spvasm,
             makeFakeParseFiltersAndOutputOptions({directives: true, commentOnly: true}),
         );
         expect(parsed.languageId).toEqual('spirv');

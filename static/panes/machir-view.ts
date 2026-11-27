@@ -39,9 +39,7 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 
 /**
- * The pane shows `--emit-ir=listing` as the compiler wrote it, `unattached:` block included. Those instructions are
- * real IR that no block owns, they carry real positions, and the pane has no filter to hide them behind, so dropping
- * them would make the pane disagree with the file the compiler wrote.
+ * The pane shows the MIRL that `--emit ir-opt` wrote, as the compiler wrote it.
  *
  * A line maps to the editor only when its position is in the user's own source, which the adapter marks with a null
  * file. A position in another file of the project, or in std, keeps its path and so links to nothing: the editor

@@ -204,6 +204,8 @@ export type MachTarget = {
     defaultAbi?: boolean;
     isa?: string;
     kind?: 'module';
+    /** Whether the compiler writes an assembly listing for the target. The asm view of one without is its objects. */
+    listing: boolean;
 };
 
 // Compiler information collected by the compiler-finder

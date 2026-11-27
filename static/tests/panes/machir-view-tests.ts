@@ -92,7 +92,7 @@ describe('Mach IR pane', () => {
 
     it('leaves the editor alone for a line whose position is in another file', () => {
         const view = pane();
-        // helper.mach:2 would mark the user's line 2 if the file were ignored: briar-systems/compiler-explorer#16
+        // helper.mach:2 would mark the user's line 2 if the file were ignored
         view.onColours(2, {1: 0}, 'rainbow');
         expect((view.editorDecorations.set as any).mock.calls[0][0]).toEqual([]);
     });

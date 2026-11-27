@@ -17,7 +17,7 @@ in the hooks below changes what is compiled, never the key.
 | To change | Override | Notes |
 |---|---|---|
 | Filters a request leaves out | `getDefaultFilters()` | Merged under the request's own filters, after the key. |
-| Filters this compiler has to force or drop | `fixFiltersForCompiler(filters, options, files)` | E.g. always a binary (tinygo, micropython) or never one (llvm-mos). Call `super` unless you mean to replace the base rules. |
+| Filters this compiler has to force or drop | `fixFiltersForCompiler(filters, options, files, backendOptions)` | E.g. always a binary (tinygo, micropython) or never one (llvm-mos). Call `super` unless you mean to replace the base rules. |
 | Backend options | `fixBackendOptionsForCompiler(backendOptions)` | |
 | The compiler's command line | `optionsForFilter()`, `runCompiler()` | |
 

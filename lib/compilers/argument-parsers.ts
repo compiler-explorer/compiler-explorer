@@ -628,39 +628,39 @@ export class MachParser extends BaseParser {
 
     override async getOptions(helpArg: string) {
         const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, splitArguments(helpArg));
-        const options: Record<string, {description: string; timesused: number}> = {};
-        if (result.code === 0) {
-            const flagLine = /^ {2}(?:(-\w), )?(?: {4})?(--(?:\[no-])?[\w-]+(?: <[^>]+>(?:\.\.\.)?)?)(?: {2,}(.*))?$/;
-            const contLine = /^ {24}(\S.*)$/;
-            let currentKeys: string[] = [];
-            for (const line of utils.splitLines(result.stdout)) {
-                const match = line.match(flagLine);
-                if (match) {
-                    const [, shortFlag, rawLong, desc = ''] = match;
-                    const valueTail = rawLong.includes(' ') ? rawLong.slice(rawLong.indexOf(' ')) : '';
-                    const flagName = rawLong.includes(' ') ? rawLong.slice(0, rawLong.indexOf(' ')) : rawLong;
-                    const expanded = flagName.startsWith('--[no-]')
-                        ? [`--${flagName.slice('--[no-]'.length)}`, `--no-${flagName.slice('--[no-]'.length)}`]
-                        : [`${flagName}${valueTail}`];
-                    currentKeys = shortFlag ? [`${shortFlag}${valueTail}`, ...expanded] : expanded;
-                    for (const key of currentKeys) {
-                        options[key] = {description: desc.trim(), timesused: 0};
-                    }
-                    continue;
-                }
-                const cont = line.match(contLine);
-                if (cont && currentKeys.length > 0) {
-                    for (const key of currentKeys) {
-                        options[key].description = options[key].description
-                            ? `${options[key].description} ${cont[1].trim()}`
-                            : cont[1].trim();
-                    }
-                } else if (line.trim() === '') {
-                    currentKeys = [];
-                }
-            }
-        }
+        const options = result.code === 0 ? this.parseHelp(result.stdout) : {};
         this.compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    /**
+     * `mach help` lists an option as `  -s, --long <value>...  description`. The short form is optional, `--[no-]long`
+     * stands for both spellings, a trailing `...` marks an option that repeats, and a description too long for the
+     * line starts or continues on the lines after it.
+     */
+    parseHelp(help: string) {
+        const optionLine = /^ {2}(?:(-\w), | {4})(--(?:\[no-])?[\w-]+)( <[^>]+>)?(?:\.\.\.)?(?: +(.*))?$/;
+        const continuation = /^ {24}(\S.*)$/;
+        const options: Record<string, Argument> = {};
+        let current: string[] = [];
+        for (const line of utils.splitLines(help)) {
+            const option = line.match(optionLine);
+            if (option) {
+                const [, short, long, value = '', description = ''] = option;
+                const longs = long.startsWith('--[no-]')
+                    ? [`--${long.slice('--[no-]'.length)}`, `--no-${long.slice('--[no-]'.length)}`]
+                    : [long];
+                current = [...(short ? [short] : []), ...longs].map(name => name + value);
+                for (const key of current) options[key] = {description, timesused: 0};
+                continue;
+            }
+            const more = line.match(continuation)?.[1];
+            if (!more) {
+                current = [];
+                continue;
+            }
+            for (const key of current) options[key].description = `${options[key].description} ${more}`.trim();
+        }
         return options;
     }
 

@@ -28,13 +28,14 @@ import type {PropertyGetter} from '../properties.interfaces.js';
 import {AsmParser, type ParsingContext} from './asm-parser.js';
 import {SPIRVAsmParser} from './asm-parser-spirv.js';
 
+/** Separates the modules of one compilation in the text handed to the parser. */
 export const MACH_MODULE_SEP = '\n# __mach_module__\n';
-export const MACH_SPIRV_HEADER = '; __mach_spirv__\n';
 
 /**
- * Parses Mach assembly across masc text listings (`--emit asm`), linked/Wasm objdump disassembly, and SPIR-V
- * disassembly. Each module's `.s` listing owns its own `.file 0` table and `.Ltmp*` labels, so multi-module listings
- * are parsed per module and merged while keeping every user source under `src/` named as the tree pane names it.
+ * Parses Mach assembly across masc text listings (`--emit asm`), objdump disassembly of objects and linked binaries,
+ * and SPIR-V disassembly. Each module's `.s` listing owns its own `.file 0` table and `.Ltmp*` labels, so multi-module
+ * listings are parsed per module and merged while keeping every user source under `src/` named as the tree pane names
+ * it.
  */
 export class MachAsmParser extends AsmParser {
     private readonly sourcePrefix: string;
@@ -52,8 +53,7 @@ export class MachAsmParser extends AsmParser {
 
     private isOwnSourceFile(file: string | null | undefined): boolean {
         if (!file) return false;
-        const clean = file.replace(/^\.\//, '');
-        return clean.startsWith(this.sourcePrefix);
+        return file.replace(/^\.\//, '').startsWith(this.sourcePrefix);
     }
 
     private normaliseLines(lines: ParsedAsmResultLine[], dontMaskFilenames?: boolean) {
@@ -73,6 +73,34 @@ export class MachAsmParser extends AsmParser {
                 line.source = {...source, mainsource: false};
             }
         }
+    }
+
+    /**
+     * Parses each module on its own and joins the results into one listing. A label a later module defines again
+     * keeps its first definition unless `redefines` lets the later one take it.
+     */
+    private mergeModules(
+        asmResult: string,
+        filters: ParseFiltersAndOutputOptions,
+        parse: (module: string) => ParsedAsmResult,
+        redefines: (label: string) => boolean,
+    ): ParsedAsmResult {
+        const asm: ParsedAsmResultLine[] = [];
+        const labelDefinitions: Record<string, number> = {};
+        let parsingTime = 0;
+        let filteredCount = 0;
+
+        for (const module of asmResult.split(MACH_MODULE_SEP)) {
+            const parsed = parse(module);
+            this.normaliseLines(parsed.asm, filters.dontMaskFilenames);
+            for (const [label, line] of Object.entries(parsed.labelDefinitions ?? {})) {
+                if (redefines(label) || !(label in labelDefinitions)) labelDefinitions[label] = asm.length + line;
+            }
+            asm.push(...parsed.asm);
+            parsingTime += Number(parsed.parsingTime ?? 0);
+            filteredCount += parsed.filteredCount ?? 0;
+        }
+        return {asm, labelDefinitions, parsingTime, filteredCount};
     }
 
     protected override isUserFunctionByLookingAhead(
@@ -104,81 +132,43 @@ export class MachAsmParser extends AsmParser {
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        if (asmResult.startsWith(MACH_SPIRV_HEADER)) {
-            return this.processSpirvModules(asmResult.slice(MACH_SPIRV_HEADER.length), filters);
-        }
         if (filters.binary || filters.binaryObject) {
             return this.processBinaryAsm(asmResult, filters);
         }
 
-        const modules = asmResult.split(MACH_MODULE_SEP);
-        const mergedAsm: ParsedAsmResultLine[] = [];
-        const mergedLabels: Record<string, number> = {};
-        let parsingTime = 0;
-        let filteredCount = 0;
+        // parsed unmasked, so that a module's `sub/example.mach` is not taken for the entry before normaliseLines
+        const result = this.mergeModules(
+            asmResult,
+            filters,
+            module => super.processAsm(module, {...filters, dontMaskFilenames: true}),
+            label => !label.startsWith('.L'),
+        );
 
-        for (const chunk of modules) {
-            // parse with dontMaskFilenames so secondary `sub/example.mach` never aliases `src/example.mach` before normaliseLines
-            const subResult = super.processAsm(chunk, {...filters, dontMaskFilenames: true});
-            this.normaliseLines(subResult.asm, filters.dontMaskFilenames);
+        if (!asmResult.includes(MACH_MODULE_SEP)) return result;
 
-            const lineOffset = mergedAsm.length;
-            for (const [label, lineNum] of Object.entries(subResult.labelDefinitions ?? {})) {
-                if (!label.startsWith('.L') || !(label in mergedLabels)) {
-                    mergedLabels[label] = lineOffset + lineNum;
-                }
-            }
-            mergedAsm.push(...subResult.asm);
-            parsingTime += subResult.parsingTime ?? 0;
-            filteredCount += subResult.filteredCount ?? 0;
+        // a module only links the labels it defines itself, which leaves a call into another module unlinked
+        const defined = result.labelDefinitions ?? {};
+        for (const line of result.asm) {
+            if (!line.text) continue;
+            const linked = new Set((line.labels ?? []).map(label => label.name));
+            const crossModule = this.getUsedLabelsInLine(line.text).filter(
+                label => !label.name.startsWith('.L') && label.name in defined && !linked.has(label.name),
+            );
+            if (crossModule.length > 0) line.labels = [...(line.labels ?? []), ...crossModule];
         }
-
-        if (modules.length > 1) {
-            for (const line of mergedAsm) {
-                if (!line.text) continue;
-                const used = this.getUsedLabelsInLine(line.text).filter(
-                    l => !l.name.startsWith('.L') && l.name in mergedLabels,
-                );
-                if (used.length > 0) {
-                    const existing = new Set((line.labels ?? []).map(l => l.name));
-                    line.labels = [...(line.labels ?? []), ...used.filter(l => !existing.has(l.name))];
-                }
-            }
-        }
-
-        return {
-            asm: mergedAsm,
-            labelDefinitions: mergedLabels,
-            parsingTime,
-            filteredCount,
-        };
+        return result;
     }
 
-    private processSpirvModules(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        const modules = asmResult.split(MACH_MODULE_SEP);
-        const mergedAsm: ParsedAsmResultLine[] = [];
-        const mergedLabels: Record<string, number> = {};
-        let parsingTime = 0;
-        let filteredCount = 0;
-
-        for (const chunk of modules) {
-            const subResult = this.spirvParser.processAsm(chunk, filters);
-            this.normaliseLines(subResult.asm, filters.dontMaskFilenames);
-            const lineOffset = mergedAsm.length;
-            for (const [label, lineNum] of Object.entries(subResult.labelDefinitions ?? {})) {
-                if (!(label in mergedLabels)) mergedLabels[label] = lineOffset + lineNum;
-            }
-            mergedAsm.push(...subResult.asm);
-            parsingTime += Number(subResult.parsingTime ?? 0);
-            filteredCount += subResult.filteredCount ?? 0;
-        }
-
+    /** The disassembly of one or more SPIR-V modules, as `spirv-dis` writes it. */
+    processSpirv(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         return {
-            asm: mergedAsm,
-            labelDefinitions: mergedLabels,
+            ...this.mergeModules(
+                asmResult,
+                filters,
+                module => this.spirvParser.processAsm(module, filters),
+                () => false,
+            ),
             languageId: 'spirv',
-            parsingTime,
-            filteredCount,
         };
     }
 

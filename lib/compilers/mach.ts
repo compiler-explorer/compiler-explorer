@@ -25,7 +25,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import type {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import type {
     BypassCache,
     CacheKey,
@@ -34,7 +33,11 @@ import type {
     ExecutionOptionsWithEnv,
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
-import {CompilerOverrideType, type ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {
+    CompilerOverrideType,
+    type ConfiguredOverrideGeneral,
+    type ConfiguredOverrides,
+} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {MachTarget, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {
     BasicExecutionResult,
@@ -43,14 +46,14 @@ import type {
 } from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {InstructionSet} from '../../types/instructionsets.js';
-import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {LlvmObjdumper} from '../objdumper/llvm.js';
 import {ClientOptionsType} from '../options-handler.js';
-import {MACH_MODULE_SEP, MACH_SPIRV_HEADER, MachAsmParser} from '../parsers/asm-parser-mach.js';
+import {MACH_MODULE_SEP, MachAsmParser} from '../parsers/asm-parser-mach.js';
 import {parseMachDiagnostics, toEditorColumns} from '../parsers/mach-diagnostics.js';
 import {MachIrParser} from '../parsers/mach-ir.js';
 import * as temp from '../temp.js';
@@ -59,6 +62,12 @@ import {MachParser} from './argument-parsers.js';
 
 const sourceDir = 'src';
 const workDir = 'out';
+
+/** What `--emit` writes for the modules of the user's project, each kind under `out/<product>/<id>/`. */
+type Product = 'asm' | 'obj' | 'ir-opt';
+
+/** A tuple `mach info targets` lists, before the probe has settled whether it builds and what its asm view reads. */
+type MachTuple = Omit<MachTarget, 'listing'>;
 
 const hostedSystems = new Set(['linux', 'darwin', 'windows']);
 const stdPrintSystems = new Set(['linux', 'darwin', 'windows', 'wasi']);
@@ -101,7 +110,7 @@ function defaultIsaFloor(arch: string, abi: string): string | undefined {
     }
 }
 
-function instructionSetForArch(arch: string | undefined): InstructionSet | undefined {
+function instructionSetForArch(arch: string): InstructionSet | undefined {
     switch (arch) {
         case 'x86_64':
             return 'amd64';
@@ -140,6 +149,7 @@ function hasFlag(args: string[], names: string[]): boolean {
     return args.some(arg => names.some(name => arg === name || arg.startsWith(`${name}=`)));
 }
 
+/** The target a command line names, the last `-t` winning, and the command line without it. */
 function extractTargetOption(args: string[]): {targetName?: string; rest: string[]} {
     let targetName: string | undefined;
     const rest: string[] = [];
@@ -159,15 +169,16 @@ function extractTargetOption(args: string[]): {targetName?: string; rest: string
 }
 
 /**
- * Mach 7 builds single-file and multi-file trees directly through entry builds (`mach build src/example.mach`),
- * binding the user's source tree with `--source <id>=src` and the paired std checkout in place with
- * `--source std=<stdPath>`. No `mach.toml` is generated and `std` is never copied per compile.
+ * A compilation is an entry build (`mach build src/example.mach`), which needs no manifest: `--source <id>=src` binds
+ * the user's source tree and `--source std=<stdPath>` the std release the compiler is paired with, read in place.
  *
  *   src/example.mach            the user's entry module (and any extra files, rooted at src/)
- *   out/asm/example/*.s         masc assembly listings on CPU targets (`--emit asm`)
+ *   out/asm/example/*.s         masc assembly listings (`--emit asm`), on a target that has them
  *   out/ir-opt/example/*.ir     optimised/legalised MIRL text for the Mach IR pane (`--emit ir-opt`)
- *   out/obj/example/*.o         per-module objects (used on Wasm and unlinked SPIR-V)
+ *   out/obj/example/*.o         per-module objects (`--emit obj`), the asm view of a target with no listing
  *   out/bin/example[.spv]       linked executable or finished SPIR-V module (`--emit exe`)
+ *
+ * std's own modules are written beside the project's, under `out/<product>/std/`, and no view reads them.
  */
 export class MachCompiler extends BaseCompiler {
     static get key() {
@@ -176,7 +187,7 @@ export class MachCompiler extends BaseCompiler {
 
     readonly stdPath: string;
     private readonly spirvDisassembler: string;
-    private readonly resultTarget = new WeakMap<CompilationResult, MachTarget>();
+    private readonly machAsm: MachAsmParser;
     private buildable?: MachTarget[];
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -187,7 +198,8 @@ export class MachCompiler extends BaseCompiler {
         this.spirvDisassembler = this.compilerProps<string>('disassemblerPath') || 'spirv-dis';
         this.compiler.supportsTarget = true;
         this.compiler.supportsMachIrView = true;
-        this.asm = new MachAsmParser(this.compilerProps, sourceDir, this.compileFilename);
+        this.machAsm = new MachAsmParser(this.compilerProps, sourceDir, this.compileFilename);
+        this.asm = this.machAsm;
     }
 
     override async initialise(
@@ -195,9 +207,8 @@ export class MachCompiler extends BaseCompiler {
         clientOptions: ClientOptionsType,
         isPrediscovered = false,
     ): Promise<BaseCompiler | null> {
-        const cached = this.compiler.cachedMachTargets;
-        if (isPrediscovered && cached && cached.every(t => typeof t.platform === 'string')) {
-            this.buildable = cached;
+        if (isPrediscovered && this.compiler.cachedMachTargets) {
+            this.buildable = this.compiler.cachedMachTargets;
         } else if (!this.getRemote()) {
             try {
                 this.buildable = await this.probeTargets();
@@ -223,11 +234,11 @@ export class MachCompiler extends BaseCompiler {
     }
 
     /** Parses `mach info targets` into candidate (platform, abi, isa, kind) tuples. */
-    async supportedTuples(): Promise<MachTarget[]> {
+    async supportedTuples(): Promise<MachTuple[]> {
         const result = await this.exec(this.compiler.exe, ['info', 'targets'], this.getDefaultExecOptions());
         if (result.code !== 0) throw new Error(`mach info targets failed: ${result.stderr}`);
 
-        const rows: MachTarget[] = [];
+        const rows: MachTuple[] = [];
         for (const line of utils.splitLines(result.stdout)) {
             const trimmed = line.trim();
             if (!trimmed || trimmed.startsWith('target ')) continue;
@@ -266,20 +277,28 @@ export class MachCompiler extends BaseCompiler {
         return this.buildable;
     }
 
-    private findTarget(name: string | undefined): MachTarget | undefined {
-        if (!this.buildable || this.buildable.length === 0) return undefined;
-        if (name) {
-            return (
-                this.buildable.find(t => t.name === name) ??
-                this.buildable.find(t => t.platform === name && t.defaultAbi) ??
-                this.buildable.find(t => t.platform === name)
-            );
-        }
-        const host = hostPlatform();
-        return this.buildable.find(t => t.platform === host && t.defaultAbi) ?? this.buildable[0];
+    /** A target by the name it is offered under, or by its platform, which means that platform's default ABI. */
+    private findTarget(name: string): MachTarget | undefined {
+        const rows = this.targets();
+        return (
+            rows.find(t => t.name === name) ??
+            rows.find(t => t.platform === name && t.defaultAbi) ??
+            rows.find(t => t.platform === name)
+        );
     }
 
-    targetFlags(target: MachTarget, explicitArgs: string[] = []): string[] {
+    /**
+     * The target a request builds for. A `-t` among the options wins over the target picker, as it does on the
+     * command line `orderArguments` writes, and a request that names neither builds for the host.
+     */
+    private requestedTarget(options: string[], overrides: ConfiguredOverrides = []): MachTarget | undefined {
+        const picked = overrides.find(
+            (ov): ov is ConfiguredOverrideGeneral => ov.name === CompilerOverrideType.arch,
+        )?.value;
+        return this.findTarget(extractTargetOption(options).targetName || picked || hostPlatform());
+    }
+
+    targetFlags(target: MachTuple, explicitArgs: string[] = []): string[] {
         const flags = ['-t', target.platform];
         if (!target.defaultAbi && !hasFlag(explicitArgs, ['--abi'])) {
             flags.push('--abi', target.abi);
@@ -308,8 +327,9 @@ export class MachCompiler extends BaseCompiler {
             await fs.writeFile(path.join(dirPath, 'bare', 'probe.mach'), bareProbeSource);
 
             const rows: MachTarget[] = [];
-            for (const [index, target] of tuples.entries()) {
-                if (await this.buildsUnderProbe(dirPath, index, target)) rows.push(target);
+            for (const [index, tuple] of tuples.entries()) {
+                const target = await this.probe(dirPath, index, tuple);
+                if (target) rows.push(target);
             }
             return qualifyNames(rows);
         } finally {
@@ -318,8 +338,18 @@ export class MachCompiler extends BaseCompiler {
         }
     }
 
-    private async buildsUnderProbe(dirPath: string, index: number, target: MachTarget): Promise<boolean> {
-        const sub = stdPrintSystems.has(target.sys) ? 'hosted' : 'bare';
+    /**
+     * A tuple is offered when the asm view of it builds: the listing where the compiler writes one, and otherwise the
+     * objects, which is all there is to read on a target the compiler encodes without a text form.
+     */
+    private async probe(dirPath: string, index: number, tuple: MachTuple): Promise<MachTarget | undefined> {
+        if (await this.buildsUnderProbe(dirPath, `w${index}-asm`, tuple, 'asm')) return {...tuple, listing: true};
+        if (await this.buildsUnderProbe(dirPath, `w${index}-obj`, tuple, 'obj')) return {...tuple, listing: false};
+        return undefined;
+    }
+
+    private async buildsUnderProbe(dirPath: string, work: string, tuple: MachTuple, emit: Product): Promise<boolean> {
+        const sub = stdPrintSystems.has(tuple.sys) ? 'hosted' : 'bare';
         const args = [
             'build',
             `${sub}/probe.mach`,
@@ -328,13 +358,13 @@ export class MachCompiler extends BaseCompiler {
             '--source',
             `std=${this.stdPath}`,
             '-w',
-            `w${index}`,
+            work,
             '--debug',
             '--emit',
-            'obj',
-            ...this.targetFlags(target),
+            emit,
+            ...this.targetFlags(tuple),
         ];
-        if (!target.kind && sub === 'bare') args.push('-k', 'object');
+        if (!tuple.kind && sub === 'bare') args.push('-k', 'object');
         const result = await this.exec(this.compiler.exe, args, {
             ...this.getDefaultExecOptions(),
             customCwd: dirPath,
@@ -355,34 +385,24 @@ export class MachCompiler extends BaseCompiler {
         return {inputFilename};
     }
 
-    private targetFromKey(key?: CacheKey | CompilationCacheKey): MachTarget | undefined {
-        if (!this.isCacheKey(key)) return this.findTarget(undefined);
-        const archOverride = key.backendOptions?.overrides?.find(
-            (ov: ConfiguredOverrides[number]) => ov.name === CompilerOverrideType.arch && ov.value,
-        );
-        if (archOverride && 'value' in archOverride && archOverride.value) {
-            return this.findTarget(archOverride.value);
-        }
-        const {targetName} = extractTargetOption(key.options ?? []);
-        return this.findTarget(targetName);
-    }
-
-    private usesAsmText(target: MachTarget | undefined, binary?: boolean): boolean {
-        if (binary) return false;
-        if (!target) return true;
-        return target.sys !== 'vulkan' && target.arch !== 'wasm32';
+    override fixFiltersForCompiler(
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+        files: FiledataPair[],
+        backendOptions: Record<string, any>,
+    ) {
+        super.fixFiltersForCompiler(filters, options, files, backendOptions);
+        const target = this.requestedTarget(options, backendOptions.overrides);
+        if (target && !target.listing && !filters.binary) filters.binaryObject = true;
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
-        const target = this.targetFromKey(key);
-        const binary = this.isCacheKey(key) && Boolean(key.filters?.binary);
-        if (binary) return this.getExecutableFilename(dirPath, outputFilebase, key);
-        const binaryObject = this.isCacheKey(key) && Boolean(key.filters?.binaryObject);
+        const filters = this.isCacheKey(key) ? key.filters : undefined;
+        if (filters?.binary) return this.getExecutableFilename(dirPath, outputFilebase, key);
         const id = this.projectId;
-        if (this.usesAsmText(target, binaryObject)) {
-            return path.join(dirPath, workDir, 'asm', id, `${id}.s`);
-        }
-        return path.join(dirPath, workDir, 'obj', id, `${id}.o`);
+        return filters?.binaryObject
+            ? path.join(dirPath, workDir, 'obj', id, `${id}.o`)
+            : path.join(dirPath, workDir, 'asm', id, `${id}.s`);
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
@@ -390,82 +410,43 @@ export class MachCompiler extends BaseCompiler {
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
-        const target = this.targetFromKey(key);
+        const target = this.isCacheKey(key)
+            ? this.requestedTarget(key.options, key.backendOptions.overrides)
+            : undefined;
         const suffix = target?.sys === 'vulkan' ? '.spv' : '';
         return path.join(dirPath, workDir, 'bin', `${this.projectId}${suffix}`);
     }
 
-    /** Collects `[entryFile, ...sortedSiblings]` with `ext` under `entryFile`'s module root (`out/<kind>/<id>/`). */
-    private async collectModuleOutputs(entryFile: string, ext: string): Promise<string[]> {
-        const moduleRoot = path.dirname(entryFile);
-        let entries: string[];
-        try {
-            entries = (await fs.readdir(moduleRoot, {recursive: true})) as string[];
-        } catch {
-            return (await utils.fileExists(entryFile)) ? [entryFile] : [];
-        }
-        const others = entries
-            .map(entry => path.join(moduleRoot, entry))
-            .filter(file => file.endsWith(ext) && file !== entryFile)
-            .sort();
-        const hasEntry = await utils.fileExists(entryFile);
-        return hasEntry ? [entryFile, ...others] : others;
+    /** One product of the project's modules as the build in `dirPath` wrote it, the entry first and the rest by path. */
+    private async moduleOutputs(dirPath: string, product: Product, ext: string): Promise<string[]> {
+        const dir = path.join(dirPath, workDir, product, this.projectId);
+        if (!(await utils.dirExists(dir))) return [];
+        const entry = `${this.projectId}${ext}`;
+        const names = (await fs.readdir(dir, {recursive: true})).filter(name => name.endsWith(ext));
+        const others = names.filter(name => name !== entry).sort();
+        return [...names.filter(name => name === entry), ...others].map(name => path.join(dir, name));
     }
 
-    override async getObjdumpInputFilenames(outputFilename: string, filters?: ParseFiltersAndOutputOptions) {
+    override async getObjdumpInputFilenames(
+        outputFilename: string,
+        filters?: ParseFiltersAndOutputOptions,
+        dirPath?: string,
+    ) {
         if (filters?.binary) return [outputFilename];
-        const files = await this.collectModuleOutputs(outputFilename, '.o');
-        return files.length > 0 ? files : [outputFilename];
+        const objects = await this.moduleOutputs(unwrap(dirPath), 'obj', '.o');
+        return objects.length > 0 ? objects : [outputFilename];
     }
 
-    override prepareArguments(
-        userOptions: string[],
-        filters: ParseFiltersAndOutputOptions,
-        backendOptions: Record<string, any>,
-        inputFilename: string,
-        outputFilename: string,
-        libraries: SelectedLibraryVersion[],
-        overrides: ConfiguredOverrides,
-    ) {
-        const archOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch && ov.value);
-        const {targetName: userTarget} = extractTargetOption(userOptions);
-        const target = this.findTarget(
-            (archOverride && 'value' in archOverride ? archOverride.value : undefined) ?? userTarget,
-        );
-        if (!filters.binary && target?.arch === 'wasm32') {
-            filters.binaryObject = true;
-        }
-        return super.prepareArguments(
-            userOptions,
-            filters,
-            backendOptions,
-            inputFilename,
-            outputFilename,
-            libraries,
-            overrides,
-        );
-    }
-
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions: string[] = [],
-    ) {
-        const outRel = path.posix.join(workDir, 'bin', path.basename(outputFilename));
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.binary) {
-            return ['--emit', 'exe', '-o', outRel];
+            return ['--emit', 'exe', '-o', path.posix.join(workDir, 'bin', path.basename(outputFilename))];
         }
-        if (outputFilename.endsWith('.o')) {
-            return ['--emit', 'obj'];
-        }
-        return ['--emit', 'asm'];
+        return ['--emit', filters.binaryObject ? 'obj' : 'asm'];
     }
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string) {
         const options = super.optionsForBackend(backendOptions, outputFilename);
-        if (backendOptions.produceMachIr && this.compiler.supportsMachIrView) {
-            options.push('--emit', 'ir-opt');
-        }
+        if (backendOptions.produceMachIr) options.push('--emit', 'ir-opt');
         return options;
     }
 
@@ -479,17 +460,14 @@ export class MachCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ) {
-        const id = this.projectId;
-        const entryRel = path.posix.join(sourceDir, this.compileFilename);
-        const combined = [...options, ...userOptions];
-        const {targetName, rest} = extractTargetOption(combined);
-        const target = this.findTarget(targetName);
+        const {targetName, rest} = extractTargetOption([...options, ...userOptions]);
+        const target = this.findTarget(targetName || hostPlatform());
 
         const args = [
             'build',
-            entryRel,
+            path.posix.join(sourceDir, this.compileFilename),
             '--source',
-            `${id}=${sourceDir}`,
+            `${this.projectId}=${sourceDir}`,
             '--source',
             `std=${this.stdPath}`,
             '-w',
@@ -503,6 +481,7 @@ export class MachCompiler extends BaseCompiler {
         if (target) {
             args.push(...this.targetFlags(target, rest));
         } else if (targetName) {
+            // not one of the targets on offer: mach names what is wrong with it better than a refusal here would
             args.push('-t', targetName);
         }
         args.push(...libIncludes, ...libOptions, ...libPaths, ...libLinks, ...staticLibLinks, ...rest);
@@ -519,12 +498,9 @@ export class MachCompiler extends BaseCompiler {
         const projectRoot = this.projectRoot(inputFilename);
         execOptions.customCwd = projectRoot;
 
-        const {targetName} = extractTargetOption(options);
-        const target = this.findTarget(targetName);
-
         const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        const target = this.requestedTarget(options);
         if (target) {
-            this.resultTarget.set(result, target);
             result.instructionSet = instructionSetForArch(target.arch);
             if (target.sys === 'vulkan') result.languageId = 'spirv';
         }
@@ -533,15 +509,29 @@ export class MachCompiler extends BaseCompiler {
     }
 
     protected override getObjdumperForResult(result: CompilationResult) {
-        const target =
-            this.resultTarget.get(result) ??
-            (result.compilationOptions
-                ? this.findTarget(extractTargetOption(result.compilationOptions).targetName)
-                : undefined);
+        // the base class leaves the host's own architecture to GNU objdump, which reads no Mach-O or PE image
+        const target = this.requestedTarget(result.compilationOptions ?? []);
         if (this.compiler.llvmObjdumper && target && target.sys !== 'linux') {
             return {exe: this.compiler.llvmObjdumper, cls: LlvmObjdumper};
         }
         return super.getObjdumperForResult(result);
+    }
+
+    private async disassembleSpirv(files: string[], dirPath: string): Promise<string> {
+        const modules: string[] = [];
+        for (const file of files) {
+            if (!(await utils.fileExists(file))) continue;
+            const spv = await this.exec(this.spirvDisassembler, [file, '--comment'], {
+                ...this.getDefaultExecOptions(),
+                customCwd: dirPath,
+            });
+            if (spv.code === 0) {
+                modules.push(spv.stdout);
+            } else {
+                logger.error('SPIR-V disassembly failed', spv);
+            }
+        }
+        return modules.length > 0 ? modules.join(MACH_MODULE_SEP) : '<No SPIR-V output generated>';
     }
 
     override async checkOutputFileAndDoPostProcess(
@@ -549,56 +539,45 @@ export class MachCompiler extends BaseCompiler {
         outputFilename: string,
         filters: ParseFiltersAndOutputOptions,
         produceOptRemarks = false,
-    ) {
+    ): Promise<[CompilationResult, any[], any[]]> {
+        const dirPath = unwrap(asmResult.dirPath);
+
         if (asmResult.languageId === 'spirv') {
-            const inputs = filters.binary ? [outputFilename] : await this.collectModuleOutputs(outputFilename, '.o');
-            const disassembled: string[] = [];
-            for (const file of inputs) {
-                if (!(await utils.fileExists(file))) continue;
-                const spv = await this.exec(this.spirvDisassembler, [file, '--comment'], {
-                    ...this.getDefaultExecOptions(),
-                    customCwd: asmResult.dirPath,
-                });
-                if (spv.code === 0) {
-                    disassembled.push(spv.stdout);
-                } else {
-                    logger.error('SPIR-V disassembly failed', spv);
-                }
-            }
-            asmResult.asm =
-                disassembled.length > 0
-                    ? MACH_SPIRV_HEADER + disassembled.join(MACH_MODULE_SEP)
-                    : '<No SPIR-V output generated>';
-            return [asmResult, [], []] as [CompilationResult, any[], any[]];
+            const modules = filters.binary ? [outputFilename] : await this.moduleOutputs(dirPath, 'obj', '.o');
+            asmResult.asm = await this.disassembleSpirv(modules, dirPath);
+            return [asmResult, [], []];
         }
 
-        if (!filters.binary && !filters.binaryObject && outputFilename.endsWith('.s')) {
-            const asmFiles = await this.collectModuleOutputs(outputFilename, '.s');
-            if (asmFiles.length > 0) {
-                const chunks = await Promise.all(asmFiles.map(file => fs.readFile(file, 'utf8')));
-                const joined = chunks.join(MACH_MODULE_SEP);
-                asmResult.asmSize = Buffer.byteLength(joined, 'utf8');
-                asmResult.asm = joined;
-                return [asmResult, [], []] as [CompilationResult, any[], any[]];
+        if (!filters.binary && !filters.binaryObject) {
+            const listings = await this.moduleOutputs(dirPath, 'asm', '.s');
+            if (listings.length > 0) {
+                const asm = (await Promise.all(listings.map(file => fs.readFile(file, 'utf8')))).join(MACH_MODULE_SEP);
+                asmResult.asmSize = Buffer.byteLength(asm, 'utf8');
+                asmResult.asm = asm;
+                return [asmResult, [], []];
             }
         }
 
         return super.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, produceOptRemarks);
     }
 
-    override getMachIrOutputFilename(inputFilename: string): string {
-        const id = this.projectId;
-        return path.join(this.projectRoot(inputFilename), workDir, 'ir-opt', id, `${id}.ir`);
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
+        if (result.languageId === 'spirv') return this.machAsm.processSpirv(result.asm, filters);
+        return super.processAsm(result, filters, options);
     }
 
-    override async processMachIrOutput(outpath: string, output: CompilationResult): Promise<ParsedAsmResultLine[]> {
+    override async processMachIrOutput(inputFilename: string, output: CompilationResult) {
         if (output.code !== 0) return [{text: 'Failed to run compiler to get Mach IR'}];
-        const irFiles = await this.collectModuleOutputs(outpath, '.ir');
+        const irFiles = await this.moduleOutputs(this.projectRoot(inputFilename), 'ir-opt', '.ir');
         if (irFiles.length === 0) return [{text: 'Internal error; unable to open output path'}];
         const modules = await Promise.all(irFiles.map(file => fs.readFile(file, 'utf8')));
         return new MachIrParser(path.posix.join(sourceDir, this.compileFilename)).processModules(modules);
     }
 
+    /**
+     * mach counts columns in UTF-8 bytes and the editor in UTF-16 units, so every marker is remapped against the line
+     * it marks.
+     */
     private async inEditorColumns(lines: ResultLine[], srcDir: string): Promise<ResultLine[]> {
         const files = new Map<string, string[]>();
         for (const line of lines) {
@@ -615,7 +594,7 @@ export class MachCompiler extends BaseCompiler {
         executeParameters: ExecutableExecutionOptions,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
-        const target = this.targetFromKey(key);
+        const target = this.requestedTarget(key.options, key.backendOptions.overrides);
         if (target && !hostedSystems.has(target.sys)) {
             return {
                 code: -1,
