@@ -46,6 +46,11 @@ const O_NONBLOCK = fsConstants.O_NONBLOCK;
 // At roughly 36 bytes per allocation event this is about 7M allocations.
 const DEFAULT_MAX_RAW_OUTPUT = 256 * 1024 * 1024;
 
+function formatBytes(bytes: number) {
+    const mib = bytes / (1024 * 1024);
+    return Number.isInteger(mib) ? `${mib} MiB` : `${bytes} bytes`;
+}
+
 export class ByteLimitExceededError extends Error {
     constructor(public readonly limit: number) {
         super(`Output exceeded the limit of ${limit} bytes`);
@@ -175,7 +180,8 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         ]);
     }
 
-    private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
+    // Returns false if the interpreted output was unusable, in which case `result` explains why.
+    private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult): Promise<boolean> {
         execOptions.input = await fs.readFile(this.rawOutput, 'utf-8');
 
         const interpretResults = await this.interpret(execOptions);
@@ -184,7 +190,19 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             result.stderr += interpretResults.stderr;
         }
 
+        if (interpretResults.truncated) {
+            result.stderr += HeaptrackWrapper.noResultsMessage(
+                `Interpreted heaptrack trace exceeded ${formatBytes(this.maxRawOutput)}`,
+            );
+            return false;
+        }
+
         await fs.writeFile(this.interpretedPath, interpretResults.stdout);
+        return true;
+    }
+
+    private static noResultsMessage(reason: string) {
+        return `\n${reason}; no heaptrack results are available. Try reducing the number of allocations.\n`;
     }
 
     private async saveFlamegraph(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
@@ -216,14 +234,13 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         const socket = new net.Socket({fd: fd, readable: true, writable: true});
 
         const file = createWriteStream(this.rawOutput);
-        let limitExceeded = false;
+        const recording: {error: Error | null} = {error: null};
         const pipelineDone = new Promise<void>(resolve => {
             pipeline(socket, new ByteLimitTransform(this.maxRawOutput), file, err => {
-                if (err instanceof ByteLimitExceededError) {
-                    limitExceeded = true;
-                } else if (err) {
+                if (err && !(err instanceof ByteLimitExceededError)) {
                     logger.error('Error during heaptrack pipeline: ', err);
                 }
+                recording.error = err ?? null;
                 resolve();
             });
         });
@@ -234,16 +251,18 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await fs.unlink(this.pipe);
 
-        if (limitExceeded) {
-            const limitMiB = Math.round(this.maxRawOutput / (1024 * 1024));
-            result.stderr +=
-                `\nHeaptrack trace exceeded ${limitMiB} MiB and was discarded; ` +
-                'no heaptrack results are available. Try reducing the number of allocations.\n';
+        const recordError = recording.error;
+        if (recordError) {
+            result.stderr += HeaptrackWrapper.noResultsMessage(
+                recordError instanceof ByteLimitExceededError
+                    ? `Heaptrack trace exceeded ${formatBytes(this.maxRawOutput)} and was discarded`
+                    : 'Heaptrack trace could not be recorded',
+            );
             await fs.unlink(this.rawOutput).catch(() => {});
             return result;
         }
 
-        await this.interpretAndSave(interpretOptions, result);
+        if (!(await this.interpretAndSave(interpretOptions, result))) return result;
 
         await this.saveFlamegraph(execOptions, result);
 
