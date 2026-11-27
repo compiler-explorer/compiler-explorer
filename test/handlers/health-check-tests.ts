@@ -31,6 +31,7 @@ import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} fr
 
 import {CompilationQueue} from '../../lib/compilation-queue.js';
 import {HealthcheckController} from '../../lib/handlers/api/healthcheck-controller.js';
+import {logger} from '../../lib/logger.js';
 
 describe('Health checks', () => {
     let app: express.Express;
@@ -237,6 +238,10 @@ describe('Health checks with a failing compilation queue', () => {
         const app = express();
         const controller = new HealthcheckController(compilationQueue, null, {hasLanguages: () => true}, false, 0);
         app.use(controller.createRouter());
+        const errorSpy = vi.spyOn(logger, 'error');
         await request(app).get('/healthcheck').expect(500);
+        // Reported as a queue failure, not left to escape as an unhandled error from the handler.
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('compilation queue did not run a job'));
+        vi.restoreAllMocks();
     });
 });
