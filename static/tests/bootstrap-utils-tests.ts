@@ -72,6 +72,64 @@ describe('setHtmlPopoverContent', () => {
         expect(tip()?.querySelector('.popover-body')?.textContent).toBe('new');
     });
 
+    it('keeps the same popover element on screen when updating an open popover', () => {
+        const popover = setHtmlPopoverContent(trigger, {title: 'old title', body: 'old', className: 'before'});
+        popover?.show();
+        vi.advanceTimersByTime(1000);
+        const shownTip = tip();
+        const hideSpy = vi.spyOn(popover as Popover, 'hide');
+
+        setHtmlPopoverContent(trigger, {title: 'new title', body: '<i>new</i>', className: 'after'});
+
+        // Same element (no remove and re-show, which is what flickers), still visible, with the new content
+        expect(tip()).toBe(shownTip);
+        expect(document.querySelectorAll('.popover')).toHaveLength(1);
+        expect(shownTip?.classList.contains('show')).toBe(true);
+        expect(hideSpy).not.toHaveBeenCalled();
+        expect(shownTip?.querySelector('.popover-header')?.textContent).toBe('new title');
+        expect(shownTip?.querySelector('.popover-body')?.innerHTML).toBe('<i>new</i>');
+        expect(shownTip?.classList.contains('before')).toBe(false);
+        expect(shownTip?.classList.contains('after')).toBe(true);
+    });
+
+    it('updates in place when the header comes from the element title attribute', () => {
+        trigger.setAttribute('title', 'All options');
+        const popover = setHtmlPopoverContent(trigger, {body: 'old'});
+        popover?.show();
+        vi.advanceTimersByTime(1000);
+        const shownTip = tip();
+        expect(shownTip?.querySelector('.popover-header')?.textContent).toBe('All options');
+
+        setHtmlPopoverContent(trigger, {body: 'new'});
+
+        expect(tip()).toBe(shownTip);
+        expect(shownTip?.querySelector('.popover-header')?.textContent).toBe('All options');
+        expect(shownTip?.querySelector('.popover-body')?.textContent).toBe('new');
+    });
+
+    it('sanitizes HTML written into an open popover like Bootstrap does', () => {
+        const popover = setHtmlPopoverContent(trigger, {body: 'old'});
+        popover?.show();
+        vi.advanceTimersByTime(1000);
+        setHtmlPopoverContent(trigger, {
+            body: '<b onclick="alert(1)">ok</b><script>alert(2)</script><a href="javascript:alert(3)">x</a>',
+        });
+        const body = tip()?.querySelector('.popover-body');
+        expect(body?.querySelector('script')).toBeNull();
+        expect(body?.querySelector('b')?.hasAttribute('onclick')).toBe(false);
+        expect(body?.querySelector('a')?.hasAttribute('href')).toBe(false);
+        expect(body?.textContent).toContain('ok');
+    });
+
+    it('falls back to setContent when the title appears while the popover is open', () => {
+        const popover = setHtmlPopoverContent(trigger, {body: 'old'});
+        popover?.show();
+        vi.advanceTimersByTime(1000);
+        setHtmlPopoverContent(trigger, {title: 'now with title', body: 'new'});
+        expect(tip()?.querySelector('.popover-header')?.textContent).toBe('now with title');
+        expect(tip()?.querySelector('.popover-body')?.textContent).toBe('new');
+    });
+
     it('can drop the title again', () => {
         const popover = setHtmlPopoverContent(trigger, {title: 'a title', body: 'x'});
         setHtmlPopoverContent(trigger, {body: 'y'});
