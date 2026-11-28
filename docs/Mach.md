@@ -23,7 +23,7 @@ beside them, under `out/<product>/std/`, and no view reads them.
 - **Targets without one:** the compiler encodes WebAssembly and SPIR-V directly and has no text form for either, so
   the view is a disassembly of the objects `--emit obj` writes to `out/obj/<id>/**/*.o`, as it is on any target when
   the user asks for the binary object view. Objects are disassembled with `objdump`, or with `llvmObjdumper` when the
-  image is not an x86 ELF. Mach 7.3.0 writes a line table into a WebAssembly object but no `.debug_info` unit to find
+  image is not an x86 ELF. Mach 7.3.1 writes a line table into a WebAssembly object but no `.debug_info` unit to find
   it by, so `llvm-objdump` names no source line there: the view links to nothing in the editor, and the library
   functions filter, which goes by line information, hides all of it.
 - **SPIR-V (`vulkan-spirv`):** built with `-k module` and disassembled with `disassemblerPath` (`spirv-dis`).
@@ -61,8 +61,8 @@ built and tested against. The adapter looks for `std` in this order:
 Both godbolt.org and `etc/config/mach.defaults.properties` use the second layout:
 
 ```
-/opt/compiler-explorer/mach-7.3.0/
-├── mach          from mach-7.3.0-x86_64-linux.tar.gz
+/opt/compiler-explorer/mach-7.3.1/
+├── mach          from mach-7.3.1-x86_64-linux.tar.gz
 ├── LICENSE
 └── std/          briar-systems/mach-std at v10.3.0
 ```

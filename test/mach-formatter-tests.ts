@@ -37,7 +37,7 @@ vi.mock('../lib/exec.js', () => ({execute: vi.fn()}));
 
 import * as exec from '../lib/exec.js';
 
-const machExe = '/opt/compiler-explorer/mach-7.3.0/mach';
+const machExe = '/opt/compiler-explorer/mach-7.3.1/mach';
 
 const unformatted = 'fun main()i32{ret 0;}';
 const canonical = 'fun main() i32 {\n    ret 0;\n}\n';
@@ -71,7 +71,7 @@ function execResult(code: number, stdout: string, stderr: string): UnprocessedEx
  * stdout, and a buffer that does not parse writes nothing to stdout, reports on stderr and exits non-zero.
  */
 function fakeMach(exe: string, args: string[], options: ExecutionOptions): Promise<UnprocessedExecResult> {
-    if (args[0] === '--version') return Promise.resolve(execResult(0, '7.3.0\n', ''));
+    if (args[0] === '--version') return Promise.resolve(execResult(0, '7.3.1\n', ''));
     if (options.input === malformed) return Promise.resolve(execResult(1, '', diagnostics));
     return Promise.resolve(execResult(0, canonical, ''));
 }
@@ -103,7 +103,7 @@ describe('Mach formatter', () => {
             styles: [],
             styleFiles: {},
             type: 'machfmt',
-            version: '7.3.0',
+            version: '7.3.1',
         });
         const result = await formatter.format(unformatted, formatOptions);
         expect(vi.mocked(exec.execute)).toHaveBeenCalledWith(machExe, ['fmt', '-'], {input: unformatted});
@@ -118,7 +118,7 @@ describe('Mach formatter', () => {
             styles: [],
             styleFiles: {},
             type: 'machfmt',
-            version: '7.3.0',
+            version: '7.3.1',
         });
         expect(formatter.isValidStyle('__DefaultStyle')).toBe(true);
         expect(formatter.isValidStyle('Google')).toBe(true);
@@ -130,7 +130,7 @@ describe('Mach formatter', () => {
         const formatter = service.getFormatterById('machfmt');
         expect(formatter).toBeInstanceOf(MachFmtFormatter);
         expect(vi.mocked(exec.execute)).toHaveBeenCalledWith(machExe, ['--version'], {});
-        expect(formatter?.formatterInfo.version).toBe('7.3.0');
+        expect(formatter?.formatterInfo.version).toBe('7.3.1');
     });
 });
 

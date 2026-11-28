@@ -45,7 +45,7 @@ const listing: ParsedAsmResultLine[] = [
     },
     {
         text: '    val _7: i1 = icmp.slt(_0, 4) at l52 in s1;',
-        source: {file: '/opt/compiler-explorer/mach-7.3.0/std/src/math.mach', line: 16, column: 5},
+        source: {file: '/opt/compiler-explorer/mach-7.3.1/std/src/math.mach', line: 16, column: 5},
     },
     {
         text: '    ret(_4) at l46;',

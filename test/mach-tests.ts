@@ -48,7 +48,7 @@ const languages = {
     mach: {id: 'mach' as LanguageKey, extensions: ['.mach']},
 };
 
-// `mach info targets` as mach 7.3.0 prints it.
+// `mach info targets` as mach 7.3.1 prints it.
 const infoTargets = [
     'target                 env                                            abi                            code_model      linkage                                            note',
     'linux-x86_64           *none,gnu                                      *sysv64                        *small          *static gnu:*pie,dynamic,static',
@@ -98,7 +98,7 @@ const helpBuild = [
 ].join('\n');
 
 /**
- * Reproduces what mach 7.3.0 with mach-std 10.3.0 answers for each probe build. Objects build for every tuple except
+ * Reproduces what mach 7.3.1 with mach-std 10.3.0 answers for each probe build. Objects build for every tuple except
  * `windows-arm64ec`, where `std.runtime.windows` and `std.system.cpu.features` reject `arm64ec`, and any `needs --isa`
  * tuple invoked without `--isa`. A listing is refused on Wasm and SPIR-V, which have none.
  */
@@ -164,7 +164,7 @@ function makeMach(stdPath: string) {
     return new MachCompiler(
         makeFakeCompilerInfo({
             id: 'mach',
-            exe: '/opt/compiler-explorer/mach-7.3.0/mach',
+            exe: '/opt/compiler-explorer/mach-7.3.1/mach',
             lang: 'mach',
             libsArr: [],
             objdumper: '/usr/bin/objdump',
@@ -260,10 +260,10 @@ describe('Mach targets and entry build', () => {
     it('takes std from beside the executable by default, or from compiler.<id>.stdPath', () => {
         const env = makeCompilationEnvironment({languages});
         const installed = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach730', exe: '/opt/compiler-explorer/mach-7.3.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach731', exe: '/opt/compiler-explorer/mach-7.3.1/mach', lang: 'mach'}),
             env,
         );
-        expect(installed.stdPath).toEqual(path.join('/opt/compiler-explorer/mach-7.3.0', 'std'));
+        expect(installed.stdPath).toEqual(path.join('/opt/compiler-explorer/mach-7.3.1', 'std'));
 
         const devEnv = makeCompilationEnvironment({
             languages,
@@ -619,7 +619,7 @@ describe('Mach diagnostics', () => {
 
     beforeAll(() => {
         compiler = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-7.3.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-7.3.1/mach', lang: 'mach'}),
             makeCompilationEnvironment({languages}),
         );
     });
@@ -889,7 +889,7 @@ describe('Mach asm from two modules', () => {
             MACH_MODULE_SEP +
             [
                 '\t.intel_syntax noprefix',
-                '\t.file 0 "/opt/compiler-explorer/mach-7.3.0/std/src/math.mach"',
+                '\t.file 0 "/opt/compiler-explorer/mach-7.3.1/std/src/math.mach"',
                 '\t.globl std.math.min',
                 '\t.type std.math.min, @function',
                 '\t.text',
