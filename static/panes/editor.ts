@@ -586,6 +586,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.addExecutorButton = this.domRoot.find('.btn.add-executor');
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
         const addEditorButton = this.domRoot.find('.btn.add-editor');
+        const cloneEditorButton = this.domRoot.find('.btn.clone-editor');
         const toggleVimButton = this.domRoot.find('.vim-flag');
         this.vimFlag = this.domRoot.find('.vim-flag');
         toggleVimButton.on('click', () => {
@@ -653,6 +654,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return Components.getEditor(unwrap(this.settings.defaultLanguage));
         };
 
+        const getCloneEditorConfig = () => {
+            const config = getEditorConfig();
+            return {...config, componentState: {...config.componentState, source: this.getSource() ?? ''}};
+        };
+
         const addPaneOpener = (dragSource: JQuery<HTMLElement>, dragConfig) => {
             createDragSource(this.container.layoutManager, dragSource, () => dragConfig()).on('dragStart', () => {
                 const dropdown = BootstrapUtils.getDropdownInstance(paneAdderDropdown);
@@ -670,6 +676,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         addPaneOpener(this.addExecutorButton, getExecutorConfig);
         addPaneOpener(this.conformanceViewerButton, getConformanceConfig);
         addPaneOpener(addEditorButton, getEditorConfig);
+        addPaneOpener(cloneEditorButton, getCloneEditorConfig);
 
         this.initLoadSaver();
         $(this.domRoot).on('keydown', event => {
