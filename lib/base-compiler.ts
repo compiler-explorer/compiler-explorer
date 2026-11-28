@@ -241,6 +241,7 @@ export class BaseCompiler {
     protected readonly argParser: BaseParser;
     protected readonly isCompilationWorker: boolean;
     protected readonly toolConcurrencyPerRequest: number;
+    protected readonly toolStartDeadlineMs: number;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -260,6 +261,7 @@ export class BaseCompiler {
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
         this.toolConcurrencyPerRequest = Math.max(1, this.env.ceProps('toolConcurrencyPerRequest', 2));
+        this.toolStartDeadlineMs = this.env.ceProps('toolStartDeadlineMs', 30_000);
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');
@@ -2110,7 +2112,9 @@ export class BaseCompiler {
 
     // The returned promises are in the order the tools were requested, but only `toolConcurrencyPerRequest` of the
     // tools run at once; the rest wait their turn. The independent and postcompilation calls don't overlap, so this
-    // bounds the tool processes a request has running at any moment.
+    // bounds the tool processes a request has running at any moment. A tool still waiting `toolStartDeadlineMs` after
+    // the call is skipped rather than started: the compilation queue's timeout frees the slot without stopping the job,
+    // and the client stops waiting for the result at about the same time.
     runToolsOfType(tools: ActiveTool[], type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
@@ -2118,6 +2122,7 @@ export class BaseCompiler {
             // The caller's Promise.all gives up on the first failure, so once a tool has failed, don't go on to start
             // tools whose results nobody will read.
             let firstFailure: {error: unknown} | undefined;
+            const startDeadline = Date.now() + this.toolStartDeadlineMs;
             for (const tool of tools) {
                 const matches = this.possibleTools.find(possibleTool => {
                     return possibleTool.id === tool.id && possibleTool.type === type;
@@ -2126,6 +2131,7 @@ export class BaseCompiler {
                 if (matches) {
                     const toolPromise: Promise<ToolResult> = queue.add(async () => {
                         if (firstFailure) throw firstFailure.error;
+                        if (Date.now() > startDeadline) return this.skippedToolResult(matches);
                         try {
                             return await matches.runTool(
                                 compilationInfo,
@@ -2146,6 +2152,17 @@ export class BaseCompiler {
         }
 
         return tooling;
+    }
+
+    protected skippedToolResult(tool: ITool): ToolResult {
+        const seconds = this.toolStartDeadlineMs / 1000;
+        return {
+            id: tool.id,
+            name: tool.tool.name,
+            code: -1,
+            stdout: [],
+            stderr: [{text: `Not run: the other tools in this request took longer than ${seconds}s`}],
+        };
     }
 
     buildExecutable(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptionsWithEnv) {
