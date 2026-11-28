@@ -28,7 +28,7 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 
-import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from 'vitest';
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import * as exec from '../lib/exec.js';
 import * as props from '../lib/properties.js';
@@ -137,6 +137,15 @@ describeOnPosix('sweepNonRegularEntries', () => {
         expect(await exists(path.join(locked, 'fifo'))).toBe(false);
     });
 
+    it('takes back a directory whose parent can be listed but not searched', async () => {
+        const parent = path.join(dir, 'a');
+        await fs.mkdir(path.join(parent, 'b'), {recursive: true});
+        mkfifo(path.join(parent, 'b', 'fifo'));
+        await fs.chmod(parent, 0o600);
+        await sweepNonRegularEntries(dir);
+        expect(await exists(path.join(parent, 'b', 'fifo'))).toBe(false);
+    });
+
     it('fails a tree with more entries than the limit', async () => {
         for (const name of ['a', 'b', 'c']) await fs.writeFile(path.join(dir, name), '');
         await expect(sweepNonRegularEntries(dir, {maxEntries: 2, maxDepth: 10})).rejects.toThrow(RequestDirSweepError);
@@ -218,6 +227,59 @@ describeOnPosix('runThenSweep', () => {
             }),
         ).rejects.toThrow('jail failed');
         expect(await exists(path.join(dir, 'output.s'))).toBe(false);
+    });
+
+    it('holds a run that arrives during a sweep until the sweep is done, and keeps earlier results held', async () => {
+        const walkMayProceed = deferred<void>();
+        const walkStarted = deferred<void>();
+        const realOpendir = fs.opendir;
+        const spy = vi.spyOn(fs, 'opendir').mockImplementation(async (...args: Parameters<typeof fs.opendir>) => {
+            walkStarted.resolve();
+            await walkMayProceed.promise;
+            return realOpendir(...args);
+        });
+        try {
+            const events: string[] = [];
+            const first = runThenSweep(dir, async () => 'first').then(r => {
+                events.push('first released');
+                return r;
+            });
+            await walkStarted.promise;
+
+            const fifo = path.join(dir, 'jobserver');
+            const second = runThenSweep(dir, async () => {
+                events.push('second started');
+                // A FIFO the run makes and still needs must not be swept from under it.
+                mkfifo(fifo);
+                await new Promise(resolve => setTimeout(resolve, 20));
+                events.push(`second sees its FIFO: ${await exists(fifo)}`);
+                return 'second';
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 20));
+            expect(events).toEqual([]);
+
+            walkMayProceed.resolve();
+            expect(await second).toEqual('second');
+            expect(await first).toEqual('first');
+            expect(events).toEqual(['second started', 'second sees its FIFO: true', 'first released']);
+            expect(await exists(fifo)).toBe(false);
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
+    it('reports a failed sweep in preference to the run failing', async () => {
+        for (const name of ['a', 'b', 'c']) await fs.writeFile(path.join(dir, name), '');
+        await expect(
+            runThenSweep(
+                dir,
+                async () => {
+                    throw new Error('jail failed');
+                },
+                {maxEntries: 1, maxDepth: 10},
+            ),
+        ).rejects.toThrow(RequestDirSweepError);
     });
 
     it('fails every waiting run if the directory cannot be swept', async () => {

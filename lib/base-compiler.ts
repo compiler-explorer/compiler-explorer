@@ -2098,7 +2098,8 @@ export class BaseCompiler {
     ) {
         try {
             const stat = await fs.stat(outputFilename);
-            asmResult.asmSize = stat.size;
+            // A directory left at the output path is no output, not something to read.
+            if (stat.isFile()) asmResult.asmSize = stat.size;
         } catch {
             // Ignore errors
         }

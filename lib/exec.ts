@@ -668,7 +668,10 @@ const executeDispatchTable: Record<string, DispatchFunction> = {
     none: executeNone,
     firejail: executeFirejail,
     nsjail: (command: string, args: string[], options: ExecutionOptions) =>
-        needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
+        needsWine(command)
+            ? // Same request directories as the nsjail runs, so the same sweep.
+              runThenSweep(options.appHome || options.customCwd, () => executeFirejail(command, args, options))
+            : executeNsjail(command, args, options),
     cewrapper: executeCEWrapper,
 };
 

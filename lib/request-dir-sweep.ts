@@ -37,7 +37,7 @@
 // Symbolic links are left alone: later jailed steps rely on them (library SONAME links, build-tool links into the
 // tree), and the server's own reads are kept from following them by mounting the temp root nosymfollow.
 
-import type {Dirent} from 'node:fs';
+import type {Dir, Dirent} from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -85,16 +85,18 @@ function errorCode(e: unknown): string | undefined {
 }
 
 /**
- * Run `op`, and if it is refused for want of permission on `dir`, give the owner full rights to `dir` and try once
- * more. Code in the jail runs as the same user as the server outside it, so it can make a directory the server can't
- * read or write to, but cannot make one the server can't take back.
+ * Run `op`, and if it is refused for want of permission, give the owner full rights to `dir` (and to `parent`, whose
+ * search permission reaching `dir` needs) and try once more. Code in the jail runs as the same user as the server
+ * outside it, so it can make a directory the server can't read or write to, but cannot make one the server can't take
+ * back.
  */
-async function withAccessTo<T>(dir: string, op: () => Promise<T>): Promise<T> {
+async function withAccessTo<T>(dir: string, parent: string | undefined, op: () => Promise<T>): Promise<T> {
     try {
         return await op();
     } catch (e) {
         if (errorCode(e) !== 'EACCES' && errorCode(e) !== 'EPERM') throw e;
     }
+    if (parent) await fs.chmod(parent, 0o700);
     await fs.chmod(dir, 0o700);
     return await op();
 }
@@ -106,36 +108,45 @@ async function withAccessTo<T>(dir: string, op: () => Promise<T>): Promise<T> {
  */
 export async function sweepNonRegularEntries(root: string, limits: SweepLimits = defaultSweepLimits) {
     let seen = 0;
-    const pending: {dir: string; depth: number}[] = [{dir: root, depth: 0}];
+    const pending: {dir: string; parent: string | undefined; depth: number}[] = [
+        {dir: root, parent: undefined, depth: 0},
+    ];
     while (pending.length > 0) {
-        const {dir, depth} = pending.pop()!;
-        let entries: Dirent[];
+        const {dir, parent, depth} = pending.pop()!;
+        let handle: Dir;
         try {
-            entries = await withAccessTo(dir, () => fs.readdir(dir, {withFileTypes: true}));
+            handle = await withAccessTo(dir, parent, () => fs.opendir(dir));
         } catch (e) {
             // Gone already: the jail is no longer running, so this is only the directory being removed under us.
             if (errorCode(e) === 'ENOENT') continue;
             throw new RequestDirSweepError(`Could not read ${dir}: ${e}`);
         }
-        for (const entry of entries) {
-            if (++seen > limits.maxEntries) {
-                throw new RequestDirSweepError(`More than ${limits.maxEntries} entries in ${root}`);
-            }
-            const entryPath = path.join(dir, entry.name);
-            // A Dirent describes the entry itself, so a symlink to a directory is never descended into.
-            if (entry.isDirectory()) {
-                if (depth + 1 > limits.maxDepth) {
-                    throw new RequestDirSweepError(`Directories in ${root} nest deeper than ${limits.maxDepth}`);
+        try {
+            // Read as a stream, so a directory with millions of entries costs no more than the limit before failing.
+            // Leaving the loop, by any route, closes the handle.
+            for await (const entry of handle) {
+                if (++seen > limits.maxEntries) {
+                    throw new RequestDirSweepError(`More than ${limits.maxEntries} entries in ${root}`);
                 }
-                pending.push({dir: entryPath, depth: depth + 1});
-            } else if (isRemovable(entry) && !exempt.has(entryPath)) {
-                try {
-                    await withAccessTo(dir, () => fs.unlink(entryPath));
-                } catch (e) {
-                    if (errorCode(e) === 'ENOENT') continue;
-                    throw new RequestDirSweepError(`Could not remove ${entryPath}: ${e}`);
+                const entryPath = path.join(dir, entry.name);
+                // A Dirent describes the entry itself, so a symlink to a directory is never descended into.
+                if (entry.isDirectory()) {
+                    if (depth + 1 > limits.maxDepth) {
+                        throw new RequestDirSweepError(`Directories in ${root} nest deeper than ${limits.maxDepth}`);
+                    }
+                    pending.push({dir: entryPath, parent: dir, depth: depth + 1});
+                } else if (isRemovable(entry) && !exempt.has(entryPath)) {
+                    try {
+                        await withAccessTo(dir, parent, () => fs.unlink(entryPath));
+                    } catch (e) {
+                        if (errorCode(e) === 'ENOENT') continue;
+                        throw new RequestDirSweepError(`Could not remove ${entryPath}: ${e}`);
+                    }
                 }
             }
+        } catch (e) {
+            if (e instanceof RequestDirSweepError) throw e;
+            throw new RequestDirSweepError(`Could not read ${dir}: ${e}`);
         }
     }
 }
@@ -152,11 +163,10 @@ export function requestDirFor(boundDir: string, tempRoot: string = temp.getTempR
 }
 
 type Gate = {
-    /** Jailed runs in this directory that have not exited. */
+    /** Runs admitted to this directory that have not exited, including any waiting for a sweep to finish to start. */
     running: number;
-    /** Whether a run has started since the current sweep began, which leaves that sweep proving nothing. */
-    startedSinceSweep: boolean;
-    sweeping: boolean;
+    /** The sweep under way, if any. Runs arriving during one start once it is done, so it never removes their files. */
+    sweeping: Promise<void> | undefined;
     /** Callers whose run has exited, waiting for the directory to be quiet and swept. */
     waiting: ((error: Error | undefined) => void)[];
 };
@@ -168,22 +178,17 @@ export function numActiveGates() {
     return gates.size;
 }
 
-async function sweepUntilQuiet(dir: string, gate: Gate, limits: SweepLimits) {
-    gate.sweeping = true;
+async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
     let error: Error | undefined;
-    do {
-        gate.startedSinceSweep = false;
-        try {
-            await sweepNonRegularEntries(dir, limits);
-            error = undefined;
-        } catch (e) {
-            error = e instanceof Error ? e : new Error(String(e));
-        }
-        // A run that started and finished while the walk was under way may have made something behind it.
-    } while (gate.running === 0 && gate.startedSinceSweep);
-    gate.sweeping = false;
+    try {
+        await sweepNonRegularEntries(dir, limits);
+    } catch (e) {
+        error = e instanceof Error ? e : new Error(String(e));
+    }
+    gate.sweeping = undefined;
 
-    // A run still going will sweep again when it exits, and release everyone then.
+    // Runs that arrived during the walk start now; when the last of them exits the directory is swept again and
+    // everyone, including those already waiting, is released then.
     if (gate.running > 0) return;
 
     gates.delete(dir);
@@ -211,11 +216,12 @@ export async function runThenSweep<T>(
 
     let gate = gates.get(dir);
     if (!gate) {
-        gate = {running: 0, startedSinceSweep: false, sweeping: false, waiting: []};
+        gate = {running: 0, sweeping: undefined, waiting: []};
         gates.set(dir, gate);
     }
     ++gate.running;
-    gate.startedSinceSweep = true;
+    // No sweep can start while this run is counted, so once this one is done the directory is ours until we exit.
+    if (gate.sweeping) await gate.sweeping;
 
     let outcome: {ok: true; value: T} | {ok: false; error: unknown};
     try {
@@ -226,10 +232,11 @@ export async function runThenSweep<T>(
 
     --gate.running;
     const swept = new Promise<Error | undefined>(resolve => gate.waiting.push(resolve));
-    if (gate.running === 0 && !gate.sweeping) void sweepUntilQuiet(dir, gate, limits);
+    if (gate.running === 0 && !gate.sweeping) gate.sweeping = sweepThenRelease(dir, gate, limits);
     const sweepError = await swept;
 
-    if (!outcome.ok) throw outcome.error;
+    // Checked first, so that a caller which turns a failed run into an ordinary result still sees this one.
     if (sweepError) throw new RequestDirSweepError(`Could not clean up after the run: ${sweepError.message}`);
+    if (!outcome.ok) throw outcome.error;
     return outcome.value;
 }

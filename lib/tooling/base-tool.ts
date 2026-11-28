@@ -37,6 +37,7 @@ import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
 import {propsFor} from '../properties.js';
+import {RequestDirSweepError} from '../request-dir-sweep.js';
 import {parseOutput} from '../utils.js';
 import {ITool, ToolEnv} from './base-tool.interface.js';
 
@@ -217,6 +218,9 @@ export class BaseTool implements ITool {
             const result = await this.exec(toolExe, args, execOptions);
             return this.convertResult(result, inputFilepath, exeDir);
         } catch (e) {
+            // Its directory may still hold something that blocks a read, and some tools read from it after this
+            // returns, so this one has to stop the request rather than become an ordinary result.
+            if (e instanceof RequestDirSweepError) throw e;
             logger.error('Error while running tool: ', e);
             return this.createErrorResponse('Error while running tool');
         }

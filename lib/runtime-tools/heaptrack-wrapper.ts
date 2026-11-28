@@ -262,7 +262,15 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             });
         });
 
-        const result = await this.sandboxFunc(filepath, args, runOptions);
+        let result: UnprocessedExecResult;
+        try {
+            result = await this.sandboxFunc(filepath, args, runOptions);
+        } catch (e) {
+            // Nothing will write to the pipe again, but its read end stays open until we close it.
+            await this.finishPipesAndStreams(fd, file, socket, pipelineDone);
+            await fs.unlink(this.pipe).catch(() => {});
+            throw e;
+        }
 
         await this.finishPipesAndStreams(fd, file, socket, pipelineDone);
 
