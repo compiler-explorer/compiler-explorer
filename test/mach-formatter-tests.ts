@@ -26,6 +26,7 @@ import express from 'express';
 import request from 'supertest';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {CompilationQueue} from '../lib/compilation-queue.js';
 import {MachFmtFormatter} from '../lib/formatters/machfmt.js';
 import {FormattingService} from '../lib/formatting-service.js';
 import {FormattingController} from '../lib/handlers/api/formatting-controller.js';
@@ -144,7 +145,7 @@ describe('Mach formatting over the API', () => {
         await service.initialize(machProps());
         app = express();
         app.use(express.json());
-        app.use(new FormattingController(service).createRouter());
+        app.use(new FormattingController(service, new CompilationQueue(1, 10_000, 10_000)).createRouter());
     });
 
     it('answers with the canonical layout', async () => {
