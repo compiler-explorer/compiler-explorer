@@ -22,6 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {Remote} from '../types/compiler.interfaces.js';
+
+export function getRemoteBrowserUrl(remote: Remote): string {
+    return remote.browserUrl ?? remote.target + remote.basePath;
+}
+
 export function getRemoteId(remoteUrl: string, language: string): string {
     const url: URL = new URL(remoteUrl);
     return url.host.replace(/\./g, '_') + url.pathname.replace(/\//g, '_') + '_' + language;

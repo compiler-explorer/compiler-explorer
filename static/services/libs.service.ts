@@ -24,7 +24,6 @@
 
 import urljoin from 'url-join';
 
-import {getRemoteId} from '../../shared/remote-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
@@ -61,11 +60,12 @@ export class LibsService {
     }
 
     async getRemoteLibs(langId: string, remoteUrl: string): Promise<LanguageLibs> {
-        const remoteId = getRemoteId(remoteUrl, langId);
-        let promise = this.loadPromises.get(remoteId);
+        // remoteUrl may be root-relative (a same-origin remote), so key on the string rather than parsing it as a URL.
+        const cacheKey = `remote:${remoteUrl}:${langId}`;
+        let promise = this.loadPromises.get(cacheKey);
         if (!promise) {
             promise = this.fetchRemoteLibs(langId, remoteUrl);
-            this.loadPromises.set(remoteId, promise);
+            this.loadPromises.set(cacheKey, promise);
         }
         return promise;
     }
