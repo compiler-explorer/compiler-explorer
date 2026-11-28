@@ -31,6 +31,10 @@ import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} fr
 
 import {CompilationQueue} from '../../lib/compilation-queue.js';
 import {HealthcheckController} from '../../lib/handlers/api/healthcheck-controller.js';
+import {logger} from '../../lib/logger.js';
+
+// Generous for a queue that is moving; the stuck-queue tests use a short one of their own.
+const queueTimeoutMs = 1000;
 
 describe('Health checks', () => {
     let app: express.Express;
@@ -42,7 +46,14 @@ describe('Health checks', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
     });
 
@@ -71,7 +82,14 @@ describe('Health checks without lang/comp', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
     });
 
@@ -90,7 +108,14 @@ describe('Health checks without lang/comp but in execution worker mode', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, true, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            true,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
     });
 
@@ -110,11 +135,25 @@ describe('Health checks on disk', () => {
         const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
 
         healthyApp = express();
-        const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false, 0);
+        const hc1 = new HealthcheckController(
+            compilationQueue,
+            '/fake/.health',
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         healthyApp.use(hc1.createRouter());
 
         unhealthyApp = express();
-        const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false, 0);
+        const hc2 = new HealthcheckController(
+            compilationQueue,
+            '/fake/.nonexist',
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         unhealthyApp.use(hc2.createRouter());
 
         mockfs({
@@ -157,6 +196,7 @@ describe('Health checks for free temp space', () => {
             compileHandlerMock,
             false,
             minFreeSpaceMiB,
+            queueTimeoutMs,
         );
         result.use(controller.createRouter());
         return result;
@@ -195,5 +235,59 @@ describe('Health checks for free temp space', () => {
         const statfsSpy = vi.spyOn(fs, 'statfs');
         await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
         expect(statfsSpy).not.toHaveBeenCalled();
+    });
+});
+
+describe('Health checks with a stuck compilation queue', () => {
+    let app: express.Express;
+    let compilationQueue: CompilationQueue;
+    let releaseSlot: () => void;
+
+    beforeEach(() => {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
+        compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
+        // Occupy the only slot until the test lets it go.
+        void compilationQueue.enqueue(() => new Promise<void>(resolve => (releaseSlot = resolve)));
+        app = express();
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0, 50);
+        app.use(controller.createRouter());
+    });
+
+    afterEach(() => {
+        releaseSlot();
+    });
+
+    it('should respond with error rather than wait for the queue', async () => {
+        await request(app).get('/healthcheck').expect(500);
+    });
+
+    it('should recover once the queue moves again', async () => {
+        await request(app).get('/healthcheck').expect(500);
+        releaseSlot();
+        await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
+    });
+});
+
+describe('Health checks with a failing compilation queue', () => {
+    it('should respond with error when the queue rejects the probe', async () => {
+        const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
+        vi.spyOn(compilationQueue, 'enqueue').mockImplementation(() => Promise.reject(new Error('queue is broken')));
+        const app = express();
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            {hasLanguages: () => true},
+            false,
+            0,
+            queueTimeoutMs,
+        );
+        app.use(controller.createRouter());
+        const errorSpy = vi.spyOn(logger, 'error');
+        await request(app).get('/healthcheck').expect(500);
+        // Reported as a queue failure, not left to escape as an unhandled error from the handler.
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('compilation queue did not run a job'));
+        vi.restoreAllMocks();
     });
 });
