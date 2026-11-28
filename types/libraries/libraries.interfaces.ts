@@ -33,6 +33,7 @@ export type LibraryVersion = {
     path: string[];
     options: string[];
     packagedheaders?: boolean;
+    skipcmakepackage?: boolean;
     sysroot?: string;
     dynamicLinker?: string;
 };
