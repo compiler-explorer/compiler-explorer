@@ -59,14 +59,19 @@ type LibVerBuild = {
     lookupname: string;
     lookupversion: string;
     buildType: LibraryBuildType;
-    possibleBuilds: any;
+    possibleBuilds: Promise<{builds: any} | {error: unknown}>;
 };
 
-// Tracks what one compilation's library setup has downloaded so far, so the byte cap applies to the
-// request as a whole rather than to each package separately.
-export type LibraryDownloadBudget = {
+// State shared by all the library downloads of one compilation: the byte cap applies to the request as a
+// whole rather than to each package separately, and one failed download stops the rest.
+export type LibrarySetupContext = {
     downloadedBytes: number;
+    signal?: AbortSignal;
 };
+
+// The search for a library that conan doesn't have rejects with this prefix; any other failure means we
+// couldn't find out, which must not be mistaken for the library not existing.
+const NOT_FOUND_PREFIX = 'Not found';
 
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
@@ -100,26 +105,27 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.maxDownloadBytes = compilerInfo.buildenvsetup!.props('maxDownloadBytes', 1024 * 1024 * 1024);
     }
 
-    protected fetchSettings(): RequestInit {
+    protected fetchSettings(signal?: AbortSignal): RequestInit {
+        const timeout = AbortSignal.timeout(this.fetchTimeoutMs);
         return {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            signal: AbortSignal.timeout(this.fetchTimeoutMs),
+            signal: signal ? AbortSignal.any([timeout, signal]) : timeout,
         };
     }
 
-    async getAllPossibleBuilds(libid: string, version: string): Promise<any> {
+    async getAllPossibleBuilds(libid: string, version: string, signal?: AbortSignal): Promise<any> {
         return new Promise((resolve, reject) => {
             const encLibid = encodeURIComponent(libid);
             const encVersion = encodeURIComponent(version);
             const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
 
-            fetch(url, this.fetchSettings())
+            fetch(url, this.fetchSettings(signal))
                 .then(async (response: Response) => {
                     if (response.status === 404) {
-                        reject(`Not found (${url})`);
+                        reject(`${NOT_FOUND_PREFIX} (${url})`);
                     } else {
                         resolve(await response.json());
                     }
@@ -131,13 +137,13 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         });
     }
 
-    async getPackageUrl(libid: string, version: string, hash: string): Promise<string> {
+    async getPackageUrl(libid: string, version: string, hash: string, signal?: AbortSignal): Promise<string> {
         const encLibid = encodeURIComponent(libid);
         const encVersion = encodeURIComponent(version);
         const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
         const url = `${libUrl}/packages/${hash}/download_urls`;
 
-        const response = await fetch(url, this.fetchSettings());
+        const response = await fetch(url, this.fetchSettings(signal));
         const body = await response.json();
         const packageURL = body['conan_package.tgz'];
         if (!packageURL) {
@@ -159,7 +165,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         version: string,
         downloadPath: string,
         packageUrl: string,
-        budget: LibraryDownloadBudget = {downloadedBytes: 0},
+        context: LibrarySetupContext = {downloadedBytes: 0},
     ): Promise<BuildEnvDownloadInfo> {
         const protocol = new URL(packageUrl).protocol;
         if (protocol !== 'http:' && protocol !== 'https:') {
@@ -227,7 +233,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             }
         });
 
-        const response = await fetch(packageUrl, this.fetchSettings());
+        const response = await fetch(packageUrl, this.fetchSettings(context.signal));
         if (!response.ok || !response.body) {
             logger.error(`Error requesting package from conan: ${response.status} for ${packageUrl}`);
             throw new Error(`Unable to request library from conan: ${response.status}`);
@@ -236,14 +242,14 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const maxDownloadBytes = this.maxDownloadBytes;
         const tooBig = () => new Error(`Libraries for this compilation exceed ${maxDownloadBytes} bytes downloaded`);
         const declaredLength = Number(response.headers.get('content-length'));
-        if (declaredLength > 0 && budget.downloadedBytes + declaredLength > maxDownloadBytes) {
+        if (declaredLength > 0 && context.downloadedBytes + declaredLength > maxDownloadBytes) {
             await response.body.cancel();
             throw tooBig();
         }
         const countDownloaded = new Transform({
             transform(chunk: Buffer, _encoding, callback) {
-                budget.downloadedBytes += chunk.length;
-                if (budget.downloadedBytes > maxDownloadBytes) {
+                context.downloadedBytes += chunk.length;
+                if (context.downloadedBytes > maxDownloadBytes) {
                     callback(tooBig());
                 } else {
                     callback(null, chunk);
@@ -347,7 +353,13 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     ): Promise<BuildEnvDownloadInfo[]> {
         const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
         const allLibraryBuilds: LibVerBuild[] = [];
-        const budget: LibraryDownloadBudget = {downloadedBytes: 0};
+        const abort = new AbortController();
+        const context: LibrarySetupContext = {downloadedBytes: 0, signal: abort.signal};
+        let firstFailure: unknown;
+        const failed = (error: unknown) => {
+            if (firstFailure === undefined) firstFailure = error;
+            abort.abort();
+        };
 
         const numLibraries = Object.keys(libraryDetails).length;
         if (numLibraries > this.maxLibraries) {
@@ -367,33 +379,70 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     lookupversion: details.lookupversion as string,
                     // A request that doesn't name a build type gets Debug, as it always has.
                     buildType: details.buildType ?? 'Debug',
-                    possibleBuilds: this.getAllPossibleBuilds(lookupname as string, lookupversion as string).catch(
-                        () => false,
+                    // Settled here so a failure is handled even while an earlier library is being awaited.
+                    possibleBuilds: this.getAllPossibleBuilds(
+                        lookupname as string,
+                        lookupversion as string,
+                        abort.signal,
+                    ).then(
+                        builds => ({builds}),
+                        (error: unknown) => ({error}),
                     ),
                 });
             }
         });
 
+        try {
+            await this.startDownloads(key, dirPath, allLibraryBuilds, context, allDownloads, failed);
+        } catch (error) {
+            failed(error);
+        }
+        // Wait for every download to stop, including ones aborted by another's failure, so nothing is still
+        // writing into the compilation directory once this returns.
+        const results = await Promise.allSettled(allDownloads);
+        if (firstFailure !== undefined) throw firstFailure;
+        return results.map(result => (result as PromiseFulfilledResult<BuildEnvDownloadInfo>).value);
+    }
+
+    private async startDownloads(
+        key: CacheKey,
+        dirPath: string,
+        allLibraryBuilds: LibVerBuild[],
+        context: LibrarySetupContext,
+        allDownloads: Promise<BuildEnvDownloadInfo>[],
+        failed: (error: unknown) => void,
+    ) {
         for (const libVerBuilds of allLibraryBuilds) {
             const lookupname = libVerBuilds.lookupname || libVerBuilds.id;
             const lookupversion = libVerBuilds.lookupversion || libVerBuilds.version;
             const libVer = `${lookupname}/${lookupversion}`;
-            const possibleBuilds = await libVerBuilds.possibleBuilds;
+            const search = await libVerBuilds.possibleBuilds;
+            // Another library's download has already failed the compilation.
+            if (context.signal?.aborted) return;
+            if ('error' in search) {
+                if (!(typeof search.error === 'string' && search.error.startsWith(NOT_FOUND_PREFIX))) {
+                    throw search.error;
+                }
+            }
+            const possibleBuilds = 'builds' in search ? search.builds : false;
             if (possibleBuilds) {
                 const found = await this.findBuildHash(key, possibleBuilds, libVerBuilds.buildType);
                 if (found) {
                     logger.debug(`Found conan hash ${found.hash} for ${libVer} with build type ${found.buildType}`);
-                    allDownloads.push(
-                        this.getPackageUrl(lookupname, lookupversion, found.hash).then(downloadUrl => {
-                            return this.downloadAndExtractPackage(
+                    const download = this.getPackageUrl(lookupname, lookupversion, found.hash, context.signal).then(
+                        downloadUrl =>
+                            this.downloadAndExtractPackage(
                                 libVerBuilds.id,
                                 lookupversion,
                                 dirPath,
                                 downloadUrl,
-                                budget,
-                            );
-                        }),
+                                context,
+                            ),
                     );
+                    // Handled as soon as it starts, not only once every library has been looked up: a rejection
+                    // left unhandled meanwhile takes the whole process down.
+                    download.catch(failed);
+                    allDownloads.push(download);
                 } else {
                     const buildProperties = await this.getConanBuildProperties(key, libVerBuilds.buildType);
                     logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
@@ -402,8 +451,6 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 logger.warn(`Library ${libVer} not available`);
             }
         }
-
-        return Promise.all(allDownloads);
     }
 
     override async setup(

@@ -350,6 +350,72 @@ describe('BuildEnvSetupCeConanDirect library limits', () => {
         await expect(setup.getPackageUrl('somelib', '1.0', 'abc')).rejects.toThrow(/timeout/i);
         expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
+
+    describe('download orchestration', () => {
+        const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+        function stubLookups(setup: BuildEnvSetupCeConanDirect, searchDelays: Record<string, number>) {
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockImplementation(async (libid: string) => {
+                await sleep(searchDelays[libid] ?? 0);
+                return {[`hash-${libid}`]: {}};
+            });
+            vi.spyOn(setup, 'findBuildHash').mockImplementation(async (_key, builds: any) => ({
+                hash: Object.keys(builds)[0],
+                buildType: 'Debug',
+            }));
+            vi.spyOn(setup, 'getPackageUrl').mockImplementation(async (libid: string) => `http://pkg/${libid}`);
+        }
+
+        it('fails the compilation when a library search fails for a reason other than not found', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockRejectedValue(new Error('conan unreachable'));
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(1))).rejects.toThrow(
+                'conan unreachable',
+            );
+        });
+
+        it('skips a library conan does not have', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockRejectedValue('Not found (http://conan.invalid/x)');
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(1))).resolves.toEqual([]);
+        });
+
+        it('handles a failed download while later libraries are still being looked up', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            stubLookups(setup, {lib0: 0, lib1: 100});
+            const extract = vi.spyOn(setup, 'downloadAndExtractPackage').mockImplementation(async () => {
+                await sleep(10);
+                throw new Error('package too big');
+            });
+            // Without a handler attached as the download starts, this rejection would go unhandled while
+            // lib1's search is awaited, and vitest would fail the run.
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toThrow(
+                'package too big',
+            );
+            // lib1's search was aborted with the rest, so its download never started.
+            expect(extract).toHaveBeenCalledTimes(1);
+        });
+
+        it('aborts and waits for sibling downloads when one fails', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            stubLookups(setup, {});
+            let siblingSettled = false;
+            vi.spyOn(setup, 'downloadAndExtractPackage').mockImplementation(async (libId, _v, _d, _u, context) => {
+                if (libId === 'lib0') {
+                    await sleep(10);
+                    throw new Error('package too big');
+                }
+                await new Promise<void>(resolve => context?.signal?.addEventListener('abort', () => resolve()));
+                await sleep(50);
+                siblingSettled = true;
+                throw new Error('aborted');
+            });
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toThrow(
+                'package too big',
+            );
+            expect(siblingSettled).toBe(true);
+        });
+    });
 });
 
 describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
