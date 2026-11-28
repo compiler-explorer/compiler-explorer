@@ -242,3 +242,24 @@ describe('Diff type picker', () => {
         });
     });
 });
+
+describe('Diff contents', () => {
+    // The pane swaps in a fresh Monaco view model on every change, so a diff computed for the old
+    // contents is never applied to the new ones (#9518). That relies on every write telling it.
+    it('reports every content change after the model holds the new text', () => {
+        const seen: string[] = [];
+        const side: DiffStateObject = new DiffStateObject(
+            'source_1',
+            monaco.editor.createModel('', 'asm'),
+            DiffType.Source,
+            undefined,
+            () => seen.push(side.model.getValue()),
+        );
+        side.source = {kind: 'source', id: 'source_1', editorId: 1, name: 'source #1', source: 'int x;'};
+
+        side.refresh();
+        side.setContent('');
+
+        expect(seen).toEqual(['int x;', '']);
+    });
+});
