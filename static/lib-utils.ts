@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {getRemoteBrowserUrl} from '../shared/remote-utils.js';
 import {Remote} from '../types/compiler.interfaces.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
 import {libsService} from './services/libs.service.js';
@@ -62,7 +63,7 @@ export async function getSupportedLibraries(
     remote?: Remote,
 ): Promise<LanguageLibs> {
     const allLibs = remote
-        ? await libsService.getRemoteLibs(langId, remote.target + remote.basePath)
+        ? await libsService.getRemoteLibs(langId, getRemoteBrowserUrl(remote))
         : await libsService.getLibsForLang(langId);
     if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
         return copyAndFilterLibraries(allLibs, supportedLibrariesArr);

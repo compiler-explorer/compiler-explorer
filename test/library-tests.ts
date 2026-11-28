@@ -187,6 +187,17 @@ describe('Library directories (c++)', () => {
         expect(qtpaths).toContain(path.normalize('/tmp/compiler-explorer-compiler-123/qt/lib'));
     });
 
+    it('carries a requested library build type to the build environment only when asked', async () => {
+        const details = await compiler.getRequiredLibraryVersions([
+            {id: 'cpptrace', version: '030', buildType: 'Release'},
+            {id: 'fmt', version: '10'},
+        ]);
+        expect(details['cpptrace'].buildType).toEqual('Release');
+        expect(details['fmt'].buildType).toBeUndefined();
+        // The copy is per compilation: the shared library definition is untouched.
+        expect(compiler.findLibVersion({id: 'cpptrace', version: '030'})?.buildType).toBeUndefined();
+    });
+
     it('should add libpaths and link when statically linking', () => {
         const staticlinks = compiler.getStaticLibraryLinks([{id: 'cpptrace', version: '030'}], []);
         expect(staticlinks).toContain('-lcpptrace');

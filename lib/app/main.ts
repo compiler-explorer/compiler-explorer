@@ -87,6 +87,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     const isCompilationWorker = ceProps<boolean>('compilequeue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
     const healthCheckMinFreeSpaceMiB = ceProps<number>('healthCheckMinFreeSpaceMiB', 100);
+    const healthCheckQueueTimeoutMs = ceProps<number>('healthCheckQueueTimeoutMs', 10_000);
 
     const formDataHandler = createFormDataHandler();
 
@@ -97,6 +98,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilationEnvironment.compilationQueue,
         healthCheckFilePath,
         healthCheckMinFreeSpaceMiB,
+        healthCheckQueueTimeoutMs,
         isExecutionWorker,
         isCompilationWorker,
         formDataHandler,
