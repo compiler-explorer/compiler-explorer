@@ -52,7 +52,7 @@ export type ActiveTool = {
 };
 
 // This is a legacy type that allows a single string to be passed as args but is otherwise identical to ActiveTool:
-export type LegacyCompatibleActiveTool = Exclude<ActiveTool, 'args'> & {args: string | string[]};
+export type LegacyCompatibleActiveTool = Omit<ActiveTool, 'args'> & {args: string | string[]};
 
 export type UnparsedExecutionParams = {
     args?: string | string[];

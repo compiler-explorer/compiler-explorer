@@ -26,6 +26,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
+import {default as PQueue} from 'p-queue';
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
 import {parseAllDocuments} from 'yaml';
@@ -239,6 +240,7 @@ export class BaseCompiler {
     protected executionEnvironmentClass: typeof LocalExecutionEnvironment;
     protected readonly argParser: BaseParser;
     protected readonly isCompilationWorker: boolean;
+    protected readonly toolConcurrencyPerRequest: number;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -257,6 +259,8 @@ export class BaseCompiler {
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath', false);
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
+        const toolConcurrency = this.env.ceProps('toolConcurrencyPerRequest', 2);
+        this.toolConcurrencyPerRequest = Number.isInteger(toolConcurrency) && toolConcurrency > 0 ? toolConcurrency : 2;
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');
@@ -2105,23 +2109,38 @@ export class BaseCompiler {
         return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
     }
 
+    // The returned promises are in the order the tools were requested, but only `toolConcurrencyPerRequest` of the
+    // tools run at once; the rest wait their turn. The independent and postcompilation calls don't overlap, so this
+    // bounds the tool processes a request has running at any moment.
     runToolsOfType(tools: ActiveTool[], type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
+            const queue = new PQueue({concurrency: this.toolConcurrencyPerRequest});
+            // The caller's Promise.all gives up on the first failure, so once a tool has failed, don't go on to start
+            // tools whose results nobody will read.
+            let firstFailure: {error: unknown} | undefined;
             for (const tool of tools) {
                 const matches = this.possibleTools.find(possibleTool => {
                     return possibleTool.id === tool.id && possibleTool.type === type;
                 });
 
                 if (matches) {
-                    const toolPromise: Promise<ToolResult> = matches.runTool(
-                        compilationInfo,
-                        compilationInfo.inputFilename,
-                        tool.args,
-                        tool.stdin,
-                        this.supportedLibraries,
-                        false,
-                    );
+                    const toolPromise: Promise<ToolResult> = queue.add(async () => {
+                        if (firstFailure) throw firstFailure.error;
+                        try {
+                            return await matches.runTool(
+                                compilationInfo,
+                                compilationInfo.inputFilename,
+                                tool.args,
+                                tool.stdin,
+                                this.supportedLibraries,
+                                false,
+                            );
+                        } catch (error) {
+                            firstFailure ??= {error};
+                            throw error;
+                        }
+                    });
                     tooling.push(toolPromise);
                 }
             }
