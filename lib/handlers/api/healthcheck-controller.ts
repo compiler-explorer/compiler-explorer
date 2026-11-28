@@ -43,7 +43,7 @@ export class HealthcheckController implements HttpController {
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
         private readonly minFreeSpaceMiB: number,
-        private readonly queueTimeoutMs = 10_000,
+        private readonly queueTimeoutMs: number,
     ) {}
 
     public setCompilationWorkerHealthCheck(healthCheck: () => boolean): void {

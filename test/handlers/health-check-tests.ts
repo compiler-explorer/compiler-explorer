@@ -33,6 +33,9 @@ import {CompilationQueue} from '../../lib/compilation-queue.js';
 import {HealthcheckController} from '../../lib/handlers/api/healthcheck-controller.js';
 import {logger} from '../../lib/logger.js';
 
+// Generous for a queue that is moving; the stuck-queue tests use a short one of their own.
+const queueTimeoutMs = 1000;
+
 describe('Health checks', () => {
     let app: express.Express;
     let compilationQueue: CompilationQueue;
@@ -43,7 +46,14 @@ describe('Health checks', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
     });
 
@@ -72,7 +82,14 @@ describe('Health checks without lang/comp', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
     });
 
@@ -91,7 +108,14 @@ describe('Health checks without lang/comp but in execution worker mode', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, true, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            true,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
     });
 
@@ -111,11 +135,25 @@ describe('Health checks on disk', () => {
         const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
 
         healthyApp = express();
-        const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false, 0);
+        const hc1 = new HealthcheckController(
+            compilationQueue,
+            '/fake/.health',
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         healthyApp.use(hc1.createRouter());
 
         unhealthyApp = express();
-        const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false, 0);
+        const hc2 = new HealthcheckController(
+            compilationQueue,
+            '/fake/.nonexist',
+            compileHandlerMock,
+            false,
+            0,
+            queueTimeoutMs,
+        );
         unhealthyApp.use(hc2.createRouter());
 
         mockfs({
@@ -158,6 +196,7 @@ describe('Health checks for free temp space', () => {
             compileHandlerMock,
             false,
             minFreeSpaceMiB,
+            queueTimeoutMs,
         );
         result.use(controller.createRouter());
         return result;
@@ -236,7 +275,14 @@ describe('Health checks with a failing compilation queue', () => {
         const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         vi.spyOn(compilationQueue, 'enqueue').mockImplementation(() => Promise.reject(new Error('queue is broken')));
         const app = express();
-        const controller = new HealthcheckController(compilationQueue, null, {hasLanguages: () => true}, false, 0);
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            {hasLanguages: () => true},
+            false,
+            0,
+            queueTimeoutMs,
+        );
         app.use(controller.createRouter());
         const errorSpy = vi.spyOn(logger, 'error');
         await request(app).get('/healthcheck').expect(500);
