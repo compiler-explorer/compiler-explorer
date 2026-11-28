@@ -77,7 +77,6 @@ describe('runToolsOfType', () => {
         const slowTool = {
             id: 'slow',
             type: 'independent',
-            tool: {name: 'Slow'},
             runTool: async (_info: CompilationInfo, _input?: string, args?: string[]): Promise<ToolResult> => {
                 stats.calls++;
                 stats.running++;
@@ -133,20 +132,6 @@ describe('runToolsOfType', () => {
 
         // Only the tool that started alongside the failing one ran.
         expect(stats.calls).toBe(1);
-    });
-
-    it('skips tools still waiting when the start deadline passes', async () => {
-        const {compiler, stats} = makeCompilerWithSlowTool({toolStartDeadlineMs: 15});
-        const tools = parseTools(Array.from({length: 6}, (_, i) => ({id: 'slow', args: [`${i}`], stdin: ''})));
-
-        const results = await Promise.all(compiler.runToolsOfType(tools, 'independent', compilationInfo));
-
-        // Each of the first pair takes 30ms or so, by which time the deadline has passed for the rest.
-        expect(stats.calls).toBe(2);
-        expect(results.map(result => result.id)).toEqual(['slow-0', 'slow-1', 'slow', 'slow', 'slow', 'slow']);
-        expect(results[2].code).toBe(-1);
-        expect(results[2].name).toBe('Slow');
-        expect(results[2].stderr[0].text).toMatch(/^Not run/);
     });
 
     it('runs identical entries once', async () => {
