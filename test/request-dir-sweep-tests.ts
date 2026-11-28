@@ -71,8 +71,10 @@ async function makeRequestDir() {
 
 describe('requestDirFor', () => {
     it('finds the request directory a bound directory lies in', () => {
-        expect(requestDirFor('/tmp/ce-abc', '/tmp')).toEqual('/tmp/ce-abc');
-        expect(requestDirFor('/tmp/ce-abc/build/sub', '/tmp')).toEqual('/tmp/ce-abc');
+        // Resolved so that Windows gets its drive letter and separators.
+        const expected = path.resolve('/tmp/ce-abc');
+        expect(requestDirFor('/tmp/ce-abc', '/tmp')).toEqual(expected);
+        expect(requestDirFor('/tmp/ce-abc/build/sub', '/tmp')).toEqual(expected);
     });
     it('declines anything that is not inside a request directory', () => {
         expect(requestDirFor('/tmp', '/tmp')).toBeUndefined();
