@@ -73,6 +73,10 @@ export type LibrarySetupContext = {
 // couldn't find out, which must not be mistaken for the library not existing.
 const NOT_FOUND_PREFIX = 'Not found';
 
+function isNotFound(error: unknown) {
+    return typeof error === 'string' && error.startsWith(NOT_FOUND_PREFIX);
+}
+
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
     protected onlyonstaticliblink: any;
@@ -481,7 +485,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         abort.signal,
                     ).then(
                         builds => ({builds}),
-                        (error: unknown) => ({error}),
+                        (error: unknown) => {
+                            // Fail now rather than once the libraries before this one are done.
+                            if (!isNotFound(error)) failed(error);
+                            return {error};
+                        },
                     ),
                 });
             }
@@ -515,7 +523,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             // Another library's download has already failed the compilation.
             if (context.signal?.aborted) return;
             if ('error' in search) {
-                if (!(typeof search.error === 'string' && search.error.startsWith(NOT_FOUND_PREFIX))) {
+                if (!isNotFound(search.error)) {
                     throw search.error;
                 }
             }

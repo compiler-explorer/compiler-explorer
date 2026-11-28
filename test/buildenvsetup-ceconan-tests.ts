@@ -437,6 +437,23 @@ describe('BuildEnvSetupCeConanDirect library limits', () => {
             await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(1))).rejects.toThrow(/status 502/);
         });
 
+        it('fails at once when a later library search fails while an earlier one is slow', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockImplementation((libid: string, _v, signal) => {
+                if (libid === 'lib1') return Promise.reject(new Error('conan unreachable'));
+                // Settles on its own after a while, so a missing early abort shows up as the wrong error, not a hang.
+                return new Promise((resolve, reject) => {
+                    signal?.addEventListener('abort', () => reject(new Error('aborted')));
+                    setTimeout(() => resolve({}), 1000);
+                });
+            });
+            const start = Date.now();
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toThrow(
+                'conan unreachable',
+            );
+            expect(Date.now() - start).toBeLessThan(500);
+        });
+
         it('skips a library conan does not have', async () => {
             const setup = makeSetup({host: 'http://conan.invalid'});
             vi.spyOn(setup, 'getAllPossibleBuilds').mockRejectedValue('Not found (http://conan.invalid/x)');
