@@ -40,15 +40,13 @@ import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
 import {propsFor} from './properties.js';
-import {runThenSweep} from './request-dir-sweep.js';
+import {RequestDirSweepError, runThenSweep} from './request-dir-sweep.js';
 import * as utils from './utils.js';
 
 type NsJailOptions = {
     args: string[];
     options: ExecutionOptions;
     filenameTransform: FilenameTransformFunc | undefined;
-    /** The host directory bound into the jail as its home, if any. */
-    boundDir?: string;
 };
 
 const execProps = propsFor('execution');
@@ -265,9 +263,7 @@ export function getNsJailOptions(
     }
 
     let filenameTransform: FilenameTransformFunc | undefined;
-    let boundDir: string | undefined;
     if (options.customCwd) {
-        boundDir = options.appHome || options.customCwd;
         let replacement = options.customCwd;
         if (options.appHome) {
             replacement = options.appHome;
@@ -301,7 +297,6 @@ export function getNsJailOptions(
         args: jailingOptions.concat(['--', '/usr/local/bin/dumb-init', command]).concat(args),
         options,
         filenameTransform,
-        boundDir,
     };
 }
 
@@ -373,8 +368,11 @@ async function sandboxNsjail(
 ): Promise<UnprocessedExecResult> {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
-    const result = await runThenSweep(nsOpts.boundDir, () =>
-        executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform),
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
     );
     if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
@@ -386,8 +384,11 @@ async function executeNsjail(
     options: ExecutionOptions,
 ): Promise<UnprocessedExecResult> {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    const result = await runThenSweep(nsOpts.boundDir, () =>
-        executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform),
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
     );
     if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
@@ -439,6 +440,37 @@ function sandboxFirejail(command: string, args: string[], options: ExecutionOpti
     return executeDirect(execProps<string>('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
 }
 
+/**
+ * Run `run` and sweep the request directory it worked in before returning (see request-dir-sweep.ts). Done here, around
+ * every backend, so that no backend, including one registered from outside, can skip it. A sweep that fails becomes a
+ * failed run rather than an exception: the directory has been moved aside by then, so nothing can block reading from
+ * it, and callers already know what to do with a failed run.
+ */
+async function sweptAfter(
+    workDir: string | undefined,
+    run: () => Promise<UnprocessedExecResult>,
+): Promise<UnprocessedExecResult> {
+    // There are no FIFOs to block a read on Windows, so nothing for a sweep to do there.
+    if (process.platform === 'win32') return await run();
+    try {
+        return await runThenSweep(workDir, run);
+    } catch (e) {
+        if (!(e instanceof RequestDirSweepError)) throw e;
+        // The details name host paths, so they go to the log rather than to the user.
+        logger.warn(`Failing a run whose directory could not be swept: ${e.message}`);
+        return {
+            code: -1,
+            okToCache: false,
+            filenameTransform: x => x,
+            stdout: '',
+            stderr: 'The build left more files or deeper directories than Compiler Explorer can clean up.\n',
+            execTime: 0,
+            timedOut: false,
+            truncated: false,
+        };
+    }
+}
+
 export type DispatchFunction = (
     command: string,
     args: string[],
@@ -469,7 +501,9 @@ export async function sandbox(
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
-    return await dispatchEntry(unbuffered.command, unbuffered.args, options);
+    // Given no working directory, the jailing backends bind the program's own directory, so that is the one to sweep.
+    const workDir = options.appHome || options.customCwd || path.dirname(command);
+    return await sweptAfter(workDir, () => dispatchEntry(unbuffered.command, unbuffered.args, options));
 }
 
 const wineSandboxName = 'ce-wineserver';
@@ -668,10 +702,7 @@ const executeDispatchTable: Record<string, DispatchFunction> = {
     none: executeNone,
     firejail: executeFirejail,
     nsjail: (command: string, args: string[], options: ExecutionOptions) =>
-        needsWine(command)
-            ? // Same request directories as the nsjail runs, so the same sweep.
-              runThenSweep(options.appHome || options.customCwd, () => executeFirejail(command, args, options))
-            : executeNsjail(command, args, options),
+        needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
     cewrapper: executeCEWrapper,
 };
 
@@ -703,7 +734,8 @@ export async function execute(
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
-    return await dispatchEntry(unbuffered.command, unbuffered.args, options);
+    const workDir = options.appHome || options.customCwd;
+    return await sweptAfter(workDir, () => dispatchEntry(unbuffered.command, unbuffered.args, options));
 }
 
 export function maybeRemapJailedDir(customCwd: string): string {

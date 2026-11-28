@@ -78,6 +78,9 @@ describe('requestDirFor', () => {
         expect(requestDirFor('/tmp/ce-abc', '/tmp')).toEqual(expected);
         expect(requestDirFor('/tmp/ce-abc/build/sub', '/tmp')).toEqual(expected);
     });
+    it('accepts a request directory whose name starts with dots', () => {
+        expect(requestDirFor('/tmp/..cache1/x', '/tmp')).toEqual(path.resolve('/tmp/..cache1'));
+    });
     it('declines anything that is not inside a request directory', () => {
         expect(requestDirFor('/tmp', '/tmp')).toBeUndefined();
         expect(requestDirFor('/opt/compiler-explorer/gcc', '/tmp')).toBeUndefined();
@@ -331,8 +334,9 @@ describeOnPosix('runThenSweep', () => {
                 limits,
             );
             moveMayProceed.resolve();
-            await expect(first).rejects.toThrow(RequestDirSweepError);
-            await expect(second).rejects.toThrow(RequestDirSweepError);
+            const [firstOutcome, secondOutcome] = await Promise.allSettled([first, second]);
+            expect((firstOutcome as PromiseRejectedResult).reason).toBeInstanceOf(RequestDirSweepError);
+            expect((secondOutcome as PromiseRejectedResult).reason).toBeInstanceOf(RequestDirSweepError);
             expect(secondStarted).toBe(false);
         } finally {
             spy.mockRestore();
@@ -414,6 +418,23 @@ describeOnPosix('nsjail runs sweep their directory', () => {
         const output = path.join(dir, 'output.s');
         expect(await utils.fileExists(output)).toBe(false);
         await expect(fs.readFile(output)).rejects.toThrow(/ENOENT/);
+    });
+
+    it('turns a directory it cannot sweep into a failed run, and moves the directory aside', async () => {
+        // Nested past the walk's depth limit of 64.
+        const deep = "mkdir -p $(printf 'd/%.0s' $(seq 70)) && mkfifo output.s";
+        const result = await exec.execute('/bin/sh', ['-c', deep], {customCwd: dir, timeoutMs: 5000});
+        expect(result.code).toEqual(-1);
+        expect(result.okToCache).toBe(false);
+        expect(result.stderr).toMatch(/more files or deeper directories than Compiler Explorer can clean up/);
+        expect(result.stderr).not.toContain(dir);
+        expect(await exists(path.join(dir, 'output.s'))).toBe(false);
+
+        // A later run aimed at the same directory is refused, not started where the directory used to be.
+        await fs.mkdir(dir);
+        const later = await exec.execute('/bin/sh', ['-c', 'touch ran'], {customCwd: dir, timeoutMs: 5000});
+        expect(later.code).toEqual(-1);
+        expect(await exists(path.join(dir, 'ran'))).toBe(false);
     });
 
     it('removes a FIFO made by a run still going when another in the same directory exits', async () => {

@@ -198,6 +198,7 @@ export async function cleanup() {
             ++numRemoved;
             ++stats.numRemoved;
         } catch (e) {
+            // Left in `created`: whatever is left of it is still ours, and still to be swept if anything runs there.
             logger.error(`Failed to remove ${dir}: ${e}`);
         }
     }

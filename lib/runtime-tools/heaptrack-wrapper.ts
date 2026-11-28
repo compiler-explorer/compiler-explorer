@@ -40,6 +40,7 @@ import {executeDirect} from '../exec.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {exemptFromSweep} from '../request-dir-sweep.js';
+import * as utils from '../utils.js';
 import {BaseRuntimeTool} from './base-runtime-tool.js';
 
 const O_NONBLOCK = fsConstants.O_NONBLOCK;
@@ -273,6 +274,9 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         }
 
         await this.finishPipesAndStreams(fd, file, socket, pipelineDone);
+
+        // A directory the run left unsweepable has been moved away, trace and all; the run's result already says so.
+        if (!(await utils.dirExists(this.dirPath))) return result;
 
         await fs.unlink(this.pipe);
 

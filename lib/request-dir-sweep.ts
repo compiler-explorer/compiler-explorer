@@ -158,7 +158,9 @@ export async function sweepNonRegularEntries(root: string, limits: SweepLimits =
  */
 export function requestDirFor(boundDir: string, tempRoot: string = temp.getTempRoot()): string | undefined {
     const relative = path.relative(path.resolve(tempRoot), path.resolve(boundDir));
-    if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) return undefined;
+    if (relative === '' || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+        return undefined;
+    }
     return path.join(path.resolve(tempRoot), relative.split(path.sep)[0]);
 }
 
@@ -174,6 +176,19 @@ type Gate = {
 };
 
 const gates = new Map<string, Gate>();
+
+/**
+ * Request directories whose sweep failed and which have been moved aside, so that a later run aimed at one is refused
+ * rather than started somewhere that no longer exists. Only the most recent are kept: a run aimed at an older one finds
+ * its working directory missing and fails anyway, just less clearly.
+ */
+const failedDirs = new Set<string>();
+const maxFailedDirs = 1000;
+
+function recordFailed(dir: string) {
+    failedDirs.add(dir);
+    if (failedDirs.size > maxFailedDirs) failedDirs.delete(failedDirs.values().next().value!);
+}
 
 /** For tests. */
 export function numActiveGates() {
@@ -210,6 +225,7 @@ async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
         // Still marked as sweeping while the directory is moved, so a run arriving now waits, and then finds the gate
         // failed rather than starting in a directory that has gone.
         gate.failed = error;
+        recordFailed(dir);
         await moveAside(dir);
         logger.warn(`Sweep of ${dir} failed: ${error.message}`);
         gate.sweeping = undefined;
@@ -247,6 +263,7 @@ export async function runThenSweep<T>(
     // Only directories made for requests: anything else under the temp root (a toolchain unpacked there, say) is not
     // ours to sweep.
     if (!dir || !temp.isTracked(dir)) return await run();
+    if (failedDirs.has(dir)) throw new RequestDirSweepError(`${dir} was moved aside after an earlier sweep failed`);
 
     let gate = gates.get(dir);
     if (!gate) {
