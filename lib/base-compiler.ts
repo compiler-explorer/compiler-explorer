@@ -1557,7 +1557,7 @@ export class BaseCompiler {
         languageId: string;
     }> {
         const irPath = this.getIrOutputFilename(output.inputFilename!, filters, irOptions);
-        if (await utils.isRegularFile(irPath)) {
+        if (await utils.fileExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
             return await this.llvmIr.process(output, irOptions);
         }
@@ -1595,7 +1595,7 @@ export class BaseCompiler {
             return [{text: 'Failed to run compiler to get ClangIR code'}];
         }
 
-        if (await utils.isRegularFile(outputFilename)) {
+        if (await utils.fileExists(outputFilename)) {
             const content = await fs.readFile(outputFilename, 'utf8');
             return content.split('\n').map(line => ({
                 text: line,
@@ -1767,7 +1767,7 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: `Failed to run compiler to get Rust ${outputFriendlyName}`}];
         }
-        if (await utils.isRegularFile(outputFilename)) {
+        if (await utils.fileExists(outputFilename)) {
             const content = await fs.readFile(outputFilename, 'utf8');
             return content.split('\n').map(line => ({
                 text: line,
@@ -1791,7 +1791,7 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Rust MIR'}];
         }
-        if (await utils.isRegularFile(mirPath)) {
+        if (await utils.fileExists(mirPath)) {
             const content = await fs.readFile(mirPath, 'utf8');
             return content.split('\n').map(line => ({
                 text: line,
@@ -1808,7 +1808,7 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
         }
-        if (await utils.isRegularFile(outpath)) {
+        if (await utils.fileExists(outpath)) {
             const content = await fs.readFile(outpath, 'utf8');
             // output file starts with
             //
@@ -1834,7 +1834,7 @@ export class BaseCompiler {
             return [{text: 'Failed to run compiler to get Lean C output'}];
         }
         const outpath = this.getLeanCOutputFilename(outputFilename);
-        if (await utils.isRegularFile(outpath)) {
+        if (await utils.fileExists(outpath)) {
             let content = await fs.readFile(outpath, 'utf8');
             if (options?.['clang-format']) {
                 content = await this.applyClangFormat(content);
@@ -1854,7 +1854,7 @@ export class BaseCompiler {
         }
 
         const outputFilename = this.getYulOutputFilename(defaultOutputFilename);
-        if (await utils.isRegularFile(outputFilename)) {
+        if (await utils.fileExists(outputFilename)) {
             const content = await fs.readFile(outputFilename, 'utf8');
             const result: ResultLine[] = content.split('\n').map(line => ({text: line}));
             const filters: RegExp[] = [];
@@ -2097,8 +2097,8 @@ export class BaseCompiler {
         produceOptRemarks = false,
     ) {
         try {
-            const stat = await fs.lstat(outputFilename);
-            if (stat.isFile()) asmResult.asmSize = stat.size;
+            const stat = await fs.stat(outputFilename);
+            asmResult.asmSize = stat.size;
         } catch {
             // Ignore errors
         }
@@ -2841,13 +2841,13 @@ export class BaseCompiler {
         this;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             const optPath = this.getOptFilePath(dirPath, this.outputFilebase);
-            if (await utils.isRegularFile(optPath)) {
+            if (await utils.fileExists(optPath)) {
                 asmResult.optPath = optPath;
             }
         }
         if (this.compiler.supportsStackUsageOutput && backendOptions.produceStackUsageInfo) {
             const suPath = path.join(dirPath, `${this.outputFilebase}.su`);
-            if (await utils.isRegularFile(suPath)) {
+            if (await utils.fileExists(suPath)) {
                 asmResult.stackUsagePath = suPath;
             }
         }
@@ -4047,7 +4047,6 @@ but nothing was dumped. Possible causes are:
                 const pass = this.passObjectFromDumpFilename(filename);
                 if (!pass) continue;
                 if (!selectedCategories.has(categoryByLetter[pass.filename_suffix[0]])) continue;
-                if (!(await utils.isRegularFile(path.join(rootDir, filename)))) continue;
                 candidates.push({filename, pass});
             }
             // Order the drop-down by GCC's global pass-execution counter (stable secondary by name).
@@ -4163,7 +4162,7 @@ but nothing was dumped. Possible causes are:
         if (opts.pass && passFound) {
             output.currentPassOutput = '';
 
-            if (dumpFileName && (await utils.isRegularFile(dumpFileName))) {
+            if (dumpFileName) {
                 const contents = await utils.tryReadTextFile(dumpFileName);
                 if (contents) output.currentPassOutput = contents;
             }
@@ -4241,10 +4240,6 @@ but nothing was dumped. Possible causes are:
                       }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      }
-                      if (!(await utils.isRegularFile(outputFilename))) {
-                          result.asm = '<No output file>';
-                          return result;
                       }
                       const contents = await fs.readFile(outputFilename);
                       result.asm = contents.toString();

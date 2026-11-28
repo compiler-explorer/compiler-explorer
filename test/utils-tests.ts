@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -866,35 +865,6 @@ describe('fileExists', () => {
     });
     it('Returns false for directories that exist', async () => {
         await expect(utils.fileExists(path.resolve(path.dirname(thisFilename)))).resolves.toBe(false);
-    });
-});
-
-describe('isRegularFile', () => {
-    it('returns true for a regular file', async () => {
-        const file = path.join(newTempDir(), 'out.s');
-        await fs.writeFile(file, 'mov eax, 1');
-        await expect(utils.isRegularFile(file)).resolves.toBe(true);
-    });
-    it('returns false for a missing file', async () => {
-        await expect(utils.isRegularFile(path.join(newTempDir(), 'missing.s'))).resolves.toBe(false);
-    });
-    it('returns false for a directory', async () => {
-        const dir = path.join(newTempDir(), 'out.s');
-        await fs.mkdir(dir);
-        await expect(utils.isRegularFile(dir)).resolves.toBe(false);
-    });
-    it.skipIf(process.platform === 'win32')('returns false for a FIFO', async () => {
-        const fifo = path.join(newTempDir(), 'out.s');
-        execFileSync('mkfifo', [fifo]);
-        await expect(utils.isRegularFile(fifo)).resolves.toBe(false);
-    });
-    it.skipIf(process.platform === 'win32')('does not follow a symlink to a regular file', async () => {
-        const dir = newTempDir();
-        const target = path.join(dir, 'target.s');
-        await fs.writeFile(target, 'mov eax, 1');
-        const link = path.join(dir, 'out.s');
-        await fs.symlink(target, link);
-        await expect(utils.isRegularFile(link)).resolves.toBe(false);
     });
 });
 

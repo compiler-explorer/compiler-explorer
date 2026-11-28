@@ -39,6 +39,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {executeDirect} from '../exec.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {exemptFromSweep} from '../request-dir-sweep.js';
 import {BaseRuntimeTool} from './base-runtime-tool.js';
 
 const O_NONBLOCK = fsConstants.O_NONBLOCK;
@@ -228,6 +229,22 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         interpretOptions.maxOutput = this.maxRawOutput;
         this.addToEnv(runOptions);
 
+        // The pipe is in the directory the run is jailed in, so it has to be kept from the sweep that follows the run.
+        const releasePipe = exemptFromSweep(this.pipe);
+        try {
+            return await this.recordAndReport(filepath, args, execOptions, runOptions, interpretOptions);
+        } finally {
+            releasePipe();
+        }
+    }
+
+    private async recordAndReport(
+        filepath: string,
+        args: string[],
+        execOptions: ExecutionOptions,
+        runOptions: ExecutionOptions,
+        interpretOptions: ExecutionOptions,
+    ): Promise<UnprocessedExecResult> {
         await this.makePipe();
 
         const fd = oldfs.openSync(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);

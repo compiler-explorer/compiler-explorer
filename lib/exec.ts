@@ -40,12 +40,15 @@ import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
 import {propsFor} from './properties.js';
+import {runThenSweep} from './request-dir-sweep.js';
 import * as utils from './utils.js';
 
 type NsJailOptions = {
     args: string[];
     options: ExecutionOptions;
     filenameTransform: FilenameTransformFunc | undefined;
+    /** The host directory bound into the jail as its home, if any. */
+    boundDir?: string;
 };
 
 const execProps = propsFor('execution');
@@ -262,7 +265,9 @@ export function getNsJailOptions(
     }
 
     let filenameTransform: FilenameTransformFunc | undefined;
+    let boundDir: string | undefined;
     if (options.customCwd) {
+        boundDir = options.appHome || options.customCwd;
         let replacement = options.customCwd;
         if (options.appHome) {
             replacement = options.appHome;
@@ -296,6 +301,7 @@ export function getNsJailOptions(
         args: jailingOptions.concat(['--', '/usr/local/bin/dumb-init', command]).concat(args),
         options,
         filenameTransform,
+        boundDir,
     };
 }
 
@@ -367,11 +373,8 @@ async function sandboxNsjail(
 ): Promise<UnprocessedExecResult> {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
-    const result = await executeDirect(
-        execProps<string>('nsjail'),
-        nsOpts.args,
-        nsOpts.options,
-        nsOpts.filenameTransform,
+    const result = await runThenSweep(nsOpts.boundDir, () =>
+        executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform),
     );
     if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
@@ -383,11 +386,8 @@ async function executeNsjail(
     options: ExecutionOptions,
 ): Promise<UnprocessedExecResult> {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    const result = await executeDirect(
-        execProps<string>('nsjail'),
-        nsOpts.args,
-        nsOpts.options,
-        nsOpts.filenameTransform,
+    const result = await runThenSweep(nsOpts.boundDir, () =>
+        executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform),
     );
     if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
