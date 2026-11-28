@@ -27,7 +27,7 @@ import {Buffer} from 'buffer';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
-import {ShiftCommand} from 'monaco-editor/esm/vs/editor/common/commands/shiftCommand';
+import {ShiftCommand} from 'monaco-editor/editor/common/commands/shiftCommand';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';

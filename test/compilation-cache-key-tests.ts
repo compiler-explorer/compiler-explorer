@@ -351,6 +351,42 @@ describe('Compilation cache key', () => {
             });
         });
 
+        it('with a Release library: buildType is in the key, so Debug and Release results never share it', async () => {
+            const {key} = await recordCacheKeys(
+                compilerPaneBody({libraries: [{id: 'benchmark', version: '190', buildType: 'Release'}]}),
+            );
+            expectKey(key, {
+                compiler: KEY_COMPILER,
+                source: SOURCE,
+                options: ['-O2'],
+                backendOptions: UI_COMPILER_OPTIONS,
+                filters: UI_FILTERS,
+                tools: [],
+                libraries: [{id: 'benchmark', version: '190', buildType: 'Release'}],
+                files: [],
+            });
+            const {key: debugKey} = await recordCacheKeys(
+                compilerPaneBody({libraries: [{id: 'benchmark', version: '190'}]}),
+            );
+            expect(JSON.stringify(debugKey)).not.toEqual(JSON.stringify(key));
+        });
+
+        it('with a Release library and execution: the run key differs from Debug too', async () => {
+            const runKeyFor = async (library: Record<string, string>) => {
+                const body = compilerPaneBody({filters: {execute: true}, libraries: [library]});
+                body.options.executeParameters = {args: [] as any, stdin: ''};
+                const {gets} = await recordCacheKeys(body);
+                expect(gets).toHaveLength(2);
+                return gets[1];
+            };
+            const release = await runKeyFor({id: 'benchmark', version: '190', buildType: 'Release'});
+            const debug = await runKeyFor({id: 'benchmark', version: '190'});
+            expect(release).not.toEqual(debug);
+            expect(JSON.parse(release as string).key.libraries).toEqual([
+                {id: 'benchmark', version: '190', buildType: 'Release'},
+            ]);
+        });
+
         it('with a tool added, as it is looked up (see "with tools" for how it is stored)', async () => {
             const {key} = await recordCacheKeys(
                 compilerPaneBody({tools: [{id: 'clangtidytrunk', args: [], stdin: ''}]}),
