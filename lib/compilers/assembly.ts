@@ -174,18 +174,9 @@ export class AssemblyCompiler extends BaseCompiler {
     }
 
     override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
-        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
-        // Awaited below, after writeAllFiles; if that throws first, this rejection must not go unhandled.
-        buildEnvironment.catch(() => {});
-
-        let writeSummary;
-        try {
-            writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
-        } catch (error) {
-            // Don't hand dirPath back while library downloads may still be writing into it.
-            await buildEnvironment.catch(() => {});
-            throw error;
-        }
+        // Files first, then libraries (the base class's order): setup may fail and must not race the user's files.
+        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, true);
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath);
@@ -207,8 +198,6 @@ export class AssemblyCompiler extends BaseCompiler {
                 overrides,
             ),
         );
-
-        const downloads = await buildEnvironment;
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries, dirPath);

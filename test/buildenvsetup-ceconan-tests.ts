@@ -310,6 +310,22 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         }
     }, 10_000);
 
+    it('stops a download part way through when the compilation is aborted', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        const abort = new AbortController();
+        // As download() does it: no reason given.
+        setTimeout(() => abort.abort(), 300);
+        const start = Date.now();
+        await expect(
+            setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/trickle.tgz`, {
+                downloadedBytes: 0,
+                signal: abort.signal,
+            }),
+        ).rejects.toMatchObject({name: 'AbortError'});
+        // trickle.tgz takes about 1.4s to arrive in full.
+        expect(Date.now() - start).toBeLessThan(1000);
+    }, 10_000);
+
     it('gives up on a download that stalls', async () => {
         const downloadPath = await temp.mkdir('ce-conan-test');
         const {fetchTimeoutMs} = setup as any;

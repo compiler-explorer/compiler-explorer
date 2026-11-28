@@ -257,7 +257,8 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     ): Promise<BuildEnvDownloadInfo> {
         const signals = [idleSignal, AbortSignal.timeout(this.downloadTimeoutMs)];
         if (context.signal) signals.push(context.signal);
-        const response = await fetch(packageUrl, this.requestInit(AbortSignal.any(signals)));
+        const signal = AbortSignal.any(signals);
+        const response = await fetch(packageUrl, this.requestInit(signal));
         if (!response.ok || !response.body) {
             response.body?.cancel().catch(() => {});
             logger.error(`Error requesting package from conan: ${response.status} for ${packageUrl}`);
@@ -291,12 +292,16 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 countDownloaded,
                 gunzip,
                 extract,
+                // Also stops decompression and extraction of data already received.
+                {signal},
             );
         } catch (error) {
+            // pipeline reports an abort as a generic AbortError; the signal's reason says which limit it was.
+            const reported = (error as Error)?.name === 'AbortError' && signal.aborted ? signal.reason : error;
             if (!context.signal?.aborted) {
-                logger.error(`Error downloading/extracting package from conan (${packageUrl}):`, error);
+                logger.error(`Error downloading/extracting package from conan (${packageUrl}):`, reported);
             }
-            throw error;
+            throw reported;
         }
 
         const endTime = process.hrtime.bigint();
