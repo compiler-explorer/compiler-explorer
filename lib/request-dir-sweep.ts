@@ -225,8 +225,10 @@ async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
         // Still marked as sweeping while the directory is moved, so a run arriving now waits, and then finds the gate
         // failed rather than starting in a directory that has gone.
         gate.failed = error;
-        recordFailed(dir);
         await moveAside(dir);
+        // Only now: a run refused by this check goes straight back to its caller, which may read, so the directory
+        // must already be gone. Runs arriving during the move found this gate and waited on it instead.
+        recordFailed(dir);
         logger.warn(`Sweep of ${dir} failed: ${error.message}`);
         gate.sweeping = undefined;
         gates.delete(dir);
