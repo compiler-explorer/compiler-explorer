@@ -297,7 +297,10 @@ describe('Compiler tests', () => {
                 produceCfg: false,
                 produceIr: {filterDebugInfo: true, demangle: true},
                 executorRequest: false,
-                overrides: [{name: 'stdver', value: 'c++20'}],
+                overrides: [
+                    {name: 'stdver', value: 'c++20'},
+                    {name: 'env', values: [{name: 'FOO', value: '1'}]},
+                ],
                 cmakeArgs: '-DFOO=1',
             };
             const res = await makeFakeJson('I am a program', {compilerOptions}).expect(200);
@@ -320,6 +323,9 @@ describe('Compiler tests', () => {
                 {produceCfg: true},
                 {overrides: 'stdver'},
                 {cmakeArgs: ['-DFOO=1']},
+                {overrides: [{name: 'env', values: [{name: 5, value: 'x'}]}]},
+                {overrides: [{name: 'env', values: 'FOO=1'}]},
+                {overrides: [{name: 'stdver', value: 20}]},
             ];
             for (const compilerOptions of bad) {
                 const res = await makeFakeJson('I am a program', {compilerOptions})

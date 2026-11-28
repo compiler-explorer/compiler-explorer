@@ -139,6 +139,19 @@ export type ParsedRequest = {
 // Nested option objects are passed through as given: the compilers that read them pick out the fields they know about.
 const optionObject = z.record(z.string(), z.unknown());
 
+// Compilers read `values` of an env override field by field, so check those fields; a general override must not claim
+// to be one.
+const overrideSchema = z.union([
+    z.object({
+        name: z.literal('env'),
+        values: z.array(z.object({name: z.string(), value: z.string()})).nullish(),
+    }),
+    z.object({
+        name: z.string().refine(name => name !== 'env'),
+        value: z.string().nullish(),
+    }),
+]);
+
 type CompilerOptionsShape = {[K in keyof CompilationRequestOptions['compilerOptions']]-?: z.ZodType};
 
 /**
@@ -175,7 +188,7 @@ const compilerOptionsSchema = z.object({
     cmakeArgs: z.string().nullish(),
     buildSystemArgs: z.string().nullish(),
     customOutputFilename: z.string().nullish(),
-    overrides: z.array(optionObject).nullish(),
+    overrides: z.array(overrideSchema).nullish(),
     darkBackgroundColours: z.boolean().nullish(),
 } satisfies CompilerOptionsShape);
 
