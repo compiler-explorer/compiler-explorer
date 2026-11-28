@@ -70,6 +70,13 @@ describe('normaliseLibraryVersion', () => {
 });
 
 describe('normaliseRequestLibraries', () => {
+    it('keeps a requested build type', () => {
+        const result = normaliseRequestLibraries(libraries, 'c++', [
+            {id: 'fmt', version: '11.0.0', buildType: 'Release'},
+        ]);
+        expect(result).toEqual({ok: true, libraries: [{id: 'fmt', version: '1100', buildType: 'Release'}]});
+    });
+
     it('normalises a mix of id-form and human-form requests in one call', () => {
         const result = normaliseRequestLibraries(libraries, 'c++', [
             {id: 'boost', version: '188'},

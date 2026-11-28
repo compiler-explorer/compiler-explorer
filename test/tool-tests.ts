@@ -43,6 +43,7 @@ import {ClangQueryTool} from '../lib/tooling/clang-query-tool.js';
 import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
 import {PvsStudioTool} from '../lib/tooling/pvs-studio-tool.js';
+import {SonarTool} from '../lib/tooling/sonar-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
 
@@ -514,5 +515,87 @@ describe('Tools leave the arguments they are given alone', () => {
             expect(args).toEqual(['--user']);
             expect((runTool.mock.calls[0][2] as string[]).some(arg => arg.startsWith('-style=file:'))).toBe(true);
         });
+    });
+});
+
+describe('SonarTool keeps overlapping requests apart', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function sonarOutput(reproducer: string) {
+        return JSON.stringify({
+            issues: [{text: 'An issue', ruleKey: 'S100', line: 1, column: 1, fixes: [], parts: []}],
+            reproducer: {content: reproducer},
+        });
+    }
+
+    it('returns each request its own reproducer and language', async () => {
+        const tool = new SonarTool(
+            {id: 'sonar', exe: '/bin/sonar', options: []} as unknown as ToolInfo,
+            {ceProps: () => undefined, compilerProps: () => undefined} as unknown as ToolEnv,
+        );
+        // Both runs are in flight together and finish in the same tick, so each one's output is parsed before
+        // either has assembled its result.
+        const finishers: ((value: any) => void)[] = [];
+        vi.spyOn(tool, 'exec').mockImplementation(
+            () =>
+                new Promise(resolve => {
+                    finishers.push(resolve);
+                }) as any,
+        );
+        const execResult = (reproducer: string) => ({
+            code: 0,
+            stdout: sonarOutput(reproducer),
+            stderr: '',
+            filenameTransform: (f: string) => f,
+        });
+
+        const first = tool.runTool(
+            {
+                compiler: {lang: 'c', exe: '/bin/cc', options: ''},
+                options: [],
+                libraries: [],
+            } as unknown as CompilationInfo,
+            '/tmp/first/example.c',
+        );
+        const secondRun = tool.runTool(
+            {
+                compiler: {lang: 'c++', exe: '/bin/c++', options: ''},
+                options: [],
+                libraries: [],
+            } as unknown as CompilationInfo,
+            '/tmp/second/example.cpp',
+        );
+        await vi.waitFor(() => expect(finishers).toHaveLength(2));
+        finishers[0](execResult('first'));
+        finishers[1](execResult('second'));
+        const [firstResult, second] = await Promise.all([first, secondRun]);
+
+        expect(firstResult.artifact?.content).toEqual('first');
+        expect(second.artifact?.content).toEqual('second');
+        expect(firstResult.stdout.some(l => l.text.includes('(c:S100)'))).toBe(true);
+        expect(second.stdout.some(l => l.text.includes('(cpp:S100)'))).toBe(true);
+    });
+
+    it('does not carry a reproducer over to a later request', async () => {
+        const tool = new SonarTool(
+            {id: 'sonar', exe: '/bin/sonar', options: []} as unknown as ToolInfo,
+            {ceProps: () => undefined, compilerProps: () => undefined} as unknown as ToolEnv,
+        );
+        const info = {compiler: {lang: 'c++', exe: '/bin/c++', options: ''}, options: [], libraries: []};
+        vi.spyOn(tool, 'exec')
+            .mockResolvedValueOnce({
+                code: 0,
+                stdout: sonarOutput('first'),
+                stderr: '',
+                filenameTransform: (f: string) => f,
+            } as any)
+            .mockResolvedValueOnce({code: 0, stdout: '{}', stderr: '', filenameTransform: (f: string) => f} as any);
+
+        await tool.runTool(info as unknown as CompilationInfo, '/tmp/a/example.cpp');
+        const later = await tool.runTool(info as unknown as CompilationInfo, '/tmp/b/example.cpp');
+
+        expect(later.artifact).toBeUndefined();
     });
 });

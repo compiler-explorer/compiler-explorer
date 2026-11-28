@@ -24,19 +24,22 @@
 
 import express from 'express';
 import request from 'supertest';
-import {beforeAll, describe, it} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
+import {CompilationQueue} from '../../../lib/compilation-queue.js';
 import {FormattingService} from '../../../lib/formatting-service.js';
 import {FormattingController} from '../../../lib/handlers/api/formatting-controller.js';
 import {fakeProps} from '../../../lib/properties.js';
 
 describe('FormattingController', () => {
     let app;
+    let compilationQueue: CompilationQueue;
 
     beforeAll(async () => {
         app = express();
         const formattingService = new FormattingService();
-        const formattingController = new FormattingController(formattingService);
+        compilationQueue = new CompilationQueue(1, 10_000, 10_000);
+        const formattingController = new FormattingController(formattingService, compilationQueue);
         await formattingService.initialize(
             fakeProps({
                 formatters: 'formatt:badformatt',
@@ -44,6 +47,7 @@ describe('FormattingController', () => {
                 'formatter.formatt.type': 'clangformat',
                 'formatter.formatt.version': 'Release',
                 'formatter.formatt.name': 'FormatT',
+                'formatter.formatt.styles': 'Google',
             }),
         );
         app.use(express.json());
@@ -89,5 +93,21 @@ describe('FormattingController', () => {
             .set('Accept', 'application/json')
             .expect(400, {exit: 0, answer: ''})
             .expect('Content-Type', /json/);
+    });
+
+    it('formats through the compilation queue', async () => {
+        const enqueue = vi.spyOn(compilationQueue, 'enqueue');
+        try {
+            const res = await request(app)
+                .post('/api/format/formatt')
+                .send({base: 'Google', source: 'int main() {}'})
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.exit).toEqual(0);
+            expect(enqueue).toHaveBeenCalledTimes(1);
+        } finally {
+            enqueue.mockRestore();
+        }
     });
 });

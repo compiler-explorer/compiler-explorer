@@ -32,7 +32,10 @@ import tar from 'tar-stream';
 import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BuildEnvSetupCeConanDirect} from '../lib/buildenvsetup/ceconan.js';
+import {BuildEnvSetupCeConanCircleDirect} from '../lib/buildenvsetup/ceconan-circle.js';
+import {BuildEnvSetupCeConanFortranDirect} from '../lib/buildenvsetup/ceconan-fortran.js';
 import * as temp from '../lib/temp.js';
+import type {LibraryBuildType} from '../types/libraries/libraries.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -346,5 +349,85 @@ describe('BuildEnvSetupCeConanDirect library limits', () => {
         await expect(setup.getAllPossibleBuilds('somelib', '1.0')).rejects.toThrow(/timeout/i);
         await expect(setup.getPackageUrl('somelib', '1.0', 'abc')).rejects.toThrow(/timeout/i);
         expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
+    const ce = makeCompilationEnvironment({languages});
+    const compilerInfo = makeFakeCompilerInfo({
+        id: 'g132',
+        lang: 'c++',
+        exe: '/dev/null',
+        options: '',
+        buildenvsetup: {
+            id: 'ceconan',
+            props: (name: string, def?: any) => def,
+        },
+    });
+    const setup = new BuildEnvSetupCeConanDirect(compilerInfo, ce);
+    const key = {options: [] as string[]} as any;
+
+    async function settingsFor(buildType: LibraryBuildType) {
+        return {settings: await setup.getConanBuildProperties(key, buildType)};
+    }
+
+    it('uses the Debug package by default even when a Release one exists', async () => {
+        const possibleBuilds = {debughash: await settingsFor('Debug'), releasehash: await settingsFor('Release')};
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Debug')).toEqual({
+            hash: 'debughash',
+            buildType: 'Debug',
+        });
+    });
+
+    it('uses the Release package when the request asks for it', async () => {
+        const possibleBuilds = {debughash: await settingsFor('Debug'), releasehash: await settingsFor('Release')};
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Release')).toEqual({
+            hash: 'releasehash',
+            buildType: 'Release',
+        });
+    });
+
+    it('falls back to Debug when Release is asked for but not built', async () => {
+        const possibleBuilds = {debughash: await settingsFor('Debug')};
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Release')).toEqual({
+            hash: 'debughash',
+            buildType: 'Debug',
+        });
+    });
+
+    it('returns undefined when nothing matches', async () => {
+        const other = await settingsFor('Debug');
+        const possibleBuilds = {otherhash: {settings: {...other.settings, 'compiler.version': 'clang1600'}}};
+        expect(await setup.findBuildHash(key, possibleBuilds, 'Debug')).toBeUndefined();
+    });
+});
+
+describe('Conan subclasses honour the requested build type', () => {
+    const ce = makeCompilationEnvironment({languages});
+    const key = {options: [] as string[]} as any;
+
+    it('circle', async () => {
+        const linked: Record<string, string> = {linkedCompilerId: 'g132', linkedCompilerType: 'gcc'};
+        const compilerInfo = makeFakeCompilerInfo({
+            lang: 'c++',
+            exe: '/dev/null',
+            options: '',
+            buildenvsetup: {id: 'ceconan-circle', props: (name: string, def?: any) => linked[name] ?? def},
+        });
+        const setup = new BuildEnvSetupCeConanCircleDirect(compilerInfo, ce);
+        const props = await setup.getConanBuildProperties(key, 'Release');
+        expect(props.build_type).toEqual('Release');
+        expect(props['compiler.version']).toEqual('g132');
+    });
+
+    it('fortran', async () => {
+        const compilerInfo = makeFakeCompilerInfo({
+            lang: 'c++',
+            exe: '/dev/null',
+            options: '',
+            buildenvsetup: {id: 'ceconan-fortran', props: (name: string, def?: any) => def},
+        });
+        const setup = new BuildEnvSetupCeConanFortranDirect(compilerInfo, ce);
+        expect((await setup.getConanBuildProperties(key, 'Release')).build_type).toEqual('Release');
     });
 });

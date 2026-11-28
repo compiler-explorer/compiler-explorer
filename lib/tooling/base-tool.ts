@@ -215,14 +215,19 @@ export class BaseTool implements ITool {
 
         try {
             const result = await this.exec(toolExe, args, execOptions);
-            return this.convertResult(result, inputFilepath, exeDir);
+            return this.convertResult(result, inputFilepath, exeDir, compilationInfo);
         } catch (e) {
             logger.error('Error while running tool: ', e);
             return this.createErrorResponse('Error while running tool');
         }
     }
 
-    convertResult(result: UnprocessedExecResult, inputFilepath?: string, exeDir?: string): ToolResult {
+    convertResult(
+        result: UnprocessedExecResult,
+        inputFilepath?: string,
+        exeDir?: string,
+        compilationInfo?: CompilationInfo,
+    ): ToolResult {
         const transformedFilepath = inputFilepath ? result.filenameTransform(inputFilepath) : undefined;
         return {
             id: this.tool.id,
