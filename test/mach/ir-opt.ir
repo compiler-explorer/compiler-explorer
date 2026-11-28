@@ -5,7 +5,7 @@ language { name: "mach", code: 32845 };
 debug {
     directory = "/app";
     file f0 = "src/example.mach";
-    file f1 = "/opt/compiler-explorer/mach-7.2.0/std/src/math.mach";
+    file f1 = "/opt/compiler-explorer/mach-7.3.0/std/src/math.mach";
     file f2 = "src/helper.mach";
     loc l0 = f0:4:5;
     loc l1 = f0:4:5;

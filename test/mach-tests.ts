@@ -48,7 +48,7 @@ const languages = {
     mach: {id: 'mach' as LanguageKey, extensions: ['.mach']},
 };
 
-// `mach info targets` as mach 7.2.0 prints it.
+// `mach info targets` as mach 7.3.0 prints it.
 const infoTargets = [
     'target                 env                                            abi                            code_model      linkage                                            note',
     'linux-x86_64           *none,gnu                                      *sysv64                        *small          *static gnu:*pie,dynamic,static',
@@ -98,10 +98,9 @@ const helpBuild = [
 ].join('\n');
 
 /**
- * Reproduces what mach 7.2.0 with mach-std 10.1.1 answers for each probe build. Objects build for every tuple except
+ * Reproduces what mach 7.3.0 with mach-std 10.3.0 answers for each probe build. Objects build for every tuple except
  * `windows-arm64ec`, where `std.runtime.windows` and `std.system.cpu.features` reject `arm64ec`, and any `needs --isa`
- * tuple invoked without `--isa`. A listing is refused on Wasm and SPIR-V, which have none, and fails on the
- * freestanding tuples with a Windows ABI.
+ * tuple invoked without `--isa`. A listing is refused on Wasm and SPIR-V, which have none.
  */
 function fakeProbe(args: string[]) {
     const tIdx = args.indexOf('-t');
@@ -113,7 +112,7 @@ function fakeProbe(args: string[]) {
         return {
             code: 1,
             stdout: '',
-            stderr: 'error[comptime.user_error] std.runtime.windows supports x86_64 and aarch64',
+            stderr: 'error[comptime.user_error] std.runtime.windows: unsupported architecture',
         };
     }
     if ((platform.startsWith('freestanding-') && !platform.endsWith('wasm32')) || platform === 'linux-riscv32') {
@@ -131,14 +130,6 @@ function fakeProbe(args: string[]) {
             code: 1,
             stdout: '',
             stderr: "error[cli.flag_inapplicable] '--emit asm' does not apply to this target",
-        };
-    }
-    const abi = args.includes('--abi') ? args[args.indexOf('--abi') + 1] : '';
-    if (emit === 'asm' && platform.startsWith('freestanding-') && ['win64', 'aapcs64win'].includes(abi)) {
-        return {
-            code: 1,
-            stdout: '',
-            stderr: 'error[compiler.internal] masc cannot list the object it made',
         };
     }
     if (platform === 'vulkan-spirv' && !args.includes('module')) {
@@ -173,7 +164,7 @@ function makeMach(stdPath: string) {
     return new MachCompiler(
         makeFakeCompilerInfo({
             id: 'mach',
-            exe: '/opt/compiler-explorer/mach-7.2.0/mach',
+            exe: '/opt/compiler-explorer/mach-7.3.0/mach',
             lang: 'mach',
             libsArr: [],
             objdumper: '/usr/bin/objdump',
@@ -243,21 +234,15 @@ describe('Mach targets and entry build', () => {
                 .targets()
                 .filter(t => !t.listing)
                 .map(t => t.name),
-        ).toEqual([
-            'freestanding-x86_64-win64',
-            'freestanding-aarch64-aapcs64win',
-            'freestanding-wasm32',
-            'wasi-wasm32',
-            'vulkan-spirv',
-        ]);
+        ).toEqual(['freestanding-wasm32', 'wasi-wasm32', 'vulkan-spirv']);
     });
 
     it('probes every tuple mach info targets lists, for its listing first and then for its objects', async () => {
         expect((await compiler.supportedTuples()).length).toEqual(30);
         const emits = startupExecArgs.filter(args => args[0] === 'build').map(args => args[args.indexOf('--emit') + 1]);
         expect(emits.filter(emit => emit === 'asm')).toHaveLength(30);
-        // the five without a listing, and windows-arm64ec, which builds neither way
-        expect(emits.filter(emit => emit === 'obj')).toHaveLength(6);
+        // the three without a listing, and windows-arm64ec, which builds neither way
+        expect(emits.filter(emit => emit === 'obj')).toHaveLength(4);
         expect(startupExecArgs.filter(args => args[0] !== 'build')).toEqual([['info', 'targets']]);
     });
 
@@ -275,10 +260,10 @@ describe('Mach targets and entry build', () => {
     it('takes std from beside the executable by default, or from compiler.<id>.stdPath', () => {
         const env = makeCompilationEnvironment({languages});
         const installed = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach720', exe: '/opt/compiler-explorer/mach-7.2.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach730', exe: '/opt/compiler-explorer/mach-7.3.0/mach', lang: 'mach'}),
             env,
         );
-        expect(installed.stdPath).toEqual(path.join('/opt/compiler-explorer/mach-7.2.0', 'std'));
+        expect(installed.stdPath).toEqual(path.join('/opt/compiler-explorer/mach-7.3.0', 'std'));
 
         const devEnv = makeCompilationEnvironment({
             languages,
@@ -626,9 +611,7 @@ describe('Mach multi-file projects', () => {
     });
 });
 
-/**
- * Verbatim captures from `mach build --report json` (schema 3) at mach 7.2.0 with mach-std 10.1.1.
- */
+/** Captures of `mach build --report json` (schema 3). */
 describe('Mach diagnostics', () => {
     const root = '/tmp/compiler-explorer-compiler-mach';
     const inputFilename = `${root}/src/example.mach`;
@@ -636,7 +619,7 @@ describe('Mach diagnostics', () => {
 
     beforeAll(() => {
         compiler = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-7.2.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-7.3.0/mach', lang: 'mach'}),
             makeCompilationEnvironment({languages}),
         );
     });
@@ -906,7 +889,7 @@ describe('Mach asm from two modules', () => {
             MACH_MODULE_SEP +
             [
                 '\t.intel_syntax noprefix',
-                '\t.file 0 "/opt/compiler-explorer/mach-7.2.0/std/src/math.mach"',
+                '\t.file 0 "/opt/compiler-explorer/mach-7.3.0/std/src/math.mach"',
                 '\t.globl std.math.min',
                 '\t.type std.math.min, @function',
                 '\t.text',
@@ -962,8 +945,8 @@ describe('Mach binary asm', () => {
 });
 
 /**
- * `--emit ir-opt` MIRL module captured from mach 7.2.0 with mach-std 10.1.1, where `example.helper.bump` is inlined
- * into `example.example.main` via `at l60 in s0`.
+ * A captured `--emit ir-opt` MIRL module, where `example.helper.bump` is inlined into `example.example.main` via
+ * `at l60 in s0`.
  */
 describe('Mach MIRL output', () => {
     const mirl = readFileSync(path.join(__dirname, 'mach', 'ir-opt.ir'), 'utf8');
