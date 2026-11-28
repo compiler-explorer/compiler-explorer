@@ -59,7 +59,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
-        const libPaths = D8Compiler.getLibPathsFromOptions(options);
+        const libPaths = D8Compiler.getLibPathsFromOptions(options, inputFilename);
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 

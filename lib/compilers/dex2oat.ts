@@ -217,7 +217,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 [], // libraries
                 [], // overrides
             ),
-        ).concat(D8Compiler.getLibPathsFromOptions(options));
+        ).concat(D8Compiler.getLibPathsFromOptions(options, inputFilename));
 
         const compileResult = await d8Compiler.runCompiler(
             d8Compiler.getInfo().exe,
@@ -643,10 +643,20 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
     }
 
+    // As runCompiler reads its options: the value of --d8-flags belongs to D8, even if it is --full-output.
+    wantsFullOutput(options: string[]): boolean {
+        for (let i = 0; i < options.length; ++i) {
+            if (options[i] === '--d8-flags') ++i;
+            else if (options[i] === this.fullOutputFlag) return true;
+        }
+        return false;
+    }
+
     override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[] = []) {
         let asm = '';
         // Whether the full dex2oat output should be displayed instead of just the parsed and formatted methods.
-        const fullOutput = options.includes(this.fullOutputFlag);
+        // The flag usually arrives as an override, which only the compiler's own options carry.
+        const fullOutput = this.wantsFullOutput(options) || this.wantsFullOutput(result.compilationOptions ?? []);
         // Where D8 and dex2oat ran, to find classes.cfg and the smali files.
         const cwd: string = result.dirPath ?? '';
 

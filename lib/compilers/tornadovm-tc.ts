@@ -48,6 +48,10 @@ type Target = 'cuda' | 'opencl' | 'metal' | 'hip';
  * runs first, then `tc emit --all` over the class files; no GPU is involved.
  */
 export class TornadoVmTcCompiler extends JavaCompiler {
+    protected override librariesOnClasspath(): boolean {
+        return false;
+    }
+
     static override get key() {
         return 'tornadovm-tc';
     }

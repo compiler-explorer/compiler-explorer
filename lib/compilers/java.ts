@@ -448,6 +448,12 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         });
     }
 
+    // Whether runCompiler takes the library paths as its classpath. Subclasses that build their own classpath, or
+    // none, keep the base argument order instead.
+    protected librariesOnClasspath(): boolean {
+        return true;
+    }
+
     // The library paths become the classpath, ahead of the source file so runCompiler passes them on with the user's
     // options. Carrying them in the arguments keeps them with the request: the compiler object is shared.
     override orderArguments(
@@ -460,6 +466,18 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         userOptions: string[],
         staticLibLinks: string[],
     ) {
+        if (!this.librariesOnClasspath()) {
+            return super.orderArguments(
+                options,
+                inputFilename,
+                libIncludes,
+                libOptions,
+                libPaths,
+                libLinks,
+                userOptions,
+                staticLibLinks,
+            );
+        }
         return JavaCompiler.getClasspathArgument(libIncludes).concat(
             options,
             userOptions,

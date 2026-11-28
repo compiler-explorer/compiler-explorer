@@ -28,12 +28,17 @@ import path from 'node:path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
@@ -64,6 +69,10 @@ type GoEnv = {
     GOARCH?: string;
     GOOS?: string;
 };
+
+// Which libraries a request selected, written into its build directory when its build environment is set up.
+// The compiler object is shared between requests, so this cannot be kept on it.
+const SELECTED_LIBRARIES_FILE = '.ce-selected-libraries.json';
 
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
@@ -115,6 +124,29 @@ export class GolangCompiler extends BaseCompiler {
         if (await utils.dirExists(sourceCachePath)) return sourceCachePath;
 
         return undefined;
+    }
+
+    override async setupBuildEnvironment(
+        key: CacheKey,
+        dirPath: string,
+        binary: boolean,
+    ): Promise<BuildEnvDownloadInfo[]> {
+        const downloads = await super.setupBuildEnvironment(key, dirPath, binary);
+        // Always written, so anything of the same name among the user's own files never stands in for it.
+        const selected = (key.libraries ?? []).map(lib => lib.id);
+        const recordPath = path.join(dirPath, SELECTED_LIBRARIES_FILE);
+        await fs.rm(recordPath, {recursive: true, force: true});
+        await fs.writeFile(recordPath, JSON.stringify(selected));
+        return downloads;
+    }
+
+    protected async readSelectedLibraries(dirPath: string): Promise<string[]> {
+        try {
+            const selected = JSON.parse(await fs.readFile(path.join(dirPath, SELECTED_LIBRARIES_FILE), 'utf-8'));
+            return Array.isArray(selected) ? selected.filter(id => typeof id === 'string') : [];
+        } catch {
+            return [];
+        }
     }
 
     protected async findDownloadedLibraries(dirPath: string): Promise<string[]> {
@@ -268,10 +300,8 @@ export class GolangCompiler extends BaseCompiler {
             GOPATH: goPath,
         };
 
-        // This compiler object is shared by concurrent requests, so which libraries this request has comes from
-        // its own directory rather than from a field.
-        const libraries = await this.findDownloadedLibraries(dirPath);
-        const hasLibraries = libraries.length > 0;
+        const selected = await this.readSelectedLibraries(dirPath);
+        const hasLibraries = selected.length > 0;
 
         // Force offline compilation when libraries are selected
         if (hasLibraries) {
@@ -288,8 +318,11 @@ export class GolangCompiler extends BaseCompiler {
             }
         }
 
-        // Set up Go libraries if any were downloaded
-        if (hasLibraries) {
+        // Set up the selected Go libraries that were downloaded
+        const libraries = hasLibraries
+            ? (await this.findDownloadedLibraries(dirPath)).filter(id => selected.includes(id))
+            : [];
+        if (libraries.length > 0) {
             try {
                 await fs.mkdir(goPath, {recursive: true});
                 await this.setupGoLibraries(inputDir, tempCachePath, goPath, dirPath, libraries);

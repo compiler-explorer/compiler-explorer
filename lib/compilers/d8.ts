@@ -94,7 +94,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
-        const libPaths = D8Compiler.getLibPathsFromOptions(options);
+        const libPaths = D8Compiler.getLibPathsFromOptions(options, inputFilename);
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
@@ -289,9 +289,10 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         return libString ? ['-cp', libString] : [''];
     }
 
-    // orderArguments puts the library paths, and nothing else, after the source file.
-    static getLibPathsFromOptions(options: string[]): string[] {
-        const sourceFileOptionIndex = options.findIndex(option => option.endsWith('.java') || option.endsWith('.kt'));
+    // orderArguments puts the library paths, and nothing else, after the source file. Look for the source file
+    // itself: a user option before it may also end in .java or .kt.
+    static getLibPathsFromOptions(options: string[], inputFilename: string): string[] {
+        const sourceFileOptionIndex = options.lastIndexOf(inputFilename);
         return sourceFileOptionIndex < 0 ? [] : options.slice(sourceFileOptionIndex + 1);
     }
 

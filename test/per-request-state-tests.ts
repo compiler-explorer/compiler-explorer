@@ -28,10 +28,12 @@ import path from 'node:path';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {ClojureCompiler} from '../lib/compilers/clojure.js';
 import {D8Compiler} from '../lib/compilers/d8.js';
 import {Dex2OatCompiler} from '../lib/compilers/dex2oat.js';
 import {JavaCompiler} from '../lib/compilers/java.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
+import {ScalaCompiler} from '../lib/compilers/scala.js';
 import {SpiceCompiler} from '../lib/compilers/spice.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
@@ -65,6 +67,8 @@ const languages = {
     spice: {id: 'spice'},
     pascal: {id: 'pascal'},
     java: {id: 'java'},
+    scala: {id: 'scala'},
+    clojure: {id: 'clojure'},
     androidJava: {id: 'android-java'},
 };
 
@@ -151,25 +155,75 @@ describe('Per-request state on shared compiler objects', () => {
         expect(args.at(-1)).toEqual(firstInput);
     });
 
+    it('Scala, which uses the Java runCompiler, puts libraries on the classpath', () => {
+        const compiler = new ScalaCompiler(compilerInfo('scala'), env);
+        vi.spyOn(compiler, 'findLibVersion').mockImplementation(
+            lib =>
+                ({path: [`/opt/libs/${lib.id}.jar`], liblink: [], staticliblink: [], libpath: [], options: []}) as any,
+        );
+
+        const options = compiler.prepareArguments(
+            [],
+            {},
+            {},
+            isolate('a', 'example.scala'),
+            '',
+            [{id: 'x', version: '1'}],
+            [],
+        );
+
+        expect(options.slice(0, 2)).toEqual(['-cp', '/opt/libs/x.jar']);
+    });
+
+    it('Clojure, which builds its own command line, keeps the base argument order', () => {
+        const compiler = new ClojureCompiler(compilerInfo('clojure'), env);
+        vi.spyOn(compiler, 'findLibVersion').mockImplementation(
+            lib =>
+                ({path: [`/opt/libs/${lib.id}.jar`], liblink: [], staticliblink: [], libpath: [], options: []}) as any,
+        );
+
+        const options = compiler.prepareArguments(
+            [],
+            {},
+            {},
+            isolate('a', 'example.clj'),
+            '',
+            [{id: 'x', version: '1'}],
+            [],
+        );
+
+        expect(options).not.toContain('-cp');
+    });
+
     it('D8 reads its own library paths back from its arguments', () => {
         const compiler = new D8Compiler(compilerInfo('android-java'), env);
         vi.spyOn(compiler, 'findLibVersion').mockImplementation(
             lib =>
                 ({path: [`/opt/libs/${lib.id}.jar`], liblink: [], staticliblink: [], libpath: [], options: []}) as any,
         );
+        const firstInput = isolate('first', 'example.java');
+        const secondInput = isolate('second', 'example.java');
         const firstOptions = compiler.prepareArguments(
-            ['--release'],
+            ['--main-dex-rules', 'Keep.java'],
             {},
             {},
-            isolate('first', 'example.java'),
+            firstInput,
             '',
             [{id: 'guava', version: '1'}],
             [],
         );
-        const secondOptions = compiler.prepareArguments([], {}, {}, isolate('second', 'example.java'), '', [], []);
+        const secondOptions = compiler.prepareArguments(
+            ['--main-dex-rules', 'Keep.java'],
+            {},
+            {},
+            secondInput,
+            '',
+            [],
+            [],
+        );
 
-        expect(D8Compiler.getLibPathsFromOptions(firstOptions)).toEqual(['/opt/libs/guava.jar']);
-        expect(D8Compiler.getLibPathsFromOptions(secondOptions)).toEqual([]);
+        expect(D8Compiler.getLibPathsFromOptions(firstOptions, firstInput)).toEqual(['/opt/libs/guava.jar']);
+        expect(D8Compiler.getLibPathsFromOptions(secondOptions, secondInput)).toEqual([]);
         expect(D8Compiler.getClasspathArgument(['/a.jar', '/b.jar'])).toEqual(['-cp', '/a.jar:/b.jar']);
     });
 
@@ -185,5 +239,23 @@ describe('Per-request state on shared compiler objects', () => {
 
         expect(full.asm).toEqual([{text: oatdump, source: null}]);
         expect(parsed.asm.length).toBeGreaterThan(1);
+    });
+
+    it('dex2oat honours full output chosen as an override', async () => {
+        const compiler = new Dex2OatCompiler(compilerInfo('android-java', 'dex2oat'), env);
+        const oatdump = fs.readFileSync('test/android/java/oatdump.asm', 'utf-8');
+
+        // Overrides reach the compiler's own options, not the user's.
+        const result = {asm: [{text: oatdump}], compilationOptions: [compiler.fullOutputFlag, 'Example.java']};
+        const processed = await compiler.processAsm(result, compiler.getDefaultFilters(), []);
+
+        expect(processed.asm).toEqual([{text: oatdump, source: null}]);
+    });
+
+    it('dex2oat leaves --full-output given to D8 alone', () => {
+        const compiler = new Dex2OatCompiler(compilerInfo('android-java', 'dex2oat'), env);
+
+        expect(compiler.wantsFullOutput(['--d8-flags', compiler.fullOutputFlag, 'Example.java'])).toBe(false);
+        expect(compiler.wantsFullOutput(['--d8-flags', '-g', compiler.fullOutputFlag])).toBe(true);
     });
 });

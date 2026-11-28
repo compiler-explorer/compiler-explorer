@@ -41,6 +41,10 @@ export class ClojureCompiler extends JavaCompiler {
     defaultDeps: string;
     javaHome: string;
 
+    protected override librariesOnClasspath(): boolean {
+        return false;
+    }
+
     static override get key() {
         return 'clojure';
     }
