@@ -92,15 +92,18 @@ export class DiffStateObject {
     result?: CompilationResult;
     difftype: DiffType;
     extraoption?: string;
+    private readonly onContentChange?: () => void;
 
     constructor(
         id: number | string | undefined,
         model: monaco.editor.ITextModel,
         difftype: DiffType,
         extraoption?: string,
+        onContentChange?: () => void,
     ) {
         this.id = id;
         this.model = model;
+        this.onContentChange = onContentChange;
         this.compiler = null;
         this.source = null;
         this.result = undefined;
@@ -127,7 +130,7 @@ export class DiffStateObject {
 
     refresh() {
         if (this.difftype === DiffType.Source) {
-            this.model.setValue(this.source?.source ?? '');
+            this.setContent(this.source?.source ?? '');
             return;
         }
 
@@ -223,7 +226,12 @@ export class DiffStateObject {
                 }
             }
         }
-        this.model.setValue(output.map(x => x.text).join('\n'));
+        this.setContent(output.map(x => x.text).join('\n'));
+    }
+
+    setContent(text: string) {
+        this.model.setValue(text);
+        this.onContentChange?.();
     }
 }
 
@@ -272,6 +280,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     lhs: DiffStateObject;
     rhs: DiffStateObject;
     selectize: SelectizeType;
+    private viewModel: monaco.editor.IDiffEditorViewModel | null = null;
     constructor(hub: Hub, container: Container, state: MonacoPaneState & DiffState) {
         super(hub, container, state);
 
@@ -283,14 +292,16 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             monaco.editor.createModel('', 'asm'),
             getInitialDiffType(state.lhs, state.lhsdifftype),
             state.lhsextraoption,
+            () => this.resetViewModel(),
         );
         this.rhs = new DiffStateObject(
             state.rhs,
             monaco.editor.createModel('', 'asm'),
             getInitialDiffType(state.rhs, state.rhsdifftype),
             state.rhsextraoption,
+            () => this.resetViewModel(),
         );
-        this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
+        this.resetViewModel();
 
         this.domRoot[0].querySelectorAll('.difftype-picker').forEach(picker => {
             if (!(picker instanceof HTMLSelectElement)) {
@@ -554,9 +565,22 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         side.result = undefined;
         side.difftype = DiffType.ASM;
         side.extraoption = '';
-        side.model.setValue('');
+        side.setContent('');
         picker.clear(true);
         this.updateDiffTypeOptionsFor(side, difftypePicker);
+    }
+
+    // Monaco computes the diff asynchronously and, if the models change while it is being computed,
+    // applies the result to the new contents anyway. When the models have shrunk the stale line
+    // ranges are out of bounds and Monaco throws from inside its own promise chain (an unhandled
+    // rejection; see #9518). A view model drops its in-flight result once it is disposed, so after
+    // every content change hand the editor a fresh view model and dispose the old one right away.
+    // A view model passed to setModel() belongs to the caller: the editor never disposes it.
+    resetViewModel() {
+        const previous = this.viewModel;
+        this.viewModel = this.editor.createViewModel({original: this.lhs.model, modified: this.rhs.model});
+        this.editor.setModel(this.viewModel);
+        previous?.dispose();
     }
 
     override getInitialHTML() {
@@ -828,5 +852,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     close() {
         this.eventHub.unsubscribe();
         disposeDiffEditor(this.editor);
+        this.viewModel?.dispose();
+        this.lhs.model.dispose();
+        this.rhs.model.dispose();
     }
 }

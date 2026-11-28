@@ -360,6 +360,45 @@ describe('Diff view', () => {
         diffShouldNotContain('source_beta');
     });
 
+    it('should not apply a stale diff when a source shrinks mid-computation', () => {
+        // #9518: Monaco applied a diff computed for the old contents to the new, shorter ones, and threw
+        // an unhandled rejection. Diffing a long source with nothing in common keeps Monaco's worker busy
+        // for seconds, well past the time the shorter source takes to reach the diff pane.
+        const longSource = Array.from({length: 5000}, (_, line) => `int long_${line}();`).join('\n');
+        visitState(
+            buildSourceOnlyDiffState({
+                lhs: 'source_1',
+                rhs: 'source_2',
+                lhsdifftype: DIFF_TYPE_SOURCE,
+                rhsdifftype: DIFF_TYPE_SOURCE,
+            }),
+        );
+        diffShouldContain('source_alpha', 'source_beta');
+
+        setSourceEditorContent(longSource, 0);
+        cy.window().should(win => {
+            expect(win.monaco.editor.getDiffEditors()[0].getModel()?.original.getLineCount()).to.equal(5000);
+        });
+
+        // The worker computes one diff at a time, so a diff of the short contents arrives only after
+        // the stale one has come back. If the stale one was applied, the test has failed by then.
+        let shortDiffArrived = Promise.resolve();
+        cy.window().then(win => {
+            const editor = win.monaco.editor.getDiffEditors()[0];
+            shortDiffArrived = new Promise(resolve => {
+                const listener = editor.onDidUpdateDiff(() => {
+                    if (editor.getModel()?.original.getLineCount() === 3 && editor.getLineChanges()) {
+                        listener.dispose();
+                        resolve();
+                    }
+                });
+            });
+        });
+        setSourceEditorContent(SOURCE_A_UPDATED, 0);
+        cy.then(() => cy.wrap(shortDiffArrived, {timeout: 15000}));
+        diffShouldContain('source_alpha_updated', 'source_beta');
+    });
+
     it('should restore source editor selections from layout state', () => {
         visitState(
             buildSourceOnlyDiffState({
