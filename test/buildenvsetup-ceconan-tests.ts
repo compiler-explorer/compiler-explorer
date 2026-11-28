@@ -29,7 +29,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 import tar from 'tar-stream';
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BuildEnvSetupCeConanDirect} from '../lib/buildenvsetup/ceconan.js';
 import {BuildEnvSetupCeConanCircleDirect} from '../lib/buildenvsetup/ceconan-circle.js';
@@ -118,6 +118,27 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
             } else if (req.url === '/sizeddir.tgz') {
                 res.writeHead(200, {'Content-Type': 'application/octet-stream'});
                 res.end(sizedDirTarGz);
+            } else if (req.url === '/chunked.tgz') {
+                // No Content-Length, so only the streaming byte count can enforce the cap.
+                res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                res.write(packageTarGz.subarray(0, 1024));
+                res.end(packageTarGz.subarray(1024));
+            } else if (req.url === '/trickle.tgz') {
+                // Arrives steadily but slowly: the whole transfer outlasts the timeout, no gap does.
+                res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                const chunkSize = Math.ceil(packageTarGz.length / 8);
+                let offset = 0;
+                const sendNext = () => {
+                    res.write(packageTarGz.subarray(offset, offset + chunkSize));
+                    offset += chunkSize;
+                    if (offset >= packageTarGz.length) res.end();
+                    else setTimeout(sendNext, 200);
+                };
+                sendNext();
+            } else if (req.url === '/stalled.tgz') {
+                // Sends part of the body and then nothing more, without closing the connection.
+                res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                res.write(packageTarGz.subarray(0, 1024));
             } else if (req.url === '/severed.tgz') {
                 // Send a valid gzip prefix then cut the connection mid-stream, as seen when a
                 // download is interrupted: the client must reject, not hang forever.
@@ -148,6 +169,7 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
     });
 
     afterAll(async () => {
+        server.closeAllConnections();
         await new Promise<void>(resolve => {
             server.close(() => resolve());
         });
@@ -220,6 +242,283 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
             setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/severed.tgz`),
         ).rejects.toThrow();
     }, 10_000);
+
+    it('rejects a package bigger than the download cap', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        (setup as any).maxDownloadBytes = 1024;
+        try {
+            await expect(
+                setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/package.tgz`),
+            ).rejects.toThrow(/exceed 1024 bytes downloaded/);
+            await expect(
+                setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/chunked.tgz`),
+            ).rejects.toThrow(/exceed 1024 bytes downloaded/);
+        } finally {
+            (setup as any).maxDownloadBytes = 1024 * 1024 * 1024;
+        }
+    });
+
+    it('applies the download cap across all packages of one compilation', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        (setup as any).maxDownloadBytes = Math.floor(packageTarGz.length * 1.5);
+        try {
+            const budget = {downloadedBytes: 0};
+            await setup.downloadAndExtractPackage('lib1', '1.0', downloadPath, `${baseUrl}/chunked.tgz`, budget);
+            expect(budget.downloadedBytes).toEqual(packageTarGz.length);
+            await expect(
+                setup.downloadAndExtractPackage('lib2', '1.0', downloadPath, `${baseUrl}/chunked.tgz`, budget),
+            ).rejects.toThrow(/bytes downloaded/);
+            // A fresh compilation starts with a fresh budget.
+            await setup.downloadAndExtractPackage('lib3', '1.0', downloadPath, `${baseUrl}/package.tgz`);
+        } finally {
+            (setup as any).maxDownloadBytes = 1024 * 1024 * 1024;
+        }
+    });
+
+    it('lets a download that keeps arriving outlast the timeout', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        const {fetchTimeoutMs} = setup as any;
+        (setup as any).fetchTimeoutMs = 1000;
+        try {
+            await setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/trickle.tgz`);
+            const extracted = await fs.promises.readFile(
+                path.join(downloadPath, 'somelib', 'include/somelib.h'),
+                'utf8',
+            );
+            expect(extracted).toEqual(fileContents);
+        } finally {
+            Object.assign(setup, {fetchTimeoutMs});
+        }
+    }, 10_000);
+
+    it('gives up on a download that keeps arriving but takes too long overall', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        const {fetchTimeoutMs, downloadTimeoutMs} = setup as any;
+        (setup as any).fetchTimeoutMs = 1000;
+        (setup as any).downloadTimeoutMs = 500;
+        try {
+            const error = await setup
+                .downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/trickle.tgz`)
+                .then(
+                    () => undefined,
+                    (e: any) => e,
+                );
+            expect(error?.name).toEqual('TimeoutError');
+            expect(String(error?.message)).not.toMatch(/no progress/);
+        } finally {
+            Object.assign(setup, {fetchTimeoutMs, downloadTimeoutMs});
+        }
+    }, 10_000);
+
+    it('stops a download part way through when the compilation is aborted', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        const abort = new AbortController();
+        // As download() does it: no reason given.
+        setTimeout(() => abort.abort(), 300);
+        const start = Date.now();
+        await expect(
+            setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/trickle.tgz`, {
+                downloadedBytes: 0,
+                signal: abort.signal,
+            }),
+        ).rejects.toMatchObject({name: 'AbortError'});
+        // trickle.tgz takes about 1.4s to arrive in full.
+        expect(Date.now() - start).toBeLessThan(1000);
+    }, 10_000);
+
+    it('gives up on a download that stalls', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        const {fetchTimeoutMs} = setup as any;
+        (setup as any).fetchTimeoutMs = 200;
+        try {
+            await expect(
+                setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/stalled.tgz`),
+            ).rejects.toThrow(/no progress for 200 ms/);
+        } finally {
+            Object.assign(setup, {fetchTimeoutMs});
+        }
+    }, 10_000);
+});
+
+function makeLibraryDetails(count: number): Record<string, any> {
+    const details: Record<string, any> = {};
+    for (let i = 0; i < count; i++) {
+        details[`lib${i}`] = {
+            version: '1.0',
+            packagedheaders: true,
+            libpath: [],
+            staticliblink: [],
+            liblink: [],
+        };
+    }
+    return details;
+}
+
+describe('BuildEnvSetupCeConanDirect library limits', () => {
+    const fakeKey = {libraries: [], options: []} as any;
+
+    function makeSetup(props: Record<string, any>) {
+        const ce = makeCompilationEnvironment({languages});
+        const compilerInfo = makeFakeCompilerInfo({
+            lang: 'c++',
+            exe: '/dev/null',
+            options: '',
+            buildenvsetup: {
+                id: 'ceconan',
+                props: (name: string, def?: any) => (name in props ? props[name] : def),
+            },
+        });
+        return new BuildEnvSetupCeConanDirect(compilerInfo, ce);
+    }
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('reads limits from properties', () => {
+        const setup = makeSetup({
+            fetchTimeoutMs: 1234,
+            downloadTimeoutMs: 4321,
+            maxLibraries: 3,
+            maxDownloadBytes: 5678,
+            maxExtractedBytes: 91,
+        });
+        expect((setup as any).downloadTimeoutMs).toEqual(4321);
+        expect((setup as any).fetchTimeoutMs).toEqual(1234);
+        expect((setup as any).maxExtractedBytes).toEqual(91);
+        expect((setup as any).maxLibraries).toEqual(3);
+        expect((setup as any).maxDownloadBytes).toEqual(5678);
+    });
+
+    it('rejects more libraries than the cap without contacting the server', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch');
+        const setup = makeSetup({host: 'http://conan.invalid', maxLibraries: 2});
+        await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(3))).rejects.toThrow(
+            /Too many libraries selected \(3\); at most 2/,
+        );
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('allows libraries up to the cap', async () => {
+        const fetchSpy = vi
+            .spyOn(globalThis, 'fetch')
+            .mockImplementation(async () => new Response('{}', {status: 200}) as Response);
+        const setup = makeSetup({host: 'http://conan.invalid', maxLibraries: 2});
+        // No builds match the empty search results, so nothing is downloaded.
+        await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).resolves.toEqual([]);
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('passes a timeout signal to every conan request', async () => {
+        const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
+            (_url, init) =>
+                new Promise((_resolve, reject) => {
+                    init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+                }),
+        );
+        const setup = makeSetup({host: 'http://conan.invalid', fetchTimeoutMs: 50});
+        await expect(setup.getAllPossibleBuilds('somelib', '1.0')).rejects.toThrow(/timeout/i);
+        await expect(setup.getPackageUrl('somelib', '1.0', 'abc')).rejects.toThrow(/timeout/i);
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+
+    describe('download orchestration', () => {
+        const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+        function stubLookups(setup: BuildEnvSetupCeConanDirect, searchDelays: Record<string, number>) {
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockImplementation(async (libid: string) => {
+                await sleep(searchDelays[libid] ?? 0);
+                return {[`hash-${libid}`]: {}};
+            });
+            vi.spyOn(setup, 'findBuildHash').mockImplementation(async (_key, builds: any) => ({
+                hash: Object.keys(builds)[0],
+                buildType: 'Debug',
+            }));
+            vi.spyOn(setup, 'getPackageUrl').mockImplementation(async (libid: string) => `http://pkg/${libid}`);
+        }
+
+        it('fails the compilation when a library search fails for a reason other than not found', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockRejectedValue(new Error('conan unreachable'));
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(1))).rejects.toThrow(
+                'conan unreachable',
+            );
+        });
+
+        it('fails the compilation when a library search returns a server error', async () => {
+            vi.spyOn(globalThis, 'fetch').mockImplementation(
+                async () => new Response('<html>Bad Gateway</html>', {status: 502}) as Response,
+            );
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(1))).rejects.toThrow(/status 502/);
+        });
+
+        it('fails at once when a later library search fails while an earlier one is slow', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockImplementation((libid: string, _v, signal) => {
+                if (libid === 'lib1') return Promise.reject(new Error('conan unreachable'));
+                // Settles on its own after a while, so a missing early abort shows up as the wrong error, not a hang.
+                return new Promise((resolve, reject) => {
+                    signal?.addEventListener('abort', () => reject(new Error('aborted')));
+                    setTimeout(() => resolve({}), 1000);
+                });
+            });
+            const start = Date.now();
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toThrow(
+                'conan unreachable',
+            );
+            expect(Date.now() - start).toBeLessThan(500);
+        });
+
+        it('skips a library conan does not have', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            vi.spyOn(setup, 'getAllPossibleBuilds').mockRejectedValue('Not found (http://conan.invalid/x)');
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(1))).resolves.toEqual([]);
+        });
+
+        it('handles a failed download while later libraries are still being looked up', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            stubLookups(setup, {lib0: 0, lib1: 100});
+            const extract = vi.spyOn(setup, 'downloadAndExtractPackage').mockImplementation(async () => {
+                await sleep(10);
+                throw new Error('package too big');
+            });
+            // Without a handler attached as the download starts, this rejection would go unhandled while
+            // lib1's search is awaited, and vitest would fail the run.
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toThrow(
+                'package too big',
+            );
+            // lib1's search was aborted with the rest, so its download never started.
+            expect(extract).toHaveBeenCalledTimes(1);
+        });
+
+        it('fails even when a download rejects without a reason', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            stubLookups(setup, {});
+            vi.spyOn(setup, 'downloadAndExtractPackage').mockImplementation(() => Promise.reject(undefined));
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toBeUndefined();
+        });
+
+        it('aborts and waits for sibling downloads when one fails', async () => {
+            const setup = makeSetup({host: 'http://conan.invalid'});
+            stubLookups(setup, {});
+            let siblingSettled = false;
+            vi.spyOn(setup, 'downloadAndExtractPackage').mockImplementation(async (libId, _v, _d, _u, context) => {
+                if (libId === 'lib0') {
+                    await sleep(10);
+                    throw new Error('package too big');
+                }
+                await new Promise<void>(resolve => context?.signal?.addEventListener('abort', () => resolve()));
+                await sleep(50);
+                siblingSettled = true;
+                throw new Error('aborted');
+            });
+            await expect(setup.download(fakeKey, '/nonexistent', makeLibraryDetails(2))).rejects.toThrow(
+                'package too big',
+            );
+            expect(siblingSettled).toBe(true);
+        });
+    });
 });
 
 describe('BuildEnvSetupCeConanDirect.findBuildHash', () => {
