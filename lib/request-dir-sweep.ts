@@ -192,10 +192,14 @@ async function sweepUntilQuiet(dir: string, gate: Gate, limits: SweepLimits) {
 }
 
 /**
- * Run `run`, a jailed command whose host side is `boundDir`, and return what it returns once no jailed run is left in
- * the same request directory and that directory holds no FIFOs, sockets or device nodes. If the directory can't be
- * swept, every run waiting on it fails with a `RequestDirSweepError` instead of returning, so nothing goes on to read
- * from it. A `boundDir` outside the temp root's request directories is run with no sweep.
+ * Run `run`, which writes to `boundDir`, and return what it returns once no other gated run is left in the same request
+ * directory and that directory holds no FIFOs, sockets or device nodes. If the directory can't be swept, every run
+ * waiting on it fails with a `RequestDirSweepError` instead of returning, so nothing goes on to read from it. A
+ * `boundDir` outside the temp root's request directories is run with no sweep.
+ *
+ * `run` must finish in bounded time, since every other caller in the directory is held until it does, and must not
+ * itself await another `runThenSweep` in the same directory: that one would wait for `run` to exit, and so would never
+ * return.
  */
 export async function runThenSweep<T>(
     boundDir: string | undefined,
