@@ -82,17 +82,20 @@ export function parseExecutionParameters(execParams: UnparsedExecutionParams = {
  * once: each would be a separate run of the same tool producing the same result.
  */
 export function parseTools(tools: LegacyCompatibleActiveTool[] = []): ActiveTool[] {
+    const parsed = tools.map(tool => {
+        if (typeof tool.args === 'string') {
+            return {...tool, args: splitArguments(tool.args)};
+        }
+        return tool as ActiveTool;
+    });
     const seen = new Set<string>();
-    const result: ActiveTool[] = [];
-    for (const tool of tools) {
-        const parsed: ActiveTool =
-            typeof tool.args === 'string' ? {...tool, args: splitArguments(tool.args)} : (tool as ActiveTool);
-        const key = JSON.stringify([parsed.id, parsed.args, parsed.stdin]);
-        if (seen.has(key)) continue;
+    return parsed.filter(tool => {
+        // Missing args/stdin run the same as empty ones, so they count as the same entry.
+        const key = JSON.stringify([tool.id, tool.args ?? [], tool.stdin ?? '']);
+        if (seen.has(key)) return false;
         seen.add(key);
-        result.push(parsed);
-    }
-    return result;
+        return true;
+    });
 }
 
 /**

@@ -259,7 +259,8 @@ export class BaseCompiler {
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath', false);
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
-        this.toolConcurrencyPerRequest = Math.max(1, this.env.ceProps('toolConcurrencyPerRequest', 2));
+        const toolConcurrency = this.env.ceProps('toolConcurrencyPerRequest', 2);
+        this.toolConcurrencyPerRequest = Number.isInteger(toolConcurrency) && toolConcurrency > 0 ? toolConcurrency : 2;
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');

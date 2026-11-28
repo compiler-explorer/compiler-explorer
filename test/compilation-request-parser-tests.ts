@@ -26,7 +26,7 @@ import {describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {parseTools} from '../lib/compilation/compilation-request-parser.js';
-import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, LegacyCompatibleActiveTool} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ToolResult} from '../types/tool.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
@@ -46,6 +46,20 @@ describe('parseTools', () => {
     it('keeps every distinct entry, in order', () => {
         const distinct = Array.from({length: 40}, (_, i) => ({id: 'clangtidytrunk', args: [`-${i}`], stdin: ''}));
         expect(parseTools(distinct).map(tool => tool.args)).toEqual(distinct.map(tool => tool.args));
+    });
+
+    it('treats missing args or stdin as empty when spotting repeats', () => {
+        const tools = [
+            {id: 'a', args: '-1'} as LegacyCompatibleActiveTool,
+            {id: 'a', args: ['-1'], stdin: ''},
+            {id: 'b'} as LegacyCompatibleActiveTool,
+            {id: 'b', args: [], stdin: ''},
+        ];
+        expect(parseTools(tools).map(tool => tool.id)).toEqual(['a', 'b']);
+    });
+
+    it('still rejects a tools value that is not a list', () => {
+        expect(() => parseTools('clangtidytrunk' as any)).toThrow();
     });
 
     it('treats the same tool with different arguments or stdin as different', () => {
@@ -99,6 +113,15 @@ describe('runToolsOfType', () => {
 
         expect(results.map(result => result.id)).toEqual(Array.from({length: 12}, (_, i) => `slow-${i}`));
         expect(stats.calls).toBe(12);
+        expect(stats.maxRunning).toBe(2);
+    });
+
+    it('falls back to the default limit for a property value that is not a positive integer', async () => {
+        const {compiler, stats} = makeCompilerWithSlowTool({toolConcurrencyPerRequest: 'two'});
+        const tools = parseTools(Array.from({length: 6}, (_, i) => ({id: 'slow', args: [`${i}`], stdin: ''})));
+
+        await Promise.all(compiler.runToolsOfType(tools, 'independent', compilationInfo));
+
         expect(stats.maxRunning).toBe(2);
     });
 
