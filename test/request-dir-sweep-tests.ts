@@ -40,6 +40,7 @@ import {
     runThenSweep,
     sweepNonRegularEntries,
 } from '../lib/request-dir-sweep.js';
+import * as temp from '../lib/temp.js';
 import * as utils from '../lib/utils.js';
 
 const describeOnPosix = process.platform === 'win32' ? describe.skip : describe;
@@ -65,8 +66,9 @@ function deferred<T>() {
     return {promise, resolve};
 }
 
+// Made through `temp`, as request directories are: the sweep only touches directories `temp` made.
 async function makeRequestDir() {
-    return await fs.mkdtemp(path.join(os.tmpdir(), 'ce-sweep-test-'));
+    return await temp.mkdir('ce-sweep-test-');
 }
 
 describe('requestDirFor', () => {
@@ -295,6 +297,27 @@ describeOnPosix('runThenSweep', () => {
         }
     });
 
+    it('moves a directory it could not sweep out of the way, so a reader that carries on finds nothing', async () => {
+        for (const name of ['a', 'b']) await fs.writeFile(path.join(dir, name), '');
+        mkfifo(path.join(dir, 'output.s'));
+        await expect(runThenSweep(dir, async () => 'ok', {maxEntries: 1, maxDepth: 10})).rejects.toThrow(
+            RequestDirSweepError,
+        );
+        expect(await exists(path.join(dir, 'output.s'))).toBe(false);
+        expect(await utils.fileExists(path.join(dir, 'a'))).toBe(false);
+    });
+
+    it('leaves a directory under the temp root that it did not make alone', async () => {
+        const untracked = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-not-a-request-'));
+        try {
+            mkfifo(path.join(untracked, 'socket-ish'));
+            await expect(runThenSweep(untracked, async () => 'ok')).resolves.toEqual('ok');
+            expect(await exists(path.join(untracked, 'socket-ish'))).toBe(true);
+        } finally {
+            await fs.rm(untracked, {recursive: true, force: true});
+        }
+    });
+
     it('leaves a directory outside the temp root alone', async () => {
         // The current directory is the source tree; a sweep of it would be both slow and wrong.
         await expect(runThenSweep(process.cwd(), async () => 'ok')).resolves.toEqual('ok');
@@ -371,4 +394,8 @@ describeOnPosix('nsjail runs sweep their directory', () => {
         expect(await fs.readFile(path.join(dir, 'output.s'), 'utf8')).toEqual('asm\n');
         expect(await exists(path.join(dir, 'output.ll'))).toBe(false);
     });
+});
+
+afterAll(async () => {
+    await temp.cleanup();
 });

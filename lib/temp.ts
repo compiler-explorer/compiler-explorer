@@ -111,6 +111,11 @@ function isHeld(dir: string, now: number): boolean {
     return false;
 }
 
+/** Whether `dir` is one this module made and has not yet removed. */
+export function isTracked(dir: string): boolean {
+    return heldUntil.has(dir) || pendingRemoval.includes(dir);
+}
+
 /**
  * The directory under which this module creates temporary directories (unless callers pass
  * an absolute prefix). The --tmp-dir command line option is not read directly: at startup

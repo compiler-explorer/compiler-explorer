@@ -178,6 +178,22 @@ export function numActiveGates() {
     return gates.size;
 }
 
+/**
+ * Move a directory that could not be swept out of the way of everything that might still read from it. Callers are
+ * told the sweep failed, but some catch that and carry on, and anything they then read at the old paths must fail at
+ * once rather than block. A rename needs no walk, so it works on exactly the trees the sweep gave up on. The empty
+ * directory it replaces is one `temp` made, so the usual cleanup removes the tree later.
+ */
+async function moveAside(dir: string) {
+    try {
+        const replaced = await temp.mkdir('compiler-explorer-unswept');
+        await fs.rename(dir, replaced);
+        logger.warn(`Moved ${dir}, which could not be swept, to ${replaced}`);
+    } catch (e) {
+        logger.error(`Could not move ${dir} aside after a failed sweep: ${e}`);
+    }
+}
+
 async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
     let error: Error | undefined;
     try {
@@ -185,6 +201,8 @@ async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
     } catch (e) {
         error = e instanceof Error ? e : new Error(String(e));
     }
+    // Still marked as sweeping, so a run arriving now waits rather than starting in the directory being moved.
+    if (error && gate.running === 0) await moveAside(dir);
     gate.sweeping = undefined;
 
     // Runs that arrived during the walk start now; when the last of them exits the directory is swept again and
@@ -199,8 +217,9 @@ async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
 /**
  * Run `run`, which writes to `boundDir`, and return what it returns once no other gated run is left in the same request
  * directory and that directory holds no FIFOs, sockets or device nodes. If the directory can't be swept, every run
- * waiting on it fails with a `RequestDirSweepError` instead of returning, so nothing goes on to read from it. A
- * `boundDir` outside the temp root's request directories is run with no sweep.
+ * waiting on it fails with a `RequestDirSweepError` instead of returning, and the directory is moved aside so that
+ * nothing reading at its old paths can block. A `boundDir` outside the request directories `temp` made is run with no
+ * sweep.
  *
  * `run` must finish in bounded time, since every other caller in the directory is held until it does, and must not
  * itself await another `runThenSweep` in the same directory: that one would wait for `run` to exit, and so would never
@@ -212,7 +231,9 @@ export async function runThenSweep<T>(
     limits: SweepLimits = defaultSweepLimits,
 ): Promise<T> {
     const dir = boundDir ? requestDirFor(boundDir) : undefined;
-    if (!dir) return await run();
+    // Only directories made for requests: anything else under the temp root (a toolchain unpacked there, say) is not
+    // ours to sweep.
+    if (!dir || !temp.isTracked(dir)) return await run();
 
     let gate = gates.get(dir);
     if (!gate) {
