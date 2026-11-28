@@ -28,9 +28,10 @@ import {z} from 'zod';
 import {BypassCache, type CompilationResult} from '../../../types/compilation/compilation.interfaces.js';
 import type {Remote} from '../../../types/compiler.interfaces.js';
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
+import {libraryBuildTypes} from '../../../types/libraries/libraries.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
 import {CompileHandler} from '../../handlers/compile.js';
-import {normaliseRequestLibraries} from '../library-utils.js';
+import {type LibraryRequest, normaliseRequestLibraries} from '../library-utils.js';
 import {truncateLines} from '../utils.js';
 
 const DEFAULT_MAX_ASM_LINES = 500;
@@ -98,6 +99,12 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     z.object({
                         id: z.string().describe('Library ID from list_libraries (e.g. "boost").'),
                         version: z.string().describe('Version id ("188") OR human form ("1.88.0") — both accepted.'),
+                        buildType: z
+                            .enum(libraryBuildTypes)
+                            .optional()
+                            .describe(
+                                'Prebuilt package to link (default Debug). Release is optimised, keeps -g, and falls back to Debug if not built.',
+                            ),
                     }),
                 )
                 .optional()
@@ -150,7 +157,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             // Normalise library versions: accept either the version id ("188") or the
             // human form ("1.88.0"). Surface unknown-library / unknown-version errors
             // here, rather than letting the compile pipeline fail opaquely.
-            let normalisedLibraries: Array<{id: string; version: string}> = libraries ?? [];
+            let normalisedLibraries: LibraryRequest[] = libraries ?? [];
             if (libraries && libraries.length > 0) {
                 let knownLibraries: ReturnType<ApiHandler['getLibrariesAsArray']>;
                 try {
