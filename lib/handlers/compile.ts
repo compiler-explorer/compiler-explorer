@@ -523,7 +523,7 @@ export class CompileHandler implements ICompileHandler {
         }
         // Use shared parsing utilities for consistency with SQS workers
         const executeParameters = parseExecutionParameters(execReqParams);
-        const tools = parseTools(inputTools, compiler.getMaxToolsPerRequest());
+        const tools = parseTools(inputTools);
 
         // Backwards compatibility: bypassCache used to be a boolean.
         // Convert a boolean input to an enum's underlying numeric value

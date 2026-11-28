@@ -25,7 +25,7 @@
 import {describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
-import {defaultMaxToolsPerRequest, parseTools} from '../lib/compilation/compilation-request-parser.js';
+import {parseTools} from '../lib/compilation/compilation-request-parser.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ToolResult} from '../types/tool.interfaces.js';
@@ -38,14 +38,14 @@ describe('parseTools', () => {
         ]);
     });
 
-    it('drops repeated entries and keeps at most the cap', () => {
+    it('keeps identical entries only once', () => {
         const repeated = Array.from({length: 40}, () => ({id: 'clangtidytrunk', args: '--checks=*', stdin: ''}));
         expect(parseTools(repeated)).toEqual([{id: 'clangtidytrunk', args: ['--checks=*'], stdin: ''}]);
+    });
 
+    it('keeps every distinct entry, in order', () => {
         const distinct = Array.from({length: 40}, (_, i) => ({id: 'clangtidytrunk', args: [`-${i}`], stdin: ''}));
-        const parsed = parseTools(distinct);
-        expect(parsed).toHaveLength(defaultMaxToolsPerRequest);
-        expect(parsed.map(tool => tool.args)).toEqual([['-0'], ['-1'], ['-2'], ['-3'], ['-4']]);
+        expect(parseTools(distinct).map(tool => tool.args)).toEqual(distinct.map(tool => tool.args));
     });
 
     it('treats the same tool with different arguments or stdin as different', () => {
@@ -63,52 +63,61 @@ describe('parseTools', () => {
             ['b', ['-1'], ''],
         ]);
     });
-
-    it('honours an explicit cap', () => {
-        const tools = Array.from({length: 10}, (_, i) => ({id: `t${i}`, args: [], stdin: ''}));
-        expect(parseTools(tools, 3).map(tool => tool.id)).toEqual(['t0', 't1', 't2']);
-    });
 });
 
 describe('runToolsOfType', () => {
     const languages = {'c++': {id: 'c++'}} as const;
+    const compilationInfo = {inputFilename: 'x'} as CompilationInfo;
 
-    function makeCompiler(props: Record<string, any> = {}) {
+    function makeCompilerWithSlowTool(props: Record<string, any> = {}) {
         const ce = makeCompilationEnvironment({languages, props});
         const info = makeFakeCompilerInfo({exe: '', lang: 'c++', ldPath: []});
-        return new BaseCompiler(info as CompilerInfo, ce);
-    }
-
-    it('limits how many tools run at once and returns results in request order', async () => {
-        const compiler = makeCompiler();
-        let running = 0;
-        let maxRunning = 0;
-        const fakeTool = {
+        const compiler = new BaseCompiler(info as CompilerInfo, ce);
+        const stats = {calls: 0, running: 0, maxRunning: 0};
+        const slowTool = {
             id: 'slow',
             type: 'independent',
             runTool: async (_info: CompilationInfo, _input?: string, args?: string[]): Promise<ToolResult> => {
-                running++;
-                maxRunning = Math.max(maxRunning, running);
-                // Finish in reverse order, so request order can't come for free.
-                await new Promise(resolve => setTimeout(resolve, 20 - Number(args?.[0] ?? 0)));
-                running--;
+                stats.calls++;
+                stats.running++;
+                stats.maxRunning = Math.max(stats.maxRunning, stats.running);
+                // Later entries finish sooner, so request order can't come for free.
+                await new Promise(resolve => setTimeout(resolve, 30 - Number(args?.[0] ?? 0)));
+                stats.running--;
                 return {id: `slow-${args?.[0]}`, code: 0, stdout: [], stderr: []};
             },
         };
-        (compiler as any).possibleTools = [fakeTool];
+        (compiler as any).possibleTools = [slowTool];
+        return {compiler, stats};
+    }
 
-        const tools = parseTools(Array.from({length: 40}, (_, i) => ({id: 'slow', args: [`${i}`], stdin: ''})));
-        const results = await Promise.all(
-            compiler.runToolsOfType(tools, 'independent', {inputFilename: 'x'} as CompilationInfo),
-        );
+    it('runs every tool, a limited number at a time, returning results in request order', async () => {
+        const {compiler, stats} = makeCompilerWithSlowTool();
+        const tools = parseTools(Array.from({length: 12}, (_, i) => ({id: 'slow', args: [`${i}`], stdin: ''})));
 
-        expect(results.map(result => result.id)).toEqual(['slow-0', 'slow-1', 'slow-2', 'slow-3', 'slow-4']);
-        expect(maxRunning).toBe(2);
+        const results = await Promise.all(compiler.runToolsOfType(tools, 'independent', compilationInfo));
+
+        expect(results.map(result => result.id)).toEqual(Array.from({length: 12}, (_, i) => `slow-${i}`));
+        expect(stats.calls).toBe(12);
+        expect(stats.maxRunning).toBe(2);
     });
 
-    it('reads its limits from properties', () => {
-        const compiler = makeCompiler({maxToolsPerRequest: 3});
-        expect(compiler.getMaxToolsPerRequest()).toBe(3);
-        expect(makeCompiler().getMaxToolsPerRequest()).toBe(defaultMaxToolsPerRequest);
+    it('reads the limit from properties', async () => {
+        const {compiler, stats} = makeCompilerWithSlowTool({toolConcurrencyPerRequest: 3});
+        const tools = parseTools(Array.from({length: 8}, (_, i) => ({id: 'slow', args: [`${i}`], stdin: ''})));
+
+        await Promise.all(compiler.runToolsOfType(tools, 'independent', compilationInfo));
+
+        expect(stats.maxRunning).toBe(3);
+    });
+
+    it('runs identical entries once', async () => {
+        const {compiler, stats} = makeCompilerWithSlowTool();
+        const tools = parseTools(Array.from({length: 40}, () => ({id: 'slow', args: ['1'], stdin: ''})));
+
+        const results = await Promise.all(compiler.runToolsOfType(tools, 'independent', compilationInfo));
+
+        expect(results.map(result => result.id)).toEqual(['slow-1']);
+        expect(stats.calls).toBe(1);
     });
 });

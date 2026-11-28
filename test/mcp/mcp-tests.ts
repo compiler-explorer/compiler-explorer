@@ -827,7 +827,6 @@ describe('MCP compile tool', () => {
     ): CompileHandler {
         const fakeBaseCompiler = {
             getDefaultFilters: () => ({}),
-            getMaxToolsPerRequest: () => 5,
             getRemote: () => false,
             compile: vi.fn().mockResolvedValue({
                 code: topLevelCode,
