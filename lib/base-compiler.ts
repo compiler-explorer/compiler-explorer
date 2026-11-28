@@ -894,6 +894,14 @@ export class BaseCompiler {
         return copiedResult;
     }
 
+    /**
+     * Whether any of these library versions is unknown to this compiler, and so was left out of the compilation.
+     * `findLibVersion` answers on its own for each one; this only names the case the caching code cares about.
+     */
+    private hasUnresolvedLibraries(libraries: SelectedLibraryVersion[] | undefined): boolean {
+        return !!libraries?.some(library => this.findLibVersion(library) === null);
+    }
+
     protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
         return [...this.compiler.demanglerArgs];
     }
@@ -3738,6 +3746,15 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(result);
+
+        // A version this server did not have at the time is dropped from the command line without failing the
+        // request, so the result says the code was compiled without a library the caller asked for. The cache key
+        // holds the version that was asked for rather than what it resolved to, so caching the result would answer a
+        // later request for that same version -- once it ships, or on an instance that already has it -- with a
+        // failure that no longer applies. Compile it again instead.
+        if (result.okToCache && this.hasUnresolvedLibraries(compilationCacheKey.libraries)) {
+            result.okToCache = false;
+        }
 
         if (result.okToCache && !delayCaching) {
             await this.env.cachePut(compilationCacheKey, result, undefined);
