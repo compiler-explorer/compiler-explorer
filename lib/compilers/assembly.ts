@@ -175,8 +175,17 @@ export class AssemblyCompiler extends BaseCompiler {
 
     override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
+        // Awaited below, after writeAllFiles; if that throws first, this rejection must not go unhandled.
+        buildEnvironment.catch(() => {});
 
-        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
+        let writeSummary;
+        try {
+            writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
+        } catch (error) {
+            // Don't hand dirPath back while library downloads may still be writing into it.
+            await buildEnvironment.catch(() => {});
+            throw error;
+        }
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath);

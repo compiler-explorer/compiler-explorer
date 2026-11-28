@@ -81,10 +81,13 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     // Generous cap on the total declared size of extracted files; real library packages are
     // tens to a few hundred MiB, so anything near this is a packaging error or a gzip bomb.
     protected maxExtractedBytes: number;
-    // Applies to each request to the conan server, including reading the whole package body.
+    // How long any request to the conan server may wait for a response, and how long a package download
+    // may go without making progress.
     protected fetchTimeoutMs: number;
-    // Real compilations select a handful of libraries at most; these bound the time and disk one
-    // compilation can spend setting them up.
+    // How long one package download may take in total.
+    protected downloadTimeoutMs: number;
+    // Real compilations select a handful of libraries at most; these bound how many packages one compilation
+    // fetches and how much it downloads in total. Extracted size is capped per package (maxExtractedBytes).
     protected maxLibraries: number;
     protected maxDownloadBytes: number;
 
@@ -101,18 +104,23 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.conan_os = os.platform() === 'win32' ? 'Windows' : 'Linux';
         this.maxExtractedBytes = compilerInfo.buildenvsetup!.props('maxExtractedBytes', 2 * 1024 * 1024 * 1024);
         this.fetchTimeoutMs = compilerInfo.buildenvsetup!.props('fetchTimeoutMs', 120_000);
+        this.downloadTimeoutMs = compilerInfo.buildenvsetup!.props('downloadTimeoutMs', 300_000);
         this.maxLibraries = compilerInfo.buildenvsetup!.props('maxLibraries', 50);
         this.maxDownloadBytes = compilerInfo.buildenvsetup!.props('maxDownloadBytes', 1024 * 1024 * 1024);
     }
 
     protected fetchSettings(signal?: AbortSignal): RequestInit {
         const timeout = AbortSignal.timeout(this.fetchTimeoutMs);
+        return this.requestInit(signal ? AbortSignal.any([timeout, signal]) : timeout);
+    }
+
+    private requestInit(signal: AbortSignal): RequestInit {
         return {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            signal: signal ? AbortSignal.any([timeout, signal]) : timeout,
+            signal,
         };
     }
 
@@ -125,13 +133,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             fetch(url, this.fetchSettings(signal))
                 .then(async (response: Response) => {
                     if (response.status === 404) {
+                        response.body?.cancel().catch(() => {});
                         reject(`${NOT_FOUND_PREFIX} (${url})`);
+                    } else if (!response.ok) {
+                        response.body?.cancel().catch(() => {});
+                        reject(new Error(`Library search failed with status ${response.status} (${url})`));
                     } else {
                         resolve(await response.json());
                     }
                 })
                 .catch(err => {
-                    logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
+                    // An abort is another library's failure stopping this one; that failure is logged already.
+                    if (!signal?.aborted) {
+                        logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
+                    }
                     reject(err);
                 });
         });
@@ -144,6 +159,10 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const url = `${libUrl}/packages/${hash}/download_urls`;
 
         const response = await fetch(url, this.fetchSettings(signal));
+        if (!response.ok) {
+            response.body?.cancel().catch(() => {});
+            throw new Error(`Package download URL lookup failed with status ${response.status} (${url})`);
+        }
         const body = await response.json();
         const packageURL = body['conan_package.tgz'];
         if (!packageURL) {
@@ -176,65 +195,67 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const extract = tar.extract();
         const gunzip = zlib.createGunzip();
         let extractedBytes = 0;
+        // tar-stream doesn't wait for this handler, so track it: nothing may still be writing files once this
+        // method settles.
+        let entryInFlight: Promise<void> = Promise.resolve();
 
-        extract.on('entry', async (header, stream, next) => {
-            // Drained streams (skipped entries) have no other error listener; without this an
-            // entry-stream error would throw as an unhandled 'error' event.
-            stream.on('error', (error: any) => extract.destroy(error));
-            try {
-                const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
-
-                // Each library extracts under its own root; skip entries that would resolve outside
-                // it (and so could overwrite other libraries' files or the compilation's own).
-                const extractionRoot = path.resolve(
-                    this.extractAllToRoot ? downloadPath : path.join(downloadPath, libId),
-                );
-                const relative = path.relative(extractionRoot, path.resolve(path.dirname(filepath)));
-                if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-                    logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
-                    stream.resume();
-                    next();
-                    return;
-                }
-
+        extract.on('entry', (header, stream, next) => {
+            entryInFlight = this.extractEntry(header, stream, next, extract, downloadPath, libId, version, () => {
                 extractedBytes += header.size ?? 0;
-                if (extractedBytes > this.maxExtractedBytes) {
-                    throw new Error(`Package ${libId}/${version} exceeds ${this.maxExtractedBytes} bytes extracted`);
-                }
-
-                if (header.type !== 'file') {
-                    // Only regular files are ever written; symlinks, hardlinks, directories etc
-                    // are drained and skipped. Draining also avoids a hang on malformed entries
-                    // (e.g. a directory with a non-zero size, whose stream tar-stream never ends).
-                    stream.resume();
-                    next();
-                    return;
-                }
-
-                if (!this.extractAllToRoot) {
-                    await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
-                }
-
-                if (header.size === 0) {
-                    // tar-stream emits no data for zero-length entries (see
-                    // https://github.com/mafintosh/tar-stream/issues/145): create empty files
-                    // explicitly.
-                    await fs.promises.writeFile(filepath, '');
-                    stream.resume();
-                    next();
-                } else {
-                    await pipeline(stream, fs.createWriteStream(filepath));
-                    next();
-                }
-            } catch (error) {
-                logger.error(`Error extracting entry ${JSON.stringify(header.name)} of ${libId}/${version}:`, error);
-                // Propagate the failure through the extract stream so the outer pipeline rejects.
-                extract.destroy(error as Error);
-            }
+                return extractedBytes;
+            });
         });
 
-        const response = await fetch(packageUrl, this.fetchSettings(context.signal));
+        // fetchTimeoutMs here resets whenever data arrives, so a stall fails quickly while a large package that is
+        // arriving steadily gets up to downloadTimeoutMs.
+        const idle = new AbortController();
+        const timeoutMs = this.fetchTimeoutMs;
+        let idleTimer: NodeJS.Timeout | undefined;
+        const resetIdleTimer = () => {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(
+                () =>
+                    idle.abort(
+                        new DOMException(`Package download made no progress for ${timeoutMs} ms`, 'TimeoutError'),
+                    ),
+                timeoutMs,
+            );
+        };
+        resetIdleTimer();
+        try {
+            return await this.fetchAndExtract(
+                libId,
+                version,
+                packageUrl,
+                context,
+                extract,
+                gunzip,
+                idle.signal,
+                resetIdleTimer,
+                startTime,
+            );
+        } finally {
+            clearTimeout(idleTimer);
+            await entryInFlight;
+        }
+    }
+
+    private async fetchAndExtract(
+        libId: string,
+        version: string,
+        packageUrl: string,
+        context: LibrarySetupContext,
+        extract: tar.Extract,
+        gunzip: zlib.Gunzip,
+        idleSignal: AbortSignal,
+        resetIdleTimer: () => void,
+        startTime: bigint,
+    ): Promise<BuildEnvDownloadInfo> {
+        const signals = [idleSignal, AbortSignal.timeout(this.downloadTimeoutMs)];
+        if (context.signal) signals.push(context.signal);
+        const response = await fetch(packageUrl, this.requestInit(AbortSignal.any(signals)));
         if (!response.ok || !response.body) {
+            response.body?.cancel().catch(() => {});
             logger.error(`Error requesting package from conan: ${response.status} for ${packageUrl}`);
             throw new Error(`Unable to request library from conan: ${response.status}`);
         }
@@ -243,11 +264,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const tooBig = () => new Error(`Libraries for this compilation exceed ${maxDownloadBytes} bytes downloaded`);
         const declaredLength = Number(response.headers.get('content-length'));
         if (declaredLength > 0 && context.downloadedBytes + declaredLength > maxDownloadBytes) {
-            await response.body.cancel();
+            response.body.cancel().catch(() => {});
             throw tooBig();
         }
         const countDownloaded = new Transform({
             transform(chunk: Buffer, _encoding, callback) {
+                resetIdleTimer();
                 context.downloadedBytes += chunk.length;
                 if (context.downloadedBytes > maxDownloadBytes) {
                     callback(tooBig());
@@ -267,7 +289,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 extract,
             );
         } catch (error) {
-            logger.error(`Error downloading/extracting package from conan (${packageUrl}):`, error);
+            if (!context.signal?.aborted) {
+                logger.error(`Error downloading/extracting package from conan (${packageUrl}):`, error);
+            }
             throw error;
         }
 
@@ -277,6 +301,73 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             packageUrl: packageUrl,
             time: utils.deltaTimeNanoToMili(startTime, endTime),
         };
+    }
+
+    private async extractEntry(
+        header: tar.Header,
+        stream: tar.ExtractEvents['entry'][1],
+        next: () => void,
+        extract: tar.Extract,
+        downloadPath: string,
+        libId: string,
+        version: string,
+        addExtracted: () => number,
+    ): Promise<void> {
+        // Drained streams (skipped entries) have no other error listener; without this an
+        // entry-stream error would throw as an unhandled 'error' event.
+        stream.on('error', (error: any) => extract.destroy(error));
+        try {
+            const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
+
+            // Each library extracts under its own root; skip entries that would resolve outside
+            // it (and so could overwrite other libraries' files or the compilation's own).
+            const extractionRoot = path.resolve(this.extractAllToRoot ? downloadPath : path.join(downloadPath, libId));
+            const relative = path.relative(extractionRoot, path.resolve(path.dirname(filepath)));
+            if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                stream.resume();
+                next();
+                return;
+            }
+
+            if (addExtracted() > this.maxExtractedBytes) {
+                throw new Error(`Package ${libId}/${version} exceeds ${this.maxExtractedBytes} bytes extracted`);
+            }
+
+            if (header.type !== 'file') {
+                // Only regular files are ever written; symlinks, hardlinks, directories etc
+                // are drained and skipped. Draining also avoids a hang on malformed entries
+                // (e.g. a directory with a non-zero size, whose stream tar-stream never ends).
+                stream.resume();
+                next();
+                return;
+            }
+
+            if (!this.extractAllToRoot) {
+                await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
+            }
+            if (extract.destroying) {
+                // The download failed or was aborted while we waited; write nothing more.
+                stream.resume();
+                return;
+            }
+
+            if (header.size === 0) {
+                // tar-stream emits no data for zero-length entries (see
+                // https://github.com/mafintosh/tar-stream/issues/145): create empty files
+                // explicitly.
+                await fs.promises.writeFile(filepath, '');
+                stream.resume();
+                next();
+            } else {
+                await pipeline(stream, fs.createWriteStream(filepath));
+                next();
+            }
+        } catch (error) {
+            logger.error(`Error extracting entry ${JSON.stringify(header.name)} of ${libId}/${version}:`, error);
+            // Propagate the failure through the extract stream so the outer pipeline rejects.
+            extract.destroy(error as Error);
+        }
     }
 
     async getConanBuildProperties(key: CacheKey, buildType: LibraryBuildType): Promise<ConanBuildProperties> {
@@ -355,9 +446,13 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const allLibraryBuilds: LibVerBuild[] = [];
         const abort = new AbortController();
         const context: LibrarySetupContext = {downloadedBytes: 0, signal: abort.signal};
+        let hasFailed = false;
         let firstFailure: unknown;
         const failed = (error: unknown) => {
-            if (firstFailure === undefined) firstFailure = error;
+            if (!hasFailed) {
+                hasFailed = true;
+                firstFailure = error;
+            }
             abort.abort();
         };
 
@@ -400,7 +495,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         // Wait for every download to stop, including ones aborted by another's failure, so nothing is still
         // writing into the compilation directory once this returns.
         const results = await Promise.allSettled(allDownloads);
-        if (firstFailure !== undefined) throw firstFailure;
+        if (hasFailed) throw firstFailure;
         return results.map(result => (result as PromiseFulfilledResult<BuildEnvDownloadInfo>).value);
     }
 
@@ -439,8 +534,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                                 context,
                             ),
                     );
-                    // Handled as soon as it starts, not only once every library has been looked up: a rejection
-                    // left unhandled meanwhile takes the whole process down.
+                    // Later libraries' searches are awaited before anything else waits on this download.
                     download.catch(failed);
                     allDownloads.push(download);
                 } else {
