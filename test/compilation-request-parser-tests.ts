@@ -111,6 +111,29 @@ describe('runToolsOfType', () => {
         expect(stats.maxRunning).toBe(3);
     });
 
+    it('starts no more tools once one has failed', async () => {
+        const {compiler, stats} = makeCompilerWithSlowTool();
+        const failing = {
+            id: 'failing',
+            type: 'independent',
+            runTool: async (): Promise<ToolResult> => {
+                throw new Error('tool setup failed');
+            },
+        };
+        (compiler as any).possibleTools.push(failing);
+        const tools = parseTools([
+            {id: 'failing', args: [], stdin: ''},
+            ...Array.from({length: 6}, (_, i) => ({id: 'slow', args: [`${i}`], stdin: ''})),
+        ]);
+
+        const results = compiler.runToolsOfType(tools, 'independent', compilationInfo);
+        await expect(Promise.all(results)).rejects.toThrow('tool setup failed');
+        await Promise.allSettled(results);
+
+        // Only the tool that started alongside the failing one ran.
+        expect(stats.calls).toBe(1);
+    });
+
     it('runs identical entries once', async () => {
         const {compiler, stats} = makeCompilerWithSlowTool();
         const tools = parseTools(Array.from({length: 40}, () => ({id: 'slow', args: ['1'], stdin: ''})));

@@ -2115,22 +2115,31 @@ export class BaseCompiler {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             const queue = new PQueue({concurrency: this.toolConcurrencyPerRequest});
+            // The caller's Promise.all gives up on the first failure, so once a tool has failed, don't go on to start
+            // tools whose results nobody will read.
+            let firstFailure: {error: unknown} | undefined;
             for (const tool of tools) {
                 const matches = this.possibleTools.find(possibleTool => {
                     return possibleTool.id === tool.id && possibleTool.type === type;
                 });
 
                 if (matches) {
-                    const toolPromise: Promise<ToolResult> = queue.add(() =>
-                        matches.runTool(
-                            compilationInfo,
-                            compilationInfo.inputFilename,
-                            tool.args,
-                            tool.stdin,
-                            this.supportedLibraries,
-                            false,
-                        ),
-                    );
+                    const toolPromise: Promise<ToolResult> = queue.add(async () => {
+                        if (firstFailure) throw firstFailure.error;
+                        try {
+                            return await matches.runTool(
+                                compilationInfo,
+                                compilationInfo.inputFilename,
+                                tool.args,
+                                tool.stdin,
+                                this.supportedLibraries,
+                                false,
+                            );
+                        } catch (error) {
+                            firstFailure ??= {error};
+                            throw error;
+                        }
+                    });
                     tooling.push(toolPromise);
                 }
             }
