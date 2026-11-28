@@ -35,7 +35,7 @@ export class VcObjdumper extends BaseObjdumper {
     }
 
     override getArgs(
-        inputFilename: string,
+        objectFiles: string[],
         demangle?: boolean,
         intelAsm?: boolean,
         staticReloc?: boolean,
@@ -53,7 +53,7 @@ export class VcObjdumper extends BaseObjdumper {
         // TODO: disable intel-syntax checkbox as selected, dumpbin supports only that
         if (objdumperArguments) args.push(...objdumperArguments);
 
-        args.push(inputFilename);
+        args.push(...objectFiles);
         return args;
     }
 }

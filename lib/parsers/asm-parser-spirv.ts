@@ -104,7 +104,8 @@ export class SPIRVAsmParser extends AsmParser {
         const opLine = /OpLine/;
         const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
-        const opExtDbgLine = /OpExtInst.*DebugLine %\w+\s+(%\w+)\s+(%\w+)/;
+        const opExtDbgLine =
+            /^\s*%\w+\s+=\s+OpExtInst\s+%\w+\s+%\w+\s+DebugLine\s+(%\w+)\s+(%\w+)\s+(%\w+)(?:\s+(%\w+)\s+(%\w+))?/;
         const opExtDbgNoLine = /OpExtInst.*DebugNoLine/;
         const opModuleProcessed = /OpModuleProcessed/;
         const opString = /OpString/;
@@ -117,7 +118,7 @@ export class SPIRVAsmParser extends AsmParser {
         // It is validated these will only be int/uint so can ignore floats
         const opConstant = /(%\w+)\s+=\s+OpConstant\s+%\w+\s+(\d+)/;
         const constantIdToValue: Record<string, number> = {};
-        const opDebugSoruce = /(%\w+) = OpExtInst.*DebugSource %\w+\s+(%\w+)/;
+        const opDebugSource = /^\s*(%\w+)\s+=\s+OpExtInst\s+%\w+\s+%\w+\s+DebugSource\s+(%\w+)/;
         const idToOpString: Record<string, string> = {};
 
         const labelDef = /^\s*(%\w+)\s*=\s*(?:OpFunction\s+|OpLabel)/;
@@ -142,21 +143,30 @@ export class SPIRVAsmParser extends AsmParser {
             if (match) {
                 constantIdToValue[match[1]] = Number.parseInt(match[2], 10);
             }
-            match = line.match(opDebugSoruce);
+            match = line.match(opDebugSource);
             if (match) {
                 idToOpString[match[1]] = match[2];
             }
 
-            // TODO - Currently don't handle if there is 'Line End' being used
-            // (most people just have 'Line Start' and 'Line End' the same)
             match = line.match(opExtDbgLine);
             if (match) {
                 const opStringId = idToOpString[match[1]];
-                source = {
-                    file: utils.maskRootdir(opStrings[Number.parseInt(opStringId, 10)]),
-                    line: constantIdToValue[match[1]],
-                    mainsource: true,
-                };
+                const rawFile = opStringId ? opStrings[Number.parseInt(opStringId.slice(1), 10)] : undefined;
+                const lineNum = constantIdToValue[match[2]];
+                if (rawFile !== undefined && lineNum !== undefined) {
+                    source = {
+                        file: utils.maskRootdir(rawFile),
+                        line: lineNum,
+                        mainsource: true,
+                    };
+                    const colNum = match[4] ? constantIdToValue[match[4]] : undefined;
+                    if (colNum !== undefined && colNum !== 0) {
+                        source.column = colNum;
+                    }
+                    if (opLabel.test(lastLine) && asm.length > 0) {
+                        asm[asm.length - 1].source = source;
+                    }
+                }
             }
 
             // Will only have either OpLine or DebugLine

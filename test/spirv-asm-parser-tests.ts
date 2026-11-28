@@ -160,5 +160,45 @@ describe('SPIRVAsmParser', () => {
             const mergeLine = result.asm.find(line => line.text?.includes('OpSelectionMerge'));
             expect(mergeLine?.labels?.some(label => label.name === '%merge')).toBe(true);
         });
+
+        it('should map NonSemantic.Shader.DebugInfo.100 DebugSource and DebugLine to source lines and columns', () => {
+            const spirvCode = [
+                '          %2 = OpExtInstImport "NonSemantic.Shader.DebugInfo.100"',
+                '          %1 = OpString "src/example.mach"',
+                '       %void = OpTypeVoid',
+                '          %4 = OpExtInst %void %2 DebugSource %1',
+                '       %uint = OpTypeInt 32 0',
+                '     %uint_3 = OpConstant %uint 3',
+                '     %uint_9 = OpConstant %uint 9',
+                '         %11 = OpTypeFunction %void',
+                '%main = OpFunction %void None %11',
+                '         %12 = OpLabel',
+                '         %14 = OpExtInst %void %2 DebugScope %5',
+                '         %17 = OpExtInst %void %2 DebugLine %4 %uint_3 %uint_3 %uint_9 %uint_9',
+                '               OpReturn',
+                '               OpFunctionEnd',
+            ].join('\n');
+
+            const result = parser.processAsm(spirvCode, {
+                directives: true,
+                labels: false,
+                commentOnly: true,
+            });
+
+            const labelLine = result.asm.find(line => line.text?.includes('OpLabel'));
+            const returnLine = result.asm.find(line => line.text?.includes('OpReturn'));
+            expect(labelLine?.source).toEqual({
+                file: 'src/example.mach',
+                line: 3,
+                column: 9,
+                mainsource: true,
+            });
+            expect(returnLine?.source).toEqual({
+                file: 'src/example.mach',
+                line: 3,
+                column: 9,
+                mainsource: true,
+            });
+        });
     });
 });

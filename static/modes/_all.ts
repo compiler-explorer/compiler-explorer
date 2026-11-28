@@ -58,6 +58,7 @@ import './ispc-mode';
 import './jakt-mode';
 import './lean-mode';
 import './llvm-ir-mode';
+import './mach-ir-mode';
 import './mach-mode';
 import './makefile-mode';
 import './metal-mode';

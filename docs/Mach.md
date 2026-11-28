@@ -1,93 +1,89 @@
 # Mach
 
-[Mach](https://github.com/briar-systems/mach) builds projects, not single files. For each compilation, the adapter
-(`lib/compilers/mach.ts`) writes a small project into the temporary directory. The project has a generated
-`mach.toml`, the user's sources under `src/`, and std realized under `dep/std/` by `mach dep pull`. The adapter then
-runs `mach build` on the project root. The asm view is `objdump` run over the module's object file, and execution
-runs the linked binary.
+[Mach](https://github.com/briar-systems/mach) 7 compiles a source tree from its entry module, with no manifest. For
+each compilation, the adapter (`lib/compilers/mach.ts`) writes the user's entry module and any extra files from the
+tree pane under `src/` in the temporary directory, then runs:
 
-`mach dep pull` copies std into every compilation's project, which costs about 100 ms with std 9.4.1 (5.7 MB, 340
-files). That is by design: mach reads nothing outside the project root, so every dependency is realized under
-`dep/`. The copy can only get cheaper on the host side, for example by keeping the temporary directory on the same
-filesystem as the std tree so the copy can hardlink or reflink.
+```sh
+mach build src/example.mach --source example=src --source std=<stdPath> -w out --report json --debug
+```
+
+`--source example=src` binds the user's tree and `--source std=<stdPath>` the `mach-std` release the compiler is paired
+with, which is read in place.
+
+## Assembly and IR views
+
+Mach writes each product of a build under `out/<product>/<id>/`, one file per module of the user's project. A view
+reads every one of them, the entry module first and the others after it in path order. std's modules are written
+beside them, under `out/<product>/std/`, and no view reads them.
+
+- **Targets with a listing:** `--emit asm` writes `masc`'s assembly listing of each module to `out/asm/<id>/**/*.s`.
+  Each module is parsed separately, since each has its own DWARF 5 `.file 0` table and `.Ltmp*` labels, and a
+  secondary user file under `src/` is named as the tree pane names it.
+- **Targets without one:** the compiler encodes WebAssembly and SPIR-V directly and has no text form for either, so
+  the view is a disassembly of the objects `--emit obj` writes to `out/obj/<id>/**/*.o`, as it is on any target when
+  the user asks for the binary object view. Objects are disassembled with `objdump`, or with `llvmObjdumper` when the
+  image is not an x86 ELF. Mach 7.3.1 writes a line table into a WebAssembly object but no `.debug_info` unit to find
+  it by, so `llvm-objdump` names no source line there: the view links to nothing in the editor, and the library
+  functions filter, which goes by line information, hides all of it.
+- **SPIR-V (`vulkan-spirv`):** built with `-k module` and disassembled with `disassemblerPath` (`spirv-dis`).
+  `NonSemantic.Shader.DebugInfo.100` records map the instructions back to editor lines and columns.
+- **Linked binary:** the binary filter passes `--emit exe -o out/bin/<id>` and disassembles the linked image,
+  `out/bin/<id>.spv` on SPIR-V.
+- **Mach IR pane:** opening it adds `--emit ir-opt` and reads the optimised, target-legalised MIRL of each module from
+  `out/ir-opt/<id>/**/*.ir`. The `file` and `loc` entries of a module's `debug` table map its `at lN` instructions
+  back to the editor.
 
 ## Diagnostics
 
-The adapter builds with `--diagnostics=json`, under which mach writes one record per line to stderr (NDJSON, schema
-1, described in mach's `doc/language/diagnostics-json.md`). `lib/parsers/mach-diagnostics.ts` reads those records
-and places markers:
+The adapter builds with `--report json`, under which Mach writes NDJSON records (schema 3, documented in Mach's
+`doc/language/report-records.md`) to stderr. `lib/parsers/mach-diagnostics.ts` reads those records and places markers:
 
-- **Headlines:** each diagnostic is shown as `<severity>[<key>]: <message>` followed by its location, and marked over
-  its primary span with its severity. Its notes and help are added to the marker's message.
+- **Headlines:** each diagnostic is shown as `<severity>[<code>]: <message>` followed by its location, and marked over
+  its primary span with its severity. Notes and help lines are folded into the marker hover message.
 - **Related sites:** each is shown after the primary location and marked with its label.
-- **Fixes:** each fix is offered as a quick fix on the headline's marker, with all of its edits, when every edit is in
-  the file the marker is in.
-- **Files:** spans name files from the project root, so a user source is `src/<path>` and its editor is `<path>`, as
-  the project tree names it. std's files, under `dep/std/`, and the generated `mach.toml` belong to no editor and get
-  no markers.
-- **Columns:** mach counts columns in UTF-8 bytes and the editor in UTF-16 units, so the adapter remaps every marker
-  and quick fix edit against the line it marks.
-- **Failures:** a build, link or command-line failure is shown as its headline, with a marker only when it has a
-  location in a user source. The closing summary becomes mach's `N errors / M warnings` tally.
-
-A line that is not a record is shown as written. mach refuses `-v` and `-vv` beside `--diagnostics=json`, so a user
-who passes either gets that refusal instead of the phase timings.
+- **Fixes:** each suggested fix is offered as a Monaco quick fix on the headline marker when all of its edits target
+  the marked file.
+- **Files and columns:** spans inside `src/` map to their editor in the project tree, while spans inside `std` get no
+  editor markers. Mach counts columns in UTF-8 bytes and Monaco in UTF-16 units, so markers and quick-fix edits are
+  remapped against the source lines they touch.
+- **Readout records:** passing `-v` or `-vv` emits `unit` and `phase` timing records alongside diagnostics rather than
+  conflicting with JSON reporting.
 
 ## Installing a compiler
 
-The compiler does not ship with std. A project declares std as a dependency, so each compiler needs a copy of the std
-release it was released and tested with. The adapter looks for that copy in this order:
+Mach does not bundle `std` inside the compiler binary. Each compiler install pairs with the `mach-std` release it was
+built and tested against. The adapter looks for `std` in this order:
 
 1. `compiler.<id>.stdPath`, if set
-2. `std` in the directory that holds the executable, i.e. `<dir of exe>/std`
+2. `<dir of exe>/std`
 
-The second is the layout both godbolt.org and the local defaults use:
+Both godbolt.org and `etc/config/mach.defaults.properties` use the second layout:
 
 ```
-/opt/compiler-explorer/mach-6.7.0/
-├── mach          from the release tarball, mach-6.7.0-x86_64-linux.tar.gz
+/opt/compiler-explorer/mach-7.3.1/
+├── mach          from mach-7.3.1-x86_64-linux.tar.gz
 ├── LICENSE
-└── std/          briar-systems/mach-std at the release paired with this compiler (v9.4.1)
+└── std/          briar-systems/mach-std at v10.3.0
 ```
 
-For a local install, unpack a release into `/opt/mach` and check out its std into `/opt/mach/std`. That matches
-`etc/config/mach.defaults.properties`. If mach lives somewhere else, for example `/usr/local/bin/mach`, point
-`compiler.mach.exe` at it and set `compiler.mach.stdPath` to a std checkout.
+For a local install at `/usr/local/bin/mach` or `~/.local/bin/mach`, point `compiler.<id>.exe` at the binary and set
+`compiler.<id>.stdPath` to a `mach-std` checkout. If `std/mach.toml` is missing, startup logs an error naming the
+`stdPath` property and drops that compiler.
 
-Pair each compiler with the std release it builds against. The two version numbers are independent, and std states
-the compilers it accepts in its own `[project].mach`. godbolt.org offers mach 6.7.0 with std 9.4.1, the std mach
-6.7.0 itself builds against. The pair was checked by building the three examples and running Hello World.
+## Targets and execution
 
-A root manifest must state the compilers it accepts in `[project].mach`. The adapter writes `mach = "^6.5"` into
-every manifest it generates. That range is what the adapter needs, not the version of the compiler at hand: 6.5.0 is
-the first release that writes the diagnostic records the adapter reads, so an older compiler is refused with a
-diagnostic that names the range.
+The target list is probed, not listed. At startup the adapter reads `mach info targets` and builds a small module for
+every tuple against the compiler's std: one that uses `std.runtime` and `std.print` on the systems std prints on
+(`linux`, `darwin`, `windows`, `wasi`), and one that uses only `std.types` on the others (`freestanding`, `uefi`,
+`vulkan`). Each tuple is built the way a compilation builds it, with `--emit asm` first and `--emit obj` if that
+fails. A tuple is offered if either builds, and which one did decides whether its asm view reads the listing or the
+objects. A prediscovered start reuses the answer from `cachedMachTargets`.
 
-If a compiler has no std where the adapter looks, it logs an error that names the `stdPath` key and the compiler is
-not offered.
+Tuples sharing a `<sys>-<arch>` name are told apart by appending `-<abi>`. A target marked `needs --isa` is given the
+floor of its architecture and ABI unless the user passes `--isa`. A `-t` among the user's options selects the target
+by any of those names and wins over the target picker.
 
-## Targets
-
-The target list comes from probing, not from a hard-coded list. At every startup, prediscovered or not, each compiler
-takes every tuple from `mach info targets` and builds a small module that uses `std.print` for it, under the same
-profile compilations use. Only the tuples that build are offered, and compilations reuse that list rather than probing
-again. A compiler whose probe fails is not offered. When several tuples share a platform name, the adapter tells them apart by
-appending the abi, and then the object format if that is still not enough, e.g. `linux-riscv64-lp64d`.
-
-Two things currently exclude a tuple:
-
-- **No freestanding targets.** std has no OS layer for `os=freestanding`, so any module that uses std beyond
-  `std.types` is refused on those targets, with one diagnostic naming the capability it needs. The target picker is
-  one list for every source, and the Hello World example imports `std.print`, so offering these targets would mostly
-  produce refusals from std. Code that imports nothing, or only `std.types`, does build for them. They will be offered
-  automatically once std builds freestanding.
-- **Flat images.** `object=raw` has no debug model, and the compilation profile asks for debug information, which
-  the asm view needs to map lines back to source.
-
-The probe offers `linux-x86_64`, `linux-aarch64`, `linux-riscv64-{lp64,lp64f,lp64d}`, `darwin-x86_64`,
-`darwin-aarch64` and `windows-x86_64`.
-
-For targets other than x86, Compiler Explorer disassembles with `llvmObjdumper`, because the GNU objdump it uses for
-x86 cannot read other architectures. mach's line tables are correct for those targets, but the asm view maps no lines
-back to the source until the asm parser reads llvm-objdump's `; `-prefixed line records
-([compiler-explorer#9128](https://github.com/compiler-explorer/compiler-explorer/pull/9128)).
+Execution is offered on the hosted systems (`linux`, `darwin`, `windows`), where a binary for the host runs directly
+and one for another host is left to Compiler Explorer's execution triple check. A request to execute on any other
+target is refused without linking an executable for it.

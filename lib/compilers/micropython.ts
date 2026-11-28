@@ -72,9 +72,14 @@ export class MicroPythonCompiler extends BaseCompiler {
         }
     }
 
-    override fixFiltersForCompiler(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
+    override fixFiltersForCompiler(
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+        files: FiledataPair[],
+        backendOptions: Record<string, any>,
+    ) {
         filters.binary = true;
-        super.fixFiltersForCompiler(filters, options, files);
+        super.fixFiltersForCompiler(filters, options, files, backendOptions);
     }
 
     override async runExecutable(

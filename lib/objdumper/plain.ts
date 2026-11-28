@@ -31,7 +31,7 @@ export class PlainObjdumper extends BaseObjdumper {
     }
 
     override getArgs(
-        outputFilename: string,
+        objectFiles: string[],
         demangle?: boolean,
         intelAsm?: boolean,
         staticReloc?: boolean,
@@ -41,7 +41,7 @@ export class PlainObjdumper extends BaseObjdumper {
     ) {
         const args: string[] = [];
         if (objdumperArguments) args.push(...objdumperArguments);
-        args.push(outputFilename);
+        args.push(...objectFiles);
         return args;
     }
 

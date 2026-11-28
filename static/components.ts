@@ -61,6 +61,7 @@ import {
     LayoutItem,
     LEAN_C_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    MACH_IR_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
@@ -867,6 +868,38 @@ export function getLeanCViewWith(
             id,
             source,
             leanCOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty Mach IR view component. */
+export function getMachIrView(): ComponentConfig<typeof MACH_IR_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: MACH_IR_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a Mach IR view with the given configuration. */
+export function getMachIrViewWith(
+    id: number,
+    source: string,
+    machIrOutput: ParsedAsmResultLine[] | undefined,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof MACH_IR_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: MACH_IR_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            machIrOutput,
             compilerName,
             editorid,
             treeid,
