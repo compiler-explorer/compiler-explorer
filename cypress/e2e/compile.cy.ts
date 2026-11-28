@@ -35,6 +35,7 @@ import {
     setupAndWaitForCompilation,
     sourceEditor,
     visitPage,
+    waitForCompilationToSettle,
     waitForEditors,
 } from '../support/utils';
 
@@ -182,6 +183,23 @@ describe('Editor interactions', () => {
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
         cy.get('[data-cy="new-add-editor-btn"]:visible').first().click();
         cy.get('span.lm_title:visible').filter(':contains("source")').should('have.length', 2);
+    });
+
+    it('should clone the source editor with its code', () => {
+        setupAndWaitForCompilation();
+        setMonacoEditorContent('int cloned_marker() { return 42; }');
+        waitForCompilationToSettle();
+        findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
+        cy.get('[data-cy="new-clone-editor-btn"]:visible').first().click();
+        cy.get('span.lm_title:visible').filter(':contains("source")').should('have.length', 2);
+        cy.window().should((win: Cypress.AUTWindow) => {
+            const sources = win.monaco.editor
+                .getEditors()
+                .filter(editor => editor.getModel()?.getLanguageId() !== 'asm')
+                .map(editor => editor.getModel()?.getValue() ?? '')
+                .filter(text => text.includes('cloned_marker'));
+            expect(sources, 'source editors holding the cloned code').to.have.length(2);
+        });
     });
 
     it('should add a second compiler', () => {
