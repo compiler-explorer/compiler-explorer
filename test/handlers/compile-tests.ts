@@ -326,6 +326,8 @@ describe('Compiler tests', () => {
                 {overrides: [{name: 'env', values: [{name: 5, value: 'x'}]}]},
                 {overrides: [{name: 'env', values: 'FOO=1'}]},
                 {overrides: [{name: 'stdver', value: 20}]},
+                {overrides: [{name: 'arch', value: null}]},
+                {overrides: [{name: 'arch'}]},
             ];
             for (const compilerOptions of bad) {
                 const res = await makeFakeJson('I am a program', {compilerOptions})

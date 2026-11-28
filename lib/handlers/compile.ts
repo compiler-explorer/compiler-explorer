@@ -148,7 +148,7 @@ const overrideSchema = z.union([
     }),
     z.object({
         name: z.string().refine(name => name !== 'env'),
-        value: z.string().nullish(),
+        value: z.string(),
     }),
 ]);
 
