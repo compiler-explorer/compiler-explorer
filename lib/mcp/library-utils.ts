@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {LibraryBuildType} from '../../types/libraries/libraries.interfaces.js';
+
 // Library entries from ApiHandler.getLibrariesAsArray have shape:
 //   {id: 'boost', versions: [{id: '188', version: '1.88.0', ...}, ...]}
 // MCP callers send `{id: 'boost', version: '188'}` OR `{id: 'boost', version: '1.88.0'}`
@@ -29,7 +31,7 @@
 type LibraryVersion = {id: string; version: string};
 type Library = {id: string; versions: LibraryVersion[]};
 
-export type LibraryRequest = {id: string; version: string};
+export type LibraryRequest = {id: string; version: string; buildType?: LibraryBuildType};
 
 export type NormaliseSuccess = {ok: true; version: string};
 export type NormaliseFailure = {
@@ -76,7 +78,7 @@ export function normaliseRequestLibraries(
     for (const req of requests) {
         const result = normaliseLibraryVersion(knownLibraries, req.id, req.version);
         if (result.ok) {
-            libraries.push({id: req.id, version: result.version});
+            libraries.push({...req, version: result.version});
         } else if (result.reason === 'unknown-library') {
             return {
                 ok: false,

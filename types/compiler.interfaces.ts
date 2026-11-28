@@ -39,6 +39,12 @@ export type Remote = {
      */
     buildPath?: string;
     basePath: string;
+    /**
+     * Where the browser reaches this remote's API (e.g. its library list). A root-relative path (just `basePath`) when
+     * the remote is served from the same origin as this site, so browsers go through the site's own front door rather
+     * than `target`. Absent on compilers discovered by older versions, in which case `target + basePath` is used.
+     */
+    browserUrl?: string;
 };
 
 // What kind of release a compiler represents. Inferred from isSemVer/isNightly/semver

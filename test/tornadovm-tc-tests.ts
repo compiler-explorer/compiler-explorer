@@ -101,6 +101,13 @@ describe('TornadoVM TC', () => {
         expect(filters.binary).toBe(false);
     });
 
+    it('shows HIP output as CUDA, the language CE lists HIP compilers under', () => {
+        const compiler = new TornadoVmTcCompiler(info, env);
+        compiler.target = 'hip';
+        expect(compiler.getCompilerResultLanguageId()).toEqual('cuda');
+        expect(compiler.getOutputFilename('/tmp/ce')).toMatch(/\.hip$/);
+    });
+
     it('runs TC on the JDK of the configured runtime, not on JAVA_HOME or the PATH', () => {
         const compiler = new TornadoVmTcCompiler(info, env);
         compiler.javaRuntime = '/opt/compiler-explorer/jdk-25.0.2/bin/java';
