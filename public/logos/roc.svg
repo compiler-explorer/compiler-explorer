@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="homepage-logo" xmlns="http://www.w3.org/2000/svg" aria-labelledby="logo-svg-title logo-svg-desc" width="240" height="240" viewBox="0 0 51 53" fill="none">
+    <title id="logo-svg-title">The Roc logo</title>
+    <desc id="logo-svg-desc">A purple origami bird made of six triangles</desc>
+    <style>
+        .logo-dark { fill: #7c38f5; }
+        .logo-light { fill: #9c7bea; }
+    </style>
+    <path d="M23.6751 22.7086 17.655 53l9.7977-7.7868L26.4673 39.3424 23.6751 22.7086z" class="logo-dark" />
+    <path d="M37.2438 19.0101l6.7877 7.3588L45 22 45.9665 16.6324l-8.7227 2.3777z" class="logo-light" />
+    <path d="M23.8834 3.21052 0 0 23.6751 22.7086 23.8834 3.21052z" class="logo-light" />
+    <path d="M44.0315 26.3689 23.6751 22.7086l2.7922 16.6338L44.0315 26.3689z" class="logo-light" />
+    <path d="M50.5 22l-4.5335-5.3676L45 22h5.5z" class="logo-dark" />
+    <path d="M23.6751 22.7086l20.3564 3.6603-6.7877-7.3588L23.8834 3.21052 23.6751 22.7086z" class="logo-dark" />
+</svg>

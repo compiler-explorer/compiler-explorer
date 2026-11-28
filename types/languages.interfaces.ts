@@ -105,6 +105,7 @@ export type LanguageKey =
     | 'racket'
     | 'raku'
     | 'razorforge'
+    | 'roc'
     | 'ruby'
     | 'rust'
     | 'sail'

@@ -97,6 +97,7 @@ const plugins: Webpack.WebpackPluginInstance[] = [
             'objective-c',
             'elixir',
             'clojure',
+            'coffee',
             'xml',
         ],
         filename: isDev ? '[name].worker.js' : `[name].worker.${workerBuildSalt}.[contenthash].js`,

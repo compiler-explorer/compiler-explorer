@@ -156,6 +156,7 @@ export {RakuCompiler} from './raku.js';
 export {RazorForgeCompiler} from './razorforge.js';
 export {ResolcCompiler} from './resolc.js';
 export {RGACompiler} from './rga.js';
+export {RocCompiler} from './roc.js';
 export {RubyCompiler} from './ruby.js';
 export {RustCompiler} from './rust.js';
 export {RustcCgCraneliftCompiler} from './rustc-cg-cranelift.js';
