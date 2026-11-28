@@ -307,6 +307,38 @@ describeOnPosix('runThenSweep', () => {
         expect(await utils.fileExists(path.join(dir, 'a'))).toBe(false);
     });
 
+    it('fails, without starting it, a run that arrives while a failed directory is being moved aside', async () => {
+        for (const name of ['a', 'b', 'c']) await fs.writeFile(path.join(dir, name), '');
+        const limits = {maxEntries: 1, maxDepth: 10};
+        const moveMayProceed = deferred<void>();
+        const moveStarted = deferred<void>();
+        const realRename = fs.rename;
+        const spy = vi.spyOn(fs, 'rename').mockImplementation(async (...args: Parameters<typeof fs.rename>) => {
+            moveStarted.resolve();
+            await moveMayProceed.promise;
+            return realRename(...args);
+        });
+        try {
+            const first = runThenSweep(dir, async () => 'first', limits);
+            await moveStarted.promise;
+            let secondStarted = false;
+            const second = runThenSweep(
+                dir,
+                async () => {
+                    secondStarted = true;
+                    return 'second';
+                },
+                limits,
+            );
+            moveMayProceed.resolve();
+            await expect(first).rejects.toThrow(RequestDirSweepError);
+            await expect(second).rejects.toThrow(RequestDirSweepError);
+            expect(secondStarted).toBe(false);
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
     it('leaves a directory under the temp root that it did not make alone', async () => {
         const untracked = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-not-a-request-'));
         try {

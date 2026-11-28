@@ -31,6 +31,12 @@ import * as utils from './utils.js';
 
 const pendingRemoval: string[] = [];
 
+/**
+ * Every directory this module made that has not yet been removed, by absolute path. Unlike `pendingRemoval`, a
+ * directory stays here while cleanup is removing it, so it is known to be one of ours for as long as it exists.
+ */
+const created = new Set<string>();
+
 /** Directories exempt from cleanup while something is using them, each with the time its exemption lapses. */
 const heldUntil = new Map<string, number>();
 
@@ -113,7 +119,7 @@ function isHeld(dir: string, now: number): boolean {
 
 /** Whether `dir` is one this module made and has not yet removed. */
 export function isTracked(dir: string): boolean {
-    return heldUntil.has(dir) || pendingRemoval.includes(dir);
+    return created.has(path.resolve(dir));
 }
 
 /**
@@ -136,6 +142,7 @@ export async function mkdir(prefix: string, options?: {hold?: boolean}) {
     const result = await fs.promises.mkdtemp(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
+    created.add(path.resolve(result));
     // Held here and not by the caller: returning from this is an await boundary, and a cleanup running in it would
     // take the directory before the caller's next statement could hold it.
     if (options?.hold) hold(result);
@@ -152,6 +159,7 @@ export function mkdirSync(prefix: string) {
     const result = fs.mkdtempSync(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
+    created.add(path.resolve(result));
     return result;
 }
 
@@ -179,12 +187,14 @@ export async function cleanup() {
             continue;
         }
         if (!(await utils.dirExists(dir))) {
+            created.delete(path.resolve(dir));
             ++stats.numAlreadyGone;
             ++numAlreadyGone;
             continue;
         }
         try {
             await fs.promises.rm(dir, {recursive: true, force: true});
+            created.delete(path.resolve(dir));
             ++numRemoved;
             ++stats.numRemoved;
         } catch (e) {

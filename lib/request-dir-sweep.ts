@@ -169,6 +169,8 @@ type Gate = {
     sweeping: Promise<void> | undefined;
     /** Callers whose run has exited, waiting for the directory to be quiet and swept. */
     waiting: ((error: Error | undefined) => void)[];
+    /** Set once a sweep has failed and the directory has been moved aside: nothing more may run in it. */
+    failed: Error | undefined;
 };
 
 const gates = new Map<string, Gate>();
@@ -190,7 +192,9 @@ async function moveAside(dir: string) {
         await fs.rename(dir, replaced);
         logger.warn(`Moved ${dir}, which could not be swept, to ${replaced}`);
     } catch (e) {
-        logger.error(`Could not move ${dir} aside after a failed sweep: ${e}`);
+        // Removing it needs no opens either, only a walk, which is slower but leaves nothing to block on.
+        logger.error(`Could not move ${dir} aside after a failed sweep (${e}); removing it instead`);
+        await fs.rm(dir, {recursive: true, force: true}).catch(err => logger.error(`Could not remove ${dir}: ${err}`));
     }
 }
 
@@ -201,8 +205,18 @@ async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
     } catch (e) {
         error = e instanceof Error ? e : new Error(String(e));
     }
-    // Still marked as sweeping, so a run arriving now waits rather than starting in the directory being moved.
-    if (error && gate.running === 0) await moveAside(dir);
+
+    if (error && gate.running === 0) {
+        // Still marked as sweeping while the directory is moved, so a run arriving now waits, and then finds the gate
+        // failed rather than starting in a directory that has gone.
+        gate.failed = error;
+        await moveAside(dir);
+        logger.warn(`Sweep of ${dir} failed: ${error.message}`);
+        gate.sweeping = undefined;
+        gates.delete(dir);
+        for (const release of gate.waiting) release(error);
+        return;
+    }
     gate.sweeping = undefined;
 
     // Runs that arrived during the walk start now; when the last of them exits the directory is swept again and
@@ -210,8 +224,7 @@ async function sweepThenRelease(dir: string, gate: Gate, limits: SweepLimits) {
     if (gate.running > 0) return;
 
     gates.delete(dir);
-    if (error) logger.warn(`Sweep of ${dir} failed: ${error.message}`);
-    for (const release of gate.waiting) release(error);
+    for (const release of gate.waiting) release(undefined);
 }
 
 /**
@@ -237,12 +250,16 @@ export async function runThenSweep<T>(
 
     let gate = gates.get(dir);
     if (!gate) {
-        gate = {running: 0, sweeping: undefined, waiting: []};
+        gate = {running: 0, sweeping: undefined, waiting: [], failed: undefined};
         gates.set(dir, gate);
     }
     ++gate.running;
     // No sweep can start while this run is counted, so once this one is done the directory is ours until we exit.
     if (gate.sweeping) await gate.sweeping;
+    if (gate.failed) {
+        --gate.running;
+        throw new RequestDirSweepError(`Could not clean up after an earlier run: ${gate.failed.message}`);
+    }
 
     let outcome: {ok: true; value: T} | {ok: false; error: unknown};
     try {
