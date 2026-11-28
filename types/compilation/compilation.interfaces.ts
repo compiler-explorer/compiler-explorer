@@ -139,6 +139,11 @@ export type CompilationRequestOptions = {
         // Whether output is shown on a dark background, so colours made for one suit it better. Only sent to compilers
         // with `supportsDarkBackgroundColours`, and ignored by any other.
         darkBackgroundColours?: boolean;
+        // JSON requests may set these directly; the text and query-string forms spell them as flags instead.
+        filterAnsi?: boolean;
+        skipPopArgs?: boolean;
+        // The current name for cmakeArgs, which works for any build system.
+        buildSystemArgs?: string;
     };
     executeParameters: UnparsedExecutionParams;
     filters: ParseFiltersAndOutputOptions;

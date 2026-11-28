@@ -277,11 +277,77 @@ describe('Compiler tests', () => {
         }
 
         it('rejects an output filename that escapes the compilation directory as a bad request', async () => {
-            for (const customOutputFilename of ['../../escape', '../out.s', '../ce-compilation-dir/x', 5]) {
+            for (const customOutputFilename of ['../../escape', '../out.s', '../ce-compilation-dir/x']) {
                 await makeFakeJson('I am a program', {compilerOptions: {customOutputFilename}})
                     .expect('Content-Type', /json/)
                     .expect(400, {error: true, message: 'Invalid filename'});
             }
+            const res = await makeFakeJson('I am a program', {compilerOptions: {customOutputFilename: 5}})
+                .expect('Content-Type', /json/)
+                .expect(400);
+            expect(res.body.message).toContain('customOutputFilename');
+        });
+
+        it('passes known compilerOptions through unchanged and in request order', async () => {
+            await setFakeResult();
+            const compilerOptions = {
+                skipAsm: false,
+                producePp: null,
+                produceGccDump: {opened: false, pass: {name: 'x', filename_suffix: null}},
+                produceCfg: false,
+                produceIr: {filterDebugInfo: true, demangle: true},
+                executorRequest: false,
+                overrides: [
+                    {name: 'stdver', value: 'c++20'},
+                    {name: 'env', values: [{name: 'FOO', value: '1'}]},
+                ],
+                cmakeArgs: '-DFOO=1',
+            };
+            const res = await makeFakeJson('I am a program', {compilerOptions}).expect(200);
+            expect(res.body.input.backendOptions).toEqual(compilerOptions);
+            expect(Object.keys(res.body.input.backendOptions)).toEqual(Object.keys(compilerOptions));
+        });
+
+        it('drops compilerOptions it does not know about', async () => {
+            await setFakeResult();
+            const res = await makeFakeJson('I am a program', {
+                compilerOptions: {skipAsm: true, notARealOption: {lots: 'of stuff'}},
+            }).expect(200);
+            expect(res.body.input.backendOptions).toEqual({skipAsm: true});
+        });
+
+        it('rejects compilerOptions of the wrong type as a bad request', async () => {
+            const bad = [
+                {skipAsm: 'false'},
+                {produceGccDump: true},
+                {produceCfg: true},
+                {overrides: 'stdver'},
+                {cmakeArgs: ['-DFOO=1']},
+                {overrides: [{name: 'env', values: [{name: 5, value: 'x'}]}]},
+                {overrides: [{name: 'env', values: 'FOO=1'}]},
+                {overrides: [{name: 'stdver', value: 20}]},
+                {overrides: [{name: 'arch', value: null}]},
+                {overrides: [{name: 'arch'}]},
+            ];
+            for (const compilerOptions of bad) {
+                const res = await makeFakeJson('I am a program', {compilerOptions})
+                    .expect('Content-Type', /json/)
+                    .expect(400);
+                expect(res.body.message).toContain('Invalid compilerOptions');
+                expect(res.body.message).toContain(Object.keys(compilerOptions)[0]);
+            }
+            const cfg = await makeFakeJson('I am a program', {compilerOptions: {produceCfg: true}}).expect(400);
+            expect(cfg.body.message).toEqual('Invalid compilerOptions: produceCfg: expected an object or false');
+            for (const compilerOptions of ['skipAsm', false, 0, '']) {
+                const res = await makeFakeJson('I am a program', {compilerOptions}).expect(400);
+                expect(res.body.message).toContain('Invalid compilerOptions');
+            }
+        });
+
+        it('treats null compilerOptions as none', async () => {
+            await setFakeResult();
+            const res = await makeFakeJson('I am a program', {compilerOptions: null}).expect(200);
+            expect(res.body.input.backendOptions).toEqual({});
         });
 
         it('rejects an unknown library build type as a bad request', async () => {
