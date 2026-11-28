@@ -258,9 +258,6 @@ describe('GCC dump output processing', () => {
                 'example.cpp.o',
             ];
             vi.spyOn(fs, 'readdir').mockResolvedValue(names as unknown as any);
-            vi.spyOn(utils, 'isRegularFile').mockImplementation(
-                async (filename: string) => path.basename(filename) in dumpFiles,
-            );
             vi.spyOn(utils, 'tryReadTextFile').mockImplementation(
                 async (filename: string) => dumpFiles[path.basename(filename)],
             );

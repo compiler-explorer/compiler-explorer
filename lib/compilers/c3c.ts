@@ -208,7 +208,8 @@ export class C3Compiler extends BaseCompiler {
             // checkOutputFileAndDoPostProcess sizes the output before calling us, i.e. before the file
             // exists at all. Without refreshing it, super reports "<No output file>" regardless.
             try {
-                result.asmSize = (await fs.stat(outputFilename)).size;
+                const stat = await fs.stat(outputFilename);
+                if (stat.isFile()) result.asmSize = stat.size;
             } catch {
                 // Nothing written; leave asmSize unset so the usual reporting applies.
             }

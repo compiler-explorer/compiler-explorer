@@ -615,19 +615,6 @@ export async function fileExists(filename: string): Promise<boolean> {
     }
 }
 
-/**
- * True only for a regular file. Symlinks are not followed: a link, FIFO, device or directory left where a compiler
- * output was expected is treated as no output, so reading it can't block or pull in a file from elsewhere.
- */
-export async function isRegularFile(filename: string): Promise<boolean> {
-    try {
-        const stat = await fs.lstat(filename);
-        return stat.isFile();
-    } catch {
-        return false;
-    }
-}
-
 export async function dirExists(dir: string): Promise<boolean> {
     try {
         const stat = await fs.stat(dir);

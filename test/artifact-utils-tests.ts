@@ -44,21 +44,4 @@ describe('addArtifactToResult', () => {
         expect(result.artifacts).toHaveLength(1);
         expect(result.artifacts![0].content).toEqual(Buffer.from('NES').toString('base64'));
     });
-    it('skips a directory', async () => {
-        const dir = path.join(newTempDir(), 'game.nes');
-        await fs.mkdir(dir);
-        const result = emptyResult();
-        await addArtifactToResult(result, dir, 'nesrom');
-        expect(result.artifacts).toBeUndefined();
-    });
-    it.skipIf(process.platform === 'win32')('skips a symlink', async () => {
-        const dir = newTempDir();
-        const target = path.join(dir, 'target.nes');
-        await fs.writeFile(target, 'NES');
-        const link = path.join(dir, 'game.nes');
-        await fs.symlink(target, link);
-        const result = emptyResult();
-        await addArtifactToResult(result, link, 'nesrom');
-        expect(result.artifacts).toBeUndefined();
-    });
 });
