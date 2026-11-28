@@ -40,11 +40,11 @@ const SOURCE_COMMENT = /\s*\/\/ [\w$]+\.java:(\d+)$/;
 // TC reports refusals as a compiler does, naming the class's source file rather than CE's input file.
 const DIAGNOSTIC = /^[\w$]+\.java:(\d+): /;
 
-type Target = 'cuda' | 'opencl' | 'metal';
+type Target = 'cuda' | 'opencl' | 'metal' | 'hip';
 
 /**
  * TornadoVM's TC compiler: compiles the GPU kernels of a Java source file (static void methods
- * over primitives and TornadoVM types) to CUDA C++, OpenCL C or Metal Shading Language. javac
+ * over primitives and TornadoVM types) to CUDA C++, OpenCL C, Metal Shading Language or HIP. javac
  * runs first, then `tc emit --all` over the class files; no GPU is involved.
  */
 export class TornadoVmTcCompiler extends JavaCompiler {
@@ -59,7 +59,7 @@ export class TornadoVmTcCompiler extends JavaCompiler {
         super(compilerInfo, env);
         this.tornadovmHome = this.compilerProps<string>(`compiler.${this.compiler.id}.tornadovmHome`);
         const target = this.compilerProps<string>(`compiler.${this.compiler.id}.tcTarget`, 'cuda');
-        this.target = target === 'opencl' || target === 'metal' ? target : 'cuda';
+        this.target = target === 'opencl' || target === 'metal' || target === 'hip' ? target : 'cuda';
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
@@ -69,12 +69,13 @@ export class TornadoVmTcCompiler extends JavaCompiler {
     }
 
     override getOutputFilename(dirPath: string) {
-        const extension = {cuda: '.cu', opencl: '.cl', metal: '.metal'}[this.target];
+        const extension = {cuda: '.cu', opencl: '.cl', metal: '.metal', hip: '.hip'}[this.target];
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}${extension}`);
     }
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
-        return {cuda: 'cuda', opencl: 'openclc', metal: 'metal'}[this.target];
+        // CE has no HIP language: HIP compilers are listed under CUDA, whose highlighting fits TC's HIP output.
+        return {cuda: 'cuda', opencl: 'openclc', metal: 'metal', hip: 'cuda'}[this.target];
     }
 
     /** The JDK of the configured runtime (`compiler.<id>.runtime`, e.g. `.../jdk-25.0.2/bin/java`). */
