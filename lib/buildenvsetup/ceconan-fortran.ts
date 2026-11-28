@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import type {LibraryBuildType} from '../../types/libraries/libraries.interfaces.js';
 import {BuildEnvSetupCeConanDirect, ConanBuildProperties} from './ceconan.js';
 
 export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirect {
@@ -29,7 +31,7 @@ export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirec
         return 'ceconan-fortran';
     }
 
-    override async getConanBuildProperties(/*key*/): Promise<ConanBuildProperties> {
+    override async getConanBuildProperties(_key: CacheKey, buildType: LibraryBuildType): Promise<ConanBuildProperties> {
         const arch = this.getCompilerArch() || 'x86_64';
         const libcxx = 'std';
         const stdver = '';
@@ -37,7 +39,7 @@ export class BuildEnvSetupCeConanFortranDirect extends BuildEnvSetupCeConanDirec
 
         return {
             os: 'Linux',
-            build_type: 'Debug',
+            build_type: buildType,
             compiler: this.compilerTypeOrGCC,
             'compiler.version': this.compiler.id,
             'compiler.libcxx': libcxx,

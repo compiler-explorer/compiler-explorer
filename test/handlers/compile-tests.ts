@@ -284,6 +284,15 @@ describe('Compiler tests', () => {
             }
         });
 
+        it('rejects an unknown library build type as a bad request', async () => {
+            await makeFakeJson('I am a program', {libraries: [{id: 'fmt', version: '100', buildType: 'Fast'}]})
+                .expect('Content-Type', /json/)
+                .expect(400, {
+                    error: true,
+                    message: 'Unknown library buildType "Fast" for fmt: use one of Debug, Release',
+                });
+        });
+
         it('lets a CMake output filename reach the project root, which is one level above the build', async () => {
             await setFakeResult();
             const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename: '../out.s'}})

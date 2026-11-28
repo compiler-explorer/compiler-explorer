@@ -1,0 +1,64 @@
+// Copyright (c) 2026, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import {describe, expect, it} from 'vitest';
+
+import {addArtifactToResult} from '../lib/artifact-utils.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import {newTempDir} from './utils.js';
+
+function emptyResult(): CompilationResult {
+    return {code: 0, timedOut: false, stdout: [], stderr: []} as unknown as CompilationResult;
+}
+
+describe('addArtifactToResult', () => {
+    it('adds a regular file', async () => {
+        const file = path.join(newTempDir(), 'game.nes');
+        await fs.writeFile(file, 'NES');
+        const result = emptyResult();
+        await addArtifactToResult(result, file, 'nesrom');
+        expect(result.artifacts).toHaveLength(1);
+        expect(result.artifacts![0].content).toEqual(Buffer.from('NES').toString('base64'));
+    });
+    it('skips a directory', async () => {
+        const dir = path.join(newTempDir(), 'game.nes');
+        await fs.mkdir(dir);
+        const result = emptyResult();
+        await addArtifactToResult(result, dir, 'nesrom');
+        expect(result.artifacts).toBeUndefined();
+    });
+    it.skipIf(process.platform === 'win32')('skips a symlink', async () => {
+        const dir = newTempDir();
+        const target = path.join(dir, 'target.nes');
+        await fs.writeFile(target, 'NES');
+        const link = path.join(dir, 'game.nes');
+        await fs.symlink(target, link);
+        const result = emptyResult();
+        await addArtifactToResult(result, link, 'nesrom');
+        expect(result.artifacts).toBeUndefined();
+    });
+});

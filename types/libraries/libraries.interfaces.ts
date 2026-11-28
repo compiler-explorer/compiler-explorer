@@ -43,7 +43,14 @@ export type Library = {
     name?: string;
 };
 
+export const libraryBuildTypes = ['Debug', 'Release'] as const;
+export type LibraryBuildType = (typeof libraryBuildTypes)[number];
+
 export type SelectedLibraryVersion = {
     id: string;
     version: string;
+    // Which prebuilt package to link. Absent means Debug, as it always has; send it only when it
+    // isn't Debug so existing requests keep their cache keys. Release falls back to Debug when a
+    // library has no Release package.
+    buildType?: LibraryBuildType;
 };
