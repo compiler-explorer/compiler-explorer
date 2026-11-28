@@ -180,7 +180,7 @@ const compilerOptionsSchema = z.object({
 } satisfies CompilerOptionsShape);
 
 export function parseCompilerOptions(compilerOptions: unknown): Record<string, any> {
-    const input = compilerOptions || {};
+    const input = compilerOptions ?? {};
     const result = compilerOptionsSchema.safeParse(input);
     if (!result.success) {
         const problems = result.error.issues.map(issue => {

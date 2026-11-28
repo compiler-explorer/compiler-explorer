@@ -330,8 +330,16 @@ describe('Compiler tests', () => {
             }
             const cfg = await makeFakeJson('I am a program', {compilerOptions: {produceCfg: true}}).expect(400);
             expect(cfg.body.message).toEqual('Invalid compilerOptions: produceCfg: expected an object or false');
-            const res = await makeFakeJson('I am a program', {compilerOptions: 'skipAsm'}).expect(400);
-            expect(res.body.message).toContain('Invalid compilerOptions');
+            for (const compilerOptions of ['skipAsm', false, 0, '']) {
+                const res = await makeFakeJson('I am a program', {compilerOptions}).expect(400);
+                expect(res.body.message).toContain('Invalid compilerOptions');
+            }
+        });
+
+        it('treats null compilerOptions as none', async () => {
+            await setFakeResult();
+            const res = await makeFakeJson('I am a program', {compilerOptions: null}).expect(200);
+            expect(res.body.input.backendOptions).toEqual({});
         });
 
         it('lets a CMake output filename reach the project root, which is one level above the build', async () => {
