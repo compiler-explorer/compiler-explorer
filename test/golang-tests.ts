@@ -29,6 +29,7 @@ import path from 'node:path';
 
 import {afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {GolangCompiler} from '../lib/compilers/golang.js';
 import * as utils from '../lib/utils.js';
@@ -394,5 +395,115 @@ require (
 
         const destPath = path.join(goPath, 'pkg', 'mod', 'github.com', 'google', 'uuid@v1.6.0', 'uuid.go');
         expect(await utils.fileExists(destPath)).toBe(true);
+    });
+});
+
+// One GolangCompiler serves every request for its compiler id, and requests interleave across awaits.
+describe('GO overlapping requests', () => {
+    let tempDir: string;
+    let compiler: GolangCompiler;
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    beforeEach(async () => {
+        tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ce-go-overlap-'));
+        compiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/opt/compiler-explorer/go1.20/bin/go', lang: languages.go.id}),
+            ce,
+        );
+        vi.spyOn(compiler, 'getSourceCachePath').mockResolvedValue(undefined);
+        vi.spyOn(compiler as any, 'setupGoLibraries').mockResolvedValue(undefined);
+        vi.spyOn(BaseCompiler.prototype, 'setupBuildEnvironment').mockResolvedValue([]);
+    });
+
+    afterEach(async () => {
+        await fsp.rm(tempDir, {recursive: true, force: true});
+        vi.restoreAllMocks();
+    });
+
+    it('decides offline mode from each request, not from the last one set up', async () => {
+        const withLibs = path.join(tempDir, 'with-libs');
+        const withoutLibs = path.join(tempDir, 'without-libs');
+        await fsp.mkdir(path.join(withLibs, 'uuid'), {recursive: true});
+        await fsp.writeFile(path.join(withLibs, 'uuid', 'metadata.json'), '{}');
+        await fsp.mkdir(withoutLibs, {recursive: true});
+        const superRun = vi
+            .spyOn(BaseCompiler.prototype, 'runCompiler')
+            .mockImplementation(async (_c, _o, _i, execOptions) => ({goproxy: execOptions.env.GOPROXY}) as any);
+
+        await compiler.setupBuildEnvironment({libraries: [{id: 'uuid', version: '1'}]} as any, withLibs, false);
+        await compiler.setupBuildEnvironment({libraries: []} as any, withoutLibs, false);
+        const results = await Promise.all([
+            compiler.runCompiler('go', [], path.join(withLibs, 'example.go'), {env: {}} as any),
+            compiler.runCompiler('go', [], path.join(withoutLibs, 'example.go'), {env: {}} as any),
+        ]);
+
+        expect(superRun).toHaveBeenCalledTimes(2);
+        expect(results.map(r => (r as any).goproxy)).toEqual(['off', undefined]);
+    });
+
+    it('does not treat a user directory with a metadata.json as a library', async () => {
+        const dir = path.join(tempDir, 'user-files');
+        await fsp.mkdir(path.join(dir, 'foo'), {recursive: true});
+        await fsp.writeFile(path.join(dir, 'foo', 'metadata.json'), '{"go_mod_require": "evil v1"}');
+        // A user file of the same name as the selection record is overwritten when the environment is set up.
+        await fsp.writeFile(path.join(dir, '.ce-selected-libraries.json'), '["foo"]');
+        vi.spyOn(BaseCompiler.prototype, 'runCompiler').mockImplementation(
+            async (_c, _o, _i, execOptions) => ({goproxy: execOptions.env.GOPROXY}) as any,
+        );
+        const setupLibraries = vi.spyOn(compiler as any, 'setupGoLibraries');
+
+        await compiler.setupBuildEnvironment({libraries: []} as any, dir, false);
+        const result = await compiler.runCompiler('go', [], path.join(dir, 'example.go'), {env: {}} as any);
+
+        expect((result as any).goproxy).toBeUndefined();
+        expect(setupLibraries).not.toHaveBeenCalled();
+    });
+
+    it('replaces a user directory named like the selection record', async () => {
+        const dir = path.join(tempDir, 'dir-record');
+        await fsp.mkdir(path.join(dir, '.ce-selected-libraries.json'), {recursive: true});
+
+        await compiler.setupBuildEnvironment({libraries: []} as any, dir, false);
+
+        expect(await fsp.readFile(path.join(dir, '.ce-selected-libraries.json'), 'utf-8')).toEqual('[]');
+    });
+
+    it('sets up only the selected libraries', async () => {
+        const dir = path.join(tempDir, 'mixed');
+        for (const lib of ['uuid', 'foo']) {
+            await fsp.mkdir(path.join(dir, lib), {recursive: true});
+            await fsp.writeFile(path.join(dir, lib, 'metadata.json'), '{}');
+        }
+        vi.spyOn(BaseCompiler.prototype, 'runCompiler').mockResolvedValue({} as any);
+        const setupLibraries = vi.spyOn(compiler as any, 'setupGoLibraries');
+
+        await compiler.setupBuildEnvironment({libraries: [{id: 'uuid', version: '1'}]} as any, dir, false);
+        await compiler.runCompiler('go', [], path.join(dir, 'example.go'), {env: {}} as any);
+
+        expect(setupLibraries.mock.calls[0][4]).toEqual(['uuid']);
+    });
+
+    it('decides whether to keep build output from each request options', async () => {
+        vi.spyOn(BaseCompiler.prototype, 'runCompiler').mockResolvedValue({} as any);
+        const stderr = [{text: 'WORK=/tmp/go-build'}];
+
+        await compiler.runCompiler('go', ['-x'], path.join(tempDir, 'a.go'), {env: {}} as any);
+        await compiler.runCompiler('go', [], path.join(tempDir, 'b.go'), {env: {}} as any);
+        const [verbose] = await compiler.postProcess(
+            {code: 0, timedOut: false, stdout: [], stderr, compilationOptions: ['build', '-x']} as any,
+            '/tmp/output.s',
+            {},
+        );
+        const [quiet] = await compiler.postProcess(
+            {code: 0, timedOut: false, stdout: [], stderr, compilationOptions: ['build']} as any,
+            '/tmp/output.s',
+            {},
+        );
+
+        expect(verbose.stderr).toEqual(stderr);
+        expect(quiet.stderr).toEqual([]);
     });
 });

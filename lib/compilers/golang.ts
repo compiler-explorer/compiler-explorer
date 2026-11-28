@@ -70,10 +70,12 @@ type GoEnv = {
     GOOS?: string;
 };
 
+// Which libraries a request selected, written into its build directory when its build environment is set up.
+// The compiler object is shared between requests, so this cannot be kept on it.
+const SELECTED_LIBRARIES_FILE = '.ce-selected-libraries.json';
+
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
-    private hasLibraries = false;
-    private verboseBuild = false;
 
     static get key() {
         return 'golang';
@@ -129,8 +131,22 @@ export class GolangCompiler extends BaseCompiler {
         dirPath: string,
         binary: boolean,
     ): Promise<BuildEnvDownloadInfo[]> {
-        this.hasLibraries = key.libraries && key.libraries.length > 0;
-        return super.setupBuildEnvironment(key, dirPath, binary);
+        const downloads = await super.setupBuildEnvironment(key, dirPath, binary);
+        // Always written, so anything of the same name among the user's own files never stands in for it.
+        const selected = (key.libraries ?? []).map(lib => lib.id);
+        const recordPath = path.join(dirPath, SELECTED_LIBRARIES_FILE);
+        await fs.rm(recordPath, {recursive: true, force: true});
+        await fs.writeFile(recordPath, JSON.stringify(selected));
+        return downloads;
+    }
+
+    protected async readSelectedLibraries(dirPath: string): Promise<string[]> {
+        try {
+            const selected = JSON.parse(await fs.readFile(path.join(dirPath, SELECTED_LIBRARIES_FILE), 'utf-8'));
+            return Array.isArray(selected) ? selected.filter(id => typeof id === 'string') : [];
+        } catch {
+            return [];
+        }
     }
 
     protected async findDownloadedLibraries(dirPath: string): Promise<string[]> {
@@ -245,10 +261,8 @@ export class GolangCompiler extends BaseCompiler {
         cachePath: string,
         goPath: string,
         dirPath: string,
+        libraries: string[],
     ): Promise<void> {
-        const libraries = await this.findDownloadedLibraries(dirPath);
-        if (libraries.length === 0) return;
-
         for (const libId of libraries) {
             const libPath = path.join(dirPath, libId);
 
@@ -286,10 +300,11 @@ export class GolangCompiler extends BaseCompiler {
             GOPATH: goPath,
         };
 
-        this.verboseBuild = options.some(opt => opt === '-v' || opt === '-x');
+        const selected = await this.readSelectedLibraries(dirPath);
+        const hasLibraries = selected.length > 0;
 
         // Force offline compilation when libraries are selected
-        if (this.hasLibraries) {
+        if (hasLibraries) {
             execOptions.env.GOPROXY = 'off';
         }
 
@@ -303,11 +318,14 @@ export class GolangCompiler extends BaseCompiler {
             }
         }
 
-        // Set up Go libraries if any were downloaded
-        if (this.hasLibraries) {
+        // Set up the selected Go libraries that were downloaded
+        const libraries = hasLibraries
+            ? (await this.findDownloadedLibraries(dirPath)).filter(id => selected.includes(id))
+            : [];
+        if (libraries.length > 0) {
             try {
                 await fs.mkdir(goPath, {recursive: true});
-                await this.setupGoLibraries(inputDir, tempCachePath, goPath, dirPath);
+                await this.setupGoLibraries(inputDir, tempCachePath, goPath, dirPath, libraries);
             } catch (e) {
                 logger.warn(`Failed to set up Go libraries: ${e}`);
             }
@@ -457,7 +475,8 @@ export class GolangCompiler extends BaseCompiler {
             out = result.stdout;
         }
         const logging = this.extractLogging(out);
-        result.stderr = this.verboseBuild
+        const verboseBuild = (result.compilationOptions ?? []).some(opt => opt === '-v' || opt === '-x');
+        result.stderr = verboseBuild
             ? out.filter(obj => !obj.text.match(LINE_RE) && !obj.text.match(UNKNOWN_RE) && !obj.text.match(LOGGING_RE))
             : [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);

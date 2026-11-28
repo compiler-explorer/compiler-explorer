@@ -59,6 +59,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
+        const libPaths = D8Compiler.getLibPathsFromOptions(options, inputFilename);
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
@@ -69,7 +70,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
-                    this.getClasspathArgument(),
+                    D8Compiler.getClasspathArgument(libPaths),
                     javaCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -89,7 +90,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
-                    this.getClasspathArgument(),
+                    D8Compiler.getClasspathArgument(libPaths),
                     kotlinCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -151,7 +152,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
             this.compiler.exe, // R8 jar.
             'com.android.tools.r8.R8',
             ...(await this.getProguardConfigArguments(execOptions.customCwd)),
-            ...this.getR8LibArguments(),
+            ...this.getR8LibArguments(libPaths),
             ...userOptions,
             ...this.getMinApiArgument(useDefaultMinApi),
             ...classFiles,
@@ -163,9 +164,9 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         };
     }
 
-    getR8LibArguments(): string[] {
+    getR8LibArguments(libPaths: string[]): string[] {
         const libArgs: string[] = [];
-        for (const libPath of this.libPaths) {
+        for (const libPath of libPaths) {
             libArgs.push('--lib', libPath);
         }
         if (this.lang.id === 'android-kotlin') {

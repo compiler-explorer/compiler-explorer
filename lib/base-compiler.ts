@@ -1520,7 +1520,7 @@ export class BaseCompiler {
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
-        const ir = await this.processIrOutput(output, irOptions, filters);
+        const ir = await this.processIrOutput(output, irOptions, filters, newOptions);
 
         const result: {
             code: number;
@@ -1552,11 +1552,12 @@ export class BaseCompiler {
         output: CompilationResult,
         irOptions: LLVMIrBackendOptions,
         filters: ParseFiltersAndOutputOptions,
+        options?: string[],
     ): Promise<{
         asm: ParsedAsmResultLine[];
         languageId: string;
     }> {
-        const irPath = this.getIrOutputFilename(output.inputFilename!, filters, irOptions);
+        const irPath = this.getIrOutputFilename(output.inputFilename!, filters, irOptions, options);
         if (await utils.isRegularFile(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
             return await this.llvmIr.process(output, irOptions);
@@ -1876,11 +1877,13 @@ export class BaseCompiler {
      * @param inputFilename Input filename.
      * @param filters Can be used if this base method is overridden. E.g. in order to know whether a binary is being produced (used by Rust).
      * @param irOptions Can be used if this base method is overridden. E.g. in order return an output file based on `irOptions` (used by Resolc).
+     * @param options The options the IR was generated with, when known. E.g. Spice names its IR file after the optimisation level.
      */
     getIrOutputFilename(
         inputFilename: string,
         filters?: ParseFiltersAndOutputOptions,
         irOptions?: LLVMIrBackendOptions,
+        options?: string[],
     ): string {
         return utils.changeExtension(inputFilename, '.ll');
     }

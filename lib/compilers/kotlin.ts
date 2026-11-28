@@ -71,7 +71,7 @@ export class KotlinCompiler extends JavaCompiler implements SimpleOutputFilename
             return option.endsWith('.kt');
         });
         const userOptions = options.slice(0, sourceFileOptionIndex);
-        const kotlinOptions = _.compact([...this.getClasspathArgument(), ...userOptions, inputFilename]);
+        const kotlinOptions = _.compact([...userOptions, inputFilename]);
         const result = await this.exec(compiler, kotlinOptions, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),

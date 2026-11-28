@@ -54,8 +54,6 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     javaRuntime: string;
     mainRegex: RegExp;
 
-    libPaths: string[];
-
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
@@ -67,7 +65,6 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         );
         this.javaRuntime = this.compilerProps<string>(`compiler.${this.compiler.id}.runtime`);
         this.mainRegex = /public static ?(.*?) void main\(java\.lang\.String\[]\)/;
-        this.libPaths = [];
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -94,7 +91,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
             return option.endsWith('.java');
         });
         const userOptions = options.slice(0, sourceFileOptionIndex);
-        const javaOptions = _.compact([...this.getClasspathArgument(), ...userOptions, inputFilename]);
+        const javaOptions = _.compact([...userOptions, inputFilename]);
         const result = await this.exec(compiler, javaOptions, execOptions);
         return {
             ...this.transformToCompilationResult(result, inputFilename),
@@ -438,17 +435,57 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         };
     }
 
-    getClasspathArgument(): string[] {
-        const libString = this.libPaths.join(':');
-        return libString ? ['-cp', libString] : [''];
+    static getClasspathArgument(libPaths: string[]): string[] {
+        const libString = libPaths.join(':');
+        return libString ? ['-cp', libString] : [];
     }
 
     override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
-        this.libPaths = libraries.flatMap(selectedLib => {
+        return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
             return foundVersion.path;
         });
-        return this.libPaths;
+    }
+
+    // Whether runCompiler takes the library paths as its classpath. Subclasses that build their own classpath, or
+    // none, keep the base argument order instead.
+    protected librariesOnClasspath(): boolean {
+        return true;
+    }
+
+    // The library paths become the classpath, ahead of the source file so runCompiler passes them on with the user's
+    // options. Carrying them in the arguments keeps them with the request: the compiler object is shared.
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        if (!this.librariesOnClasspath()) {
+            return super.orderArguments(
+                options,
+                inputFilename,
+                libIncludes,
+                libOptions,
+                libPaths,
+                libLinks,
+                userOptions,
+                staticLibLinks,
+            );
+        }
+        return JavaCompiler.getClasspathArgument(libIncludes).concat(
+            options,
+            userOptions,
+            [this.filename(inputFilename)],
+            libOptions,
+            libPaths,
+            libLinks,
+            staticLibLinks,
+        );
     }
 }

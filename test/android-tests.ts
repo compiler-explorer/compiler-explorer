@@ -171,14 +171,14 @@ describe('dex2oat', () => {
 
     async function testParseOatdump(info: CompilerInfo, baseFolder: string, fullOutput: boolean) {
         const compiler = new Dex2OatCompiler(info, env);
-        compiler.fullOutput = fullOutput;
 
         // The "result" of running oatdump.
         const asm = [{text: fs.readFileSync(`${baseFolder}/oatdump.asm`, 'utf-8')}];
         const objdumpResult = {
             asm,
         };
-        const processed = await compiler.processAsm(objdumpResult, compiler.getDefaultFilters());
+        const options = fullOutput ? [compiler.fullOutputFlag] : [];
+        const processed = await compiler.processAsm(objdumpResult, compiler.getDefaultFilters(), options);
         expect(processed).toHaveProperty('asm');
         const actualSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
 

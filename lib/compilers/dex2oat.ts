@@ -88,14 +88,9 @@ export class Dex2OatCompiler extends BaseCompiler {
     versionPrefixRegex: RegExp;
     latestVersionRegex: RegExp;
 
-    fullOutput: boolean;
-
     d8Id: string;
     artArtifactDir: string;
     profmanPath: string;
-    cwd: string;
-
-    libs: SelectedLibraryVersion[];
 
     smaliLineNumberRegex: RegExp;
     smaliClassRegex: RegExp;
@@ -139,10 +134,6 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.insnSetArgRegex = /^--instruction-set=.*$/;
         this.compilerFilterArgRegex = /^--compiler-filter=.*$/;
 
-        // Whether the full dex2oat output should be displayed instead of just
-        // the parsed and formatted methods.
-        this.fullOutput = false;
-
         // The underlying D8 version+exe.
         this.d8Id = this.compilerProps<string>(`compiler.${this.compiler.id}.d8Id`);
 
@@ -151,13 +142,6 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // The path to the `profman` binary.
         this.profmanPath = this.compilerProps<string>(`compiler.${this.compiler.id}.profmanPath`);
-
-        // The path where D8/dex2oat are being run. This is used to find
-        // classes.cfg from processAsm().
-        this.cwd = '';
-
-        // Libraries that will flow to D8Compiler and Java/KotlinCompiler.
-        this.libs = [];
 
         // Regexes that apply to .smali files (R8/D8 dump output).
         this.smaliLineNumberRegex = /^\s+\.line\s+(\d+).*$/;
@@ -174,9 +158,6 @@ export class Dex2OatCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
-        // Make sure --full-output from previous invocations doesn't persist.
-        this.fullOutput = false;
-
         // Instantiate D8 compiler, which will in turn instantiate a Java or
         // Kotlin compiler based on the current language.
         const d8Compiler = this.env.findCompiler(this.lang.id, this.d8Id) as D8Compiler | undefined;
@@ -215,7 +196,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 useDefaultCompilerFilter = false;
                 userOptions.push(option);
             } else if (option === this.fullOutputFlag) {
-                this.fullOutput = true;
+                // Not for dex2oat itself: processAsm reads it from the options.
             } else if (option === this.bootImageExtensionFlag) {
                 compileAsBootImage = true;
             } else if (option === '--d8-flags') {
@@ -225,6 +206,7 @@ export class Dex2OatCompiler extends BaseCompiler {
             }
         }
 
+        // D8 reads its library paths back from after the source file, which is where orderArguments put ours.
         const d8Options = _.compact(
             d8Compiler.prepareArguments(
                 d8Flags?.split(' ') ?? [],
@@ -232,10 +214,10 @@ export class Dex2OatCompiler extends BaseCompiler {
                 {}, // backendOptions
                 inputFilename,
                 d8OutputFilename,
-                this.libs,
+                [], // libraries
                 [], // overrides
             ),
-        );
+        ).concat(D8Compiler.getLibPathsFromOptions(options, inputFilename));
 
         const compileResult = await d8Compiler.runCompiler(
             d8Compiler.getInfo().exe,
@@ -310,7 +292,6 @@ export class Dex2OatCompiler extends BaseCompiler {
         dex2oatOptions.push(`--profile-file=${profileAndResult.path}`);
 
         execOptions.customCwd = d8DirPath;
-        this.cwd = d8DirPath;
 
         const result = await this.exec(this.compiler.exe, dex2oatOptions, execOptions);
         result.stdout = profileAndResult.result.stdout + result.stdout;
@@ -321,9 +302,27 @@ export class Dex2OatCompiler extends BaseCompiler {
         };
     }
 
+    // Library paths for D8 travel in the arguments, after the source file, as D8Compiler lays them out. The
+    // compiler object is shared between requests, so they cannot be kept on it.
     override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
-        this.libs = libraries;
-        return super.getIncludeArguments(libraries, dirPath);
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.path;
+        });
+    }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        return options.concat(userOptions, [this.filename(inputFilename)], libIncludes);
     }
 
     parseSmaliForDefaultProfile(profileLines: string[], smaliLines: string[]) {
@@ -644,8 +643,22 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
     }
 
-    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
+    // As runCompiler reads its options: the value of --d8-flags belongs to D8, even if it is --full-output.
+    wantsFullOutput(options: string[]): boolean {
+        for (let i = 0; i < options.length; ++i) {
+            if (options[i] === '--d8-flags') ++i;
+            else if (options[i] === this.fullOutputFlag) return true;
+        }
+        return false;
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[] = []) {
         let asm = '';
+        // Whether the full dex2oat output should be displayed instead of just the parsed and formatted methods.
+        // The flag usually arrives as an override, which only the compiler's own options carry.
+        const fullOutput = this.wantsFullOutput(options) || this.wantsFullOutput(result.compilationOptions ?? []);
+        // Where D8 and dex2oat ran, to find classes.cfg and the smali files.
+        const cwd: string = result.dirPath ?? '';
 
         if (typeof result.asm === 'string') {
             const asmLines = utils.splitLines(result.asm);
@@ -662,7 +675,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         asm = result.asm[0].text;
 
         const segments: ParsedAsmResultLine[] = [];
-        if (this.fullOutput || !filters.directives) {
+        if (fullOutput || !filters.directives) {
             // Returns entire dex2oat output.
             segments.push({text: asm, source: null});
         } else {
@@ -675,7 +688,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 absoluteToRelativeOffsets,
             } = this.parseAsm(asm);
 
-            const classesCfg = path.join(this.cwd, 'classes.cfg');
+            const classesCfg = path.join(cwd, 'classes.cfg');
             let methodsAndOffsetsToDexPcs: Record<string, Record<number, number>> = {};
             try {
                 const rawCfgText = await fs.readFile(classesCfg, {encoding: 'utf8'});
@@ -691,10 +704,10 @@ export class Dex2OatCompiler extends BaseCompiler {
 
             const dexPcsToLines: Record<string, Record<number, number>> = {};
             try {
-                const files = await fs.readdir(this.cwd);
+                const files = await fs.readdir(cwd);
                 const smaliFiles = files.filter(f => f.endsWith('.smali'));
                 for (const smaliFile of smaliFiles) {
-                    const rawSmaliText = await fs.readFile(path.join(this.cwd, smaliFile), 'utf-8');
+                    const rawSmaliText = await fs.readFile(path.join(cwd, smaliFile), 'utf-8');
                     this.parseSmaliForLineNumbers(dexPcsToLines, rawSmaliText.split(/\n/));
                 }
             } catch (e) {

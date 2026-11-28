@@ -59,8 +59,6 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     versionFromPropsRegex: RegExp;
     versionFromJarRegex: RegExp;
 
-    libPaths: string[];
-
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...compilerInfo}, env);
 
@@ -82,8 +80,6 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         this.versionFromJarRegex = /^.*r8-(.*)\.jar$/;
 
         this.kotlinId = this.compilerProps<string>(`group.${this.compiler.group}.kotlinId`);
-
-        this.libPaths = [];
     }
 
     override getOutputFilename(dirPath: string) {
@@ -98,6 +94,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const preliminaryCompilePath = path.dirname(inputFilename);
+        const libPaths = D8Compiler.getLibPathsFromOptions(options, inputFilename);
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
@@ -117,7 +114,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             outputFilename = javaCompiler.getOutputFilename(preliminaryCompilePath);
             const javaOptions = _.compact(
                 javaCompiler.prepareArguments(
-                    this.getClasspathArgument(),
+                    D8Compiler.getClasspathArgument(libPaths),
                     javaCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -137,7 +134,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
-                    this.getClasspathArgument(),
+                    D8Compiler.getClasspathArgument(libPaths),
                     kotlinCompiler.getDefaultFilters(),
                     {}, // backendOptions
                     inputFilename,
@@ -287,9 +284,16 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         return {asm: segments};
     }
 
-    getClasspathArgument(): string[] {
-        const libString = this.libPaths.join(':');
+    static getClasspathArgument(libPaths: string[]): string[] {
+        const libString = libPaths.join(':');
         return libString ? ['-cp', libString] : [''];
+    }
+
+    // orderArguments puts the library paths, and nothing else, after the source file. Look for the source file
+    // itself: a user option before it may also end in .java or .kt.
+    static getLibPathsFromOptions(options: string[], inputFilename: string): string[] {
+        const sourceFileOptionIndex = options.lastIndexOf(inputFilename);
+        return sourceFileOptionIndex < 0 ? [] : options.slice(sourceFileOptionIndex + 1);
     }
 
     getMinApiArgument(useDefaultMinApi: boolean): string[] {
@@ -297,12 +301,26 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
-        this.libPaths = libraries.flatMap(selectedLib => {
+        return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
             return foundVersion.path;
         });
-        return this.libPaths;
+    }
+
+    // The library paths travel in the arguments, after the source file, so that runCompiler finds this request's
+    // own: the compiler object is shared between requests. Nothing else after the source file was ever used.
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        return options.concat(userOptions, [this.filename(inputFilename)], libIncludes);
     }
 
     override async getVersion() {

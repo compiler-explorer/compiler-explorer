@@ -28,6 +28,7 @@ import Semver from 'semver';
 import _ from 'underscore';
 
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -36,8 +37,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
 
 export class SpiceCompiler extends BaseCompiler {
-    optLevelSuffix = '';
-
     static get key() {
         return 'spice';
     }
@@ -87,22 +86,27 @@ export class SpiceCompiler extends BaseCompiler {
             options.push('--dump-object-file');
         }
 
-        this.optLevelSuffix = '';
-        for (const item of userOptions) {
+        return options;
+    }
+
+    // Spice names its IR dump after the last optimisation level given. This is worked out from the options of
+    // each compilation, as one compiler object serves overlapping requests.
+    static optLevelSuffix(options: string[]): string {
+        let suffix = '';
+        for (const item of options) {
             if (item.startsWith('-O')) {
                 if (item === '-O0') {
-                    this.optLevelSuffix = '';
+                    suffix = '';
                 } else if (item === '-Os') {
-                    this.optLevelSuffix = '-O4';
+                    suffix = '-O4';
                 } else if (item === '-Oz') {
-                    this.optLevelSuffix = '-O5';
+                    suffix = '-O5';
                 } else {
-                    this.optLevelSuffix = item;
+                    suffix = item;
                 }
             }
         }
-
-        return options;
+        return suffix;
     }
 
     override getDefaultExecOptions(): ExecutionOptionsWithEnv {
@@ -119,9 +123,15 @@ export class SpiceCompiler extends BaseCompiler {
         return path.join(dirPath, 'example-assembly-code.s');
     }
 
-    override getIrOutputFilename(inputFilename: string): string {
+    override getIrOutputFilename(
+        inputFilename: string,
+        filters?: ParseFiltersAndOutputOptions,
+        irOptions?: LLVMIrBackendOptions,
+        options?: string[],
+    ): string {
         const dirPath = path.dirname(inputFilename);
-        return path.join(dirPath, 'example-ir-code' + this.optLevelSuffix + '.ll');
+        const suffix = SpiceCompiler.optLevelSuffix(options ?? []);
+        return path.join(dirPath, 'example-ir-code' + suffix + '.ll');
     }
 
     override getObjdumpInputFilename(inputFilename: string): string {
