@@ -26,8 +26,10 @@ import {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.in
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {isLlvmFlang, parseTreeArguments, parseTreeOutput} from './flang.js';
 
 export class FlangFC1Compiler extends BaseCompiler {
     static get key() {
@@ -70,5 +72,23 @@ export class FlangFC1Compiler extends BaseCompiler {
         options = options.concat(['-o', this.filename(outputFilename)]);
         options = options.concat(inputFilename);
         return options;
+    }
+
+    override couldSupportASTDump(version: string) {
+        return isLlvmFlang(version);
+    }
+
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        // These options already run the frontend, so only the action flag is replaced with the parse tree dump.
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+        return parseTreeOutput(
+            await this.runCompiler(
+                this.compiler.exe,
+                parseTreeArguments(options),
+                this.filename(inputFilename),
+                execOptions,
+            ),
+        );
     }
 }
